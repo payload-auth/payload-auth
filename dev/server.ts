@@ -2,7 +2,6 @@ import type { NextServerOptions } from 'next/dist/server/next.js'
 
 import { createServer } from 'http'
 import next from 'next'
-import open from 'open'
 import path from 'path'
 import { fileURLToPath, parse } from 'url'
 
@@ -18,8 +17,6 @@ const app = next(opts)
 const handle = app.getRequestHandler()
 
 await app.prepare()
-
-await open(`http://localhost:3000/admin`)
 
 const server = createServer((req, res) => {
   const parsedUrl = parse(req.url!, true)

@@ -27,6 +27,13 @@ export default [
   {
     rules: {
       'no-restricted-exports': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      'perfectionist/sort-objects': 'off',
+      'perfectionist/sort-imports': 'off',
+      'perfectionist/sort-keys': 'off',
+      'perfectionist/sort-switch-case': 'off',
+      'perfectionist/sort-jsx-props': 'off',
+      'perfectionist/**': 'off',
     },
   },
   {

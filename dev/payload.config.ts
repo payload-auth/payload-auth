@@ -1,14 +1,10 @@
-import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { payloadBetterAuth } from 'payload-better-auth'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
-
-import { devUser } from './helpers/credentials.js'
-import { testEmailAdapter } from './helpers/testEmailAdapter.js'
-import { seed } from './seed.js'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -19,39 +15,20 @@ if (!process.env.ROOT_DIR) {
 
 export default buildConfig({
   admin: {
-    autoLogin: devUser,
     importMap: {
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [
-    {
-      slug: 'posts',
-      fields: [],
+  collections: [],
+  db: postgresAdapter({
+    disableCreateDatabase: true,
+    pool: {
+      connectionString: 'postgres://forrestdevs:@localhost:5432/better-auth-payload',
     },
-    {
-      slug: 'media',
-      fields: [],
-      upload: {
-        staticDir: path.resolve(dirname, 'media'),
-      },
-    },
-  ],
-  db: mongooseAdapter({
-    url: process.env.DATABASE_URI || '',
+    push: false,
   }),
   editor: lexicalEditor(),
-  email: testEmailAdapter,
-  onInit: async (payload) => {
-    await seed(payload)
-  },
-  plugins: [
-    payloadBetterAuth({
-      collections: {
-        posts: true,
-      },
-    }),
-  ],
+  plugins: [payloadBetterAuth({})],
   secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
   sharp,
   typescript: {
