@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "target": "es2022",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "composite": false,
+    "incremental": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "rootDir": ".",
+    "downlevelIteration": true,
+    "baseUrl": ".",
+    "outDir": "dist",
+    "declaration": true
+  },
+  "exclude": ["**/dist", "node_modules"],
+  "references": [],
+  "include": ["src/index.ts"]
+}
