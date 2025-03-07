@@ -1,6 +1,7 @@
 import type { Config } from 'payload'
 
 import collectionConfigs from './lib/collections/index.js'
+import { applyDefaultAccess } from 'src/lib/access/default-access.js'
 
 export type PayloadBetterAuthConfig = {
   disabled?: boolean
@@ -19,5 +20,7 @@ export const payloadBetterAuth =
 
     config.collections.push(...collectionConfigs)
 
-    return config
+    // Apply default access to all collections and globals, so that
+    // only admins can access the admin panel.
+    return applyDefaultAccess(config)
   }
