@@ -1,7 +1,7 @@
 import type { Config } from 'payload'
 
 import collectionConfigs from './lib/collections/index.js'
-import { applyDefaultAccess } from 'src/lib/access/default-access.js'
+import { applyDefaultAccess } from './lib/access/default-access.js'
 
 export type PayloadBetterAuthConfig = {
   disabled?: boolean

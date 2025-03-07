@@ -8,7 +8,7 @@ import type { AccessArgs, Config } from 'payload'
  */
 function defaultAccessCheck(args: AccessArgs) {
   return (
-    Boolean(args.req.user) &&
+    !!args.req.user &&
     args.req.user?.collection === 'users' &&
     args.req.user?.role === 'admin'
   )
@@ -46,6 +46,17 @@ export function applyDefaultAccess(config: Config): Config {
       update: global.access?.update ?? defaultAccessCheck,
     }
   }
+
+  // if jobs are enabled, we should apply default access to it, if it is not defined
+  config.jobs = config.jobs
+    ? {
+        ...config.jobs,
+        access: {
+          // by default only 'admins' should be allowed to dispatch jobs if any
+          run: config.jobs?.access?.run ?? defaultAccessCheck,
+        },
+      }
+    : undefined
 
   return config
 }
