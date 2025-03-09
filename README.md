@@ -24,7 +24,3 @@ A database adapter for Better Auth that works with Payload CMS's database connec
 - Works with relational databases (PostgreSQL, SQLite)
 - Type-safe database operations
 - Efficient query handling
-
-## Getting Started
-
-1. Install the required packages:

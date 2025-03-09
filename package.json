@@ -4,12 +4,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build:plugin": "npm run build --workspace=@payload-better-auth/plugin",
-    "build:adapter": "npm run build --workspace=@payload-better-auth/adapter",
-    "test:plugin": "npm run test --workspace=@payload-better-auth/plugin",
-    "test:adapter": "npm run test --workspace=@payload-better-auth/adapter",
-    "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces"
+    "build:plugin": "pnpm run build --workspace=@payload-better-auth/plugin",
+    "build:adapter": "pnpm run build --workspace=@payload-better-auth/adapter",
+    "test:plugin": "pnpm run test --workspace=@payload-better-auth/plugin",
+    "test:adapter": "pnpm run test --workspace=@payload-better-auth/adapter",
+    "build": "pnpm run build --workspaces",
+    "test": "pnpm run test --workspaces"
   },
   "keywords": [
     "payload-cms",

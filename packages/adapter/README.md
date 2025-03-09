@@ -7,19 +7,50 @@
 Introducing a database adapter designed for [Payload CMS](https://www.payloadcms.com/) that enables seamless integration with [BetterAuth](https://www.better-auth.com/).
 
 
-> [!WARNING]
-> Please note that Convex DB is not inherently designed for this purpose. I have implemented workarounds to facilitate dynamic queries and mutations within Convex, which is typically not supported. Additionally, there are several limitations that may affect the functionality of BetterAuth in certain scenarios. Some plugins may not operate as expected.
->
-> Here are the key limitations to consider:
->
-> - **Performance Issues**: Due to the inability to perform dynamic queries/mutations, we send a request to Convex Actions, which then calls the mutate/query function. This results in at least two calls, not including subsequent database queries or mutation calls.
-> - **Degraded Performance for Pagination Queries**: Convex's support for pagination is limited, which may lead to performance issues when working outside its intended scope.
-> - **No Support for Certain Operators**: Operators such as `starts_with`, `ends_with`, or `contains` are not supported. This limitation primarily affects the admin plugin.
+## Important Usage Notes
+> [!NOTE]
+> If you are using the `@payload-better-auth/plugin`, you do not need to worry about these steps. The plugin handles the adapter setup internally. However, if you are implementing the Payload authentication integration manually, follow these instructions.
+
+### Using the Adapter Standalone
+
+If you decide to use `@payload-better-auth/adapter` independently and implement the Payload CMS integration manually, there are several important considerations:
+
+#### 1. Field Mapping Requirements
+
+You must map BetterAuth's field names to Payload's collection field names:
+
+```javascript
+// Example mapping configuration
+const betterAuthOptions = {
+  session: {
+    modelName: 'sessions',
+    fields: {
+      userId: 'user', // Maps BetterAuth's 'userId' to Payload's 'user' relationship field
+    },
+  },
+  // Other collections...
+}
+```
+
+#### 2. Collection Name Conventions
+
+Payload typically uses plural collection slugs (e.g., 'users', 'sessions'), while BetterAuth may expect different naming conventions. Make sure to specify the correct modelName:
+
+```javascript
+const betterAuthOptions = {
+  user: {
+    modelName: 'users', // Maps to Payload's 'users' collection
+  },
+  session: {
+    modelName: 'sessions', // Maps to Payload's 'sessions' collection
+  },
+}
+```
 
 ## Installation
 
 ```bash
-npm install convex-better-auth
+npm install @payload-better-auth/adapter
 ```
 
 ## Usage
@@ -47,17 +78,3 @@ export function betterAuth(payload: BasePayload) {
 
 
 ```
-
-> [!NOTE]
-> If you are using the `@payload-better-auth/plugin`, you do not need to worry about these steps. The plugin handles the adapter setup internally. However, if you are implementing the Payload authentication integration manually, follow these instructions.
-
-### 2. Configure Model Names
-
-When integrating with Payload CMS, it's crucial to map Better Auth's model names to your Payload collection slugs. Typically, Payload uses plural collection names (e.g., `users`, `sessions`). Ensure your Better Auth configuration reflects this.
-
-
-<!-- we need to make note that the payload-better-auth/plugin uses this adapter so if your using the plugin you wont need to worry about this, however if you decide to just use the adapter and implement the payload auth integration manually there will be a few things to make sure to do, the first is mapping the better-auth modelNames and field names to the payload collections. For example any relationship in payload is commonly called by the collection name for example Session collection has a field user which is a relationship to the User collection. Because the better auth schema defines the relationship as a id in the Session Schema it would be userId. so we need to make sure we map this correctly in the better auth options. like so session: {
-      modelName: 'sessions',
-      fields: {
-        userId: 'user',
-      },} the other note is the modelName as commonly in payload we name collection slugs plurally like 'users' for User collection and 'sessions' for Session collection. so again we need to make sure were defining this in the better auth options. , please add all the information as other steps and remove any convex info -->

@@ -8,6 +8,7 @@ import { BetterAuthError } from "better-auth";
 import type { BasePayload } from "payload";
 import { createTransform } from "./transform";
 import type { PayloadAdapterOptions } from "./types";
+import { generateSchema } from "./generate-schema";
 
 export type PayloadAdapter = (
   payloadClient: BasePayload,
@@ -144,20 +145,19 @@ export const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
           const multipleIds = where && multipleIdsQuery(where);
           const singleId = where && singleIdQuery(where);
           if (multipleIds && multipleIds.length > 0) {
-            const docPromises = multipleIds.map((id) =>
-              payload.findByID({
+            const res = {
+              docs: [] as Record<string, any>[],
+              totalDocs: 0,
+            };
+            for (const id of multipleIds) {
+              const doc = await payload.findByID({
                 collection: collectionSlug,
                 id,
-              })
-            );
-            const docs = await Promise.all(docPromises);
-            const validDocs = docs.filter(
-              (doc): doc is NonNullable<typeof doc> => doc !== null
-            );
-            result = {
-              docs: validDocs,
-              totalDocs: validDocs.length,
-            };
+              });
+              res.docs.push(doc);
+              res.totalDocs++;
+            }
+            result = { docs: res.docs, totalDocs: res.totalDocs };
           } else if (singleId) {
             const doc = await payload.findByID({
               collection: collectionSlug,
@@ -165,19 +165,20 @@ export const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             });
             result = { docs: doc ? [doc] : [], totalDocs: doc ? 1 : 0 };
           } else {
-            result = await payload.find({
+            const res = await payload.find({
               collection: collectionSlug,
               where: payloadWhere,
               limit: limit,
               page: offset ? Math.floor(offset / (limit || 10)) + 1 : 1,
               sort: convertSort(model, sortBy),
             });
+            result = { docs: res.docs, totalDocs: res.totalDocs };
           }
           const transformedResult =
-            result.docs.map((doc) => transformOutput(doc)) ?? null;
+            result?.docs.map((doc) => transformOutput(doc)) ?? null;
           debugLog([
             "findMany result",
-            { result, duration: `${Date.now() - start}ms` },
+            { transformedResult, duration: `${Date.now() - start}ms` },
           ]);
           return transformedResult as T[];
         } catch (error) {
@@ -348,6 +349,19 @@ export const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
           errorLog(["Error in count: ", error]);
           return 0;
         }
+      },
+      createSchema: async (options, file) => {
+        const schemaCode = await generateSchema(options);
+
+        return {
+          code: schemaCode,
+          path: file || "schema.ts",
+          append: false,
+          overwrite: true,
+        };
+      },
+      options: {
+        enable_debug_logs: config.enable_debug_logs,
       },
     };
   };

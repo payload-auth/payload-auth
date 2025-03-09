@@ -1,0 +1,11 @@
+{
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "driver": "PostgreSQL",
+      "name": "pda-adapter",
+      "connectString": "postgres://forrestdevs:@localhost:5432/pba-adapter"
+    }
+  ]
+}

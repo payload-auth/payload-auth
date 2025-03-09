@@ -1,104 +1,194 @@
-// import { betterAuth, type BetterAuthOptions } from "better-auth";
-// import { afterAll, beforeAll, describe, expect, it, test } from "vitest";
-// import * as dotenv from "dotenv";
-// dotenv.config({ path: ".env.local" });
-// import { convexAdapter } from "./../src/index";
-// import { runAdapterTest } from "better-auth/adapters/test";
-// import { ConvexClient } from "convex/browser";
-// import { api } from "./../convex/_generated/api.js";
+import { betterAuth, type BetterAuthOptions } from "better-auth";
+import { afterAll, beforeAll, describe, expect, it, test } from "vitest";
+import { payloadAdapter } from "./../src/index";
+import { runAdapterTest } from "./better-auth-adapter-test.js";
+import { getPayload } from "../dev/index.js";
+import { BasePayload } from "payload";
 
-// describe("Handle Convex Adapter", async () => {
-//   it("should successfully add the Convex Adapter", async () => {
-//     const client = new ConvexClient(process.env.CONVEX_URL as string);
+describe("Handle Payload Adapter", async () => {
+  it("should successfully add the Payload Adapter", async () => {
+    const payload = await getPayload();
 
-//     const auth = betterAuth({
-//       database: convexAdapter(client),
-//     });
+    const auth = betterAuth({
+      database: payloadAdapter(payload),
+    });
 
-//     expect(auth).toBeDefined();
-//     expect(auth.options.database).toBeDefined();
-//     expect(auth.options.database({}).id).toEqual("payload");
-//   });
-// });
+    expect(auth).toBeDefined();
+    expect(auth.options.database).toBeDefined();
+    expect(auth.options.database({}).id).toEqual("payload");
+  });
+});
 
-// describe("Run BetterAuth Adapter tests", async () => {
-//   const client = new ConvexClient(process.env.CONVEX_URL as string);
+function deleteAll(payload: BasePayload) {
+  beforeAll(async () => {
+    // delete all users and sessions
+    const res = await payload.delete({
+      collection: "user",
+      where: {
+        id: {
+          exists: true,
+        },
+      },
+    });
+    console.log("before users: ", res.docs.length, res.errors);
+    const res2 = await payload.delete({
+      collection: "session",
+      where: {
+        id: {
+          exists: true,
+        },
+      },
+    });
+    console.log("before sessions: ", res2.docs.length, res2.errors);
+    const res3 = await payload.delete({
+      collection: "account",
+      where: {
+        id: {
+          exists: true,
+        },
+      },
+    });
+    console.log("before accounts: ", res3.docs.length, res3.errors);
+    const res4 = await payload.delete({
+      collection: "verification",
+      where: {
+        id: {
+          exists: true,
+        },
+      },
+    });
+    console.log("before verification: ", res4.docs.length, res4.errors);
+  });
+  afterAll(async () => {
+    const res2 = await payload.delete({
+      collection: "session",
+      where: {
+        id: {
+          exists: true,
+        },
+      },
+    });
+    console.log("after sessions: ", res2.docs.length, res2.errors);
+    const res3 = await payload.delete({
+      collection: "account",
+      where: {
+        id: {
+          exists: true,
+        },
+      },
+    });
+    console.log("after accounts: ", res3.docs.length, res3.errors);
+    const res = await payload.delete({
+      collection: "user",
+      where: {
+        id: {
+          exists: true,
+        },
+      },
+    });
+    console.log("after users: ", res.docs.length, res.errors);
 
-//   beforeAll(async () => {
-//     await client.mutation(api.tests.removeAll, {});
-//   });
-//   afterAll(async () => {
-//     await client.mutation(api.tests.removeAll, {});
-//   });
+    const res4 = await payload.delete({
+      collection: "verification",
+      where: {
+        id: {
+          exists: true,
+        },
+      },
+    });
+    console.log("after verification: ", res4.docs.length, res4.errors);
+  });
+}
 
-//   const adapter = convexAdapter(client);
+describe("Run BetterAuth Adapter tests", async () => {
+  const payload = await getPayload();
 
-//   await runAdapterTest({
-//     getAdapter: async (customOptions = {}) => {
-//       return adapter({ ...customOptions });
-//     },
-//     skipGenerateIdTest: true,
-//   });
-//   test("should find many with offset and limit", async () => {
-//     // At this point, `user` contains 8 rows.
-//     // offset of 2 returns 6 rows
-//     // limit of 2 returns 2 rows
-//     const res = await adapter({}).findMany({
-//       model: "user",
-//       offset: 2,
-//       limit: 2,
-//     });
-//     expect(res.length).toBe(2);
-//   });
-// });
+  deleteAll(payload);
 
-// const createTestOptions = (): BetterAuthOptions => ({
-//   user: {
-//     fields: { email: "email_address" },
-//     additionalFields: {
-//       test: {
-//         type: "string",
-//         defaultValue: "test",
-//       },
-//     },
-//   },
-//   session: {
-//     modelName: "sessions",
-//   },
-// });
+  const adapter = payloadAdapter(payload, {
+    enable_debug_logs: true,
+  });
 
-// describe("Authentication Flow Tests", async () => {
-//   const opts = createTestOptions();
-//   const testUser = {
-//     email: "test-email@email.com",
-//     password: "password",
-//     name: "Test Name",
-//   };
-//   const client = new ConvexClient(process.env.CONVEX_URL as string);
+  await runAdapterTest({
+    getAdapter: async (
+      customOptions = {
+        session: {
+          fields: {
+            userId: "user",
+          },
+        },
+        account: {
+          fields: {
+            userId: "user",
+          },
+        },
+      }
+    ) => {
+      return adapter({ ...customOptions });
+    },
+    skipGenerateIdTest: true,
+  });
+  test("should find many with offset and limit", async () => {
+    // At this point, `user` contains 8 rows.
+    // offset of 2 returns 6 rows
+    // limit of 2 returns 2 rows
+    const res = await adapter({}).findMany({
+      model: "user",
+      offset: 2,
+      limit: 2,
+    });
+    expect(res.length).toBe(2);
+  });
+});
 
-//   beforeAll(async () => {
-//     await client.mutation(api.tests.removeAll, {});
-//   });
-//   afterAll(async () => {
-//     await client.mutation(api.tests.removeAll, {});
-//   });
+const createTestOptions = (): BetterAuthOptions => ({
+  user: {
+    additionalFields: {
+      test: {
+        type: "string",
+        defaultValue: "test",
+      },
+    },
+  },
+  session: {
+    fields: {
+      userId: "user",
+    },
+  },
+  account: {
+    fields: {
+      userId: "user",
+    },
+  },
+});
 
-//   const auth = betterAuth({
-//     ...opts,
-//     database: convexAdapter(client),
-//     emailAndPassword: {
-//       enabled: true,
-//     },
-//   });
+describe("Authentication Flow Tests", async () => {
+  const opts = createTestOptions();
+  const testUser = {
+    email: "test-email@email.com",
+    password: "password",
+    name: "Test Name",
+  };
+  const payload = await getPayload();
 
-//   it("should successfully sign up a new user", async () => {
-//     const user = await auth.api.signUpEmail({ body: testUser });
-//     expect(user).toBeDefined();
-//   });
+  deleteAll(payload);
 
-//   it("should successfully sign in an existing user", async () => {
-//     await new Promise((resolve) => setTimeout(resolve, 2000));
-//     const user = await auth.api.signInEmail({ body: testUser });
-//     expect(user.user).toBeDefined();
-//   });
-// });
+  const auth = betterAuth({
+    ...opts,
+    database: payloadAdapter(payload),
+    emailAndPassword: {
+      enabled: true,
+    },
+  });
+
+  it("should successfully sign up a new user", async () => {
+    const user = await auth.api.signUpEmail({ body: testUser });
+    expect(user).toBeDefined();
+  });
+
+  it("should successfully sign in an existing user", async () => {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    const user = await auth.api.signInEmail({ body: testUser });
+    expect(user.user).toBeDefined();
+  });
+});
