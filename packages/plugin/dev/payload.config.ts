@@ -5,6 +5,9 @@ import { buildConfig } from 'payload'
 import { payloadBetterAuth } from 'payload-better-auth'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -23,7 +26,7 @@ export default buildConfig({
   db: postgresAdapter({
     disableCreateDatabase: true,
     pool: {
-      connectionString: 'postgres://forrestdevs:@localhost:5432/better-auth-payload',
+      connectionString: process.env.DATABASE_URL,
     },
     push: false,
   }),

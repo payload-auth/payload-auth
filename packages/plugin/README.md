@@ -1,5 +1,8 @@
-# Plugin
-# @payloadcms/plugin-better-auth
+> [!CAUTION]
+> This plugin is currently in beta.
+> If you encounter any issues, please report them in the [Issues](https://github.com/forrestdevs/payload-better-auth/issues) section.
+
+# @payload-better-auth/plugin
 
 A plugin for [Payload CMS](https://payloadcms.com) that integrates with [Better Auth](https://github.com/better-auth/better-auth) to provide enhanced authentication capabilities for your Payload applications.
 
@@ -10,8 +13,4 @@ A plugin for [Payload CMS](https://payloadcms.com) that integrates with [Better 
 - Compatible with Payload CMS v3
 - Works with relational databases (PostgreSQL, SQLite)
 - Type-safe authentication flows
-- Server and client components for Next.js applications
-
-## Installation
-
-
+- Server and client components for Next.js applications (COMING SOON)

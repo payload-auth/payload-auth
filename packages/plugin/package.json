@@ -3,6 +3,7 @@
   "description": "A Payload CMS plugin for Better Auth",
   "version": "1.0.0",
   "main": "src/index.ts",
+  "type": "module",
   "scripts": {
     "build": "pnpm copyfiles && pnpm build:types && pnpm build:swc",
     "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
@@ -28,11 +29,11 @@
   "author": "Forrest Devs <luke.gannon@me.com>",
   "license": "MIT",
   "devDependencies": {
-    "@payload-better-auth/adapter": "workspace:*",
     "@eslint/eslintrc": "^3.2.0",
+    "@payload-better-auth/adapter": "workspace:*",
+    "@payloadcms/admin-bar": "3.27.0",
     "@payloadcms/db-postgres": "3.27.0",
     "@payloadcms/eslint-config": "3.9.0",
-    "@payloadcms/admin-bar": "3.27.0",
     "@payloadcms/next": "3.27.0",
     "@payloadcms/richtext-lexical": "3.27.0",
     "@payloadcms/ui": "3.27.0",
@@ -46,6 +47,7 @@
     "better-auth": "^1.2.3",
     "copyfiles": "2.4.1",
     "cross-env": "^7.0.3",
+    "dotenv": "^16.4.7",
     "eslint": "9.21.0",
     "eslint-config-next": "15.2.1",
     "graphql": "^16.8.1",
@@ -63,6 +65,10 @@
   },
   "peerDependencies": {
     "better-auth": "^1.2.3",
+    "payload": "3.27.0"
+  },
+  "dependencies": {
+    "@payload-better-auth/adapter": "workspace:*",
     "payload": "3.27.0"
   },
   "engines": {
