@@ -2,18 +2,14 @@
   "name": "@payload-better-auth/plugin",
   "description": "A Payload CMS plugin for Better Auth",
   "version": "1.0.0",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "build": "pnpm copyfiles && pnpm build:types && pnpm build:swc",
+    "build": "pnpm build:types && pnpm build:swc",
     "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
     "build:types": "tsc --outDir dist --rootDir ./src",
-    "clean": "rimraf {dist,*.tsbuildinfo}",
     "copyfiles": "copyfiles -u 1 \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist/",
-    "dev": "payload run ./dev/server.ts",
-    "dev:generate-importmap": "pnpm dev:payload generate:importmap",
-    "dev:generate-types": "pnpm dev:payload generate:types",
-    "dev:payload": "cross-env PAYLOAD_CONFIG_PATH=./dev/payload.config.ts payload",
     "lint": "eslint",
     "lint:fix": "eslint ./src --fix",
     "prepublishOnly": "pnpm clean && pnpm build",
@@ -29,46 +25,18 @@
   "author": "Forrest Devs <luke.gannon@me.com>",
   "license": "MIT",
   "devDependencies": {
-    "@eslint/eslintrc": "^3.2.0",
-    "@payload-better-auth/adapter": "workspace:*",
-    "@payloadcms/admin-bar": "3.27.0",
-    "@payloadcms/db-postgres": "3.27.0",
-    "@payloadcms/eslint-config": "3.9.0",
-    "@payloadcms/next": "3.27.0",
-    "@payloadcms/richtext-lexical": "3.27.0",
-    "@payloadcms/ui": "3.27.0",
-    "@swc-node/register": "1.10.9",
+    "copyfiles": "^2.4.1",
     "@swc/cli": "0.6.0",
-    "@swc/jest": "^0.2.37",
-    "@types/jest": "29.5.12",
-    "@types/node": "^22.5.4",
-    "@types/react": "19.0.10",
-    "@types/react-dom": "19.0.4",
-    "better-auth": "^1.2.3",
-    "copyfiles": "2.4.1",
-    "cross-env": "^7.0.3",
-    "dotenv": "^16.4.7",
-    "eslint": "9.21.0",
-    "eslint-config-next": "15.2.1",
-    "graphql": "^16.8.1",
-    "jest": "29.7.0",
-    "next": "15.2.1",
-    "open": "^10.1.0",
-    "payload": "3.27.0",
-    "prettier": "3.5.3",
-    "qs-esm": "7.0.2",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "sharp": "0.33.5",
-    "sort-package-json": "3.0.0",
-    "typescript": "5.7.3"
+    "@swc/core": "1.11.8"
   },
   "peerDependencies": {
     "better-auth": "^1.2.3",
     "payload": "3.27.0"
   },
   "dependencies": {
+    "@simplewebauthn/server": "13.1.1",
     "@payload-better-auth/adapter": "workspace:*",
+    "better-auth": "^1.2.3",
     "payload": "3.27.0"
   },
   "engines": {
@@ -81,25 +49,10 @@
         "import": "./dist/index.js",
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
-      },
-      "./client": {
-        "import": "./dist/exports/client.js",
-        "types": "./dist/exports/client.d.ts",
-        "default": "./dist/exports/client.js"
-      },
-      "./rsc": {
-        "import": "./dist/exports/rsc.js",
-        "types": "./dist/exports/rsc.d.ts",
-        "default": "./dist/exports/rsc.js"
       }
     },
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "sharp"
-    ]
   },
   "registry": "https://registry.npmjs.org/"
 }

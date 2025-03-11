@@ -16,6 +16,7 @@
 /dev/.next
 .next/
 /out/
+/dev/next-env.d.ts
 
 # production
 /build

@@ -1,5 +1,4 @@
 // @ts-check
-
 import payloadEsLintConfig from '@payloadcms/eslint-config'
 
 export const defaultESLintIgnores = [
@@ -22,8 +21,8 @@ export const defaultESLintIgnores = [
   '**/temp/',
 ]
 
-export default [
-  ...payloadEsLintConfig,
+const config = [
+  // ...payloadEsLintConfig,
   {
     rules: {
       'no-restricted-exports': 'off',
@@ -51,3 +50,5 @@ export default [
     },
   },
 ]
+
+export default config

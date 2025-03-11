@@ -7,5 +7,7 @@
       "name": "pda-adapter",
       "connectString": "postgres://forrestdevs:@localhost:5432/pba-adapter"
     }
-  ]
+  ],
+  "editor.hover.enabled": true,
+  "typescript.experimental.expandableHover": true
 }

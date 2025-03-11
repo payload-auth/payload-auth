@@ -21,5 +21,10 @@
     "payload-plugin"
   ],
   "author": "forrestdevs <luke.gannon@me.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp"
+    ]
+  }
 }

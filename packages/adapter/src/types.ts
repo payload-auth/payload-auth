@@ -1,3 +1,3 @@
 export type PayloadAdapterOptions = {
-  enable_debug_logs?: boolean;
+	enable_debug_logs?: boolean;
 };

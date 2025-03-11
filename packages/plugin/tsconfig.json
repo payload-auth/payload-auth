@@ -1,14 +1,11 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2022"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "noErrorTruncation": true,
+    "skipLibCheck": true,
     "rootDir": "./",
     "allowJs": true,
-    "skipLibCheck": true,
     "strict": true,
     "esModuleInterop": true,
     "module": "NodeNext",
@@ -24,11 +21,7 @@
       {
         "name": "next"
       }
-    ],
+    ]
   },
-  "include": [
-    "./src/**/*.ts",
-    "./src/**/*.tsx",
-    "./dev/next-env.d.ts"
-  ],
+  "include": ["./src/**/*.ts", "./src/**/*.tsx"]
 }

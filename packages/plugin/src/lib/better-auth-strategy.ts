@@ -5,15 +5,14 @@ const betterAuthStrategy = (): AuthStrategy => {
   return {
     name: 'better-auth',
     authenticate: async ({ payload, headers }) => {
-      const auth = betterAuth(payload)
-      const session = await auth.api.getSession({ headers })
+      const session = await payload.betterAuth.api.getSession({ headers })
 
       if (!session) {
         return { user: null }
       }
 
       const user = await payload.findByID({
-        collection: 'users',
+        collection: 'user',
         id: session.session.userId,
       })
 
@@ -22,7 +21,7 @@ const betterAuthStrategy = (): AuthStrategy => {
         // or send null if no user should be authenticated
         user: user
           ? {
-              collection: 'users',
+              collection: 'user',
               ...user,
             }
           : null,
