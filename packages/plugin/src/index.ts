@@ -52,9 +52,4 @@ export const getPayloadBetterAuth = async <
     betterAuth: BetterAuthReturn<TPlugins>
   }
   return payload
-  // const extendedPayload = payload as BasePayload & {
-  //   betterAuth: BetterAuthReturn<TPlugins>
-  // }
-  // extendedPayload.betterAuth = payload.betterAuth as BetterAuthReturn<TPlugins>
-  // return extendedPayload
 }
