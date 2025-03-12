@@ -1,5 +1,5 @@
 {
-	"id": "277d3e31-3c2d-4a24-85c5-318591655d87",
+	"id": "7e45048f-3dce-4aec-8981-4ae4e115cfef",
 	"prevId": "00000000-0000-0000-0000-000000000000",
 	"version": "7",
 	"dialect": "postgresql",
@@ -18,7 +18,7 @@
 					"name": "name",
 					"type": "varchar",
 					"primaryKey": false,
-					"notNull": false
+					"notNull": true
 				},
 				"email": {
 					"name": "email",
@@ -30,7 +30,7 @@
 					"name": "email_verified",
 					"type": "boolean",
 					"primaryKey": false,
-					"notNull": false,
+					"notNull": true,
 					"default": false
 				},
 				"image": {
@@ -108,140 +108,6 @@
 			"checkConstraints": {},
 			"isRLSEnabled": false
 		},
-		"public.session": {
-			"name": "session",
-			"schema": "",
-			"columns": {
-				"id": {
-					"name": "id",
-					"type": "serial",
-					"primaryKey": true,
-					"notNull": true
-				},
-				"expires_at": {
-					"name": "expires_at",
-					"type": "timestamp(3) with time zone",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"token": {
-					"name": "token",
-					"type": "varchar",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"ip_address": {
-					"name": "ip_address",
-					"type": "varchar",
-					"primaryKey": false,
-					"notNull": false
-				},
-				"user_agent": {
-					"name": "user_agent",
-					"type": "varchar",
-					"primaryKey": false,
-					"notNull": false
-				},
-				"user_id": {
-					"name": "user_id",
-					"type": "integer",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"updated_at": {
-					"name": "updated_at",
-					"type": "timestamp(3) with time zone",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "now()"
-				},
-				"created_at": {
-					"name": "created_at",
-					"type": "timestamp(3) with time zone",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "now()"
-				}
-			},
-			"indexes": {
-				"session_token_idx": {
-					"name": "session_token_idx",
-					"columns": [
-						{
-							"expression": "token",
-							"isExpression": false,
-							"asc": true,
-							"nulls": "last"
-						}
-					],
-					"isUnique": true,
-					"concurrently": false,
-					"method": "btree",
-					"with": {}
-				},
-				"session_user_idx": {
-					"name": "session_user_idx",
-					"columns": [
-						{
-							"expression": "user_id",
-							"isExpression": false,
-							"asc": true,
-							"nulls": "last"
-						}
-					],
-					"isUnique": false,
-					"concurrently": false,
-					"method": "btree",
-					"with": {}
-				},
-				"session_updated_at_idx": {
-					"name": "session_updated_at_idx",
-					"columns": [
-						{
-							"expression": "updated_at",
-							"isExpression": false,
-							"asc": true,
-							"nulls": "last"
-						}
-					],
-					"isUnique": false,
-					"concurrently": false,
-					"method": "btree",
-					"with": {}
-				},
-				"session_created_at_idx": {
-					"name": "session_created_at_idx",
-					"columns": [
-						{
-							"expression": "created_at",
-							"isExpression": false,
-							"asc": true,
-							"nulls": "last"
-						}
-					],
-					"isUnique": false,
-					"concurrently": false,
-					"method": "btree",
-					"with": {}
-				}
-			},
-			"foreignKeys": {
-				"session_user_id_user_id_fk": {
-					"name": "session_user_id_user_id_fk",
-					"tableFrom": "session",
-					"tableTo": "user",
-					"columnsFrom": ["user_id"],
-					"columnsTo": ["id"],
-					"onDelete": "set null",
-					"onUpdate": "no action"
-				}
-			},
-			"compositePrimaryKeys": {},
-			"uniqueConstraints": {},
-			"policies": {},
-			"checkConstraints": {},
-			"isRLSEnabled": false
-		},
 		"public.account": {
 			"name": "account",
 			"schema": "",
@@ -254,15 +120,15 @@
 				},
 				"account_id": {
 					"name": "account_id",
-					"type": "varchar",
+					"type": "numeric",
 					"primaryKey": false,
-					"notNull": false
+					"notNull": true
 				},
 				"provider_id": {
 					"name": "provider_id",
 					"type": "varchar",
 					"primaryKey": false,
-					"notNull": true
+					"notNull": false
 				},
 				"user_id": {
 					"name": "user_id",
@@ -473,6 +339,140 @@
 			"checkConstraints": {},
 			"isRLSEnabled": false
 		},
+		"public.session": {
+			"name": "session",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp(3) with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"token": {
+					"name": "token",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"ip_address": {
+					"name": "ip_address",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"user_agent": {
+					"name": "user_agent",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp(3) with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp(3) with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"session_token_idx": {
+					"name": "session_token_idx",
+					"columns": [
+						{
+							"expression": "token",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"session_user_idx": {
+					"name": "session_user_idx",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"session_updated_at_idx": {
+					"name": "session_updated_at_idx",
+					"columns": [
+						{
+							"expression": "updated_at",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"session_created_at_idx": {
+					"name": "session_created_at_idx",
+					"columns": [
+						{
+							"expression": "created_at",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"session_user_id_user_id_fk": {
+					"name": "session_user_id_user_id_fk",
+					"tableFrom": "session",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "set null",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
 		"public.payload_locked_documents": {
 			"name": "payload_locked_documents",
 			"schema": "",
@@ -592,12 +592,6 @@
 					"primaryKey": false,
 					"notNull": false
 				},
-				"session_id": {
-					"name": "session_id",
-					"type": "integer",
-					"primaryKey": false,
-					"notNull": false
-				},
 				"account_id": {
 					"name": "account_id",
 					"type": "integer",
@@ -606,6 +600,12 @@
 				},
 				"verification_id": {
 					"name": "verification_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"session_id": {
+					"name": "session_id",
 					"type": "integer",
 					"primaryKey": false,
 					"notNull": false
@@ -672,21 +672,6 @@
 					"method": "btree",
 					"with": {}
 				},
-				"payload_locked_documents_rels_session_id_idx": {
-					"name": "payload_locked_documents_rels_session_id_idx",
-					"columns": [
-						{
-							"expression": "session_id",
-							"isExpression": false,
-							"asc": true,
-							"nulls": "last"
-						}
-					],
-					"isUnique": false,
-					"concurrently": false,
-					"method": "btree",
-					"with": {}
-				},
 				"payload_locked_documents_rels_account_id_idx": {
 					"name": "payload_locked_documents_rels_account_id_idx",
 					"columns": [
@@ -707,6 +692,21 @@
 					"columns": [
 						{
 							"expression": "verification_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"payload_locked_documents_rels_session_id_idx": {
+					"name": "payload_locked_documents_rels_session_id_idx",
+					"columns": [
+						{
+							"expression": "session_id",
 							"isExpression": false,
 							"asc": true,
 							"nulls": "last"
@@ -737,15 +737,6 @@
 					"onDelete": "cascade",
 					"onUpdate": "no action"
 				},
-				"payload_locked_documents_rels_session_fk": {
-					"name": "payload_locked_documents_rels_session_fk",
-					"tableFrom": "payload_locked_documents_rels",
-					"tableTo": "session",
-					"columnsFrom": ["session_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
-					"onUpdate": "no action"
-				},
 				"payload_locked_documents_rels_account_fk": {
 					"name": "payload_locked_documents_rels_account_fk",
 					"tableFrom": "payload_locked_documents_rels",
@@ -760,6 +751,15 @@
 					"tableFrom": "payload_locked_documents_rels",
 					"tableTo": "verification",
 					"columnsFrom": ["verification_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"payload_locked_documents_rels_session_fk": {
+					"name": "payload_locked_documents_rels_session_fk",
+					"tableFrom": "payload_locked_documents_rels",
+					"tableTo": "session",
+					"columnsFrom": ["session_id"],
 					"columnsTo": ["id"],
 					"onDelete": "cascade",
 					"onUpdate": "no action"

@@ -141,32 +141,10 @@ describe("Run BetterAuth Adapter tests", async () => {
 	});
 });
 
-const createTestOptions = (): BetterAuthOptions => ({
-	user: {
-		additionalFields: {
-			test: {
-				type: "string",
-				defaultValue: "test",
-			},
-		},
-	},
-	session: {
-		fields: {
-			userId: "user",
-		},
-	},
-	account: {
-		fields: {
-			userId: "user",
-		},
-	},
-});
-
 describe("Authentication Flow Tests", async () => {
-	const opts = createTestOptions();
 	const testUser = {
 		email: "test-email@email.com",
-		password: "password",
+		password: "password12345",
 		name: "Test Name",
 	};
 	const payload = await getPayload();
@@ -174,21 +152,44 @@ describe("Authentication Flow Tests", async () => {
 	deleteAll(payload);
 
 	const auth = betterAuth({
-		...opts,
-		database: payloadAdapter(payload),
+		database: payloadAdapter(payload, {
+			enable_debug_logs: true,
+		}),
 		emailAndPassword: {
 			enabled: true,
+		},
+		session: {
+			fields: {
+				userId: "user",
+			},
+		},
+		account: {
+			fields: {
+				userId: "user",
+			},
 		},
 	});
 
 	it("should successfully sign up a new user", async () => {
-		const user = await auth.api.signUpEmail({ body: testUser });
+		const user = await auth.api.signUpEmail({
+			body: {
+				email: testUser.email,
+				password: testUser.password,
+				name: testUser.name,
+			},
+		});
 		expect(user).toBeDefined();
 	});
 
 	it("should successfully sign in an existing user", async () => {
 		await new Promise((resolve) => setTimeout(resolve, 2000));
-		const user = await auth.api.signInEmail({ body: testUser });
+		const user = await auth.api.signInEmail({
+			body: {
+				email: testUser.email,
+				password: testUser.password,
+			},
+		});
+
 		expect(user.user).toBeDefined();
 	});
 });

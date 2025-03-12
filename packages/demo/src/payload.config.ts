@@ -17,6 +17,7 @@ import {
   openAPI,
   oidcProvider,
   customSession,
+  BetterAuthPlugin,
 } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { passkey } from "better-auth/plugins/passkey";
@@ -27,121 +28,6 @@ const dirname = path.dirname(filename);
 if (!process.env.ROOT_DIR) {
   process.env.ROOT_DIR = dirname;
 }
-
-const plugins = [
-  payloadBetterAuth({
-    betterAuthOptions: {
-      appName: "payload-better-auth",
-      enable_debug_logs: true,
-      emailAndPassword: {
-        enabled: true,
-        async sendResetPassword({ user, url }) {
-          console.log("Send reset password for user: ", user, url);
-        },
-      },
-      socialProviders: {
-        google: {
-          clientId: process.env.GOOGLE_CLIENT_ID as string,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-        },
-      },
-      emailVerification: {
-        async sendVerificationEmail({ user, url }) {
-          console.log("Send verification email for user: ", user, url);
-        },
-      },
-      plugins: [
-        organization({
-          schema: {
-            member: {
-              fields: {
-                organizationId: "organization",
-                userId: "user",
-              },
-            },
-            invitation: {
-              fields: {
-                organizationId: "organization",
-                inviterId: "inviter",
-              },
-            },
-          },
-          async sendInvitationEmail(data) {
-            console.log("Send invite for org: ", data);
-          },
-        }),
-        twoFactor({
-          schema: {
-            twoFactor: {
-              fields: {
-                userId: "user",
-              },
-            },
-          },
-          otpOptions: {
-            async sendOTP({ user, otp }) {
-              console.log("Send OTP for user: ", user, otp);
-            },
-          },
-        }),
-        passkey({
-          schema: {
-            passkey: {
-              fields: {
-                userId: "user",
-              },
-            },
-          },
-        }),
-        openAPI(),
-        bearer(),
-        admin({
-          adminUserIds: [],
-          schema: {
-            session: {
-              fields: {
-                impersonatedBy: "user",
-              },
-            },
-          },
-        }),
-        multiSession(),
-        oAuthProxy(),
-        oidcProvider({
-          loginPage: "/sign-in",
-        }),
-        oneTap(),
-        nextCookies(),
-      ],
-      user: {
-        modelName: "user",
-        additionalFields: {},
-      },
-      session: {
-        modelName: "session",
-        fields: {
-          userId: "user",
-        },
-        cookieCache: {
-          enabled: true,
-          maxAge: 5 * 60, // Cache duration in seconds
-        },
-      },
-      account: {
-        modelName: "account",
-        fields: {
-          userId: "user",
-        },
-        accountLinking: {
-          trustedProviders: ["google", "github", "demo-app"],
-        },
-      },
-      verification: {
-        modelName: "verification-token",
-      },
-    },
-  }),
-];
 
 const baPlugins = [
   organization({
@@ -159,6 +45,7 @@ const baPlugins = [
         },
       },
     },
+
     async sendInvitationEmail(data) {
       console.log("Send invite for org: ", data);
     },
@@ -205,7 +92,60 @@ const baPlugins = [
   }),
   oneTap(),
   nextCookies(),
-] as const;
+];
+
+const plugins = [
+  payloadBetterAuth({
+    betterAuthOptions: {
+      appName: "payload-better-auth",
+      enable_debug_logs: true,
+      emailAndPassword: {
+        enabled: true,
+        async sendResetPassword({ user, url }) {
+          console.log("Send reset password for user: ", user, url);
+        },
+      },
+      socialProviders: {
+        google: {
+          clientId: process.env.GOOGLE_CLIENT_ID as string,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+        },
+      },
+      emailVerification: {
+        async sendVerificationEmail({ user, url }) {
+          console.log("Send verification email for user: ", user, url);
+        },
+      },
+      plugins: baPlugins,
+      user: {
+        modelName: "user",
+        additionalFields: {},
+      },
+      session: {
+        modelName: "session",
+        fields: {
+          userId: "user",
+        },
+        cookieCache: {
+          enabled: true,
+          maxAge: 5 * 60, // Cache duration in seconds
+        },
+      },
+      account: {
+        modelName: "account",
+        fields: {
+          userId: "user",
+        },
+        accountLinking: {
+          trustedProviders: ["google", "github", "demo-app"],
+        },
+      },
+      verification: {
+        modelName: "verification-token",
+      },
+    },
+  }),
+];
 
 export default buildConfig({
   admin: {

@@ -8,7 +8,8 @@
 	"scripts": {
 		"test": "vitest",
 		"build": "biome format --write && tsc",
-		"format": "biome format --write"
+		"format": "biome format --write",
+		"payload": "cross-env PAYLOAD_SECRET=secret payload"
 	},
 	"repository": {
 		"type": "git",

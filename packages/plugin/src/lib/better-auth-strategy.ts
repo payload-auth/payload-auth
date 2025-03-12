@@ -1,11 +1,13 @@
 import type { AuthStrategy } from 'payload'
-import { betterAuth } from './better-auth.js'
+import { getPayloadBetterAuth } from 'src/index.js'
 
 const betterAuthStrategy = (): AuthStrategy => {
   return {
     name: 'better-auth',
     authenticate: async ({ payload, headers }) => {
-      const session = await payload.betterAuth.api.getSession({ headers })
+      const config = payload.config
+      const payloadAuth = await getPayloadBetterAuth(config)
+      const session = await payloadAuth.betterAuth.api.getSession({ headers })
 
       if (!session) {
         return { user: null }

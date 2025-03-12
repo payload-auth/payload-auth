@@ -74,13 +74,12 @@ const Account: CollectionConfig = {
 	fields: [
 		{
 			name: "accountId",
-			type: "text",
+			type: "number",
 			required: true,
 		},
 		{
 			name: "providerId",
 			type: "text",
-			required: true,
 		},
 		{
 			name: "userId",
@@ -208,4 +207,6 @@ const Media: CollectionConfig = {
 	},
 } as const;
 
-export { User, Session, Account, Verification, Media };
+const collections = [User, Session, Account, Verification, Media];
+
+export { collections };

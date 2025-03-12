@@ -103,13 +103,25 @@ export const createTransform = (options: BetterAuthOptions) => {
 			if (data[dataField] === undefined && action === "update") {
 				continue;
 			}
-			const updatedField = schemaFields[dataField]?.fieldName;
+			const updatedFieldName = schemaFields[dataField]?.fieldName;
 
-			if (updatedField) {
-				if (typeof data[dataField] === "string" && dataField.endsWith("Id")) {
-					transformedData[updatedField] = parseInt(data[dataField]);
+			if (updatedFieldName) {
+				if (
+					options[model as keyof BetterAuthOptions]?.fields &&
+					dataField in (options[model as keyof BetterAuthOptions]?.fields || {})
+				) {
+					if (typeof data[dataField] === "string" && dataField.endsWith("Id")) {
+						transformedData[updatedFieldName] = parseInt(data[dataField]);
+					} else {
+						transformedData[updatedFieldName] = data[dataField];
+					}
+				} else if (
+					typeof data[dataField] === "string" &&
+					dataField.endsWith("Id")
+				) {
+					transformedData[updatedFieldName] = parseInt(data[dataField]);
 				} else {
-					transformedData[updatedField] = data[dataField];
+					transformedData[updatedFieldName] = data[dataField];
 				}
 			} else {
 				transformedData[dataField] = data[dataField];
@@ -144,6 +156,24 @@ export const createTransform = (options: BetterAuthOptions) => {
 					const newKey = `${key}Ids`;
 					result[newKey] = value.map((item) => item.id);
 				}
+			}
+		});
+
+		// Scan for date fields and convert them to Date objects
+		Object.entries(result).forEach(([key, value]) => {
+			// Check if the field is a date string (ISO format)
+			if (
+				typeof value === "string" &&
+				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/.test(value)
+			) {
+				result[key] = new Date(value);
+			} else if (
+				// Also check for date-like field names
+				(key.endsWith("At") || key.endsWith("Date") || key === "date") &&
+				typeof value === "string" &&
+				!isNaN(Date.parse(value))
+			) {
+				result[key] = new Date(value);
 			}
 		});
 

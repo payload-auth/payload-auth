@@ -7,26 +7,28 @@ import getPayload from "@/lib/getPayload";
 
 export default async function DashboardPage() {
   const payload = await getPayload();
+  const awaitedHeaders = await headers();
 
   const [session, activeSessions, deviceSessions, organization] =
     await Promise.all([
       payload.betterAuth.api.getSession({
-        headers: await headers(),
+        headers: awaitedHeaders,
       }),
       payload.betterAuth.api.listSessions({
-        headers: await headers(),
+        headers: awaitedHeaders,
       }),
       payload.betterAuth.api.listDeviceSessions({
-        headers: await headers(),
+        headers: awaitedHeaders,
       }),
       payload.betterAuth.api.getFullOrganization({
-        headers: await headers(),
+        headers: awaitedHeaders,
       }),
     ]).catch((e) => {
       throw redirect("/sign-in");
     });
 
-  console.log(activeSessions, deviceSessions, organization);
+  console.log(organization);
+
   return (
     <div className="w-full">
       <div className="flex gap-4 flex-col">

@@ -10,7 +10,7 @@ export const payloadConfig = buildConfig({
 	admin: {
 		user: "user",
 	},
-	secret: process.env.PAYLOAD_SECRET || "super-secret-payload-key",
+	secret: "super-secret-payload-key",
 	db: postgresAdapter({
 		pool: {
 			connectionString: process.env.DATABASE_URL,
@@ -31,6 +31,7 @@ export const payloadConfig = buildConfig({
 				{
 					name: "name",
 					type: "text",
+					required: true,
 				},
 				{
 					name: "email",
@@ -41,45 +42,11 @@ export const payloadConfig = buildConfig({
 				{
 					name: "emailVerified",
 					type: "checkbox",
-					defaultValue: false,
+					required: true,
 				},
 				{
 					name: "image",
 					type: "text",
-				},
-			],
-			timestamps: true,
-		},
-		{
-			slug: "session",
-			admin: {
-				useAsTitle: "expiresAt",
-			},
-			fields: [
-				{
-					name: "expiresAt",
-					type: "date",
-					required: true,
-				},
-				{
-					name: "token",
-					type: "text",
-					required: true,
-					unique: true,
-				},
-				{
-					name: "ipAddress",
-					type: "text",
-				},
-				{
-					name: "userAgent",
-					type: "text",
-				},
-				{
-					name: "user",
-					type: "relationship",
-					required: true,
-					relationTo: "user",
 				},
 			],
 			timestamps: true,
@@ -92,12 +59,12 @@ export const payloadConfig = buildConfig({
 			fields: [
 				{
 					name: "accountId",
-					type: "text",
+					type: "number",
+					required: true,
 				},
 				{
 					name: "providerId",
 					type: "text",
-					required: true,
 				},
 				{
 					name: "user",
@@ -160,9 +127,45 @@ export const payloadConfig = buildConfig({
 			],
 			timestamps: true,
 		},
+		{
+			slug: "session",
+			admin: {
+				useAsTitle: "expiresAt",
+			},
+			fields: [
+				{
+					name: "expiresAt",
+					type: "date",
+					required: true,
+				},
+				{
+					name: "token",
+					type: "text",
+					required: true,
+					unique: true,
+				},
+				{
+					name: "ipAddress",
+					type: "text",
+				},
+				{
+					name: "userAgent",
+					type: "text",
+				},
+				{
+					name: "user",
+					type: "relationship",
+					required: true,
+					relationTo: "user",
+				},
+			],
+			timestamps: true,
+		},
 	],
 });
 
 export async function getPayload() {
 	return await getPayloadBase({ config: payloadConfig });
 }
+
+export default payloadConfig;

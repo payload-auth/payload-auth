@@ -2,6 +2,8 @@ import type {
 	Adapter,
 	AdapterInstance,
 	BetterAuthOptions,
+	InferSession,
+	Prettify,
 	Where,
 } from "better-auth";
 import { BetterAuthError } from "better-auth";
@@ -53,9 +55,9 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
 			}): Promise<R> {
 				const start = Date.now();
 				const { model, data: values, select } = data;
-				debugLog(["create", { model, values, select }]);
 				const collectionSlug = getModelName(model);
 				const transformed = transformInput(values, model, "create");
+				debugLog(["create", { model, transformed, select }]);
 				try {
 					if (!collectionSlug || !(collectionSlug in payload.collections)) {
 						collectionSlugError(model);
@@ -68,11 +70,15 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
 					const transformedResult = transformOutput(result);
 					debugLog([
 						"create result",
-						{ result, duration: `${Date.now() - start}ms` },
+						{
+							collectionSlug,
+							transformedResult,
+							duration: `${Date.now() - start}ms`,
+						},
 					]);
 					return transformedResult as R;
 				} catch (error) {
-					errorLog(["Error in creating: ", model, error]);
+					errorLog(["Error in creating:", model, error]);
 					return null as R;
 				}
 			},
@@ -111,7 +117,11 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
 					const transformedResult = transformOutput(result) ?? null;
 					debugLog([
 						"findOne result",
-						{ result, duration: `${Date.now() - start}ms` },
+						{
+							collectionSlug,
+							transformedResult,
+							duration: `${Date.now() - start}ms`,
+						},
 					]);
 					return transformedResult as T;
 				} catch (error) {
@@ -178,7 +188,11 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
 						result?.docs.map((doc) => transformOutput(doc)) ?? null;
 					debugLog([
 						"findMany result",
-						{ transformedResult, duration: `${Date.now() - start}ms` },
+						{
+							collectionSlug,
+							transformedResult,
+							duration: `${Date.now() - start}ms`,
+						},
 					]);
 					return transformedResult as T[];
 				} catch (error) {
@@ -220,7 +234,11 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
 					const transformedResult = transformOutput(result) ?? null;
 					debugLog([
 						"update result",
-						{ result, duration: `${Date.now() - start}ms` },
+						{
+							collectionSlug,
+							transformedResult,
+							duration: `${Date.now() - start}ms`,
+						},
 					]);
 					return transformedResult as T;
 				} catch (error) {
@@ -249,7 +267,11 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
 					});
 					debugLog([
 						"updateMany result",
-						{ result: updateResult, duration: `${Date.now() - start}ms` },
+						{
+							collectionSlug,
+							result: updateResult,
+							duration: `${Date.now() - start}ms`,
+						},
 					]);
 					return updateResult?.length || 0;
 				} catch (error) {
@@ -287,7 +309,11 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
 					}
 					debugLog([
 						"delete result",
-						{ result: deleteResult, duration: `${Date.now() - start}ms` },
+						{
+							collectionSlug,
+							result: deleteResult,
+							duration: `${Date.now() - start}ms`,
+						},
 					]);
 					return;
 				} catch (error) {
@@ -314,7 +340,11 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
 					});
 					debugLog([
 						"deleteMany result",
-						{ result: deleteResult, duration: `${Date.now() - start}ms` },
+						{
+							collectionSlug,
+							result: deleteResult,
+							duration: `${Date.now() - start}ms`,
+						},
 					]);
 
 					return deleteResult.docs.length;
@@ -340,6 +370,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
 					debugLog([
 						"count result",
 						{
+							collectionSlug,
 							result: { totalDocs: result.totalDocs },
 							duration: `${Date.now() - start}ms`,
 						},
