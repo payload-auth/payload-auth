@@ -4,10 +4,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build:plugin": "pnpm run build --workspace=@payload-better-auth/plugin",
-    "build:adapter": "pnpm run build --workspace=@payload-better-auth/adapter",
-    "test:plugin": "pnpm run test --workspace=@payload-better-auth/plugin",
-    "test:adapter": "pnpm run test --workspace=@payload-better-auth/adapter",
+    "build:plugin": "pnpm run build --workspace=@payload-auth/payload-plugin",
+    "build:adapter": "pnpm run build --workspace=@payload-auth/db-adapter",
+    "test:plugin": "pnpm run test --workspace=@payload-auth/payload-plugin",
+    "test:adapter": "pnpm run test --workspace=@payload-auth/db-adapter",
     "build": "pnpm run build --workspaces",
     "test": "pnpm run test --workspaces"
   },

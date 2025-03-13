@@ -1,0 +1,60 @@
+{
+  "name": "@payload-auth/better-auth-plugin",
+  "scope": "payload-auth",
+  "description": "A Payload CMS plugin for Better Auth",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm build:types && pnpm build:swc",
+    "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
+    "build:types": "tsc --outDir dist --rootDir ./src",
+    "copyfiles": "copyfiles -u 1 \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist/",
+    "lint": "eslint",
+    "lint:fix": "eslint ./src --fix",
+    "prepublishOnly": "pnpm clean && pnpm build",
+    "test": "jest"
+  },
+  "keywords": [
+    "payload-cms",
+    "better-auth",
+    "plugin",
+    "authentication",
+    "payload-plugin"
+  ],
+  "author": "Forrest Devs <luke.gannon@me.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "copyfiles": "^2.4.1",
+    "@swc/cli": "0.6.0",
+    "@swc/core": "1.11.8",
+    "typescript": "5.8.2"
+  },
+  "peerDependencies": {
+    "better-auth": "^1.2.3",
+    "payload": "3.28.1"
+  },
+  "dependencies": {
+    "@simplewebauthn/server": "13.1.1",
+    "@payload-auth/better-auth-db-adapter": "1.0.4",
+    "better-auth": "^1.2.3",
+    "payload": "3.28.1"
+  },
+  "engines": {
+    "node": "^18.20.2 || >=20.9.0",
+    "pnpm": "^9"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "import": "./dist/index.js",
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "registry": "https://registry.npmjs.org/"
+}

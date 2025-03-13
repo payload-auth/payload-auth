@@ -1,0 +1,12 @@
+
+.prettierrc.json
+.gitignore
+.swcrc
+eslint.config.json
+.DS_Store
+.env
+.env.local
+jest.config.js
+tsconfig.json
+node_modules
+src

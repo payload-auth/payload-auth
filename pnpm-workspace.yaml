@@ -1,4 +1,4 @@
 packages:
-  - "packages/adapter"
-  - "packages/plugin"
+  - "packages/db-adapter"
+  - "packages/payload-plugin"
   - "packages/demo"

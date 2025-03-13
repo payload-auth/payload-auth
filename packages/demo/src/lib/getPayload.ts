@@ -1,9 +1,9 @@
 "use server";
 
 import configPromise from "@payload-config";
-import { getPayloadBetterAuth } from "@payload-better-auth/plugin";
-import { MyPlugins } from "@payload-config";
+import { getPayloadBetterAuth } from "@payload-auth/better-auth-plugin";
+import { BetterAuthPlugins } from "@/payload/plugins";
 
-const getPayload = () => getPayloadBetterAuth<MyPlugins>(configPromise);
+const getPayload = () => getPayloadBetterAuth<BetterAuthPlugins>(configPromise);
 
 export default getPayload;

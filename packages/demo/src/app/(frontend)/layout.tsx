@@ -32,7 +32,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <PayloadAdminBar />
         <Wrapper>
           <WrapperWithQuery>{children}</WrapperWithQuery>
         </Wrapper>
