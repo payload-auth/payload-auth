@@ -511,7 +511,7 @@ export function buildCollectionConfigs({
         const organizationCollection: CollectionConfig = {
           slug: betterAuthPluginSlugs.organizations,
           admin: {
-            hidden: pluginOptions.hide_plugin_collections ?? false,
+            hidden: pluginOptions.hidePluginCollections ?? false,
             useAsTitle: 'name',
             description:
               'Organizations are groups of users that share access to certain resources.',
@@ -561,7 +561,7 @@ export function buildCollectionConfigs({
         const memberCollection: CollectionConfig = {
           slug: betterAuthPluginSlugs.members,
           admin: {
-            hidden: pluginOptions.hide_plugin_collections ?? false,
+            hidden: pluginOptions.hidePluginCollections ?? false,
             useAsTitle: 'organization',
             description: 'Members of an organization.',
           },
@@ -619,7 +619,7 @@ export function buildCollectionConfigs({
         const invitationCollection: CollectionConfig = {
           slug: betterAuthPluginSlugs.invitations,
           admin: {
-            hidden: pluginOptions.hide_plugin_collections ?? false,
+            hidden: pluginOptions.hidePluginCollections ?? false,
             useAsTitle: 'email',
             description: 'Invitations to join an organization',
           },
@@ -698,7 +698,7 @@ export function buildCollectionConfigs({
         const teamCollection: CollectionConfig = {
           slug: betterAuthPluginSlugs.teams,
           admin: {
-            hidden: pluginOptions.hide_plugin_collections ?? false,
+            hidden: pluginOptions.hidePluginCollections ?? false,
             useAsTitle: 'name',
             description: 'Teams are groups of users that share access to certain resources.',
           },
@@ -732,7 +732,7 @@ export function buildCollectionConfigs({
         const jwksCollection: CollectionConfig = {
           slug: betterAuthPluginSlugs.jwks,
           admin: {
-            hidden: pluginOptions.hide_plugin_collections ?? false,
+            hidden: pluginOptions.hidePluginCollections ?? false,
             useAsTitle: 'publicKey',
             description: 'JWKS are used to verify the signature of the JWT token',
           },
@@ -765,7 +765,7 @@ export function buildCollectionConfigs({
         const apiKeyCollection: CollectionConfig = {
           slug: betterAuthPluginSlugs.apiKeys,
           admin: {
-            hidden: pluginOptions.hide_plugin_collections ?? false,
+            hidden: pluginOptions.hidePluginCollections ?? false,
             useAsTitle: 'name',
             description: 'API keys are used to authenticate requests to the API.',
           },
@@ -949,7 +949,7 @@ export function buildCollectionConfigs({
         const twoFactorCollection: CollectionConfig = {
           slug: betterAuthPluginSlugs.twoFactors,
           admin: {
-            hidden: pluginOptions.hide_plugin_collections ?? false,
+            hidden: pluginOptions.hidePluginCollections ?? false,
             useAsTitle: 'secret',
             description: 'Two factor authentication secrets',
           },
@@ -995,7 +995,7 @@ export function buildCollectionConfigs({
         const oauthAccessTokenCollection: CollectionConfig = {
           slug: betterAuthPluginSlugs.oauthAccessTokens,
           admin: {
-            hidden: pluginOptions.hide_plugin_collections ?? false,
+            hidden: pluginOptions.hidePluginCollections ?? false,
             useAsTitle: 'accessToken',
             description: 'OAuth access tokens for custom OAuth clients',
           },
@@ -1081,7 +1081,7 @@ export function buildCollectionConfigs({
         const oauthApplicationCollection: CollectionConfig = {
           slug: betterAuthPluginSlugs.oauthApplications,
           admin: {
-            hidden: pluginOptions.hide_plugin_collections ?? false,
+            hidden: pluginOptions.hidePluginCollections ?? false,
             useAsTitle: 'name',
             description: 'OAuth applications are custom OAuth clients',
           },
@@ -1183,7 +1183,7 @@ export function buildCollectionConfigs({
         const oauthConsentCollection: CollectionConfig = {
           slug: betterAuthPluginSlugs.oauthConsents,
           admin: {
-            hidden: pluginOptions.hide_plugin_collections ?? false,
+            hidden: pluginOptions.hidePluginCollections ?? false,
             description: 'OAuth consents are used to store user consents for OAuth clients',
           },
           fields: [
@@ -1239,7 +1239,7 @@ export function buildCollectionConfigs({
         const passkeyCollection: CollectionConfig = {
           slug: betterAuthPluginSlugs.passkeys,
           admin: {
-            hidden: pluginOptions.hide_plugin_collections ?? false,
+            hidden: pluginOptions.hidePluginCollections ?? false,
             useAsTitle: 'name',
             description: 'Passkeys are used to authenticate users',
           },
@@ -1336,7 +1336,7 @@ export function buildCollectionConfigs({
         const ssoProviderCollection: CollectionConfig = {
           slug: betterAuthPluginSlugs.ssoProviders,
           admin: {
-            hidden: pluginOptions.hide_plugin_collections ?? false,
+            hidden: pluginOptions.hidePluginCollections ?? false,
             useAsTitle: 'issuer',
             description: 'SSO providers are used to authenticate users with an external provider',
           },

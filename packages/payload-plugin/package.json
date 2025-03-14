@@ -4,12 +4,34 @@
   "description": "A Payload CMS plugin for Better Auth",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types.js",
+      "types": "./dist/types.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/index.d.ts"
+      ],
+      "types": [
+        "dist/types.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "build": "pnpm build:types && pnpm build:swc",
     "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
-    "build:types": "tsc --outDir dist --rootDir ./src",
+    "build:types": "tsc --project tsconfig.json",
+    "clean": "rimraf dist",
     "lint": "eslint",
     "lint:fix": "eslint ./src --fix",
     "prepublishOnly": "pnpm clean && pnpm build",
@@ -42,23 +64,6 @@
   "engines": {
     "node": "^18.20.2 || >=20.9.0",
     "pnpm": "^9"
-  },
-  "publishConfig": {
-    "exports": {
-      ".": {
-        "import": "./dist/index.js",
-        "types": [
-          "./dist/index.d.ts",
-          "./dist/types.d.ts"
-        ],
-        "default": "./dist/index.js"
-      }
-    },
-    "main": "./dist/index.js",
-    "types": [
-      "./dist/index.d.ts",
-      "./dist/types.d.ts"
-    ]
   },
   "registry": "https://registry.npmjs.org/"
 }

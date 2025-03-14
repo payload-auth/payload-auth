@@ -12,6 +12,9 @@ import { buildCollectionConfigs } from './lib/build-collection-configs.js'
 import { payloadAdapter } from '@payload-auth/better-auth-db-adapter'
 import { betterAuth } from 'better-auth'
 
+// Re-export all types for easy consumption
+export * from './types.js'
+
 function initBetterAuth<P extends TPlugins>({
   payload,
   options,
@@ -22,7 +25,7 @@ function initBetterAuth<P extends TPlugins>({
   const auth = betterAuth({
     ...options,
     database: payloadAdapter(payload, {
-      enable_debug_logs: options.enable_debug_logs ?? false,
+      enable_debug_logs: options.enableDebugLogs ?? false,
     }),
   })
 
@@ -43,7 +46,7 @@ export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions)
 
     // Determine which collections to add based on the options and plugins
     const requiredCollectionSlugs = getRequiredCollectionSlugs({
-      enable_debug_logs: pluginOptions.enable_debug_logs ?? false,
+      enable_debug_logs: pluginOptions.enableDebugLogs ?? false,
       pluginOptions,
       sanitizedBAOptions: sanitzedBetterAuthOptions,
     })
@@ -85,7 +88,7 @@ export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions)
         payload,
         options: {
           ...sanitzedBetterAuthOptions,
-          enable_debug_logs: pluginOptions.enable_debug_logs,
+          enableDebugLogs: pluginOptions.enableDebugLogs,
           plugins: [...(sanitzedBetterAuthOptions.plugins ?? [])],
         },
       })

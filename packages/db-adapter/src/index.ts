@@ -13,7 +13,7 @@ import type { PayloadAdapter } from "./types";
 
 const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
 	function debugLog(message: any[]) {
-		if (config.enable_debug_logs) {
+		if (config.enableDebugLogs) {
 			console.log(`[payload-db-adapter]`, ...message);
 		}
 	}
@@ -386,7 +386,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
 				};
 			},
 			options: {
-				enable_debug_logs: config.enable_debug_logs,
+				enableDebugLogs: config.enableDebugLogs,
 			},
 		};
 	};

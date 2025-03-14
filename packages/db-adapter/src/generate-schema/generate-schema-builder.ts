@@ -28,22 +28,22 @@ export const generateSchemaBuilderStage = async ({
 	code: string;
 	BAOptions: BetterAuthOptions;
 }) => {
-	const formatted_code = await format(code, { filepath: "schema.ts" });
+	const formattedCode = await format(code, { filepath: "schema.ts" });
 
-	const { post, collections } = parse_existing_schema(formatted_code);
+	const { post, collections } = parseExistingSchema(formattedCode);
 
-	const payload_schema_str = generate_payload_collection_configs({
+	const payloadSchemaStr = generatePayloadCollectionConfigs({
 		options: BAOptions,
 		collections,
 		exports: post,
 	});
 
-	return await format(`${payload_schema_str}`, {
+	return await format(`${payloadSchemaStr}`, {
 		filepath: "schema.ts",
 	});
 };
 
-function parse_existing_schema(code: string): {
+function parseExistingSchema(code: string): {
 	collections: CollectionConfig[];
 	post: string;
 } {
@@ -131,7 +131,7 @@ function parse_existing_schema(code: string): {
 	return { collections, post };
 }
 
-function generate_payload_collection_configs({
+function generatePayloadCollectionConfigs({
 	options,
 	collections,
 	exports,

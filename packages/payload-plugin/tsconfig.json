@@ -4,7 +4,8 @@
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "noErrorTruncation": true,
     "skipLibCheck": true,
-    "rootDir": "./",
+    "rootDir": "./src",
+    "outDir": "./dist",
     "allowJs": true,
     "strict": true,
     "esModuleInterop": true,
@@ -17,6 +18,8 @@
     "emitDeclarationOnly": true,
     "target": "ES2022",
     "composite": true,
+    "declaration": true,
+    "declarationMap": true,
     "plugins": [
       {
         "name": "next"

@@ -1,18 +1,15 @@
 import type { Plugin } from "payload";
 import {
   payloadBetterAuth,
-  PayloadBetterAuthOptions,
+  type PayloadBetterAuthOptions,
 } from "@payload-auth/better-auth-plugin";
 import {
-  bearer,
   admin,
   multiSession,
   organization,
   twoFactor,
   oneTap,
-  oAuthProxy,
   openAPI,
-  oidcProvider,
   username,
   anonymous,
   phoneNumber,
@@ -23,8 +20,6 @@ import {
 } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { passkey } from "better-auth/plugins/passkey";
-import type { BetterAuthOptions } from "better-auth";
-import { sso } from "better-auth/plugins/sso";
 import { emailHarmony, phoneHarmony } from "better-auth-harmony";
 
 const betterAuthPlugins = [
@@ -175,11 +170,10 @@ export const betterAuthOptions: PayloadBetterAuthOptions = {
 
 export const plugins: Plugin[] = [
   payloadBetterAuth({
-    enable_debug_logs: true,
+    enableDebugLogs: true,
     users: {
       slug: "users",
       adminRoles: ["admin"],
-      roles: {},
     },
     accounts: {
       slug: "accounts",

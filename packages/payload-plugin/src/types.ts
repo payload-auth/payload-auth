@@ -43,12 +43,12 @@ export interface PayloadBetterAuthPluginOptions {
    * Enable debug logs
    * @default false
    */
-  enable_debug_logs?: boolean
+  enableDebugLogs?: boolean
   /**
    * Hide the plugin collections from the payload admin UI
    * @default false
    */
-  hide_plugin_collections?: boolean
+  hidePluginCollections?: boolean
   /**
    * Configure the Users collections:
    */
@@ -175,6 +175,6 @@ export type BetterAuthFunctionOptions<P extends TPlugins> = Omit<
   BetterAuthOptions,
   'database' | 'plugins'
 > & {
-  enable_debug_logs?: boolean
+  enableDebugLogs?: boolean
   plugins: P
 }
