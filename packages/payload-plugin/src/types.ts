@@ -157,19 +157,15 @@ export type ExtractEndpoints<T> = T extends BetterAuthPlugin
     : {}
   : {}
 
-export type BetterAuthReturn<TPlugins extends BetterAuthPlugin[] = BetterAuthPlugin[]> = Omit<
-  ReturnType<typeof betterAuth>,
-  '$Infer'
-> & {
-  api: TPlugins extends (infer P)[] ? InferAPI<UnionToIntersection<ExtractEndpoints<P>>> : {}
-  $Infer: ReturnType<typeof betterAuth>['$Infer'] & {
-    [K in keyof InferPluginTypes<{
-      plugins: TPlugins extends BetterAuthPlugin[] ? TPlugins : []
-    }>]: InferPluginTypes<{ plugins: TPlugins extends BetterAuthPlugin[] ? TPlugins : [] }>[K]
-  }
+export type TPlugins<TPlugins extends BetterAuthPlugin[] = BetterAuthPlugin[]> = TPlugins
+export type PluginInferTypes<T extends TPlugins> = {
+  [K in keyof InferPluginTypes<{ plugins: T }>]: InferPluginTypes<{ plugins: T }>[K]
 }
 
-export type TPlugins<TPlugins extends BetterAuthPlugin[] = BetterAuthPlugin[]> = TPlugins
+export type BetterAuthReturn<T extends TPlugins> = Omit<ReturnType<typeof betterAuth>, '$Infer'> & {
+  api: T extends (infer P)[] ? InferAPI<UnionToIntersection<ExtractEndpoints<P>>> : {}
+  $Infer: ReturnType<typeof betterAuth>['$Infer'] & PluginInferTypes<T>
+}
 
 export type BetterAuthFunctionOptions<P extends TPlugins> = Omit<
   BetterAuthOptions,

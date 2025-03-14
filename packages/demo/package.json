@@ -14,8 +14,8 @@
   "dependencies": {
     "@daveyplate/better-auth-ui": "^1.2.32",
     "@eslint/eslintrc": "^3.2.0",
-    "@payload-auth/better-auth-db-adapter": "1.0.5",
-    "@payload-auth/better-auth-plugin": "workspace:*",
+    "@payload-auth/better-auth-db-adapter": "1.0.6",
+    "@payload-auth/better-auth-plugin": "1.0.2",
     "@payloadcms/admin-bar": "3.28.1",
     "@payloadcms/db-postgres": "3.28.1",
     "@payloadcms/eslint-config": "3.28.0",

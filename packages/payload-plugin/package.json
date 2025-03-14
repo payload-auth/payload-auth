@@ -2,7 +2,7 @@
   "name": "@payload-auth/better-auth-plugin",
   "scope": "payload-auth",
   "description": "A Payload CMS plugin for Better Auth",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -31,10 +31,8 @@
     "build": "pnpm build:types && pnpm build:swc",
     "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
     "build:types": "tsc --project tsconfig.json",
-    "clean": "rimraf dist",
     "lint": "eslint",
     "lint:fix": "eslint ./src --fix",
-    "prepublishOnly": "pnpm clean && pnpm build",
     "test": "jest"
   },
   "keywords": [
@@ -57,7 +55,7 @@
     "payload": "3.28.1"
   },
   "dependencies": {
-    "@payload-auth/better-auth-db-adapter": "1.0.5",
+    "@payload-auth/better-auth-db-adapter": "1.0.6",
     "better-auth": "1.2.4",
     "payload": "3.28.1"
   },
