@@ -1,4 +1,4 @@
-import { createAuthClient } from 'better-auth/react'
+import { createAuthClient } from "better-auth/react";
 import {
   organizationClient,
   passkeyClient,
@@ -8,38 +8,45 @@ import {
   oneTapClient,
   oidcClient,
   genericOAuthClient,
-} from 'better-auth/client/plugins'
-import { toast } from 'sonner'
+  usernameClient,
+  anonymousClient,
+  phoneNumberClient,
+  magicLinkClient,
+  emailOTPClient,
+  apiKeyClient,
+} from "better-auth/client/plugins";
+import { toast } from "sonner";
 
 export const authClient = createAuthClient({
-  baseURL: `${process.env.NEXT_PUBLIC_SERVER_URL}`, // the base url of your auth server
+  baseURL: `${process.env.BETTER_AUTH_URL}`, // the base url of your auth server
   plugins: [
-    organizationClient(),
     twoFactorClient({
       onTwoFactorRedirect() {
-        window.location.href = '/two-factor'
+        window.location.href = "/two-factor";
       },
     }),
+    usernameClient(),
+    anonymousClient(),
+    phoneNumberClient(),
+    magicLinkClient(),
+    emailOTPClient(),
     passkeyClient(),
-    adminClient(),
-    multiSessionClient(),
     oneTapClient({
-      clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-      promptOptions: {
-        maxAttempts: 1,
-      },
+      clientId: process.env.GOOGLE_CLIENT_ID!,
     }),
-    oidcClient(),
-    genericOAuthClient(),
+    adminClient(),
+    apiKeyClient(),
+    organizationClient(),
+    multiSessionClient(),
   ],
   fetchOptions: {
     onError(e) {
       if (e.error.status === 429) {
-        toast.error('Too many requests. Please try again later.')
+        toast.error("Too many requests. Please try again later.");
       }
     },
   },
-})
+});
 
 export const {
   signUp,
@@ -49,6 +56,6 @@ export const {
   organization,
   useListOrganizations,
   useActiveOrganization,
-} = authClient
+} = authClient;
 
-authClient.$store.listen('$sessionSignal', async () => {})
+authClient.$store.listen("$sessionSignal", async () => {});

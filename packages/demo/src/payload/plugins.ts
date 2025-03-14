@@ -1,5 +1,8 @@
 import type { Plugin } from "payload";
-import { payloadBetterAuth } from "@payload-auth/better-auth-plugin";
+import {
+  payloadBetterAuth,
+  PayloadBetterAuthOptions,
+} from "@payload-auth/better-auth-plugin";
 import {
   bearer,
   admin,
@@ -10,79 +13,107 @@ import {
   oAuthProxy,
   openAPI,
   oidcProvider,
+  username,
+  anonymous,
+  phoneNumber,
+  magicLink,
+  emailOTP,
+  apiKey,
+  jwt,
 } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { passkey } from "better-auth/plugins/passkey";
 import type { BetterAuthOptions } from "better-auth";
+import { sso } from "better-auth/plugins/sso";
+import { emailHarmony, phoneHarmony } from "better-auth-harmony";
 
 const betterAuthPlugins = [
-  organization({
-    schema: {
-      member: {
-        fields: {
-          organizationId: "organization",
-          userId: "user",
-        },
-      },
-      invitation: {
-        fields: {
-          organizationId: "organization",
-          inviterId: "inviter",
-        },
-      },
-    },
-
-    async sendInvitationEmail(data) {
-      console.log("Send invite for org: ", data);
-    },
+  emailHarmony(),
+  phoneHarmony({
+    defaultCountry: "CA",
   }),
   twoFactor({
     schema: {
+      user: {
+        modelName: "users",
+        fields: {
+          userId: "user",
+        },
+      },
       twoFactor: {
+        modelName: "twoFactors",
         fields: {
           userId: "user",
         },
       },
     },
+    issuer: "payload-better-auth",
     otpOptions: {
       async sendOTP({ user, otp }) {
         console.log("Send OTP for user: ", user, otp);
       },
     },
   }),
-  passkey({
-    schema: {
-      passkey: {
-        fields: {
-          userId: "user",
-        },
-      },
+  username({
+    minUsernameLength: 5,
+    maxUsernameLength: 100,
+    usernameValidator: (username) => {
+      if (username === "admin") {
+        return false;
+      }
+      return true;
     },
   }),
-  openAPI(),
-  bearer(),
-  admin({
-    adminUserIds: [],
-    schema: {
-      session: {
-        fields: {
-          impersonatedBy: "user",
-        },
-      },
+  anonymous({
+    emailDomainName: "payload-better-auth.com",
+    onLinkAccount: async ({ anonymousUser, newUser }) => {
+      console.log("Link account for anonymous user: ", anonymousUser, newUser);
+    },
+    disableDeleteAnonymousUser: false,
+  }),
+  phoneNumber({
+    sendOTP: async ({ phoneNumber, code }, req) => {
+      console.log("Send OTP for user: ", phoneNumber, code);
+    },
+  }),
+  magicLink({
+    sendMagicLink: async ({ email, token, url }, request) => {
+      console.log("Send magic link for user: ", email, token, url);
+    },
+  }),
+  emailOTP({
+    async sendVerificationOTP({ email, otp, type }) {
+      console.log("Send verification OTP for user: ", email, otp, type);
+    },
+  }),
+  passkey({
+    rpID: "payload-better-auth",
+    rpName: "payload-better-auth-demo",
+    origin: "http://localhost:3000",
+  }),
+  oneTap({
+    clientId: process.env.GOOGLE_CLIENT_ID,
+  }),
+  admin(),
+  apiKey(),
+  organization({
+    teams: {
+      enabled: true,
+    },
+    async sendInvitationEmail(data) {
+      const inviteLink = `http://localhost:3000/accept-invitation/${data.id}`;
+      console.log("Send invite for org: ", data, inviteLink);
     },
   }),
   multiSession(),
-  oAuthProxy(),
-  oidcProvider({
-    loginPage: "/sign-in",
-  }),
-  oneTap(),
+  openAPI(),
+  jwt(),
   nextCookies(),
 ];
 
 export type BetterAuthPlugins = typeof betterAuthPlugins;
 
-export const betterAuthOptions: BetterAuthOptions = {
+export const betterAuthOptions: PayloadBetterAuthOptions = {
   appName: "payload-better-auth",
   emailAndPassword: {
     enabled: true,
@@ -103,38 +134,56 @@ export const betterAuthOptions: BetterAuthOptions = {
   },
   plugins: betterAuthPlugins,
   user: {
-    modelName: "user",
-    additionalFields: {},
+    changeEmail: {
+      enabled: true,
+      sendChangeEmailVerification: async ({ user, newEmail, url, token }) => {
+        console.log(
+          "Send change email verification for user: ",
+          user,
+          newEmail,
+          url,
+          token
+        );
+      },
+    },
+    deleteUser: {
+      enabled: true,
+      sendDeleteAccountVerification: async ({ user, url, token }) => {
+        // Send delete account verification
+      },
+      beforeDelete: async (user) => {
+        // Perform actions before user deletion
+      },
+      afterDelete: async (user) => {
+        // Perform cleanup after user deletion
+      },
+    },
   },
   session: {
-    modelName: "session",
-    fields: {
-      userId: "user",
-    },
     cookieCache: {
       enabled: true,
       maxAge: 5 * 60, // Cache duration in seconds
     },
   },
   account: {
-    modelName: "account",
-    fields: {
-      userId: "user",
-    },
     accountLinking: {
-      trustedProviders: ["google", "github", "demo-app"],
+      enabled: true,
+      trustedProviders: ["google", "email-password"],
     },
-  },
-  verification: {
-    modelName: "verification-token",
   },
 };
 
 export const plugins: Plugin[] = [
   payloadBetterAuth({
-    betterAuthOptions: {
-      enable_debug_logs: true,
-      ...betterAuthOptions,
+    enable_debug_logs: true,
+    users: {
+      slug: "users",
+      adminRoles: ["admin"],
+      roles: {},
     },
+    accounts: {
+      slug: "accounts",
+    },
+    betterAuthOptions,
   }),
 ];

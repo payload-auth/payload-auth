@@ -13,24 +13,30 @@ const allowedOrigins = [process.env.NEXT_PUBLIC_SERVER_URL].filter(Boolean);
 
 export default buildConfig({
   admin: {
-    user: "user",
+    user: "users",
     importMap: {
       baseDir: path.resolve(dirname),
     },
     routes: {
       login: "/login-redirect",
+      logout: "/logout-redirect",
+      createFirstUser: "/create-admin-redirect",
     },
     components: {
       beforeLogin: [
         {
           path: "@/payload/components/login-redirect.tsx",
-        }
+        },
       ],
       views: {
         login: {
           path: "/login",
-          Component: "@/payload/views/Login.tsx",
+          Component: "@/payload/views/login",
         },
+        // logout: {
+        //   path: "/logout",
+        //   Component: "@/payload/views/logout.tsx",
+        // },
       },
     },
   },

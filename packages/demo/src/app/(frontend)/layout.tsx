@@ -1,4 +1,4 @@
-import "./globals.css";
+import "@/lib/styles/globals.css";
 
 import React from "react";
 import { PayloadAdminBar } from "@payloadcms/admin-bar";

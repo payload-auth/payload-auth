@@ -10,7 +10,6 @@
     "build": "pnpm build:types && pnpm build:swc",
     "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
     "build:types": "tsc --outDir dist --rootDir ./src",
-    "copyfiles": "copyfiles -u 1 \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist/",
     "lint": "eslint",
     "lint:fix": "eslint ./src --fix",
     "prepublishOnly": "pnpm clean && pnpm build",
@@ -32,13 +31,12 @@
     "typescript": "5.8.2"
   },
   "peerDependencies": {
-    "better-auth": "^1.2.3",
+    "better-auth": "1.2.4",
     "payload": "3.28.1"
   },
   "dependencies": {
-    "@simplewebauthn/server": "13.1.1",
-    "@payload-auth/better-auth-db-adapter": "1.0.4",
-    "better-auth": "^1.2.3",
+    "@payload-auth/better-auth-db-adapter": "1.0.5",
+    "better-auth": "1.2.4",
     "payload": "3.28.1"
   },
   "engines": {
@@ -49,12 +47,18 @@
     "exports": {
       ".": {
         "import": "./dist/index.js",
-        "types": "./dist/index.d.ts",
+        "types": [
+          "./dist/index.d.ts",
+          "./dist/types.d.ts"
+        ],
         "default": "./dist/index.js"
       }
     },
     "main": "./dist/index.js",
-    "types": "./dist/index.d.ts"
+    "types": [
+      "./dist/index.d.ts",
+      "./dist/types.d.ts"
+    ]
   },
   "registry": "https://registry.npmjs.org/"
 }

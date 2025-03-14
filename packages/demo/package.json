@@ -12,8 +12,9 @@
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload"
   },
   "dependencies": {
+    "@daveyplate/better-auth-ui": "^1.2.32",
     "@eslint/eslintrc": "^3.2.0",
-    "@payload-auth/better-auth-db-adapter": "1.0.4",
+    "@payload-auth/better-auth-db-adapter": "1.0.5",
     "@payload-auth/better-auth-plugin": "workspace:*",
     "@payloadcms/admin-bar": "3.28.1",
     "@payloadcms/db-postgres": "3.28.1",
@@ -60,7 +61,8 @@
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
     "@types/three": "^0.174.0",
-    "better-auth": "^1.2.3",
+    "better-auth": "^1.2.4",
+    "better-auth-harmony": "^1.2.3",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.0.4",
