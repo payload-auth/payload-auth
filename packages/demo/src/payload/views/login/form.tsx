@@ -311,7 +311,7 @@ export function AuthForm({
   return (
     <form
       action={formAction}
-      className={cn("grid w-full gap-4", className, classNames?.base)}
+      className={cn("twp grid w-full gap-4", className, classNames?.base)}
     >
       {/* <div className="grid gap-2">
         <Label className={classNames?.label} htmlFor="name">

@@ -1,4 +1,4 @@
-import "@/lib/styles/globals.css";
+import "../../lib/styles/globals.css";
 
 import React from "react";
 import { PayloadAdminBar } from "@payloadcms/admin-bar";
@@ -6,6 +6,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Metadata } from "next";
 import { WrapperWithQuery } from "@/components/wrapper";
 import { Wrapper } from "@/components/wrapper";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,9 +34,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Wrapper>
-          <WrapperWithQuery>{children}</WrapperWithQuery>
-        </Wrapper>
+        <ThemeProvider>
+          <Wrapper>
+            <WrapperWithQuery>{children}</WrapperWithQuery>
+          </Wrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

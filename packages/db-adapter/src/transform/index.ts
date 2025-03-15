@@ -4,276 +4,325 @@ import type { BetterAuthOptions, Where } from "better-auth";
 import type { CollectionSlug, Where as PayloadWhere } from "payload";
 
 export const createTransform = (options: BetterAuthOptions) => {
-	const schema = getAuthTables(options);
+  const schema = getAuthTables(options);
 
-	function getField(model: string, field: string) {
-		if (field === "id") {
-			return field;
-		}
-		const f = (schema as Record<string, any>)[model]?.fields[field];
-		return f?.fieldName || field;
-	}
+  function getField(model: string, field: string) {
+    if (field === "id") {
+      return field;
+    }
+    const f = (schema as Record<string, any>)[model]?.fields[field];
+    const fieldName = f?.fieldName || field;
+    console.log("[payload-db-adapter] getField: ", model, fieldName);
+    return fieldName;
+  }
 
-	function getModelName(model: string): CollectionSlug {
-		const collection =
-			(schema as Record<string, any>)[model]?.modelName || model;
-		if (!collection) {
-			throw new BetterAuthError(
-				`Model ${model} does not exist in the database.`,
-			);
-		}
-		return collection as CollectionSlug;
-	}
+  function getModelName(model: string): CollectionSlug {
+    const collection =
+      (schema as Record<string, any>)[model]?.modelName || model;
+    if (!collection) {
+      throw new BetterAuthError(
+        `Model ${model} does not exist in the database.`
+      );
+    }
+    return collection as CollectionSlug;
+  }
 
-	function singleIdQuery(where: Where[]) {
-		if (!where || where.length !== 1) return null;
+  function singleIdQuery(where: PayloadWhere) {
+    if (!where || "and" in where || "or" in where) return null;
 
-		const [condition] = where;
+    // For a single id query like { id: { equals: 15 } }
+    // First, check if there's an id field in the where clause
+    if ("id" in where || "_id" in where) {
+      const idField = "id" in where ? "id" : "_id";
+      const condition = where[idField];
 
-		const isIdField = condition?.field === "id" || condition?.field === "_id";
-		const isEqOperator = condition?.operator === "eq";
-		const isContainsSingleId =
-			condition?.operator === "contains" &&
-			Array.isArray(condition?.value) &&
-			condition?.value?.length === 1 &&
-			(typeof condition?.value[0] === "string" ||
-				typeof condition?.value[0] === "number");
+      // Check if condition is an object with equals operator
+      if (
+        condition &&
+        typeof condition === "object" &&
+        !Array.isArray(condition) &&
+        "equals" in condition
+      ) {
+        const value = condition.equals;
+        if (typeof value === "string" || typeof value === "number") {
+          return value;
+        }
+      }
 
-		if (
-			isIdField &&
-			isEqOperator &&
-			(typeof condition?.value === "string" ||
-				typeof condition?.value === "number")
-		) {
-			return condition?.value;
-		}
+      // Check for contains operator with single value
+      if (
+        condition &&
+        typeof condition === "object" &&
+        !Array.isArray(condition) &&
+        "contains" in condition &&
+        Array.isArray(condition.contains) &&
+        condition.contains.length === 1
+      ) {
+        const value = condition.contains[0];
+        if (typeof value === "string" || typeof value === "number") {
+          return value;
+        }
+      }
+    }
 
-		if (isIdField && isContainsSingleId && Array.isArray(condition?.value)) {
-			return condition?.value[0] ?? null;
-		}
+    return null;
+  }
 
-		return null;
-	}
+  function multipleIdsQuery(where: PayloadWhere) {
+    if (!where || "and" in where || "or" in where) return null;
+    if ("id" in where || "_id" in where) {
+      const idField = "id" in where ? "id" : "_id";
+      const condition = where[idField];
 
-	function multipleIdsQuery(where: Where[]) {
-		if (!where || where.length !== 1) {
-			return null;
-		}
-		const condition = where[0];
+      // Check if this is an 'in' operator with id field and array of values
+      if (
+        condition &&
+        typeof condition === "object" &&
+        !Array.isArray(condition) &&
+        "in" in condition &&
+        Array.isArray(condition.in) &&
+        condition.in.length > 1 &&
+        condition.in.every(
+          (id: unknown) => typeof id === "string" || typeof id === "number"
+        )
+      ) {
+        return condition.in as (number | string)[];
+      }
 
-		// Check if this is an 'in' operator with id field and array of values
-		if (
-			condition &&
-			(condition.field === "id" || condition.field === "_id") &&
-			condition.operator === "in" &&
-			Array.isArray(condition.value) &&
-			condition.value.length > 0 &&
-			condition.value.every(
-				(id) => typeof id === "string" || typeof id === "number",
-			)
-		) {
-			return condition.value as (number | string)[];
-		}
+      // Also check for contains operator with array of IDs
+      if (
+        condition &&
+        typeof condition === "object" &&
+        !Array.isArray(condition) &&
+        "contains" in condition &&
+        Array.isArray(condition.contains) &&
+        condition.contains.length > 1 &&
+        condition.contains.every(
+          (id: unknown) => typeof id === "string" || typeof id === "number"
+        )
+      ) {
+        return condition.contains as (number | string)[];
+      }
+    }
 
-		// Also check for contains operator with array of IDs
-		if (
-			condition &&
-			(condition.field === "id" || condition.field === "_id") &&
-			condition.operator === "contains" &&
-			Array.isArray(condition.value) &&
-			condition.value.length > 1 &&
-			condition.value.every(
-				(id) => typeof id === "string" || typeof id === "number",
-			)
-		) {
-			return condition.value as (number | string)[];
-		}
+    return null;
+  }
 
-		return null;
-	}
+  function transformInput(
+    data: Record<string, any>,
+    model: string,
+    action: "create" | "update"
+  ) {
+    const transformedData: Record<string, any> = {};
+    const schemaFields = (schema as Record<string, any>)[model].fields;
+    for (const dataField in data) {
+      if (data[dataField] === undefined && action === "update") {
+        continue;
+      }
+      const updatedFieldName = schemaFields[dataField]?.fieldName;
 
-	function transformInput(
-		data: Record<string, any>,
-		model: string,
-		action: "create" | "update",
-	) {
-		const transformedData: Record<string, any> = {};
-		const schemaFields = (schema as Record<string, any>)[model].fields;
-		for (const dataField in data) {
-			if (data[dataField] === undefined && action === "update") {
-				continue;
-			}
-			const updatedFieldName = schemaFields[dataField]?.fieldName;
+      if (updatedFieldName) {
+        if (
+          schemaFields[dataField].type === "string" &&
+          typeof data[dataField] === "number" &&
+          updatedFieldName.endsWith("Id")
+        ) {
+          console.log(
+            "Incoming data is number but stored as string",
+            dataField,
+            data[dataField].toString()
+          );
+          transformedData[updatedFieldName] = data[dataField].toString();
+        } else {
+          transformedData[updatedFieldName] = data[dataField];
+        }
 
-			if (updatedFieldName) {
-				if (
-					options[model as keyof BetterAuthOptions]?.fields &&
-					dataField in (options[model as keyof BetterAuthOptions]?.fields || {})
-				) {
-					if (typeof data[dataField] === "string" && dataField.endsWith("Id")) {
-						transformedData[updatedFieldName] = parseInt(data[dataField]);
-					} else {
-						transformedData[updatedFieldName] = data[dataField];
-					}
-				} else if (
-					typeof data[dataField] === "string" &&
-					dataField.endsWith("Id")
-				) {
-					transformedData[updatedFieldName] = parseInt(data[dataField]);
-				} else {
-					transformedData[updatedFieldName] = data[dataField];
-				}
-			} else {
-				transformedData[dataField] = data[dataField];
-			}
-		}
-		return transformedData;
-	}
+        // if (
+        //   options[model as keyof BetterAuthOptions]?.fields &&
+        //   dataField in (options[model as keyof BetterAuthOptions]?.fields || {})
+        // ) {
+        //   if (typeof data[dataField] === "string" && dataField.endsWith("Id")) {
+        //     transformedData[updatedFieldName] = parseInt(data[dataField]);
+        //   } else {
+        //     transformedData[updatedFieldName] = data[dataField];
+        //   }
+        // } else if (
+        //   typeof data[dataField] === "string" &&
+        //   dataField.endsWith("Id")
+        // ) {
+        //   transformedData[updatedFieldName] = parseInt(data[dataField]);
+        // } else {
+        //
+        // }
+      } else {
+        transformedData[dataField] = data[dataField];
+        // if (
+        //   schemaFields[dataField].type === "string" &&
+        //   typeof data[dataField] === "number" &&
+        //   updatedFieldName.endsWith("Id")
+        // ) {
+        //   console.log(
+        //     "Incoming data is number but stored as string",
+        //     dataField,
+        //     data[dataField].toString()
+        //   );
+        //   transformedData[dataField] = data[dataField].toString();
+        // } else {
+        //   transformedData[dataField] = data[dataField];
+        // }
+      }
+    }
+    return transformedData;
+  }
 
-	function transformOutput<T extends Record<string, any> | undefined>(
-		doc: T,
-	): T {
-		if (!doc || typeof doc !== "object") return doc;
+  function transformOutput<T extends Record<string, any> | undefined>(
+    doc: T
+  ): T {
+    if (!doc || typeof doc !== "object") return doc;
 
-		const result = { ...doc } as any;
+    const result = { ...doc } as any;
 
-		// Scan for relationship fields that contain objects with IDs
-		Object.entries(doc).forEach(([key, value]) => {
-			// If the value is an object with an id property, it's likely a relationship
-			if (value && typeof value === "object" && "id" in value) {
-				// Create a new field with Id suffix containing just the ID
-				const newKey = `${key}Id`;
-				result[newKey] = value.id;
+    // Scan for relationship fields that contain objects with IDs
+    Object.entries(doc).forEach(([key, value]) => {
+      // If the value is an object with an id property, it's likely a relationship
+      if (value && typeof value === "object" && "id" in value) {
+        // Create a new field with Id suffix containing just the ID
+        const newKey = `${key}Id`;
+        result[newKey] = value.id;
 
-				// Keep the original value as well for backward compatibility
-			} else if (Array.isArray(value)) {
-				// Handle arrays of relationships
-				if (
-					value.length > 0 &&
-					typeof value[0] === "object" &&
-					"id" in value[0]
-				) {
-					const newKey = `${key}Ids`;
-					result[newKey] = value.map((item) => item.id);
-				}
-			}
-		});
+        // Keep the original value as well for backward compatibility
+      } else if (Array.isArray(value)) {
+        // Handle arrays of relationships
+        if (
+          value.length > 0 &&
+          typeof value[0] === "object" &&
+          "id" in value[0]
+        ) {
+          const newKey = `${key}Ids`;
+          result[newKey] = value.map((item) => item.id);
+        }
+      }
+    });
 
-		// Scan for date fields and convert them to Date objects
-		Object.entries(result).forEach(([key, value]) => {
-			// Check if the field is a date string (ISO format)
-			if (
-				typeof value === "string" &&
-				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/.test(value)
-			) {
-				result[key] = new Date(value);
-			} else if (
-				// Also check for date-like field names
-				(key.endsWith("At") || key.endsWith("Date") || key === "date") &&
-				typeof value === "string" &&
-				!isNaN(Date.parse(value))
-			) {
-				result[key] = new Date(value);
-			}
-		});
+    // Scan for date fields and convert them to Date objects
+    Object.entries(result).forEach(([key, value]) => {
+      // Check if the field is a date string (ISO format)
+      if (
+        typeof value === "string" &&
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/.test(value)
+      ) {
+        result[key] = new Date(value);
+      } else if (
+        // Also check for date-like field names
+        (key.endsWith("At") || key.endsWith("Date") || key === "date") &&
+        typeof value === "string" &&
+        !isNaN(Date.parse(value))
+      ) {
+        result[key] = new Date(value);
+      }
+    });
 
-		return result as T;
-	}
+    return result as T;
+  }
 
-	function operatorToPayload(operator: string, value: any) {
-		switch (operator) {
-			case "eq":
-				return { equals: value };
-			case "ne":
-				return { not_equals: value };
-			case "gt":
-				return { greater_than: value };
-			case "gte":
-				return { greater_than_equal: value };
-			case "lt":
-				return { less_than: value };
-			case "lte":
-				return { less_than_equal: value };
-			case "contains":
-				return { contains: value };
-			case "in":
-				return { in: value };
-			case "starts_with":
-				return { like: `${value}%` };
-			case "ends_with":
-				return { like: `%${value}` };
-			default:
-				return { equals: value };
-		}
-	}
+  function operatorToPayload(operator: string, value: any) {
+    switch (operator) {
+      case "eq":
+        return { equals: value };
+      case "ne":
+        return { not_equals: value };
+      case "gt":
+        return { greater_than: value };
+      case "gte":
+        return { greater_than_equal: value };
+      case "lt":
+        return { less_than: value };
+      case "lte":
+        return { less_than_equal: value };
+      case "contains":
+        return { contains: value };
+      case "in":
+        return { in: value };
+      case "starts_with":
+        return { like: `${value}%` };
+      case "ends_with":
+        return { like: `%${value}` };
+      default:
+        return { equals: value };
+    }
+  }
 
-	function convertWhereClause(model: string, where?: Where[]): PayloadWhere {
-		if (!where) return {};
-		if (where.length === 1) {
-			const w = where[0];
-			if (!w) {
-				return {};
-			}
-			return {
-				[getField(model, w.field)]: operatorToPayload(
-					w.operator ?? "",
-					w.value,
-				),
-			};
-		}
-		const and = where.filter((w) => w.connector === "AND" || !w.connector);
-		const or = where.filter((w) => w.connector === "OR");
-		const andClause = and.map((w) => {
-			return {
-				[getField(model, w.field)]: operatorToPayload(
-					w.operator ?? "",
-					w.value,
-				),
-			};
-		});
-		const orClause = or.map((w) => {
-			return {
-				[getField(model, w.field)]: operatorToPayload(
-					w.operator ?? "",
-					w.value,
-				),
-			};
-		});
+  function convertWhereClause(model: string, where?: Where[]): PayloadWhere {
+    if (!where) return {};
+    console.log("[payload-db-adapter] convert where: ", model, where);
+    if (where.length === 1) {
+      const w = where[0];
+      if (!w) {
+        return {};
+      }
 
-		return {
-			...(andClause.length ? { AND: andClause } : {}),
-			...(orClause.length ? { OR: orClause } : {}),
-		};
-	}
+      const res = {
+        [getField(model, w.field)]: operatorToPayload(
+          w.operator ?? "",
+          w.value
+        ),
+      };
+      console.log("[payload-db-adapter] convert where 1 res: ", res);
+      return res;
+    }
+    const and = where.filter((w) => w.connector === "AND" || !w.connector);
+    const or = where.filter((w) => w.connector === "OR");
+    const andClause = and.map((w) => {
+      return {
+        [getField(model, w.field)]: operatorToPayload(
+          w.operator ?? "",
+          w.value
+        ),
+      };
+    });
+    const orClause = or.map((w) => {
+      return {
+        [getField(model, w.field)]: operatorToPayload(
+          w.operator ?? "",
+          w.value
+        ),
+      };
+    });
 
-	function convertSelect(model: string, select?: string[]) {
-		if (!select || select.length === 0) return undefined;
-		return select.reduce(
-			(acc, field) => ({ ...acc, [getField(model, field)]: true }),
-			{},
-		);
-	}
+    return {
+      ...(andClause.length ? { AND: andClause } : {}),
+      ...(orClause.length ? { OR: orClause } : {}),
+    };
+  }
 
-	function convertSort(
-		model: string,
-		sortBy?: { field: string; direction: "asc" | "desc" },
-	) {
-		if (!sortBy) return undefined;
-		return `${sortBy.direction === "desc" ? "-" : ""}${getField(
-			model,
-			sortBy.field,
-		)}`;
-	}
+  function convertSelect(model: string, select?: string[]) {
+    if (!select || select.length === 0) return undefined;
+    return select.reduce(
+      (acc, field) => ({ ...acc, [getField(model, field)]: true }),
+      {}
+    );
+  }
 
-	return {
-		getField,
-		getModelName,
-		singleIdQuery,
-		multipleIdsQuery,
-		transformInput,
-		transformOutput,
-		convertWhereClause,
-		convertSelect,
-		convertSort,
-	};
+  function convertSort(
+    model: string,
+    sortBy?: { field: string; direction: "asc" | "desc" }
+  ) {
+    if (!sortBy) return undefined;
+    return `${sortBy.direction === "desc" ? "-" : ""}${getField(
+      model,
+      sortBy.field
+    )}`;
+  }
+
+  return {
+    getField,
+    getModelName,
+    singleIdQuery,
+    multipleIdsQuery,
+    transformInput,
+    transformOutput,
+    convertWhereClause,
+    convertSelect,
+    convertSort,
+  };
 };

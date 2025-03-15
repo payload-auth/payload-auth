@@ -5,11 +5,11 @@ import type { PayloadBetterAuthPluginOptions, SanitizedBetterAuthOptions } from 
  * Determines which collections are required based on the BetterAuth options and plugins
  */
 export function getRequiredCollectionSlugs({
-  enable_debug_logs,
+  logTables,
   pluginOptions,
   sanitizedBAOptions,
 }: {
-  enable_debug_logs: boolean
+  logTables: boolean
   pluginOptions: PayloadBetterAuthPluginOptions
   sanitizedBAOptions: SanitizedBetterAuthOptions
 }) {
@@ -35,8 +35,7 @@ export function getRequiredCollectionSlugs({
       })
 
       const plugins = sanitizedBAOptions.plugins ?? []
-
-      if (enable_debug_logs) {
+      if (logTables) {
         console.log(
           'Better Auth plugins:',
           plugins.map((plugin) => plugin.id),
@@ -72,9 +71,9 @@ export function getRequiredCollectionSlugs({
     }
   }
 
-  if (enable_debug_logs) {
-    console.log('Required collection slugs: ', Array.from(requiredCollectionSlugs))
-  }
+  // if (enable_debug_logs) {
+  //   console.log('Required collection slugs: ', Array.from(requiredCollectionSlugs))
+  // }
 
   return requiredCollectionSlugs
 }

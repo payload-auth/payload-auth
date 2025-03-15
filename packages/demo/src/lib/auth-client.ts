@@ -14,30 +14,36 @@ import {
   magicLinkClient,
   emailOTPClient,
   apiKeyClient,
+  inferAdditionalFields,
 } from "better-auth/client/plugins";
 import { toast } from "sonner";
 
 export const authClient = createAuthClient({
-  baseURL: `${process.env.BETTER_AUTH_URL}`, // the base url of your auth server
+  baseURL: "http://localhost:3000",
+  // baseURL: `${process.env.BETTER_AUTH_URL}`, // the base url of your auth server
   plugins: [
     twoFactorClient({
       onTwoFactorRedirect() {
         window.location.href = "/two-factor";
       },
     }),
-    usernameClient(),
+    // usernameClient(),
     anonymousClient(),
     phoneNumberClient(),
     magicLinkClient(),
     emailOTPClient(),
     passkeyClient(),
-    oneTapClient({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-    }),
     adminClient(),
     apiKeyClient(),
     organizationClient(),
     multiSessionClient(),
+    inferAdditionalFields({
+      user: {
+        role: {
+          type: "string",
+        },
+      },
+    }),
   ],
   fetchOptions: {
     onError(e) {

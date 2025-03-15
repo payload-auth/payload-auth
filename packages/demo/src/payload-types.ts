@@ -67,21 +67,18 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
-    sessions: Session;
     accounts: Account;
+    sessions: Session;
     verifications: Verification;
+    twoFactors: TwoFactor;
+    passkeys: Passkey;
     apiKeys: ApiKey;
     organizations: Organization;
     members: Member;
-    teams: Team;
     invitations: Invitation;
-    twoFactors: TwoFactor;
-    passkeys: Passkey;
-    oauthApplications: OauthApplication;
-    oauthAccessTokens: OauthAccessToken;
-    oauthConsents: OauthConsent;
-    ssoProviders: SsoProvider;
+    teams: Team;
     jwks: Jwk;
+    projects: Project;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -89,21 +86,18 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
-    sessions: SessionsSelect<false> | SessionsSelect<true>;
     accounts: AccountsSelect<false> | AccountsSelect<true>;
+    sessions: SessionsSelect<false> | SessionsSelect<true>;
     verifications: VerificationsSelect<false> | VerificationsSelect<true>;
+    twoFactors: TwoFactorsSelect<false> | TwoFactorsSelect<true>;
+    passkeys: PasskeysSelect<false> | PasskeysSelect<true>;
     apiKeys: ApiKeysSelect<false> | ApiKeysSelect<true>;
     organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
-    teams: TeamsSelect<false> | TeamsSelect<true>;
     invitations: InvitationsSelect<false> | InvitationsSelect<true>;
-    twoFactors: TwoFactorsSelect<false> | TwoFactorsSelect<true>;
-    passkeys: PasskeysSelect<false> | PasskeysSelect<true>;
-    oauthApplications: OauthApplicationsSelect<false> | OauthApplicationsSelect<true>;
-    oauthAccessTokens: OauthAccessTokensSelect<false> | OauthAccessTokensSelect<true>;
-    oauthConsents: OauthConsentsSelect<false> | OauthConsentsSelect<true>;
-    ssoProviders: SsoProvidersSelect<false> | SsoProvidersSelect<true>;
+    teams: TeamsSelect<false> | TeamsSelect<true>;
     jwks: JwksSelect<false> | JwksSelect<true>;
+    projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -151,21 +145,33 @@ export interface User {
    */
   name?: string | null;
   /**
-   * The username of the user
-   */
-  username: string;
-  /**
-   * The display username of the user
-   */
-  displayUsername: string;
-  /**
    * The email of the user
    */
   email: string;
   /**
+   * Whether the email of the user has been verified
+   */
+  emailVerified: boolean;
+  /**
+   * The image of the user
+   */
+  image?: string | null;
+  /**
+   * The role of the user
+   */
+  role: 'admin' | 'user';
+  /**
    * The normalized email of the user
    */
   normalizedEmail?: string | null;
+  /**
+   * Whether the user has two factor authentication enabled
+   */
+  twoFactorEnabled?: boolean | null;
+  /**
+   * Whether the user is anonymous.
+   */
+  isAnonymous?: boolean | null;
   /**
    * The phone number of the user
    */
@@ -174,26 +180,6 @@ export interface User {
    * Whether the phone number of the user has been verified
    */
   phoneNumberVerified?: boolean | null;
-  /**
-   * Whether the email of the user has been verified
-   */
-  emailVerified: boolean;
-  /**
-   * Whether the user is anonymous.
-   */
-  isAnonymous?: boolean | null;
-  /**
-   * The image of the user
-   */
-  image?: string | null;
-  /**
-   * Whether the user has two factor authentication enabled
-   */
-  twoFactorEnabled?: boolean | null;
-  /**
-   * The role of the user
-   */
-  role: 'admin' | 'user';
   /**
    * Whether the user is banned from the platform
    */
@@ -206,45 +192,6 @@ export interface User {
    * The date and time when the ban will expire
    */
   banExpires?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Sessions are active sessions for users. They are used to authenticate users with a session token
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "sessions".
- */
-export interface Session {
-  id: number;
-  /**
-   * The user that the session belongs to
-   */
-  user: number | User;
-  /**
-   * The unique session token
-   */
-  token: string;
-  /**
-   * The date and time when the session will expire
-   */
-  expiresAt: string;
-  /**
-   * The IP address of the device
-   */
-  ipAddress?: string | null;
-  /**
-   * The user agent information of the device
-   */
-  userAgent?: string | null;
-  /**
-   * The ID of the organization that the user is currently active in.
-   */
-  activeOrganizationId?: string | null;
-  /**
-   * The admin who is impersonating this session.
-   */
-  impersonatedBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -300,6 +247,80 @@ export interface Account {
   createdAt: string;
 }
 /**
+ * Sessions are active sessions for users. They are used to authenticate users with a session token
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sessions".
+ */
+export interface Session {
+  id: number;
+  /**
+   * The user that the session belongs to
+   */
+  user: number | User;
+  /**
+   * The unique session token
+   */
+  token: string;
+  /**
+   * The date and time when the session will expire
+   */
+  expiresAt: string;
+  /**
+   * The IP address of the device
+   */
+  ipAddress?: string | null;
+  /**
+   * The user agent information of the device
+   */
+  userAgent?: string | null;
+  /**
+   * The admin who is impersonating this session
+   */
+  impersonatedBy?: (number | null) | User;
+  /**
+   * The currently active organization for the session
+   */
+  activeOrganization?: (number | null) | Organization;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Organizations are groups of users that share access to certain resources.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: number;
+  /**
+   * The name of the organization.
+   */
+  name: string;
+  /**
+   * The slug of the organization.
+   */
+  slug?: string | null;
+  /**
+   * The logo of the organization.
+   */
+  logo?: string | null;
+  /**
+   * Additional metadata for the organization.
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Verifications are used to verify authentication requests
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -319,6 +340,72 @@ export interface Verification {
    * The date and time when the verification request will expire
    */
   expiresAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Two factor authentication secrets
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "twoFactors".
+ */
+export interface TwoFactor {
+  id: number;
+  /**
+   * The user that the two factor authentication secret belongs to
+   */
+  user: number | User;
+  /**
+   * The secret used to generate the TOTP code.
+   */
+  secret?: string | null;
+  /**
+   * The backup codes used to recover access to the account if the user loses access to their phone or email
+   */
+  backupCodes: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Passkeys are used to authenticate users
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "passkeys".
+ */
+export interface Passkey {
+  id: number;
+  /**
+   * The name of the passkey
+   */
+  name?: string | null;
+  /**
+   * The public key of the passkey
+   */
+  publicKey: string;
+  /**
+   * The user that the passkey belongs to
+   */
+  user: number | User;
+  /**
+   * The unique identifier of the registered credential
+   */
+  credentialID: string;
+  /**
+   * The counter of the passkey
+   */
+  counter: number;
+  /**
+   * The type of device used to register the passkey
+   */
+  deviceType: string;
+  /**
+   * Whether the passkey is backed up
+   */
+  backedUp: boolean;
+  /**
+   * The transports used to register the passkey
+   */
+  transports: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -414,41 +501,6 @@ export interface ApiKey {
   createdAt: string;
 }
 /**
- * Organizations are groups of users that share access to certain resources.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organizations".
- */
-export interface Organization {
-  id: number;
-  /**
-   * The name of the organization.
-   */
-  name: string;
-  /**
-   * The slug of the organization.
-   */
-  slug?: string | null;
-  /**
-   * The logo of the organization.
-   */
-  logo?: string | null;
-  /**
-   * Additional metadata for the organization.
-   */
-  metadata?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Members of an organization.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -495,7 +547,7 @@ export interface Team {
   createdAt: string;
 }
 /**
- * Invitations to join an organization.
+ * Invitations to join an organization
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "invitations".
@@ -530,228 +582,6 @@ export interface Invitation {
   createdAt: string;
 }
 /**
- * Two factor authentication secrets
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "twoFactors".
- */
-export interface TwoFactor {
-  id: number;
-  /**
-   * The user that the two factor authentication secret belongs to
-   */
-  user: number | User;
-  /**
-   * The secret used to generate the TOTP code.
-   */
-  secret?: string | null;
-  /**
-   * The backup codes used to recover access to the account if the user loses access to their phone or email
-   */
-  backupCodes: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Passkeys are used to authenticate users
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "passkeys".
- */
-export interface Passkey {
-  id: number;
-  /**
-   * The name of the passkey
-   */
-  name?: string | null;
-  /**
-   * The public key of the passkey
-   */
-  publicKey: string;
-  /**
-   * The user that the passkey belongs to
-   */
-  user: number | User;
-  /**
-   * The unique identifier of the registered credential
-   */
-  credentialID: string;
-  /**
-   * The counter of the passkey
-   */
-  counter: number;
-  /**
-   * The type of device used to register the passkey
-   */
-  deviceType: string;
-  /**
-   * Whether the passkey is backed up
-   */
-  backedUp: boolean;
-  /**
-   * The transports used to register the passkey
-   */
-  transports: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * OAuth applications are custom OAuth clients
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "oauthApplications".
- */
-export interface OauthApplication {
-  id: number;
-  /**
-   * Unique identifier for each OAuth client
-   */
-  clientId: string;
-  /**
-   * Secret key for the OAuth client
-   */
-  clientSecret: string;
-  /**
-   * Name of the OAuth application
-   */
-  name: string;
-  /**
-   * Comma-separated list of redirect URLs
-   */
-  redirectURLs: string;
-  /**
-   * Additional metadata for the OAuth application
-   */
-  metadata?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * Type of OAuth client (e.g., web, mobile)
-   */
-  type: string;
-  /**
-   * Indicates if the client is disabled
-   */
-  disabled: boolean;
-  /**
-   * Icon of the OAuth application
-   */
-  icon?: string | null;
-  /**
-   * ID of the user who owns the client. (optional)
-   */
-  user?: (number | null) | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * OAuth access tokens for custom OAuth clients
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "oauthAccessTokens".
- */
-export interface OauthAccessToken {
-  id: number;
-  /**
-   * Access token issued to the client
-   */
-  accessToken: string;
-  /**
-   * Refresh token issued to the client
-   */
-  refreshToken: string;
-  /**
-   * Expiration date of the access token
-   */
-  accessTokenExpiresAt: string;
-  /**
-   * Expiration date of the refresh token
-   */
-  refreshTokenExpiresAt: string;
-  /**
-   * OAuth application associated with the access token
-   */
-  client: number | OauthApplication;
-  /**
-   * User associated with the access token
-   */
-  user: number | User;
-  /**
-   * Comma-separated list of scopes granted
-   */
-  scopes: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * OAuth consents are used to store user consents for OAuth clients
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "oauthConsents".
- */
-export interface OauthConsent {
-  id: number;
-  /**
-   * OAuth client associated with the consent
-   */
-  client: number | OauthApplication;
-  /**
-   * User associated with the consent
-   */
-  user: number | User;
-  /**
-   * Comma-separated list of scopes consented to
-   */
-  scopes: string;
-  /**
-   * 	Indicates if consent was given
-   */
-  consentGiven: boolean;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * SSO providers are used to authenticate users with an external provider
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ssoProviders".
- */
-export interface SsoProvider {
-  id: number;
-  /**
-   * The issuer of the SSO provider
-   */
-  issuer: string;
-  /**
-   * The domain of the SSO provider
-   */
-  domain: string;
-  /**
-   * The OIDC config of the SSO provider
-   */
-  oidcConfig: string;
-  /**
-   * The user associated with the SSO provider
-   */
-  user: number | User;
-  /**
-   * The provider id. Used to identify a provider and to generate a redirect url
-   */
-  providerId: string;
-  /**
-   * The organization Id. If provider is linked to an organization
-   */
-  organizationId: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * JWKS are used to verify the signature of the JWT token
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -772,6 +602,18 @@ export interface Jwk {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects".
+ */
+export interface Project {
+  id: number;
+  name?: string | null;
+  description?: string | null;
+  status?: ('active' | 'inactive') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -782,16 +624,24 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null)
     | ({
-        relationTo: 'sessions';
-        value: number | Session;
-      } | null)
-    | ({
         relationTo: 'accounts';
         value: number | Account;
       } | null)
     | ({
+        relationTo: 'sessions';
+        value: number | Session;
+      } | null)
+    | ({
         relationTo: 'verifications';
         value: number | Verification;
+      } | null)
+    | ({
+        relationTo: 'twoFactors';
+        value: number | TwoFactor;
+      } | null)
+    | ({
+        relationTo: 'passkeys';
+        value: number | Passkey;
       } | null)
     | ({
         relationTo: 'apiKeys';
@@ -806,40 +656,20 @@ export interface PayloadLockedDocument {
         value: number | Member;
       } | null)
     | ({
-        relationTo: 'teams';
-        value: number | Team;
-      } | null)
-    | ({
         relationTo: 'invitations';
         value: number | Invitation;
       } | null)
     | ({
-        relationTo: 'twoFactors';
-        value: number | TwoFactor;
-      } | null)
-    | ({
-        relationTo: 'passkeys';
-        value: number | Passkey;
-      } | null)
-    | ({
-        relationTo: 'oauthApplications';
-        value: number | OauthApplication;
-      } | null)
-    | ({
-        relationTo: 'oauthAccessTokens';
-        value: number | OauthAccessToken;
-      } | null)
-    | ({
-        relationTo: 'oauthConsents';
-        value: number | OauthConsent;
-      } | null)
-    | ({
-        relationTo: 'ssoProviders';
-        value: number | SsoProvider;
+        relationTo: 'teams';
+        value: number | Team;
       } | null)
     | ({
         relationTo: 'jwks';
         value: number | Jwk;
+      } | null)
+    | ({
+        relationTo: 'projects';
+        value: number | Project;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -889,35 +719,18 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
-  username?: T;
-  displayUsername?: T;
   email?: T;
+  emailVerified?: T;
+  image?: T;
+  role?: T;
   normalizedEmail?: T;
+  twoFactorEnabled?: T;
+  isAnonymous?: T;
   phoneNumber?: T;
   phoneNumberVerified?: T;
-  emailVerified?: T;
-  isAnonymous?: T;
-  image?: T;
-  twoFactorEnabled?: T;
-  role?: T;
   banned?: T;
   banReason?: T;
   banExpires?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "sessions_select".
- */
-export interface SessionsSelect<T extends boolean = true> {
-  user?: T;
-  token?: T;
-  expiresAt?: T;
-  ipAddress?: T;
-  userAgent?: T;
-  activeOrganizationId?: T;
-  impersonatedBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -941,12 +754,54 @@ export interface AccountsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sessions_select".
+ */
+export interface SessionsSelect<T extends boolean = true> {
+  user?: T;
+  token?: T;
+  expiresAt?: T;
+  ipAddress?: T;
+  userAgent?: T;
+  impersonatedBy?: T;
+  activeOrganization?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "verifications_select".
  */
 export interface VerificationsSelect<T extends boolean = true> {
   identifier?: T;
   value?: T;
   expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "twoFactors_select".
+ */
+export interface TwoFactorsSelect<T extends boolean = true> {
+  user?: T;
+  secret?: T;
+  backupCodes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "passkeys_select".
+ */
+export interface PasskeysSelect<T extends boolean = true> {
+  name?: T;
+  publicKey?: T;
+  user?: T;
+  credentialID?: T;
+  counter?: T;
+  deviceType?: T;
+  backedUp?: T;
+  transports?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1002,16 +857,6 @@ export interface MembersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "teams_select".
- */
-export interface TeamsSelect<T extends boolean = true> {
-  name?: T;
-  organization?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "invitations_select".
  */
 export interface InvitationsSelect<T extends boolean = true> {
@@ -1026,86 +871,11 @@ export interface InvitationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "twoFactors_select".
+ * via the `definition` "teams_select".
  */
-export interface TwoFactorsSelect<T extends boolean = true> {
-  user?: T;
-  secret?: T;
-  backupCodes?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "passkeys_select".
- */
-export interface PasskeysSelect<T extends boolean = true> {
+export interface TeamsSelect<T extends boolean = true> {
   name?: T;
-  publicKey?: T;
-  user?: T;
-  credentialID?: T;
-  counter?: T;
-  deviceType?: T;
-  backedUp?: T;
-  transports?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "oauthApplications_select".
- */
-export interface OauthApplicationsSelect<T extends boolean = true> {
-  clientId?: T;
-  clientSecret?: T;
-  name?: T;
-  redirectURLs?: T;
-  metadata?: T;
-  type?: T;
-  disabled?: T;
-  icon?: T;
-  user?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "oauthAccessTokens_select".
- */
-export interface OauthAccessTokensSelect<T extends boolean = true> {
-  accessToken?: T;
-  refreshToken?: T;
-  accessTokenExpiresAt?: T;
-  refreshTokenExpiresAt?: T;
-  client?: T;
-  user?: T;
-  scopes?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "oauthConsents_select".
- */
-export interface OauthConsentsSelect<T extends boolean = true> {
-  client?: T;
-  user?: T;
-  scopes?: T;
-  consentGiven?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ssoProviders_select".
- */
-export interface SsoProvidersSelect<T extends boolean = true> {
-  issuer?: T;
-  domain?: T;
-  oidcConfig?: T;
-  user?: T;
-  providerId?: T;
-  organizationId?: T;
+  organization?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1116,6 +886,17 @@ export interface SsoProvidersSelect<T extends boolean = true> {
 export interface JwksSelect<T extends boolean = true> {
   publicKey?: T;
   privateKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects_select".
+ */
+export interface ProjectsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

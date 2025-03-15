@@ -1,24 +1,24 @@
-export const supportedBetterAuthPluginIds = [
-  'harmony-email',
-  'harmony-phone-number',
-  'two-factor',
-  'username',
-  'anonymous',
-  'phone-number',
-  'magic-link',
-  'email-otp',
-  'passkey',
-  'one-tap',
-  'admin',
-  'api-key',
-  'organization',
-  'multi-session',
-  'open-api',
-  'jwt',
-  'next-cookies',
-  // 'sso', // NOT YET FULLY SUPPORTED
-  // 'oidc', // NOT YET FULLY SUPPORTED
-] as const
+export const supportedBetterAuthPluginIds = {
+  harmonyEmail: 'harmony-email',
+  harmonyPhoneNumber: 'harmony-phone-number',
+  twoFactor: 'two-factor',
+  username: 'username',
+  anonymous: 'anonymous',
+  phoneNumber: 'phone-number',
+  magicLink: 'magic-link',
+  emailOtp: 'email-otp',
+  passkey: 'passkey',
+  oneTap: 'one-tap',
+  admin: 'admin',
+  apiKey: 'api-key',
+  organization: 'organization',
+  multiSession: 'multi-session',
+  openApi: 'open-api',
+  jwt: 'jwt',
+  nextCookies: 'next-cookies',
+  sso: 'sso',
+  oidc: 'oidc',
+} as const
 
 export const baseCollectionSlugs = {
   users: 'users',

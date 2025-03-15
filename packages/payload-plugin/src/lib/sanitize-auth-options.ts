@@ -1,8 +1,9 @@
-import type { AdminOptions } from 'better-auth/plugins/admin'
-import type { PasskeyOptions } from 'better-auth/plugins/passkey'
-import type { OrganizationOptions } from 'better-auth/plugins/organization'
 import type { PayloadBetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../types.js'
-import { supportedBetterAuthPluginIds, betterAuthPluginSlugs } from './config.js'
+import {
+  supportedBetterAuthPluginIds,
+  betterAuthPluginSlugs,
+  baseCollectionSlugs,
+} from './config.js'
 
 /**
  * Sanitizes the BetterAuth options
@@ -19,12 +20,12 @@ export function sanitizeBetterAuthOptions(
   const res: SanitizedBetterAuthOptions = { ...baOptions }
 
   res.user = {
-    ...baOptions?.user,
+    ...(baOptions?.user ?? {}),
     modelName: userCollectionSlug,
   }
 
   res.account = {
-    ...baOptions?.account,
+    ...(baOptions?.account ?? {}),
     modelName: accountCollectionSlug,
     fields: {
       userId: 'user',
@@ -32,7 +33,7 @@ export function sanitizeBetterAuthOptions(
   }
 
   res.session = {
-    ...baOptions?.session,
+    ...(baOptions?.session ?? {}),
     modelName: sessionCollectionSlug,
     fields: {
       userId: 'user',
@@ -40,15 +41,15 @@ export function sanitizeBetterAuthOptions(
   }
 
   res.verification = {
-    ...baOptions?.verification,
+    ...(baOptions?.verification ?? {}),
     modelName: verificationCollectionSlug,
   }
 
   if (res.plugins) {
     try {
       const supportedPlugins = res.plugins.filter((plugin) => {
-        return supportedBetterAuthPluginIds.includes(
-          plugin.id as (typeof supportedBetterAuthPluginIds)[number],
+        return Object.values(supportedBetterAuthPluginIds).includes(
+          plugin.id as (typeof supportedBetterAuthPluginIds)[keyof typeof supportedBetterAuthPluginIds],
         )
       })
 
@@ -57,12 +58,14 @@ export function sanitizeBetterAuthOptions(
           `Unsupported BetterAuth plugins detected: ${res.plugins
             .filter(
               (p) =>
-                !supportedBetterAuthPluginIds.includes(
-                  p.id as (typeof supportedBetterAuthPluginIds)[number],
+                !Object.values(supportedBetterAuthPluginIds).includes(
+                  p.id as (typeof supportedBetterAuthPluginIds)[keyof typeof supportedBetterAuthPluginIds],
                 ),
             )
             .map((p) => p.id)
-            .join(', ')}. Supported plugins are: ${supportedBetterAuthPluginIds.join(', ')}. 
+            .join(
+              ', ',
+            )}. Supported plugins are: ${Object.values(supportedBetterAuthPluginIds).join(', ')}. 
             These plugins will be ignored.`,
         )
       }
@@ -70,86 +73,198 @@ export function sanitizeBetterAuthOptions(
       // Add the schema to the supported plugins
       if (supportedPlugins.length > 0) {
         supportedPlugins.forEach((plugin) => {
-          const pluginId = plugin.id as (typeof supportedBetterAuthPluginIds)[number]
+          const pluginId =
+            plugin.id as (typeof supportedBetterAuthPluginIds)[keyof typeof supportedBetterAuthPluginIds]
 
           switch (pluginId) {
-            case 'admin':
-              ;(plugin as AdminOptions & { id: string }).schema = {
-                ...plugin.schema,
-                user: {
-                  modelName: userCollectionSlug,
-                  fields: { ...(plugin.schema?.user?.fields ?? {}) },
-                },
-                session: {
-                  modelName: sessionCollectionSlug,
-                  fields: { ...(plugin.schema?.session?.fields ?? {}) },
-                },
-              }
-              ;(plugin as AdminOptions & { id: string }).adminRoles =
-                options.users?.adminRoles ?? undefined
+            case supportedBetterAuthPluginIds.admin:
+              const adminPlugin = plugin as any
+              if (!adminPlugin.adminRoles)
+                adminPlugin.adminRoles = options.users?.adminRoles ?? ['admin']
+              adminPlugin.adminRoles = options.users?.adminRoles ?? ['admin']
+              Object.assign(plugin, adminPlugin)
               break
-            case 'api-key':
-              // @ts-ignore They havent exported the types for this
-              plugin.schema.apikey = {
+            case supportedBetterAuthPluginIds.apiKey:
+              const apiKeyPlugin = plugin as any
+              if (!apiKeyPlugin.schema) apiKeyPlugin.schema = {}
+              if (!apiKeyPlugin.schema.apikey) apiKeyPlugin.schema.apikey = {}
+              apiKeyPlugin.schema.apikey = {
+                ...apiKeyPlugin.schema.apikey,
                 modelName: betterAuthPluginSlugs.apiKeys,
-                // @ts-ignore They havent exported the types for this
-                fields: { ...(plugin.schema?.apikey?.fields ?? {}), userId: 'user' },
-              }
-              break
-            case 'passkey':
-              ;(plugin as PasskeyOptions & { id: string }).schema = {
-                ...plugin.schema,
-                passkey: {
-                  ...(plugin.schema?.passkey ?? {}),
-                  modelName: betterAuthPluginSlugs.passkeys,
-                  fields: { ...(plugin.schema?.passkey?.fields ?? {}), userId: 'user' },
-                },
-              }
-              break
-            case 'organization':
-              const orgPlugin = plugin as OrganizationOptions & { id: string }
-              orgPlugin.schema = {
-                ...orgPlugin.schema,
-                session: {
-                  fields: {
-                    activeOrganizationId: 'activeOrganization',
+                fields: {
+                  ...(plugin.schema?.apikey?.fields ?? {}),
+                  userId: {
+                    ...(plugin.schema?.apikey?.fields?.userId ?? {}),
+                    fieldName: 'user',
                   },
                 },
-                team: {
-                  ...(orgPlugin.schema?.team ?? {}),
-                  modelName: betterAuthPluginSlugs.teams,
-                  fields: {
-                    ...(orgPlugin.schema?.team?.fields ?? {}),
-                    organizationId: 'organization',
+              }
+              Object.assign(plugin, apiKeyPlugin)
+              break
+            case supportedBetterAuthPluginIds.passkey:
+              const passkeyPlugin = plugin as any
+              if (!passkeyPlugin.schema) passkeyPlugin.schema = {}
+              if (!passkeyPlugin.schema.passkey) passkeyPlugin.schema.passkey = {}
+              passkeyPlugin.schema.passkey = {
+                ...passkeyPlugin.schema.passkey,
+                modelName: betterAuthPluginSlugs.passkeys,
+                fields: {
+                  ...(passkeyPlugin.schema.passkey.fields || {}),
+                  userId: {
+                    ...passkeyPlugin.schema.passkey.fields.userId,
+                    fieldName: 'user',
                   },
                 },
+              }
+              Object.assign(plugin, passkeyPlugin)
+              break
+            case supportedBetterAuthPluginIds.organization:
+              const organizationPlugin = plugin as any
+              if (!organizationPlugin.schema) organizationPlugin.schema = {}
+              if (!organizationPlugin.schema.organization) organizationPlugin.schema.member = {}
+              if (!organizationPlugin.schema.invitation) organizationPlugin.schema.invitation = {}
+              if (!organizationPlugin.schema.team) organizationPlugin.schema.team = {}
+              if (!organizationPlugin.schema.session) organizationPlugin.schema.session = {}
+              organizationPlugin.schema = {
+                ...organizationPlugin.schema,
                 organization: {
-                  ...(orgPlugin.schema?.organization ?? {}),
+                  ...organizationPlugin.schema.organization,
                   modelName: betterAuthPluginSlugs.organizations,
-                  fields: { ...(orgPlugin.schema?.organization?.fields ?? {}) },
+                  fields: {
+                    ...(organizationPlugin.schema.organization.fields ?? {}),
+                  },
                 },
                 member: {
-                  ...(orgPlugin.schema?.member ?? {}),
+                  ...organizationPlugin.schema.member,
                   modelName: betterAuthPluginSlugs.members,
                   fields: {
-                    ...(orgPlugin.schema?.member?.fields ?? {}),
-                    teamId: 'team',
-                    organizationId: 'organization',
-                    userId: 'user',
+                    ...(organizationPlugin.schema.member.fields ?? {}),
+                    organizationId: {
+                      ...(organizationPlugin.schema.member.fields?.organizationId ?? {}),
+                      fieldName: 'organization',
+                    },
+                    userId: {
+                      ...(organizationPlugin.schema.member.fields?.userId ?? {}),
+                      fieldName: 'user',
+                    },
+                    teamId: {
+                      ...(organizationPlugin.schema.member.fields?.teamId ?? {}),
+                      fieldName: 'team',
+                    },
                   },
                 },
                 invitation: {
-                  ...(orgPlugin.schema?.invitation ?? {}),
+                  ...organizationPlugin.schema.invitation,
                   modelName: betterAuthPluginSlugs.invitations,
                   fields: {
-                    ...(orgPlugin.schema?.invitation?.fields ?? {}),
-                    organizationId: 'organization',
-                    inviterId: 'inviter',
-                    teamId: 'team',
+                    ...(organizationPlugin.schema.invitation.fields ?? {}),
+                    organizationId: {
+                      ...(organizationPlugin.schema.invitation.fields?.organizationId ?? {}),
+                      fieldName: 'organization',
+                    },
+                    inviterId: {
+                      ...(organizationPlugin.schema.invitation.fields?.inviterId ?? {}),
+                      fieldName: 'inviter',
+                    },
+                    teamId: {
+                      ...(organizationPlugin.schema.invitation.fields?.teamId ?? {}),
+                      fieldName: 'team',
+                    },
+                  },
+                },
+                team: {
+                  ...organizationPlugin.schema.team,
+                  modelName: betterAuthPluginSlugs.teams,
+                  fields: {
+                    ...(organizationPlugin.schema.team.fields ?? {}),
+                    organizationId: {
+                      ...(organizationPlugin.schema.team.fields?.organizationId ?? {}),
+                      fieldName: 'organization',
+                    },
+                  },
+                },
+                session: {
+                  ...organizationPlugin.schema.session,
+                  modelName: baseCollectionSlugs.sessions,
+                  fields: {
+                    ...(organizationPlugin.schema.session.fields ?? {}),
+                    activeOrganizationId: {
+                      ...(organizationPlugin.schema.session.fields?.activeOrganizationId ?? {}),
+                      fieldName: 'activeOrganization',
+                    },
                   },
                 },
               }
-              Object.assign(plugin, orgPlugin)
+              Object.assign(plugin, organizationPlugin)
+              break
+            case supportedBetterAuthPluginIds.sso:
+              const ssoPlugin = plugin as any
+              if (!ssoPlugin.schema) ssoPlugin.schema = {}
+              if (!ssoPlugin.schema.sso) ssoPlugin.schema.sso = {}
+              ssoPlugin.schema.sso = {
+                ...ssoPlugin.schema.sso,
+                modelName: betterAuthPluginSlugs.ssoProviders,
+                fields: {
+                  ...(ssoPlugin.schema.sso.fields ?? {}),
+                  userId: {
+                    ...(ssoPlugin.schema.sso.fields?.userId ?? {}),
+                    fieldName: 'user',
+                  },
+                },
+              }
+              Object.assign(plugin, ssoPlugin)
+              break
+            case supportedBetterAuthPluginIds.oidc:
+              const oidcPlugin = plugin as any
+              if (!oidcPlugin.schema) oidcPlugin.schema = {}
+              if (!oidcPlugin.schema.oauthApplication) oidcPlugin.schema.oauthApplication = {}
+              if (!oidcPlugin.schema.oauthAccessToken) oidcPlugin.schema.oauthAccessToken = {}
+              if (!oidcPlugin.schema.oauthConsent) oidcPlugin.schema.oauthConsent = {}
+              oidcPlugin.schema = {
+                ...oidcPlugin.schema,
+                oauthApplication: {
+                  ...oidcPlugin.schema.oauthApplication,
+                  modelName: betterAuthPluginSlugs.oauthApplications,
+                  fields: {
+                    ...(oidcPlugin.schema.oauthApplication.fields ?? {}),
+                    userId: {
+                      ...(oidcPlugin.schema.oauthApplication.fields?.userId ?? {}),
+                      fieldName: 'user',
+                    },
+                  },
+                },
+                oauthAccessToken: {
+                  ...oidcPlugin.schema.oauthAccessToken,
+                  modelName: betterAuthPluginSlugs.oauthAccessTokens,
+                  fields: {
+                    ...(oidcPlugin.schema.oauthAccessToken.fields ?? {}),
+                    userId: {
+                      ...(oidcPlugin.schema.oauthAccessToken.fields?.userId ?? {}),
+                      fieldName: 'user',
+                    },
+                    clientId: {
+                      ...(oidcPlugin.schema.oauthAccessToken.fields?.clientId ?? {}),
+                      fieldName: 'client',
+                    },
+                  },
+                },
+                oauthConsent: {
+                  ...oidcPlugin.schema.oauthConsent,
+                  modelName: betterAuthPluginSlugs.oauthConsents,
+                  fields: {
+                    ...(oidcPlugin.schema.oauthConsent.fields ?? {}),
+                    userId: {
+                      ...(oidcPlugin.schema.oauthConsent.fields?.userId ?? {}),
+                      fieldName: 'user',
+                    },
+                    clientId: {
+                      ...(oidcPlugin.schema.oauthConsent.fields?.clientId ?? {}),
+                      fieldName: 'client',
+                    },
+                  },
+                },
+              }
+              Object.assign(plugin, oidcPlugin)
               break
             default:
               break
@@ -157,7 +272,7 @@ export function sanitizeBetterAuthOptions(
         })
       }
       // Make sure only the supported plugins are used
-      res.plugins = [...supportedPlugins]
+      Object.assign(res.plugins, supportedPlugins)
     } catch (error) {
       throw new Error(`Error sanitizing BetterAuth plugins: ${error}`)
     }

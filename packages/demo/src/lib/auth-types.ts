@@ -1,4 +1,3 @@
-
 import { authClient } from "./auth-client";
 import getPayload from "./getPayload";
 

@@ -5,6 +5,7 @@ import { buildConfig } from "payload";
 import sharp from "sharp";
 import { fileURLToPath } from "url";
 import { plugins } from "./payload/plugins";
+import collections from "./payload/collections";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -28,10 +29,17 @@ export default buildConfig({
           path: "@/payload/components/login-redirect.tsx",
         },
       ],
+      logout: {
+        Button: "@/payload/components/logout.tsx",
+      },
       views: {
         login: {
           path: "/login",
           Component: "@/payload/views/login",
+        },
+        createFirstAdmin: {
+          path: "/create-first-admin",
+          Component: "@/payload/views/create-first-admin",
         },
         // logout: {
         //   path: "/logout",
@@ -40,7 +48,7 @@ export default buildConfig({
       },
     },
   },
-  collections: [],
+  collections,
   db: postgresAdapter({
     disableCreateDatabase: true,
     pool: {
@@ -49,6 +57,7 @@ export default buildConfig({
     push: false,
     migrationDir: path.resolve(dirname, "lib/migrations"),
   }),
+  endpoints: [],
   editor: lexicalEditor(),
   plugins,
   secret: process.env.PAYLOAD_SECRET || "test-secret_key",

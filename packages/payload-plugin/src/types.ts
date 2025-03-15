@@ -45,6 +45,11 @@ export interface PayloadBetterAuthPluginOptions {
    */
   enableDebugLogs?: boolean
   /**
+   * Log the tables that are needed for better-auth on init
+   * @default false
+   */
+  logTables?: boolean
+  /**
    * Hide the plugin collections from the payload admin UI
    * @default false
    */

@@ -25,7 +25,7 @@ function initBetterAuth<P extends TPlugins>({
   const auth = betterAuth({
     ...options,
     database: payloadAdapter(payload, {
-      enable_debug_logs: options.enableDebugLogs ?? false,
+      enableDebugLogs: options.enableDebugLogs ?? false,
     }),
   })
 
@@ -46,7 +46,7 @@ export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions)
 
     // Determine which collections to add based on the options and plugins
     const requiredCollectionSlugs = getRequiredCollectionSlugs({
-      enable_debug_logs: pluginOptions.enableDebugLogs ?? false,
+      logTables: pluginOptions.logTables ?? false,
       pluginOptions,
       sanitizedBAOptions: sanitzedBetterAuthOptions,
     })

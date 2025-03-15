@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import getPayload from "@/lib/getPayload";
 import { AuthForm } from "./form";
 import { Gutter } from "@payloadcms/ui";
+import SignIn from "@/components/sign-in";
 
 export default async function LoginView({
   initPageResult,
@@ -27,7 +28,7 @@ export default async function LoginView({
     routes: { admin },
   } = config;
 
-  const isFirstAdmin = await req.payload.count({
+  const adminCount = await req.payload.count({
     collection: "users",
     where: {
       role: {
@@ -36,18 +37,12 @@ export default async function LoginView({
     },
   });
 
-  //   if (isFirstAdmin.totalDocs === 0) {
-  //     redirect("/admin/create-first-admin");
-  //   }
-
-  //   if (user && user.role !== "admin") {
-  //     const payloadAuth = await getPayload();
-  //     await payloadAuth.betterAuth.api.signOut({ headers: req.headers });
-  //     redirect("/admin/login");
-  //   }
+  if (adminCount.totalDocs === 0) {
+    redirect("/admin/create-first-admin");
+  }
 
   return (
-    <Gutter className="mt-40">
+    <Gutter className="twp mt-40">
       {RenderServerComponent({
         Component: graphics?.Logo,
         importMap: payload.importMap,
@@ -75,7 +70,7 @@ export default async function LoginView({
         } satisfies ServerProps,
       })} */}
       <div className="flex flex-col items-center justify-center">
-        <AuthForm view="signIn" redirectTo="/admin" />
+        <SignIn admin={true} />
       </div>
       {RenderServerComponent({
         Component: afterLogin,
