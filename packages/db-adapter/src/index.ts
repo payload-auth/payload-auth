@@ -14,7 +14,7 @@ import type { PayloadAdapter } from "./types.js";
 const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
   function debugLog(message: any[]) {
     if (config.enableDebugLogs) {
-      console.log(`[payload-db-adapter]`, ...message);
+      console.log("[payload-db-adapter]", ...message);
     }
   }
 
@@ -38,7 +38,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
       getModelName,
       singleIdQuery,
       multipleIdsQuery,
-    } = createTransform(options);
+    } = createTransform(options, config.enableDebugLogs ?? false);
 
     return {
       id: "payload",

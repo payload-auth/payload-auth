@@ -37,6 +37,12 @@ export default async function LoginView({
     },
   });
 
+  // Filter out the first component from afterLogin array or set to undefined if not more than 1
+  const filteredAfterLogin =
+    Array.isArray(afterLogin) && afterLogin.length > 1
+      ? afterLogin.slice(1)
+      : undefined;
+
   if (adminCount.totalDocs === 0) {
     redirect("/admin/create-first-admin");
   }
@@ -56,7 +62,7 @@ export default async function LoginView({
           user: user ?? undefined,
         } satisfies ServerProps,
       })}
-      {/* {RenderServerComponent({
+      {RenderServerComponent({
         Component: beforeLogin,
         importMap: payload.importMap,
         serverProps: {
@@ -68,12 +74,12 @@ export default async function LoginView({
           searchParams,
           user: user ?? undefined,
         } satisfies ServerProps,
-      })} */}
+      })}
       <div className="flex flex-col items-center justify-center">
         <SignIn admin={true} />
       </div>
       {RenderServerComponent({
-        Component: afterLogin,
+        Component: filteredAfterLogin,
         importMap: payload.importMap,
         serverProps: {
           i18n,

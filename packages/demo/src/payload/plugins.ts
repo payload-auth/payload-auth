@@ -49,16 +49,6 @@ const betterAuthPlugins = [
       },
     },
   }),
-  // username({
-  //   minUsernameLength: 5,
-  //   maxUsernameLength: 100,
-  //   usernameValidator: (username) => {
-  //     if (username === "admin") {
-  //       return false;
-  //     }
-  //     return true;
-  //   },
-  // }),
   anonymous({
     emailDomainName: "payload-better-auth.com",
     onLinkAccount: async ({ anonymousUser, newUser }) => {
@@ -85,18 +75,8 @@ const betterAuthPlugins = [
     rpID: "payload-better-auth",
     rpName: "payload-better-auth-demo",
     origin: "http://localhost:3000",
-    schema: {
-      passkey: {
-        modelName: "passkeys",
-        fields: {
-          userId: "user",
-        },
-      },
-    },
   }),
-  admin({
-    defaultRole: undefined,
-  }),
+  admin(),
   apiKey(),
   organization({
     teams: {
@@ -126,9 +106,7 @@ export const betterAuthOptions: PayloadBetterAuthOptions = {
   },
   socialProviders: {
     google: {
-      clientId:
-        "147172375749-bm67o0u8bv3bagq76qghb2qj9io1i73m.apps.googleusercontent.com",
-      // clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
@@ -187,6 +165,7 @@ export const plugins: Plugin[] = [
   payloadBetterAuth({
     logTables: false,
     enableDebugLogs: true,
+    hidePluginCollections: true,
     users: {
       slug: "users",
       adminRoles: ["admin"],

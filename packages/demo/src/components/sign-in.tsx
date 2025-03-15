@@ -32,7 +32,9 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
       <CardHeader className="space-y-1">
         <CardTitle className="text-xl md:text-2xl font-bold">Sign In</CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
-          Enter your credentials to access your account
+          {admin
+            ? "Enter your credentials to access the admin dashboard"
+            : "Enter your credentials to access your account"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -74,17 +76,19 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
               className="w-full"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="remember"
-              onClick={() => {
-                setRememberMe(!rememberMe);
-              }}
-            />
-            <Label htmlFor="remember" className="text-sm">
-              Remember me
-            </Label>
-          </div>
+          {!admin && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="remember"
+                onClick={() => {
+                  setRememberMe(!rememberMe);
+                }}
+              />
+              <Label htmlFor="remember" className="text-sm">
+                Remember me
+              </Label>
+            </div>
+          )}
 
           <Button
             type="submit"
@@ -325,7 +329,12 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
         <div className="w-full border-t pt-4">
           <p className="text-center text-xs text-muted-foreground">
             Secured by{" "}
-            <span className="font-medium text-orange-500">better-auth</span>
+            <Link
+              href="https://github.com/forrestdevs/payload-better-auth"
+              className="font-medium text-orange-500"
+            >
+              payload-better-auth
+            </Link>
           </p>
         </div>
       </CardFooter>

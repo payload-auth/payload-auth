@@ -32,6 +32,7 @@ export function buildCollectionConfigs({
           (collection) => collection.slug === userSlug,
         ) as CollectionConfig | undefined
         const usersCollection: CollectionConfig = {
+          ...existingUserCollection,
           slug: userSlug,
           admin: {
             ...existingUserCollection?.admin,
@@ -115,7 +116,6 @@ export function buildCollectionConfigs({
             },
           ],
           timestamps: true,
-          ...existingUserCollection,
         }
         if (baPlugins) {
           baPlugins.forEach((plugin) => {

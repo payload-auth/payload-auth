@@ -3,8 +3,17 @@ import { getAuthTables } from "better-auth/db";
 import type { BetterAuthOptions, Where } from "better-auth";
 import type { CollectionSlug, Where as PayloadWhere } from "payload";
 
-export const createTransform = (options: BetterAuthOptions) => {
+export const createTransform = (
+  options: BetterAuthOptions,
+  enableDebugLogs: boolean
+) => {
   const schema = getAuthTables(options);
+
+  function debugLog(message: any[]) {
+    if (enableDebugLogs) {
+      console.log(`[payload-db-adapter]`, ...message);
+    }
+  }
 
   function getField(model: string, field: string) {
     if (field === "id") {
@@ -12,7 +21,7 @@ export const createTransform = (options: BetterAuthOptions) => {
     }
     const f = (schema as Record<string, any>)[model]?.fields[field];
     const fieldName = f?.fieldName || field;
-    console.log("[payload-db-adapter] getField: ", model, fieldName);
+    debugLog(["getField: ", model, fieldName]);
     return fieldName;
   }
 
@@ -127,49 +136,17 @@ export const createTransform = (options: BetterAuthOptions) => {
           typeof data[dataField] === "number" &&
           updatedFieldName.endsWith("Id")
         ) {
-          console.log(
-            "Incoming data is number but stored as string",
+          debugLog([
+            "Incoming data is typeof number but stored as typeof string",
             dataField,
-            data[dataField].toString()
-          );
+            data[dataField].toString(),
+          ]);
           transformedData[updatedFieldName] = data[dataField].toString();
         } else {
           transformedData[updatedFieldName] = data[dataField];
         }
-
-        // if (
-        //   options[model as keyof BetterAuthOptions]?.fields &&
-        //   dataField in (options[model as keyof BetterAuthOptions]?.fields || {})
-        // ) {
-        //   if (typeof data[dataField] === "string" && dataField.endsWith("Id")) {
-        //     transformedData[updatedFieldName] = parseInt(data[dataField]);
-        //   } else {
-        //     transformedData[updatedFieldName] = data[dataField];
-        //   }
-        // } else if (
-        //   typeof data[dataField] === "string" &&
-        //   dataField.endsWith("Id")
-        // ) {
-        //   transformedData[updatedFieldName] = parseInt(data[dataField]);
-        // } else {
-        //
-        // }
       } else {
         transformedData[dataField] = data[dataField];
-        // if (
-        //   schemaFields[dataField].type === "string" &&
-        //   typeof data[dataField] === "number" &&
-        //   updatedFieldName.endsWith("Id")
-        // ) {
-        //   console.log(
-        //     "Incoming data is number but stored as string",
-        //     dataField,
-        //     data[dataField].toString()
-        //   );
-        //   transformedData[dataField] = data[dataField].toString();
-        // } else {
-        //   transformedData[dataField] = data[dataField];
-        // }
       }
     }
     return transformedData;
@@ -252,40 +229,47 @@ export const createTransform = (options: BetterAuthOptions) => {
     }
   }
 
+  function convertWhereValue(value: any, field: string) {
+    if (field === "id" || field === "_id") {
+      if (typeof value === "object") {
+        return value.id;
+      }
+      return value;
+    }
+    return value;
+  }
+
   function convertWhereClause(model: string, where?: Where[]): PayloadWhere {
     if (!where) return {};
-    console.log("[payload-db-adapter] convert where: ", model, where);
     if (where.length === 1) {
       const w = where[0];
       if (!w) {
         return {};
       }
 
+      const field = getField(model, w.field);
+      const value = convertWhereValue(w.value, field);
+
       const res = {
-        [getField(model, w.field)]: operatorToPayload(
-          w.operator ?? "",
-          w.value
-        ),
+        [field]: operatorToPayload(w.operator ?? "", value),
       };
-      console.log("[payload-db-adapter] convert where 1 res: ", res);
+
       return res;
     }
     const and = where.filter((w) => w.connector === "AND" || !w.connector);
     const or = where.filter((w) => w.connector === "OR");
     const andClause = and.map((w) => {
+      const field = getField(model, w.field);
+      const value = convertWhereValue(w.value, field);
       return {
-        [getField(model, w.field)]: operatorToPayload(
-          w.operator ?? "",
-          w.value
-        ),
+        [field]: operatorToPayload(w.operator ?? "", value),
       };
     });
     const orClause = or.map((w) => {
+      const field = getField(model, w.field);
+      const value = convertWhereValue(w.value, field);
       return {
-        [getField(model, w.field)]: operatorToPayload(
-          w.operator ?? "",
-          w.value
-        ),
+        [field]: operatorToPayload(w.operator ?? "", value),
       };
     });
 

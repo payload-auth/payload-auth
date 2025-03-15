@@ -24,9 +24,15 @@ export default buildConfig({
       createFirstUser: "/create-admin-redirect",
     },
     components: {
-      beforeLogin: [
+      graphics: {
+        Logo: "@/payload/components/logo.tsx",
+      },
+      afterLogin: [
         {
           path: "@/payload/components/login-redirect.tsx",
+        },
+        {
+          path: "@/payload/components/after-login.tsx",
         },
       ],
       logout: {
@@ -41,10 +47,6 @@ export default buildConfig({
           path: "/create-first-admin",
           Component: "@/payload/views/create-first-admin",
         },
-        // logout: {
-        //   path: "/logout",
-        //   Component: "@/payload/views/logout.tsx",
-        // },
       },
     },
   },
