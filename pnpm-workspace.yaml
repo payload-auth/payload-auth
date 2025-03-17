@@ -2,3 +2,4 @@ packages:
   - "packages/db-adapter"
   - "packages/payload-plugin"
   - "packages/demo"
+  - "packages/test-payload"

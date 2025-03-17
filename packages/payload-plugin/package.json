@@ -2,7 +2,7 @@
   "name": "@payload-auth/better-auth-plugin",
   "scope": "payload-auth",
   "description": "A Payload CMS plugin for Better Auth",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,14 +17,14 @@
       "types": "./dist/types.d.ts"
     },
     "./client": {
-      "import": "./src/payload/exports/client.ts",
-      "types": "./src/payload/exports/client.ts",
-      "default": "./src/payload/exports/client.ts"
+      "import": "./dist/payload/exports/client.js",
+      "types": "./dist/payload/exports/client.d.ts",
+      "default": "./dist/payload/exports/client.js"
     },
     "./rsc": {
-      "import": "./src/payload/exports/rsc.ts",
-      "types": "./src/payload/exports/rsc.ts",
-      "default": "./src/payload/exports/rsc.ts"
+      "import": "./dist/payload/exports/rsc.js",
+      "types": "./dist/payload/exports/rsc.d.ts",
+      "default": "./dist/payload/exports/rsc.js"
     }
   },
   "typesVersions": {
