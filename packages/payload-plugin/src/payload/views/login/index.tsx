@@ -4,6 +4,7 @@ import { RenderServerComponent } from '@payloadcms/ui/elements/RenderServerCompo
 import { redirect } from 'next/navigation'
 import { Gutter } from '@payloadcms/ui'
 import SignIn from '../../components/sign-in'
+import Logo from '../../../payload/components/logo'
 
 export default async function LoginView({
   initPageResult,
@@ -42,9 +43,10 @@ export default async function LoginView({
   }
 
   return (
-    <Gutter className="twp mt-40">
+    <Gutter className="mt-40">
       {RenderServerComponent({
         Component: graphics?.Logo,
+        Fallback: () => <Logo />,
         importMap: payload.importMap,
         serverProps: {
           i18n,

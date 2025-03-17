@@ -167,6 +167,9 @@ export const createTransform = (
         const newKey = `${key}Id`;
         result[newKey] = value.id;
 
+        //also remove the object and just keep the id
+        result[key] = value.id;
+
         // Keep the original value as well for backward compatibility
       } else if (Array.isArray(value)) {
         // Handle arrays of relationships
@@ -177,6 +180,9 @@ export const createTransform = (
         ) {
           const newKey = `${key}Ids`;
           result[newKey] = value.map((item) => item.id);
+
+          //also remove the object and just keep the id
+          result[key] = value.map((item) => item.id);
         }
       }
     });

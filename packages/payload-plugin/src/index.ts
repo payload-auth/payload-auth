@@ -62,10 +62,6 @@ export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions)
       ...config.admin,
       components: {
         ...config.admin?.components,
-        graphics: {
-          ...config.admin?.components?.graphics,
-          Logo: '@payload-auth/better-auth-plugin/rsc#Logo',
-        },
         afterLogin: [
           {
             path: '@payload-auth/better-auth-plugin/rsc#LoginRedirect',

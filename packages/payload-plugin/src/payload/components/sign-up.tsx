@@ -17,10 +17,14 @@ import { inferAdditionalFields } from 'better-auth/client/plugins'
 
 export function SignUp({
   admin = false,
-  addAdminRole,
+  apiRoute,
+  userSlug,
+  defaultAdminRole,
 }: {
   admin?: boolean
-  addAdminRole: (userId: string) => Promise<void>
+  apiRoute: string
+  userSlug: string
+  defaultAdminRole: string
 }) {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -52,6 +56,26 @@ export function SignUp({
         setImagePreview(reader.result as string)
       }
       reader.readAsDataURL(file)
+    }
+  }
+
+  const addAdminRole = async (userId: string) => {
+    try {
+      const req = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}${apiRoute}/${userSlug}/${userId}`,
+        {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            role: defaultAdminRole ?? 'admin',
+          }),
+        },
+      )
+    } catch (err) {
+      console.log(err)
     }
   }
   const [loading, setLoading] = useState(false)
@@ -140,40 +164,43 @@ export function SignUp({
               className="w-full"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="image" className="text-sm font-medium">
-              Profile Image (optional)
-            </Label>
-            <div className="flex items-center gap-3">
-              {imagePreview && (
-                <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                  <Image src={imagePreview} alt="Profile preview" fill className="object-cover" />
-                </div>
-              )}
-              <div className="flex-1 flex items-center gap-2">
-                <Input
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="w-full text-sm"
-                />
+
+          {!admin && (
+            <div className="space-y-2">
+              <Label htmlFor="image" className="text-sm font-medium">
+                Profile Image (optional)
+              </Label>
+              <div className="flex items-center gap-3">
                 {imagePreview && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 flex-shrink-0"
-                    onClick={() => {
-                      setImage(null)
-                      setImagePreview(null)
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                    <Image src={imagePreview} alt="Profile preview" fill className="object-cover" />
+                  </div>
                 )}
+                <div className="flex-1 flex items-center gap-2">
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="w-full text-sm"
+                  />
+                  {imagePreview && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 flex-shrink-0"
+                      onClick={() => {
+                        setImage(null)
+                        setImagePreview(null)
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           <Button
             type="submit"

@@ -4,6 +4,7 @@ import { RenderServerComponent } from '@payloadcms/ui/elements/RenderServerCompo
 import { redirect } from 'next/navigation'
 import { Gutter } from '@payloadcms/ui'
 import { SignUp } from '../../components/sign-up'
+import Logo from '../../../payload/components/logo'
 
 export default async function CreateFirstAdmin({
   initPageResult,
@@ -21,7 +22,7 @@ export default async function CreateFirstAdmin({
 
   const {
     admin: { components: { afterLogin, beforeLogin, graphics } = {}, user: userSlug },
-    routes: { admin },
+    routes: { admin, api },
   } = config
 
   const adminCount = await req.payload.count({
@@ -37,64 +38,96 @@ export default async function CreateFirstAdmin({
     redirect(admin)
   }
 
-  const addAdminRole = async (userId: string) => {
-    await payload.update({
-      collection: userSlug,
-      id: userId,
-      data: {
-        role: defaultAdminRole ?? 'admin',
-      },
-    })
-  }
+  // const addRoleAction = async (userId: string) => {
+  //   'use server'
+  //   await payload.update({
+  //     collection: userSlug,
+  //     id: userId,
+  //     data: {
+  //       role: defaultAdminRole ?? 'admin',
+  //     },
+  //   })
+  // }
 
   // Filter out the first component from afterLogin array or set to undefined if not more than 1
   const filteredAfterLogin =
     Array.isArray(afterLogin) && afterLogin.length > 1 ? afterLogin.slice(1) : undefined
 
   return (
-    <Gutter className="twp mt-40">
-      {RenderServerComponent({
-        Component: graphics?.Logo,
-        importMap: payload.importMap,
-        serverProps: {
-          i18n,
-          locale,
-          params,
-          payload,
-          permissions,
-          searchParams,
-          user: user ?? undefined,
-        } satisfies ServerProps,
-      })}
-      {RenderServerComponent({
-        Component: beforeLogin,
-        importMap: payload.importMap,
-        serverProps: {
-          i18n,
-          locale,
-          params,
-          payload,
-          permissions,
-          searchParams,
-          user: user ?? undefined,
-        } satisfies ServerProps,
-      })}
-      <div className="flex flex-col items-center justify-center">
-        <SignUp admin={true} addAdminRole={addAdminRole} />
+    <Gutter className="mt-40">
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            width: '100%',
+            marginBottom: '1.5rem',
+          }}
+        >
+          {RenderServerComponent({
+            Component: graphics?.Logo,
+            Fallback: () => <Logo />,
+            importMap: payload.importMap,
+            serverProps: {
+              i18n,
+              locale,
+              params,
+              payload,
+              permissions,
+              searchParams,
+              user: user ?? undefined,
+            } satisfies ServerProps,
+          })}
+        </div>
+        {RenderServerComponent({
+          Component: beforeLogin,
+          importMap: payload.importMap,
+          serverProps: {
+            i18n,
+            locale,
+            params,
+            payload,
+            permissions,
+            searchParams,
+            user: user ?? undefined,
+          } satisfies ServerProps,
+        })}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <SignUp
+            admin={true}
+            apiRoute={api}
+            userSlug={userSlug}
+            defaultAdminRole={defaultAdminRole}
+          />
+        </div>
+        {RenderServerComponent({
+          Component: filteredAfterLogin,
+          importMap: payload.importMap,
+          serverProps: {
+            i18n,
+            locale,
+            params,
+            payload,
+            permissions,
+            searchParams,
+            user: user ?? undefined,
+          } satisfies ServerProps,
+        })}
       </div>
-      {RenderServerComponent({
-        Component: filteredAfterLogin,
-        importMap: payload.importMap,
-        serverProps: {
-          i18n,
-          locale,
-          params,
-          payload,
-          permissions,
-          searchParams,
-          user: user ?? undefined,
-        } satisfies ServerProps,
-      })}
     </Gutter>
   )
 }
