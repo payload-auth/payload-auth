@@ -35,14 +35,10 @@ export default buildConfig({
     push: false,
     migrationDir: path.resolve(dirname, "lib/migrations"),
   }),
-  endpoints: [],
   editor: lexicalEditor(),
   plugins,
   secret: process.env.PAYLOAD_SECRET || "test-secret_key",
-  cors: {
-    origins: allowedOrigins,
-    headers: ["authorization", "x-csrf-token"],
-  },
+  cors: allowedOrigins,
   csrf: allowedOrigins,
   sharp,
   typescript: {

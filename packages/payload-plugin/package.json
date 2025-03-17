@@ -2,7 +2,7 @@
   "name": "@payload-auth/better-auth-plugin",
   "scope": "payload-auth",
   "description": "A Payload CMS plugin for Better Auth",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",

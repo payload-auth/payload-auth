@@ -79,11 +79,21 @@ export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions)
           ...config.admin?.components?.views,
           login: {
             path: '/login',
-            Component: '@payload-auth/better-auth-plugin/rsc#Login',
+            Component: {
+              path: '@payload-auth/better-auth-plugin/rsc#Login',
+              serverProps: {
+                defaultAdminRole: pluginOptions.users?.adminRoles?.[0],
+              },
+            },
           },
           createFirstAdmin: {
             path: '/create-first-admin',
-            Component: '@payload-auth/better-auth-plugin/rsc#CreateFirstAdmin',
+            Component: {
+              path: '@payload-auth/better-auth-plugin/rsc#CreateFirstAdmin',
+              serverProps: {
+                defaultAdminRole: pluginOptions.users?.adminRoles?.[0],
+              },
+            },
           },
         },
       },

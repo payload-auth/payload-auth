@@ -9,7 +9,8 @@ export default async function CreateFirstAdmin({
   initPageResult,
   params,
   searchParams,
-}: AdminViewServerProps) {
+  defaultAdminRole,
+}: AdminViewServerProps & { defaultAdminRole: string }) {
   const { locale, permissions, req } = initPageResult
   const {
     i18n,
@@ -24,16 +25,16 @@ export default async function CreateFirstAdmin({
   } = config
 
   const adminCount = await req.payload.count({
-    collection: 'users',
+    collection: userSlug,
     where: {
       role: {
-        equals: 'admin',
+        equals: defaultAdminRole ?? 'admin',
       },
     },
   })
 
   if (adminCount.totalDocs > 0) {
-    redirect('/admin')
+    redirect(admin)
   }
 
   const addAdminRole = async (userId: string) => {
@@ -41,7 +42,7 @@ export default async function CreateFirstAdmin({
       collection: userSlug,
       id: userId,
       data: {
-        role: 'admin',
+        role: defaultAdminRole ?? 'admin',
       },
     })
   }

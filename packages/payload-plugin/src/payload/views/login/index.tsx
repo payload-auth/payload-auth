@@ -9,7 +9,8 @@ export default async function LoginView({
   initPageResult,
   params,
   searchParams,
-}: AdminViewServerProps) {
+  defaultAdminRole,
+}: AdminViewServerProps & { defaultAdminRole: string }) {
   const { locale, permissions, req } = initPageResult
   const {
     i18n,
@@ -24,10 +25,10 @@ export default async function LoginView({
   } = config
 
   const adminCount = await req.payload.count({
-    collection: 'users',
+    collection: userSlug,
     where: {
       role: {
-        equals: 'admin',
+        equals: defaultAdminRole ?? 'admin',
       },
     },
   })
@@ -37,7 +38,7 @@ export default async function LoginView({
     Array.isArray(afterLogin) && afterLogin.length > 1 ? afterLogin.slice(1) : undefined
 
   if (adminCount.totalDocs === 0) {
-    redirect('/admin/create-first-admin')
+    redirect(`${admin}/create-first-admin`)
   }
 
   return (

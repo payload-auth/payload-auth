@@ -17,10 +17,12 @@ import {
   emailOTP,
   apiKey,
   jwt,
+  createAuthMiddleware,
 } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { passkey } from "better-auth/plugins/passkey";
 import { emailHarmony, phoneHarmony } from "better-auth-harmony";
+import { setSessionCookie } from "better-auth/cookies";
 
 const betterAuthPlugins = [
   emailHarmony(),
@@ -148,10 +150,10 @@ export const betterAuthOptions: PayloadBetterAuthOptions = {
     },
   },
   session: {
-    // cookieCache: {
-    //   enabled: true,
-    //   maxAge: 5 * 60, // Cache duration in seconds
-    // },
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60, // Cache duration in seconds
+    },
   },
   account: {
     accountLinking: {
@@ -163,15 +165,26 @@ export const betterAuthOptions: PayloadBetterAuthOptions = {
 
 export const plugins: Plugin[] = [
   payloadBetterAuth({
+    disabled: false,
     logTables: false,
-    enableDebugLogs: true,
+    enableDebugLogs: false,
     hidePluginCollections: true,
     users: {
       slug: "users",
+      hidden: false,
       adminRoles: ["admin"],
     },
     accounts: {
       slug: "accounts",
+      hidden: false,
+    },
+    sessions: {
+      slug: "sessions",
+      hidden: false,
+    },
+    verifications: {
+      slug: "verifications",
+      hidden: false,
     },
     betterAuthOptions,
   }),
