@@ -1,25 +1,24 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "noErrorTruncation": true,
-    "skipLibCheck": true,
     "rootDir": "./src",
     "outDir": "./dist",
-    "allowJs": true,
-    "strict": true,
     "esModuleInterop": true,
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
+    "target": "ESNext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noErrorTruncation": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
     "emitDeclarationOnly": true,
-    "target": "ES2022",
     "composite": true,
     "declaration": true,
-    "declarationMap": true,
     "plugins": [
       {
         "name": "next"
@@ -28,5 +27,5 @@
   },
   "exclude": ["**/dist", "node_modules"],
   "references": [],
-  "include": ["src/**/*.ts", "src/index.ts", "src/types.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

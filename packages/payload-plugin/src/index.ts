@@ -11,8 +11,6 @@ import { getRequiredCollectionSlugs } from './lib/get-required-collection-slugs.
 import { buildCollectionConfigs } from './lib/build-collection-configs.js'
 import { payloadAdapter } from '@payload-auth/better-auth-db-adapter'
 import { betterAuth } from 'better-auth'
-
-// Re-export all types for easy consumption
 export * from './types.js'
 
 function initBetterAuth<P extends TPlugins>({
@@ -59,20 +57,40 @@ export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions)
       sanitizedBAOptions: sanitzedBetterAuthOptions,
     })
 
-    if (!config.endpoints) {
-      config.endpoints = []
-    }
-
-    if (!config.admin) {
-      config.admin = {}
-    }
-
-    if (!config.admin.components) {
-      config.admin.components = {}
-    }
-
-    if (!config.admin.components.beforeDashboard) {
-      config.admin.components.beforeDashboard = []
+    // Initialize admin configuration with defaults using deep merge pattern
+    config.admin = {
+      ...config.admin,
+      components: {
+        ...config.admin?.components,
+        graphics: {
+          ...config.admin?.components?.graphics,
+          Logo: '@payload-auth/better-auth-plugin/rsc#Logo',
+        },
+        afterLogin: [
+          {
+            path: '@payload-auth/better-auth-plugin/rsc#LoginRedirect',
+          },
+          ...(config.admin?.components?.afterLogin || []),
+        ],
+        logout: {
+          Button: '@payload-auth/better-auth-plugin/client#LogoutButton',
+        },
+        views: {
+          ...config.admin?.components?.views,
+          login: {
+            path: '/login',
+            Component: '@payload-auth/better-auth-plugin/rsc#Login',
+          },
+          createFirstAdmin: {
+            path: '/create-first-admin',
+            Component: '@payload-auth/better-auth-plugin/rsc#CreateFirstAdmin',
+          },
+        },
+      },
+      routes: {
+        ...config.admin?.routes,
+        login: '/login-redirect',
+      },
     }
 
     const incomingOnInit = config.onInit

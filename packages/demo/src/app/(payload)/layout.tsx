@@ -9,7 +9,7 @@ import React from "react";
 
 import { importMap } from "./admin/importMap";
 import "./custom.scss";
-import "@/lib/styles/admin.css";
+// import "@/lib/styles/admin.css";
 
 type Args = {
   children: React.ReactNode;

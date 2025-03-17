@@ -39,6 +39,7 @@ export function buildCollectionConfigs({
             defaultColumns: ['email'],
             useAsTitle: 'email',
             hidden: pluginOptions.users?.hidden ?? false,
+            components: {},
           },
           auth: {
             ...(existingUserCollection && typeof existingUserCollection.auth === 'object'
@@ -51,6 +52,26 @@ export function buildCollectionConfigs({
           },
           fields: [
             ...(existingUserCollection?.fields ?? []),
+            {
+              name: 'betterAuthAdminButtons',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field: {
+                    path: '@payload-auth/better-auth-plugin/client#AdminButtons',
+                    clientProps: () => {
+                      return {
+                        userSlug,
+                      }
+                    },
+                  },
+                },
+                condition: () => {
+                  // Only show the impersonate button if the admin plugin is enabled
+                  return (baPlugins && baPlugins.some((plugin) => plugin.id === 'admin')) ?? false
+                },
+              },
+            },
             {
               name: 'name',
               type: 'text',
@@ -137,7 +158,7 @@ export function buildCollectionConfigs({
                     name: 'username',
                     type: 'text',
                     unique: true,
-                    required: true,
+                    required: false, // TODO: decide if this should be required, will have to tell users they need to add ui for it.
                     label: 'Username',
                     admin: {
                       description: 'The username of the user',

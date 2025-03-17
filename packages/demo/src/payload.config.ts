@@ -18,36 +18,12 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
-    routes: {
-      login: "/login-redirect",
-      logout: "/logout-redirect",
-      createFirstUser: "/create-admin-redirect",
-    },
     components: {
-      graphics: {
-        Logo: "@/payload/components/logo.tsx",
-      },
       afterLogin: [
-        {
-          path: "@/payload/components/login-redirect.tsx",
-        },
         {
           path: "@/payload/components/after-login.tsx",
         },
       ],
-      logout: {
-        Button: "@/payload/components/logout.tsx",
-      },
-      views: {
-        login: {
-          path: "/login",
-          Component: "@/payload/views/login",
-        },
-        createFirstAdmin: {
-          path: "/create-first-admin",
-          Component: "@/payload/views/create-first-admin",
-        },
-      },
     },
   },
   collections,
@@ -63,7 +39,10 @@ export default buildConfig({
   editor: lexicalEditor(),
   plugins,
   secret: process.env.PAYLOAD_SECRET || "test-secret_key",
-  cors: allowedOrigins,
+  cors: {
+    origins: allowedOrigins,
+    headers: ["authorization", "x-csrf-token"],
+  },
   csrf: allowedOrigins,
   sharp,
   typescript: {

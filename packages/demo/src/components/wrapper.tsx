@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 
 export function Wrapper(props: { children: React.ReactNode }) {
   const [impersonating, setImpersonating] = useState(false);
+  const [impersonatedUser, setImpersonatedUser] = useState<any | null>(null);
   const [impersonatedBy, setImpersonatedBy] = useState<User | null>(null);
   const router = useRouter();
 
@@ -22,9 +23,11 @@ export function Wrapper(props: { children: React.ReactNode }) {
         if (session?.data?.session.impersonatedBy) {
           setImpersonating(true);
           setImpersonatedBy(session.data.session.impersonatedBy as any as User);
+          setImpersonatedUser(session.data.user);
         } else {
           setImpersonating(false);
           setImpersonatedBy(null);
+          setImpersonatedUser(null);
         }
       } catch (error) {
         console.error("Failed to check impersonation status:", error);
@@ -51,8 +54,8 @@ export function Wrapper(props: { children: React.ReactNode }) {
         <div className="w-full bg-amber-500 dark:bg-amber-600 text-black dark:text-white py-2 px-4 text-center">
           <div className="max-w-6xl mx-auto flex items-center justify-center gap-3">
             <span>
-              You are currently impersonating a user
-              {impersonatedBy && ` (admin: ${impersonatedBy.email})`}
+              You are currently impersonating {impersonatedUser?.email}
+              {impersonatedBy && ` as (admin: ${impersonatedBy.email})`}
             </span>
             <Button
               variant="secondary"
