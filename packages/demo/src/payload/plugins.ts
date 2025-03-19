@@ -22,7 +22,6 @@ import {
 import { nextCookies } from "better-auth/next-js";
 import { passkey } from "better-auth/plugins/passkey";
 import { emailHarmony, phoneHarmony } from "better-auth-harmony";
-import { setSessionCookie } from "better-auth/cookies";
 
 const betterAuthPlugins = [
   emailHarmony(),
@@ -175,6 +174,7 @@ export const plugins: Plugin[] = [
       slug: "users",
       hidden: false,
       adminRoles: ["admin"],
+      allowedFields: ["name"],
     },
     accounts: {
       slug: "accounts",
