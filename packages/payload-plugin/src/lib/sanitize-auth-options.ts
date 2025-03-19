@@ -4,6 +4,8 @@ import {
   betterAuthPluginSlugs,
   baseCollectionSlugs,
 } from './config.js'
+import { verifyPassword } from './password.js'
+import { hashPassword } from './password.js'
 
 /**
  * Sanitizes the BetterAuth options
@@ -45,6 +47,23 @@ export function sanitizeBetterAuthOptions(
     modelName: verificationCollectionSlug,
   }
 
+  res.emailAndPassword = {
+    ...(baOptions?.emailAndPassword ?? {}),
+    enabled: baOptions?.emailAndPassword?.enabled ?? true,
+  }
+
+  if (res.emailAndPassword.enabled) {
+    res.emailAndPassword.password = {
+      ...(res.emailAndPassword.password ?? {}),
+      verify: async ({ hash, password }) => {
+        return await verifyPassword({ hash, password })
+      },
+      hash: async (password) => {
+        return await hashPassword(password)
+      },
+    }
+  }
+
   if (res.plugins) {
     try {
       const supportedPlugins = res.plugins.filter((plugin) => {
@@ -63,9 +82,9 @@ export function sanitizeBetterAuthOptions(
                 ),
             )
             .map((p) => p.id)
-            .join(
-              ', ',
-            )}. Supported plugins are: ${Object.values(supportedBetterAuthPluginIds).join(', ')}. 
+            .join(', ')}. Supported plugins are: ${Object.values(supportedBetterAuthPluginIds).join(
+            ', ',
+          )}. 
             These plugins will be ignored.`,
         )
       }
