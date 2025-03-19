@@ -11,6 +11,8 @@ import { createTransform } from "./transform/index.js";
 import { generateSchema } from "./generate-schema/index.js";
 import type { PayloadAdapter } from "./types.js";
 
+export const BETTER_AUTH_CONTEXT_KEY = "payload-db-adapter";
+
 const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
   function debugLog(message: any[]) {
     if (config.enableDebugLogs) {
@@ -27,6 +29,10 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
       `Collection ${model} does not exist. Please check your payload collection slugs match the better auth schema`
     );
   }
+
+  const createAdapterContext = (data: Record<string, any>) => ({
+    [BETTER_AUTH_CONTEXT_KEY]: { ...data },
+  });
 
   return (options: BetterAuthOptions): Adapter => {
     const {
@@ -60,6 +66,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             collection: collectionSlug,
             data: transformed,
             select: convertSelect(model, select),
+            context: createAdapterContext({ model, operation: "create" }),
             depth: 0,
           });
           const transformedResult = transformOutput(result);
@@ -99,6 +106,10 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               collection: collectionSlug,
               id,
               select: convertSelect(model, select),
+              context: createAdapterContext({
+                model,
+                operation: "findOneByID",
+              }),
               depth: 0,
             });
             result = doc;
@@ -108,6 +119,10 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               collection: collectionSlug,
               where: payloadWhere,
               select: convertSelect(model, select),
+              context: createAdapterContext({
+                model,
+                operation: "findOneByWhere",
+              }),
               depth: 0,
               limit: 1,
             });
@@ -167,6 +182,10 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
                 collection: collectionSlug,
                 id,
                 depth: 0,
+                context: createAdapterContext({
+                  model,
+                  operation: "findManyByMultipleIDs",
+                }),
               });
               res.docs.push(doc);
               res.totalDocs++;
@@ -178,6 +197,10 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               collection: collectionSlug,
               id: singleId,
               depth: 0,
+              context: createAdapterContext({
+                model,
+                operation: "findManyBySingleID",
+              }),
             });
             result = { docs: doc ? [doc] : [], totalDocs: doc ? 1 : 0 };
           } else {
@@ -189,6 +212,10 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               page: offset ? Math.floor(offset / (limit || 10)) + 1 : 1,
               sort: convertSort(model, sortBy),
               depth: 0,
+              context: createAdapterContext({
+                model,
+                operation: "findManyByWhere",
+              }),
             });
             result = { docs: res.docs, totalDocs: res.totalDocs };
           }
@@ -231,6 +258,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               id,
               data: update,
               depth: 0,
+              context: createAdapterContext({ model, operation: "updateByID" }),
             });
             result = doc;
           } else {
@@ -240,6 +268,10 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               where: payloadWhere,
               data: update,
               depth: 0,
+              context: createAdapterContext({
+                model,
+                operation: "updateByWhere",
+              }),
             });
             result = doc.docs[0];
           }
@@ -277,6 +309,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             where: payloadWhere,
             data: update,
             depth: 0,
+            context: createAdapterContext({ model, operation: "updateMany" }),
           });
           debugLog([
             "updateMany result",
@@ -313,6 +346,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               collection: collectionSlug,
               id,
               depth: 0,
+              context: createAdapterContext({ model, operation: "deleteByID" }),
             });
             deleteResult = { doc, errors: [] };
           } else {
@@ -321,6 +355,10 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               collection: collectionSlug,
               where: payloadWhere,
               depth: 0,
+              context: createAdapterContext({
+                model,
+                operation: "deleteByWhere",
+              }),
             });
             deleteResult = { doc: doc.docs[0], errors: [] };
           }
@@ -355,6 +393,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             collection: collectionSlug,
             where: payloadWhere,
             depth: 0,
+            context: createAdapterContext({ model, operation: "deleteMany" }),
           });
           debugLog([
             "deleteMany result",
@@ -384,6 +423,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             collection: collectionSlug,
             where: payloadWhere,
             depth: 0,
+            context: createAdapterContext({ model, operation: "count" }),
           });
           debugLog([
             "count result",
