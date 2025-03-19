@@ -10,6 +10,8 @@ import {
   isAdminWithRoles,
 } from './payload-access.js'
 import { cleanUpUserAfterDelete } from '../collections/users/hooks/clean-up-user-after-delete.js'
+import { getSyncPasswordToUserHook } from '../collections/accounts/hooks/sync-password-to-user.js'
+import { getSyncHashSaltToAccountHook } from '../collections/users/hooks/sync-hash-salt-to-account.js'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
@@ -66,6 +68,13 @@ export function buildCollectionConfigs({
             getRefreshTokenEndpoint({ userSlug }),
           ],
           hooks: {
+            afterChange: [
+              ...(existingUserCollection?.hooks?.afterChange ?? []),
+              getSyncHashSaltToAccountHook({
+                userSlug,
+                accountSlug,
+              }),
+            ],
             afterLogout: [
               ...(existingUserCollection?.hooks?.afterLogout ?? []),
               getAfterLogoutHook({ sessionsCollectionSlug: sessionSlug }),
@@ -300,6 +309,15 @@ export function buildCollectionConfigs({
             ...existingAccountCollection?.admin,
             hidden: pluginOptions.accounts?.hidden,
           },
+          hooks: {
+            afterChange: [
+              ...(existingAccountCollection?.hooks?.afterChange ?? []),
+              getSyncPasswordToUserHook({
+                userSlug,
+                accountSlug,
+              }),
+            ],
+          },
           access: {
             create: isAdminWithRoles({ adminRoles }),
             delete: isAdminWithRoles({ adminRoles }),
@@ -403,6 +421,7 @@ export function buildCollectionConfigs({
               label: 'Password',
               admin: {
                 readOnly: true,
+                hidden: true,
                 description:
                   'The hashed password of the account. Mainly used for email and password authentication',
               },
