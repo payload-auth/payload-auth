@@ -149,6 +149,20 @@ export const createTransform = (
         transformedData[dataField] = data[dataField];
       }
     }
+
+    // Generate a random password for user creation if not provided.
+    // This should be overridden later by the sync password accounts hook
+    if (
+      model === "user" &&
+      action === "create" &&
+      !("password" in transformedData)
+    ) {
+      transformedData.password = Array(3)
+        .fill(0)
+        .map(() => Math.random().toString(36).slice(2))
+        .join("");
+    }
+
     return transformedData;
   }
 
