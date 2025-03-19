@@ -5,7 +5,7 @@ import type {
   InferAPI,
   InferPluginTypes,
 } from 'better-auth/types'
-import { Config } from 'payload'
+import type { BasePayload, Config, Endpoint, PayloadRequest } from 'payload'
 
 /**
  * BetterAuth options with the following caveats:
@@ -86,6 +86,15 @@ export interface PayloadBetterAuthPluginOptions {
      * Hide the `users` collection from the payload admin UI
      */
     hidden?: boolean | undefined
+    /**
+     * Define which fields users can update themselves
+     *
+     * Password field is automatically included and doesn't need to be specified here
+     *
+     * @example ['name', 'dateOfBirth', 'phoneNumber']
+     * @default ['name']
+     */
+    allowedFields?: string[] | undefined
   }
   /**
    * Configure the Accounts collections:
@@ -154,6 +163,23 @@ export interface PayloadBetterAuthPluginOptions {
 export interface PayloadBetterAuthPlugin {
   (config: Config): Config
   pluginOptions: PayloadBetterAuthPluginOptions
+}
+
+export interface PayloadRequestWithBetterAuth<TPlugins extends BetterAuthPlugin[] = []>
+  extends PayloadRequest {
+  payload: BasePayload & {
+    betterAuth: BetterAuthReturn<TPlugins>
+  }
+}
+
+export type CollectionHookWithBetterAuth<T extends (args: any) => any> = T extends (
+  args: infer A,
+) => infer R
+  ? (args: Omit<A, 'req'> & { req: PayloadRequestWithBetterAuth }) => R
+  : never
+
+export type EndpointWithBetterAuth = Omit<Endpoint, 'handler'> & {
+  handler: (req: PayloadRequestWithBetterAuth) => Promise<Response> | Response
 }
 
 export type ExtractEndpoints<T> = T extends BetterAuthPlugin

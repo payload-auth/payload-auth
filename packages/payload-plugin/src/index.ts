@@ -57,48 +57,6 @@ export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions)
       sanitizedBAOptions: sanitzedBetterAuthOptions,
     })
 
-    // Initialize admin configuration with defaults using deep merge pattern
-    config.admin = {
-      ...config.admin,
-      components: {
-        ...config.admin?.components,
-        afterLogin: [
-          {
-            path: '@payload-auth/better-auth-plugin/rsc#LoginRedirect',
-          },
-          ...(config.admin?.components?.afterLogin || []),
-        ],
-        logout: {
-          Button: '@payload-auth/better-auth-plugin/client#LogoutButton',
-        },
-        views: {
-          ...config.admin?.components?.views,
-          login: {
-            path: '/login',
-            Component: {
-              path: '@payload-auth/better-auth-plugin/rsc#Login',
-              serverProps: {
-                defaultAdminRole: pluginOptions.users?.adminRoles?.[0],
-              },
-            },
-          },
-          createFirstAdmin: {
-            path: '/create-first-admin',
-            Component: {
-              path: '@payload-auth/better-auth-plugin/rsc#CreateFirstAdmin',
-              serverProps: {
-                defaultAdminRole: pluginOptions.users?.adminRoles?.[0],
-              },
-            },
-          },
-        },
-      },
-      routes: {
-        ...config.admin?.routes,
-        login: '/login-redirect',
-      },
-    }
-
     const incomingOnInit = config.onInit
 
     config.onInit = async (payload) => {

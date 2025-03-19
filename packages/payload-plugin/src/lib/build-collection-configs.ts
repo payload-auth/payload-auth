@@ -2,6 +2,13 @@ import { CollectionConfig } from 'payload'
 import type { PayloadBetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../types.js'
 import { baseCollectionSlugs, betterAuthPluginSlugs } from './config.js'
 import { betterAuthStrategy } from './auth-strategy.js'
+import { getAfterLogoutHook } from '../collections/users/hooks/after-logout.js'
+import { getRefreshTokenEndpoint } from '../collections/users/endpoints/refresh-token.js'
+import {
+  isAdminOrCurrentUserUpdateWithAllowedFields,
+  isAdminOrCurrentUserWithRoles,
+  isAdminWithRoles,
+} from './payload-access.js'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
@@ -22,6 +29,7 @@ export function buildCollectionConfigs({
   const sessionSlug = pluginOptions.sessions?.slug ?? baseCollectionSlugs.sessions
   const verificationSlug = pluginOptions.verifications?.slug ?? baseCollectionSlugs.verifications
   const baPlugins = sanitizedBAOptions.plugins ?? null
+  const adminRoles = pluginOptions.users?.adminRoles ?? ['admin']
 
   const enhancedCollections: CollectionConfig[] = []
 
@@ -31,24 +39,43 @@ export function buildCollectionConfigs({
         const existingUserCollection = incomingCollections.find(
           (collection) => collection.slug === userSlug,
         ) as CollectionConfig | undefined
+        const allowedFields = pluginOptions.users?.allowedFields ?? ['name']
         const usersCollection: CollectionConfig = {
           ...existingUserCollection,
           slug: userSlug,
           admin: {
-            ...existingUserCollection?.admin,
             defaultColumns: ['email'],
             useAsTitle: 'email',
+            ...existingUserCollection?.admin,
             hidden: pluginOptions.users?.hidden ?? false,
-            components: {},
+          },
+          access: {
+            read: isAdminOrCurrentUserWithRoles({ adminRoles, idField: 'id' }),
+            create: isAdminWithRoles({ adminRoles }),
+            delete: isAdminOrCurrentUserWithRoles({ adminRoles, idField: 'id' }),
+            update: isAdminOrCurrentUserUpdateWithAllowedFields({
+              allowedFields,
+              adminRoles,
+              userSlug,
+            }),
+            ...(existingUserCollection?.access ?? {}),
+          },
+          endpoints: [
+            ...(existingUserCollection?.endpoints ? existingUserCollection.endpoints : []),
+            getRefreshTokenEndpoint({ userSlug }),
+          ],
+          hooks: {
+            afterLogout: [
+              ...(existingUserCollection?.hooks?.afterLogout ?? []),
+              getAfterLogoutHook({ sessionsCollectionSlug: sessionSlug }),
+            ],
           },
           auth: {
             ...(existingUserCollection && typeof existingUserCollection.auth === 'object'
               ? existingUserCollection.auth
               : {}),
-            disableLocalStrategy: true,
-            strategies: [
-              betterAuthStrategy(pluginOptions.users?.adminRoles ?? ['admin'], userSlug),
-            ],
+            //disableLocalStrategy: false,
+            strategies: [betterAuthStrategy(adminRoles, userSlug)],
           },
           fields: [
             ...(existingUserCollection?.fields ?? []),
@@ -56,6 +83,7 @@ export function buildCollectionConfigs({
               name: 'betterAuthAdminButtons',
               type: 'ui',
               admin: {
+                position: 'sidebar',
                 components: {
                   Field: {
                     path: '@payload-auth/better-auth-plugin/client#AdminButtons',
@@ -262,10 +290,17 @@ export function buildCollectionConfigs({
         const accountCollection: CollectionConfig = {
           slug: accountSlug,
           admin: {
-            ...existingAccountCollection?.admin,
-            hidden: pluginOptions.accounts?.hidden,
             useAsTitle: 'accountId',
             description: 'Accounts are used to store user accounts for authentication providers',
+            ...existingAccountCollection?.admin,
+            hidden: pluginOptions.accounts?.hidden,
+          },
+          access: {
+            create: isAdminWithRoles({ adminRoles }),
+            delete: isAdminWithRoles({ adminRoles }),
+            read: isAdminOrCurrentUserWithRoles({ adminRoles, idField: 'user' }),
+            update: isAdminWithRoles({ adminRoles }),
+            ...(existingAccountCollection?.access ?? {}),
           },
           fields: [
             ...(existingAccountCollection?.fields ?? []),
