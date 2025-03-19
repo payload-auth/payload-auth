@@ -53,6 +53,7 @@ export function buildCollectionConfigs({
             hidden: pluginOptions.users?.hidden ?? false,
           },
           access: {
+            admin: ({ req }) => adminRoles.includes((req.user?.role as string) ?? 'user'),
             read: isAdminOrCurrentUserWithRoles({ adminRoles, idField: 'id' }),
             create: isAdminWithRoles({ adminRoles }),
             delete: isAdminOrCurrentUserWithRoles({ adminRoles, idField: 'id' }),

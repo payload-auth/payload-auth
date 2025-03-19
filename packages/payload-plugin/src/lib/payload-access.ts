@@ -39,10 +39,10 @@ export const isAdminOrCurrentUserUpdateWithAllowedFields = (
 ): Access => {
   return async ({ req, id, data }) => {
     const { adminRoles = ['admin'], allowedFields = [], userSlug, idField = 'id' } = config
+    const user = req.user
 
     if (isAdminWithRoles({ adminRoles })({ req })) return true
 
-    const user = req.user
     if (!user) return false
 
     if (user[idField] === id && data) {
