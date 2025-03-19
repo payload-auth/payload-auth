@@ -326,8 +326,8 @@ importers:
   packages/payload-plugin:
     dependencies:
       '@payload-auth/better-auth-db-adapter':
-        specifier: latest
-        version: 1.1.1(better-auth@1.2.4(typescript@5.8.2))(payload@3.28.1(graphql@16.10.0)(typescript@5.8.2))
+        specifier: workspace:*
+        version: link:../db-adapter
       '@payloadcms/ui':
         specifier: 3.28.1
         version: 3.28.1(@types/react@19.0.10)(monaco-editor@0.52.2)(next@15.2.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(sass@1.77.4))(payload@3.28.1(graphql@16.10.0)(typescript@5.8.2))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.8.2)
@@ -2044,12 +2044,6 @@ packages:
     resolution: {integrity: sha512-Z3llHH0jfJP4mlWq3DT7bK6qV+/vYe0+xzCgfc67+Tc/U3eYndujl880bexeGdGNPh87JeYznpZAOJ44N7QVVQ==}
     cpu: [x64]
     os: [win32]
-
-  '@payload-auth/better-auth-db-adapter@1.1.1':
-    resolution: {integrity: sha512-7HqhKEgAEn5KFzWwkvdxEE2ANNoesb0+EzFM38eVnJns7Y9KcpBrMVXutp2TBzkG3abT79WKWp3NVOcJnFguew==}
-    peerDependencies:
-      better-auth: 1.2.4
-      payload: 3.28.1
 
   '@payloadcms/admin-bar@3.28.1':
     resolution: {integrity: sha512-zUozQ1IAa0LP5tfTxIKxTlzCEx/5vaDsd8L3rDG1rHG7qHug1Ypg+Eefpiz9A1GmUopVQaMDb60I1D/64TKvyA==}
@@ -9300,11 +9294,6 @@ snapshots:
 
   '@oxc-resolver/binding-win32-x64-msvc@1.12.0':
     optional: true
-
-  '@payload-auth/better-auth-db-adapter@1.1.1(better-auth@1.2.4(typescript@5.8.2))(payload@3.28.1(graphql@16.10.0)(typescript@5.8.2))':
-    dependencies:
-      better-auth: 1.2.4(typescript@5.8.2)
-      payload: 3.28.1(graphql@16.10.0)(typescript@5.8.2)
 
   '@payloadcms/admin-bar@3.28.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:

@@ -82,7 +82,7 @@
     "typescript": "5.8.2"
   },
   "dependencies": {
-    "@payload-auth/better-auth-db-adapter": "latest",
+    "@payload-auth/better-auth-db-adapter": "workspace:*",
     "better-auth": "1.2.4",
     "payload": "3.28.1",
     "lucide-react": "0.482.0",
