@@ -18,21 +18,14 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
-    components: {
-      afterLogin: [
-        {
-          path: "@/payload/components/after-login.tsx",
-        },
-      ],
-    },
   },
   collections,
   db: postgresAdapter({
-    disableCreateDatabase: true,
+    disableCreateDatabase: false,
     pool: {
       connectionString: process.env.DATABASE_URI,
     },
-    push: false,
+    push: true, // Should be false (this is just for demo purposes)
     migrationDir: path.resolve(dirname, "lib/migrations"),
   }),
   editor: lexicalEditor(),

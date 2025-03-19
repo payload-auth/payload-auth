@@ -146,6 +146,8 @@ export const betterAuthOptions: PayloadBetterAuthOptions = {
     additionalFields: {
       role: {
         type: "string",
+        defaultValue: "user",
+        input: false,
       },
     },
   },
