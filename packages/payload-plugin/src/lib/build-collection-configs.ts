@@ -9,6 +9,7 @@ import {
   isAdminOrCurrentUserWithRoles,
   isAdminWithRoles,
 } from './payload-access.js'
+import { cleanUpUserAfterDelete } from '../collections/users/hooks/clean-up-user-after-delete.js'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
@@ -68,6 +69,10 @@ export function buildCollectionConfigs({
             afterLogout: [
               ...(existingUserCollection?.hooks?.afterLogout ?? []),
               getAfterLogoutHook({ sessionsCollectionSlug: sessionSlug }),
+            ],
+            afterDelete: [
+              ...(existingUserCollection?.hooks?.afterDelete ?? []),
+              (args) => cleanUpUserAfterDelete(args as any),
             ],
           },
           auth: {
