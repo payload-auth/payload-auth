@@ -60,6 +60,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             collection: collectionSlug,
             data: transformed,
             select: convertSelect(model, select),
+            depth: 0,
           });
           const transformedResult = transformOutput(result);
           debugLog([
@@ -98,6 +99,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               collection: collectionSlug,
               id,
               select: convertSelect(model, select),
+              depth: 0,
             });
             result = doc;
           } else {
@@ -106,6 +108,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               collection: collectionSlug,
               where: payloadWhere,
               select: convertSelect(model, select),
+              depth: 0,
               limit: 1,
             });
             result = docs.docs[0];
@@ -163,6 +166,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               const doc = await payload.findByID({
                 collection: collectionSlug,
                 id,
+                depth: 0,
               });
               res.docs.push(doc);
               res.totalDocs++;
@@ -173,6 +177,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             const doc = await payload.findByID({
               collection: collectionSlug,
               id: singleId,
+              depth: 0,
             });
             result = { docs: doc ? [doc] : [], totalDocs: doc ? 1 : 0 };
           } else {
@@ -183,6 +188,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               limit: limit,
               page: offset ? Math.floor(offset / (limit || 10)) + 1 : 1,
               sort: convertSort(model, sortBy),
+              depth: 0,
             });
             result = { docs: res.docs, totalDocs: res.totalDocs };
           }
@@ -224,6 +230,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               collection: collectionSlug,
               id,
               data: update,
+              depth: 0,
             });
             result = doc;
           } else {
@@ -232,6 +239,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               collection: collectionSlug,
               where: payloadWhere,
               data: update,
+              depth: 0,
             });
             result = doc.docs[0];
           }
@@ -264,10 +272,11 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
-          const updateResult = await payload.db.updateMany({
+          const { docs: updateResult } = await payload.update({
             collection: collectionSlug,
             where: payloadWhere,
             data: update,
+            depth: 0,
           });
           debugLog([
             "updateMany result",
@@ -303,6 +312,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             const doc = await payload.delete({
               collection: collectionSlug,
               id,
+              depth: 0,
             });
             deleteResult = { doc, errors: [] };
           } else {
@@ -310,6 +320,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             const doc = await payload.delete({
               collection: collectionSlug,
               where: payloadWhere,
+              depth: 0,
             });
             deleteResult = { doc: doc.docs[0], errors: [] };
           }
@@ -343,6 +354,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
           const deleteResult = await payload.delete({
             collection: collectionSlug,
             where: payloadWhere,
+            depth: 0,
           });
           debugLog([
             "deleteMany result",
@@ -371,6 +383,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
           const result = await payload.count({
             collection: collectionSlug,
             where: payloadWhere,
+            depth: 0,
           });
           debugLog([
             "count result",
