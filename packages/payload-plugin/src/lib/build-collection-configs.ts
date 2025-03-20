@@ -43,7 +43,7 @@ export function buildCollectionConfigs({
           (collection) => collection.slug === userSlug,
         ) as CollectionConfig | undefined
         const allowedFields = pluginOptions.users?.allowedFields ?? ['name']
-        const usersCollection: CollectionConfig = {
+        let usersCollection: CollectionConfig = {
           ...existingUserCollection,
           slug: userSlug,
           admin: {
@@ -140,6 +140,7 @@ export function buildCollectionConfigs({
               type: 'checkbox',
               required: true,
               defaultValue: false,
+              saveToJWT: true,
               label: 'Email Verified',
               admin: {
                 description: 'Whether the email of the user has been verified',
@@ -299,13 +300,18 @@ export function buildCollectionConfigs({
             }
           })
         }
+        
+        if (pluginOptions.users?.fieldOverrides) {
+          usersCollection = pluginOptions.users.fieldOverrides({ collection: usersCollection })
+        }
+        
         enhancedCollections.push(usersCollection)
         break
       case baseCollectionSlugs.accounts:
         const existingAccountCollection = incomingCollections.find(
           (collection) => collection.slug === accountSlug,
         ) as CollectionConfig | undefined
-        const accountCollection: CollectionConfig = {
+        let accountCollection: CollectionConfig = {
           slug: accountSlug,
           admin: {
             useAsTitle: 'accountId',
@@ -434,13 +440,17 @@ export function buildCollectionConfigs({
           timestamps: true,
           ...existingAccountCollection,
         }
+        if (pluginOptions.accounts?.fieldOverrides) {
+          accountCollection = pluginOptions.accounts.fieldOverrides({ collection: accountCollection })
+        }
+        
         enhancedCollections.push(accountCollection)
         break
       case baseCollectionSlugs.sessions:
         const existingSessionCollection = incomingCollections.find(
           (collection) => collection.slug === sessionSlug,
         ) as CollectionConfig | undefined
-        const sessionCollection: CollectionConfig = {
+        let sessionCollection: CollectionConfig = {
           slug: sessionSlug,
           admin: {
             ...existingSessionCollection?.admin,
@@ -538,6 +548,11 @@ export function buildCollectionConfigs({
             }
           })
         }
+
+        if (pluginOptions.sessions?.fieldOverrides) {
+          sessionCollection = pluginOptions.sessions.fieldOverrides({ collection: sessionCollection })
+        }
+
         enhancedCollections.push(sessionCollection)
         break
       case baseCollectionSlugs.verifications:

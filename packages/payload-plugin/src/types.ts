@@ -5,7 +5,7 @@ import type {
   InferAPI,
   InferPluginTypes,
 } from 'better-auth/types'
-import type { BasePayload, Config, Endpoint, PayloadRequest } from 'payload'
+import type { BasePayload, CollectionConfig, Config, Endpoint, PayloadRequest } from 'payload'
 
 /**
  * BetterAuth options with the following caveats:
@@ -95,6 +95,17 @@ export interface PayloadBetterAuthPluginOptions {
      * @default ['name']
      */
     allowedFields?: string[] | undefined
+    /**
+     * Function to override fields in the users collection
+     * 
+     * This allows modifying the collection config after it has been built
+     * Example use cases include adding saveToJwt to specific fields or
+     * modifying field descriptions
+     * 
+     * @param options Object containing the collection config and potentially additional parameters
+     * @returns Modified collection config
+     */
+    fieldOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
   }
   /**
    * Configure the Accounts collections:
@@ -112,6 +123,15 @@ export interface PayloadBetterAuthPluginOptions {
      * Hide the `accounts` collection from the payload admin UI
      */
     hidden?: boolean | undefined
+    /**
+     * Function to override fields in the accounts collection
+     * 
+     * This allows modifying the collection config after it has been built
+     * 
+     * @param options Object containing the collection config and potentially additional parameters
+     * @returns Modified collection config
+     */
+    fieldOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
   }
   /**
    * Configure the Sessions collections:
@@ -129,6 +149,15 @@ export interface PayloadBetterAuthPluginOptions {
      * Hide the `sessions` collection from the payload admin UI
      */
     hidden?: boolean | undefined
+    /**
+     * Function to override fields in the sessions collection
+     * 
+     * This allows modifying the collection config after it has been built
+     * 
+     * @param options Object containing the collection config and potentially additional parameters
+     * @returns Modified collection config
+     */
+    fieldOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
   }
   /**
    * Configure the Verifications collections:
