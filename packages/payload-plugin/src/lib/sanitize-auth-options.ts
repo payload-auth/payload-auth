@@ -4,6 +4,7 @@ import {
   betterAuthPluginSlugs,
   baseCollectionSlugs,
 } from './config.js'
+import { ensurePasswordSetBeforeUserCreate } from './ensure-password-set-before-create.js'
 import { verifyPassword } from './password.js'
 import { hashPassword } from './password.js'
 
@@ -63,6 +64,8 @@ export function sanitizeBetterAuthOptions(
       },
     }
   }
+
+  ensurePasswordSetBeforeUserCreate(res)
 
   if (res.plugins) {
     try {
