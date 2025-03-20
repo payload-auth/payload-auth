@@ -12,6 +12,7 @@ import { generateSchema } from "./generate-schema/index.js";
 import type { PayloadAdapter } from "./types.js";
 
 export const BETTER_AUTH_CONTEXT_KEY = "payload-db-adapter";
+const PAYLOAD_QUERY_DEPTH = 2;
 
 const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
   function debugLog(message: any[]) {
@@ -67,7 +68,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             data: transformed,
             select: convertSelect(model, select),
             context: createAdapterContext({ model, operation: "create" }),
-            depth: 0,
+            depth: PAYLOAD_QUERY_DEPTH,
           });
           const transformedResult = transformOutput(result);
           debugLog([
@@ -110,7 +111,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
                 model,
                 operation: "findOneByID",
               }),
-              depth: 0,
+              depth: PAYLOAD_QUERY_DEPTH,
             });
             result = doc;
           } else {
@@ -123,7 +124,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
                 model,
                 operation: "findOneByWhere",
               }),
-              depth: 0,
+              depth: PAYLOAD_QUERY_DEPTH,
               limit: 1,
             });
             result = docs.docs[0];
@@ -181,7 +182,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               const doc = await payload.findByID({
                 collection: collectionSlug,
                 id,
-                depth: 0,
+                depth: PAYLOAD_QUERY_DEPTH,
                 context: createAdapterContext({
                   model,
                   operation: "findManyByMultipleIDs",
@@ -196,7 +197,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             const doc = await payload.findByID({
               collection: collectionSlug,
               id: singleId,
-              depth: 0,
+              depth: PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({
                 model,
                 operation: "findManyBySingleID",
@@ -211,7 +212,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               limit: limit,
               page: offset ? Math.floor(offset / (limit || 10)) + 1 : 1,
               sort: convertSort(model, sortBy),
-              depth: 0,
+              depth: PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({
                 model,
                 operation: "findManyByWhere",
@@ -257,7 +258,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               collection: collectionSlug,
               id,
               data: update,
-              depth: 0,
+              depth: PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({ model, operation: "updateByID" }),
             });
             result = doc;
@@ -267,7 +268,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
               collection: collectionSlug,
               where: payloadWhere,
               data: update,
-              depth: 0,
+              depth: PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({
                 model,
                 operation: "updateByWhere",
@@ -308,7 +309,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             collection: collectionSlug,
             where: payloadWhere,
             data: update,
-            depth: 0,
+            depth: PAYLOAD_QUERY_DEPTH,
             context: createAdapterContext({ model, operation: "updateMany" }),
           });
           debugLog([
@@ -345,7 +346,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             const doc = await payload.delete({
               collection: collectionSlug,
               id,
-              depth: 0,
+              depth: PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({ model, operation: "deleteByID" }),
             });
             deleteResult = { doc, errors: [] };
@@ -354,7 +355,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             const doc = await payload.delete({
               collection: collectionSlug,
               where: payloadWhere,
-              depth: 0,
+              depth: PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({
                 model,
                 operation: "deleteByWhere",
@@ -392,7 +393,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
           const deleteResult = await payload.delete({
             collection: collectionSlug,
             where: payloadWhere,
-            depth: 0,
+            depth: PAYLOAD_QUERY_DEPTH,
             context: createAdapterContext({ model, operation: "deleteMany" }),
           });
           debugLog([
@@ -422,7 +423,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
           const result = await payload.count({
             collection: collectionSlug,
             where: payloadWhere,
-            depth: 0,
+            depth: PAYLOAD_QUERY_DEPTH,
             context: createAdapterContext({ model, operation: "count" }),
           });
           debugLog([

@@ -23,7 +23,7 @@ import { nextCookies } from "better-auth/next-js";
 import { passkey } from "better-auth/plugins/passkey";
 import { emailHarmony, phoneHarmony } from "better-auth-harmony";
 
-const betterAuthPlugins = [
+export const betterAuthPlugins = [
   emailHarmony(),
   phoneHarmony({
     defaultCountry: "CA",
