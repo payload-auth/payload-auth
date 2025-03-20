@@ -18,7 +18,7 @@ export const getSyncPasswordToUserHook = (
     operation,
     context,
   }) => {
-    if (context?.syncHashSaltToAccount) return doc
+    if (context?.syncAccountHook) return doc
 
     if (operation !== 'create' && operation !== 'update') {
       return doc
@@ -48,10 +48,12 @@ export const getSyncPasswordToUserHook = (
       return doc
     }
 
+    const userId = typeof doc[userField] === 'string' ? doc[userField] : doc[userField]?.id
+
     try {
       await req.payload.update({
         collection: options.userSlug,
-        id: doc[userField],
+        id: userId,
         data: {
           salt,
           hash,

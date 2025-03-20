@@ -11,7 +11,7 @@ import {
 } from './payload-access.js'
 import { cleanUpUserAfterDelete } from '../collections/users/hooks/clean-up-user-after-delete.js'
 import { getSyncPasswordToUserHook } from '../collections/accounts/hooks/sync-password-to-user.js'
-import { getSyncHashSaltToAccountHook } from '../collections/users/hooks/sync-hash-salt-to-account.js'
+import { getSyncAccountHook } from '../collections/users/hooks/sync-account.js'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
@@ -71,10 +71,10 @@ export function buildCollectionConfigs({
           hooks: {
             afterChange: [
               ...(existingUserCollection?.hooks?.afterChange ?? []),
-              getSyncHashSaltToAccountHook({
+              getSyncAccountHook({
                 userSlug,
                 accountSlug,
-              }),
+              })
             ],
             afterLogout: [
               ...(existingUserCollection?.hooks?.afterLogout ?? []),
