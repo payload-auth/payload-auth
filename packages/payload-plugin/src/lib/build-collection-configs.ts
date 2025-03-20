@@ -1,4 +1,4 @@
-import { CollectionConfig } from 'payload'
+import type { CollectionConfig, Field } from 'payload'
 import type { PayloadBetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../types.js'
 import { baseCollectionSlugs, betterAuthPluginSlugs } from './config.js'
 import { betterAuthStrategy } from './auth-strategy.js'
@@ -33,6 +33,37 @@ export function buildCollectionConfigs({
   const verificationSlug = pluginOptions.verifications?.slug ?? baseCollectionSlugs.verifications
   const baPlugins = sanitizedBAOptions.plugins ?? null
   const adminRoles = pluginOptions.users?.adminRoles ?? ['admin']
+
+  const getTimestampFields = ({
+    saveUpdatedAtToJWT = true,
+    saveCreatedAtToJWT = true,
+  }: {
+    saveUpdatedAtToJWT?: boolean;
+    saveCreatedAtToJWT?: boolean;
+  } = {}): Field[] => {
+    return [{
+      name: 'updatedAt',
+      type: 'date',
+      saveToJWT: saveUpdatedAtToJWT,
+      admin: {
+        disableBulkEdit: true,
+        hidden: true,
+      },
+      index: true,
+      label: ({ t }) => t('general:updatedAt'),
+    },
+    {
+      name: 'createdAt',
+      saveToJWT: saveCreatedAtToJWT,
+      admin: {
+        disableBulkEdit: true,
+        hidden: true,
+      },
+      type: 'date',
+      index: true,
+      label: ({ t }) => t('general:createdAt'),
+    }]
+  }
 
   const enhancedCollections: CollectionConfig[] = []
 
@@ -182,8 +213,8 @@ export function buildCollectionConfigs({
                 description: 'The role of the user',
               },
             },
+            ...getTimestampFields({ saveUpdatedAtToJWT: false, saveCreatedAtToJWT: false }),
           ],
-          timestamps: true,
         }
         if (baPlugins) {
           baPlugins.forEach((plugin) => {
@@ -436,8 +467,8 @@ export function buildCollectionConfigs({
                   'The hashed password of the account. Mainly used for email and password authentication',
               },
             },
+            ...getTimestampFields(),
           ],
-          timestamps: true,
           ...existingAccountCollection,
         }
         if (pluginOptions.accounts?.fieldOverrides) {
@@ -465,6 +496,7 @@ export function buildCollectionConfigs({
               type: 'relationship',
               relationTo: userSlug,
               required: true,
+              saveToJWT: true,
               index: true,
               admin: {
                 readOnly: true,
@@ -477,6 +509,7 @@ export function buildCollectionConfigs({
               required: true,
               unique: true,
               index: true,
+              saveToJWT: true,
               label: 'Token',
               admin: {
                 description: 'The unique session token',
@@ -488,6 +521,7 @@ export function buildCollectionConfigs({
               type: 'date',
               required: true,
               label: 'Expires At',
+              saveToJWT: true,
               admin: {
                 description: 'The date and time when the session will expire',
                 readOnly: true,
@@ -497,6 +531,7 @@ export function buildCollectionConfigs({
               name: 'ipAddress',
               type: 'text',
               label: 'IP Address',
+              saveToJWT: true,
               admin: {
                 description: 'The IP address of the device',
                 readOnly: true,
@@ -506,13 +541,14 @@ export function buildCollectionConfigs({
               name: 'userAgent',
               type: 'text',
               label: 'User Agent',
+              saveToJWT: true,
               admin: {
                 description: 'The user agent information of the device',
                 readOnly: true,
               },
             },
+            ...getTimestampFields(),
           ],
-          timestamps: true,
           ...existingSessionCollection,
         }
         if (baPlugins) {
