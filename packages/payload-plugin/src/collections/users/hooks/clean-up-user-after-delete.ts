@@ -1,5 +1,5 @@
-import { CollectionAfterDeleteHook } from 'payload'
-import { CollectionHookWithBetterAuth } from 'src/types'
+import type { CollectionAfterDeleteHook } from 'payload'
+import type { CollectionHookWithBetterAuth } from 'src/types'
 
 type CollectionAfterDeleteHookWithBetterAuth =
   CollectionHookWithBetterAuth<CollectionAfterDeleteHook>
@@ -16,9 +16,18 @@ export const cleanUpUserAfterDelete: CollectionAfterDeleteHookWithBetterAuth = a
     if (typeof beforeDelete === 'function') {
       await beforeDelete(doc, req as Request)
     }
-    await betterAuthContext.internalAdapter.deleteUser(userId)
     await betterAuthContext.internalAdapter.deleteSessions(userId)
     await betterAuthContext.internalAdapter.deleteAccounts(userId)
+    if (payload.collections.verifications) {
+      await payload.delete({
+        collection: payload.collections.verifications.config.slug,
+        where: {
+          value: {
+            like: `"${userId}"`,
+          },
+        },
+      })
+    }
     const afterDelete = betterAuthContext.options.user?.deleteUser?.afterDelete
     if (typeof afterDelete === 'function') {
       await afterDelete(doc, req as Request)
