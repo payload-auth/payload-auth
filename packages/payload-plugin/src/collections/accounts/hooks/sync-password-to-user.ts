@@ -49,7 +49,6 @@ export const getSyncPasswordToUserHook = (
     }
 
     try {
-      console.log('got here', { salt, hash, userField: doc[userField] })
       await req.payload.update({
         collection: options.userSlug,
         id: doc[userField],
