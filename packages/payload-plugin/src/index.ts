@@ -59,7 +59,11 @@ export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions)
       sanitizedBAOptions: sanitzedBetterAuthOptions,
     })
 
-    setAfterAuthMiddlewareHook(sanitzedBetterAuthOptions, config)
+    setAfterAuthMiddlewareHook({
+      sanitizedOptions: sanitzedBetterAuthOptions,
+      payloadConfig: config,
+      pluginOptions,
+    })
 
     const incomingOnInit = config.onInit
 
