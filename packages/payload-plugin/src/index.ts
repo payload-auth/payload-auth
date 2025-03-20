@@ -11,6 +11,8 @@ import { getRequiredCollectionSlugs } from './lib/get-required-collection-slugs.
 import { buildCollectionConfigs } from './lib/build-collection-configs.js'
 import { payloadAdapter } from '@payload-auth/better-auth-db-adapter'
 import { betterAuth } from 'better-auth'
+import { setAfterAuthMiddlewareHook } from './lib/set-after-auth-middleware-hook.js'
+
 export * from './types.js'
 
 function initBetterAuth<P extends TPlugins>({
@@ -56,6 +58,8 @@ export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions)
       pluginOptions,
       sanitizedBAOptions: sanitzedBetterAuthOptions,
     })
+
+    setAfterAuthMiddlewareHook(sanitzedBetterAuthOptions, config)
 
     const incomingOnInit = config.onInit
 

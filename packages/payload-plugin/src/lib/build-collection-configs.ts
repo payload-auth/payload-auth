@@ -119,6 +119,7 @@ export function buildCollectionConfigs({
               name: 'name',
               type: 'text',
               label: 'Name',
+              saveToJWT: true,
               admin: {
                 description: 'Users chosen display name',
               },
@@ -148,6 +149,7 @@ export function buildCollectionConfigs({
               name: 'image',
               type: 'text',
               label: 'Image',
+              saveToJWT: true,
               admin: {
                 description: 'The image of the user',
               },
@@ -157,6 +159,7 @@ export function buildCollectionConfigs({
               type: 'select',
               required: true,
               defaultValue: 'user',
+              saveToJWT: true,
               options: [
                 ...(
                   pluginOptions.users?.roles ?? [
