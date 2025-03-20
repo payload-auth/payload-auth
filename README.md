@@ -4,7 +4,7 @@ This monorepo contains packages that integrate [Payload CMS](https://payloadcms.
 
 ## Packages
 
-### [@payload-better-auth/plugin](./packages/plugin)
+### [@payload-better-auth/plugin](./packages/payload-plugin)
 
 A Payload CMS plugin that integrates with Better Auth to provide enhanced authentication capabilities for your Payload applications.
 
@@ -15,7 +15,7 @@ A Payload CMS plugin that integrates with Better Auth to provide enhanced authen
 - Type-safe authentication flows
 - Server and client components for Next.js applications
 
-### [@payload-better-auth/adapter](./packages/adapter)
+### [@payload-better-auth/adapter](./packages/db-adapter)
 
 A database adapter for Better Auth that works with Payload CMS's database connection.
 
