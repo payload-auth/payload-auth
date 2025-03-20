@@ -18,6 +18,7 @@
     "@payload-auth/better-auth-db-adapter": "workspace:*",
     "@payload-auth/better-auth-plugin": "workspace:*",
     "@payloadcms/admin-bar": "3.28.1",
+    "@payloadcms/db-mongodb": "^3.28.1",
     "@payloadcms/db-postgres": "3.28.1",
     "@payloadcms/eslint-config": "3.28.0",
     "@payloadcms/next": "3.28.1",
