@@ -12,6 +12,7 @@ import {
 import { cleanUpUserAfterDelete } from '../collections/users/hooks/clean-up-user-after-delete.js'
 import { getSyncPasswordToUserHook } from '../collections/accounts/hooks/sync-password-to-user.js'
 import { getSyncAccountHook } from '../collections/users/hooks/sync-account.js'
+import { onVerifiedChange } from '../collections/users/hooks/on-verified-change.js'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
@@ -100,6 +101,10 @@ export function buildCollectionConfigs({
             getRefreshTokenEndpoint({ userSlug }),
           ],
           hooks: {
+            beforeChange: [
+              ...(existingUserCollection?.hooks?.beforeChange ?? []),
+              onVerifiedChange,
+            ],
             afterChange: [
               ...(existingUserCollection?.hooks?.afterChange ?? []),
               getSyncAccountHook({

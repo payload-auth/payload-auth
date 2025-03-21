@@ -65,6 +65,29 @@ export function sanitizeBetterAuthOptions(
     }
   }
 
+  const originalSendVerificationEmail = baOptions?.emailVerification?.sendVerificationEmail;
+
+  // Only override sendVerificationEmail if the developer provided their own implementation
+  if (typeof originalSendVerificationEmail === 'function') {
+    res.emailVerification = res?.emailVerification || {};
+    res.emailVerification.sendVerificationEmail = async (data, request) => {
+      try {
+        const user = data.user;
+        const createdAt = new Date(user.createdAt);
+        const now = new Date();
+        // If the user was created less than one minute ago, don't send the verification email
+        // as we rely on payload to send the initial email
+        if (now.getTime() - createdAt.getTime() < 60000) {
+          return;
+        }
+        
+        await originalSendVerificationEmail(data, request);
+      } catch (error) {
+        console.error('Error sending verification email:', error);
+      }
+    }
+  }
+
   ensurePasswordSetBeforeUserCreate(res)
 
   if (res.plugins) {

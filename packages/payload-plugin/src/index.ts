@@ -12,8 +12,10 @@ import { buildCollectionConfigs } from './lib/build-collection-configs.js'
 import { payloadAdapter } from '@payload-auth/better-auth-db-adapter'
 import { betterAuth } from 'better-auth'
 import { setAfterAuthMiddlewareHook } from './lib/set-after-auth-middleware-hook.js'
+import { syncVerificationSettings } from './lib/sync-verification-settings.js'
 
 export * from './types.js'
+export * from './helpers/index.js'
 
 function initBetterAuth<P extends TPlugins>({
   payload,
@@ -42,7 +44,7 @@ export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions)
       config.collections = []
     }
 
-    const sanitzedBetterAuthOptions = sanitizeBetterAuthOptions(pluginOptions)
+    let sanitzedBetterAuthOptions = sanitizeBetterAuthOptions(pluginOptions)
 
     // Determine which collections to add based on the options and plugins
     const requiredCollectionSlugs = getRequiredCollectionSlugs({
@@ -56,6 +58,11 @@ export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions)
       incomingCollections: config.collections ?? [],
       requiredCollectionSlugs,
       pluginOptions,
+      sanitizedBAOptions: sanitzedBetterAuthOptions,
+    })
+
+    syncVerificationSettings({
+      collections: config.collections,
       sanitizedBAOptions: sanitzedBetterAuthOptions,
     })
 
