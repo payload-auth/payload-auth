@@ -332,8 +332,8 @@ export function buildCollectionConfigs({
           })
         }
         
-        if (pluginOptions.users?.fieldOverrides) {
-          usersCollection = pluginOptions.users.fieldOverrides({ collection: usersCollection })
+        if (pluginOptions.users?.collectionOverrides) {
+          usersCollection = pluginOptions.users.collectionOverrides({ collection: usersCollection })
         }
         
         enhancedCollections.push(usersCollection)
@@ -471,8 +471,8 @@ export function buildCollectionConfigs({
           ],
           ...existingAccountCollection,
         }
-        if (pluginOptions.accounts?.fieldOverrides) {
-          accountCollection = pluginOptions.accounts.fieldOverrides({ collection: accountCollection })
+        if (pluginOptions.accounts?.collectionOverrides) {
+          accountCollection = pluginOptions.accounts.collectionOverrides({ collection: accountCollection })
         }
         
         enhancedCollections.push(accountCollection)
@@ -585,8 +585,8 @@ export function buildCollectionConfigs({
           })
         }
 
-        if (pluginOptions.sessions?.fieldOverrides) {
-          sessionCollection = pluginOptions.sessions.fieldOverrides({ collection: sessionCollection })
+        if (pluginOptions.sessions?.collectionOverrides) {
+          sessionCollection = pluginOptions.sessions.collectionOverrides({ collection: sessionCollection })
         }
 
         enhancedCollections.push(sessionCollection)

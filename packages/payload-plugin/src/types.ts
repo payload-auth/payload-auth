@@ -96,7 +96,7 @@ export interface PayloadBetterAuthPluginOptions {
      */
     allowedFields?: string[] | undefined
     /**
-     * Function to override fields in the users collection
+     * Function to override the collection configuration
      * 
      * This allows modifying the collection config after it has been built
      * Example use cases include adding saveToJwt to specific fields or
@@ -105,7 +105,7 @@ export interface PayloadBetterAuthPluginOptions {
      * @param options Object containing the collection config and potentially additional parameters
      * @returns Modified collection config
      */
-    fieldOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
+    collectionOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
   }
   /**
    * Configure the Accounts collections:
@@ -124,14 +124,14 @@ export interface PayloadBetterAuthPluginOptions {
      */
     hidden?: boolean | undefined
     /**
-     * Function to override fields in the accounts collection
+     * Function to override the collection configuration
      * 
      * This allows modifying the collection config after it has been built
      * 
      * @param options Object containing the collection config and potentially additional parameters
      * @returns Modified collection config
      */
-    fieldOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
+    collectionOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
   }
   /**
    * Configure the Sessions collections:
@@ -150,14 +150,14 @@ export interface PayloadBetterAuthPluginOptions {
      */
     hidden?: boolean | undefined
     /**
-     * Function to override fields in the sessions collection
+     * Function to override the collection configuration
      * 
      * This allows modifying the collection config after it has been built
      * 
      * @param options Object containing the collection config and potentially additional parameters
      * @returns Modified collection config
      */
-    fieldOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
+    collectionOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
   }
   /**
    * Configure the Verifications collections:
