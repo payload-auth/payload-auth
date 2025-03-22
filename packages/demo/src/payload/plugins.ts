@@ -172,7 +172,7 @@ export const plugins: Plugin[] = [
   payloadBetterAuth({
     disabled: false,
     logTables: false,
-    enableDebugLogs: true,
+    enableDebugLogs: false,
     hidePluginCollections: true,
     users: {
       slug: "users",

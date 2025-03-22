@@ -44,6 +44,7 @@ export function setAfterAuthMiddlewareHook({
       })
 
       let filteredSession = newSession.session
+      const isImpersonated = newSession.session.impersonatedBy
       if (sessionCollection && newSession.session) {
         filteredSession = getFieldsToSign({
           collectionConfig: sessionCollection,
@@ -53,6 +54,10 @@ export function setAfterAuthMiddlewareHook({
 
         delete filteredSession.email
         delete filteredSession.collection
+      }
+
+      if (isImpersonated) {
+        filteredSession.impersonatedBy = newSession.session.impersonatedBy
       }
 
       const filteredSessionData = {

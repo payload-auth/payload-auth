@@ -20,6 +20,7 @@ export function Wrapper(props: { children: React.ReactNode }) {
     const checkImpersonation = async () => {
       try {
         const session = await authClient.getSession();
+        console.log("session", session);
         if (session?.data?.session.impersonatedBy) {
           setImpersonating(true);
           setImpersonatedBy(session.data.session.impersonatedBy as any as User);

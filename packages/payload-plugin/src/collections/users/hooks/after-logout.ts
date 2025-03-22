@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import type { CollectionAfterLogoutHook } from 'payload'
 import type { CollectionHookWithBetterAuth } from '../../../types'
+import { getPayloadWithAuth } from 'src'
 
 type CollectionAfterLogoutHookWithBetterAuth =
   CollectionHookWithBetterAuth<CollectionAfterLogoutHook>
@@ -12,8 +13,10 @@ type AfterLogoutOptions = {
 export const getAfterLogoutHook = (options: AfterLogoutOptions): CollectionAfterLogoutHook => {
   const hook: CollectionAfterLogoutHookWithBetterAuth = async ({ req }) => {
     const cookieStore = await cookies()
-    const authContext = await req.payload.betterAuth.$context
+    const payload = await getPayloadWithAuth(req.payload.config)
+    const authContext = await payload.betterAuth.$context
     const sessionTokenName = authContext.authCookies.sessionToken.name
+
     const sessionDataName = authContext.authCookies.sessionData.name
     const dontRememberTokenName = authContext.authCookies.dontRememberToken.name
 
@@ -36,6 +39,18 @@ export const getAfterLogoutHook = (options: AfterLogoutOptions): CollectionAfter
         })
       }
     }
+
+    const baseMultiSessionName = sessionTokenName + '_multi'
+    const multiSessionCookies = cookieStore.getAll()
+    multiSessionCookies.forEach((cookie) => {
+      if (cookie.name.startsWith(baseMultiSessionName)) {
+        cookieStore.delete(cookie.name)
+      }
+    })
+
+    //TODO: this is a hack to delete the admin session cookie
+    // we need to find a better way to do this (BETTER AUTH HARDCODED THIS)
+    cookieStore.delete('admin_session')
 
     cookieStore.delete(sessionTokenName)
     cookieStore.delete(sessionDataName)

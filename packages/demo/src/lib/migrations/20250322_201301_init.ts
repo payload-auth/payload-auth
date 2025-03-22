@@ -3,25 +3,32 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
    CREATE TYPE "public"."enum_users_role" AS ENUM('admin', 'user');
+  CREATE TYPE "public"."enum_projects_status" AS ENUM('active', 'inactive');
   CREATE TABLE IF NOT EXISTS "users" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"name" varchar,
-  	"email" varchar NOT NULL,
   	"email_verified" boolean DEFAULT false NOT NULL,
   	"image" varchar,
   	"role" "enum_users_role" DEFAULT 'user' NOT NULL,
+  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"normalized_email" varchar,
   	"two_factor_enabled" boolean DEFAULT false,
-  	"username" varchar NOT NULL,
-  	"display_username" varchar NOT NULL,
   	"is_anonymous" boolean DEFAULT false,
   	"phone_number" varchar,
   	"phone_number_verified" boolean DEFAULT false,
   	"banned" boolean DEFAULT false,
   	"ban_reason" varchar,
   	"ban_expires" timestamp(3) with time zone,
-  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+  	"email" varchar NOT NULL,
+  	"reset_password_token" varchar,
+  	"reset_password_expiration" timestamp(3) with time zone,
+  	"salt" varchar,
+  	"hash" varchar,
+  	"_verified" boolean,
+  	"_verificationtoken" varchar,
+  	"login_attempts" numeric DEFAULT 0,
+  	"lock_until" timestamp(3) with time zone
   );
   
   CREATE TABLE IF NOT EXISTS "accounts" (
@@ -47,10 +54,10 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"expires_at" timestamp(3) with time zone NOT NULL,
   	"ip_address" varchar,
   	"user_agent" varchar,
-  	"impersonated_by_id" integer,
-  	"active_organization_id" integer,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+  	"impersonated_by_id" integer,
+  	"active_organization_id" integer
   );
   
   CREATE TABLE IF NOT EXISTS "verifications" (
@@ -149,10 +156,11 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
   
-  CREATE TABLE IF NOT EXISTS "jwks" (
+  CREATE TABLE IF NOT EXISTS "projects" (
   	"id" serial PRIMARY KEY NOT NULL,
-  	"public_key" varchar NOT NULL,
-  	"private_key" varchar NOT NULL,
+  	"name" varchar,
+  	"description" varchar,
+  	"status" "enum_projects_status",
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
@@ -180,7 +188,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"members_id" integer,
   	"invitations_id" integer,
   	"teams_id" integer,
-  	"jwks_id" integer
+  	"projects_id" integer
   );
   
   CREATE TABLE IF NOT EXISTS "payload_preferences" (
@@ -358,7 +366,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   END $$;
   
   DO $$ BEGIN
-   ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_jwks_fk" FOREIGN KEY ("jwks_id") REFERENCES "public"."jwks"("id") ON DELETE cascade ON UPDATE no action;
+   ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_projects_fk" FOREIGN KEY ("projects_id") REFERENCES "public"."projects"("id") ON DELETE cascade ON UPDATE no action;
   EXCEPTION
    WHEN duplicate_object THEN null;
   END $$;
@@ -375,21 +383,20 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
    WHEN duplicate_object THEN null;
   END $$;
   
-  CREATE UNIQUE INDEX IF NOT EXISTS "users_email_idx" ON "users" USING btree ("email");
-  CREATE UNIQUE INDEX IF NOT EXISTS "users_normalized_email_idx" ON "users" USING btree ("normalized_email");
-  CREATE UNIQUE INDEX IF NOT EXISTS "users_username_idx" ON "users" USING btree ("username");
   CREATE INDEX IF NOT EXISTS "users_updated_at_idx" ON "users" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "users_created_at_idx" ON "users" USING btree ("created_at");
+  CREATE UNIQUE INDEX IF NOT EXISTS "users_normalized_email_idx" ON "users" USING btree ("normalized_email");
+  CREATE UNIQUE INDEX IF NOT EXISTS "users_email_idx" ON "users" USING btree ("email");
   CREATE INDEX IF NOT EXISTS "accounts_user_idx" ON "accounts" USING btree ("user_id");
   CREATE INDEX IF NOT EXISTS "accounts_account_id_idx" ON "accounts" USING btree ("account_id");
   CREATE INDEX IF NOT EXISTS "accounts_updated_at_idx" ON "accounts" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "accounts_created_at_idx" ON "accounts" USING btree ("created_at");
   CREATE INDEX IF NOT EXISTS "sessions_user_idx" ON "sessions" USING btree ("user_id");
   CREATE UNIQUE INDEX IF NOT EXISTS "sessions_token_idx" ON "sessions" USING btree ("token");
-  CREATE INDEX IF NOT EXISTS "sessions_impersonated_by_idx" ON "sessions" USING btree ("impersonated_by_id");
-  CREATE INDEX IF NOT EXISTS "sessions_active_organization_idx" ON "sessions" USING btree ("active_organization_id");
   CREATE INDEX IF NOT EXISTS "sessions_updated_at_idx" ON "sessions" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "sessions_created_at_idx" ON "sessions" USING btree ("created_at");
+  CREATE INDEX IF NOT EXISTS "sessions_impersonated_by_idx" ON "sessions" USING btree ("impersonated_by_id");
+  CREATE INDEX IF NOT EXISTS "sessions_active_organization_idx" ON "sessions" USING btree ("active_organization_id");
   CREATE INDEX IF NOT EXISTS "verifications_identifier_idx" ON "verifications" USING btree ("identifier");
   CREATE INDEX IF NOT EXISTS "verifications_updated_at_idx" ON "verifications" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "verifications_created_at_idx" ON "verifications" USING btree ("created_at");
@@ -421,9 +428,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX IF NOT EXISTS "teams_organization_idx" ON "teams" USING btree ("organization_id");
   CREATE INDEX IF NOT EXISTS "teams_updated_at_idx" ON "teams" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "teams_created_at_idx" ON "teams" USING btree ("created_at");
-  CREATE INDEX IF NOT EXISTS "jwks_public_key_idx" ON "jwks" USING btree ("public_key");
-  CREATE INDEX IF NOT EXISTS "jwks_updated_at_idx" ON "jwks" USING btree ("updated_at");
-  CREATE INDEX IF NOT EXISTS "jwks_created_at_idx" ON "jwks" USING btree ("created_at");
+  CREATE INDEX IF NOT EXISTS "projects_updated_at_idx" ON "projects" USING btree ("updated_at");
+  CREATE INDEX IF NOT EXISTS "projects_created_at_idx" ON "projects" USING btree ("created_at");
   CREATE INDEX IF NOT EXISTS "payload_locked_documents_global_slug_idx" ON "payload_locked_documents" USING btree ("global_slug");
   CREATE INDEX IF NOT EXISTS "payload_locked_documents_updated_at_idx" ON "payload_locked_documents" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "payload_locked_documents_created_at_idx" ON "payload_locked_documents" USING btree ("created_at");
@@ -441,7 +447,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_members_id_idx" ON "payload_locked_documents_rels" USING btree ("members_id");
   CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_invitations_id_idx" ON "payload_locked_documents_rels" USING btree ("invitations_id");
   CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_teams_id_idx" ON "payload_locked_documents_rels" USING btree ("teams_id");
-  CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_jwks_id_idx" ON "payload_locked_documents_rels" USING btree ("jwks_id");
+  CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_projects_id_idx" ON "payload_locked_documents_rels" USING btree ("projects_id");
   CREATE INDEX IF NOT EXISTS "payload_preferences_key_idx" ON "payload_preferences" USING btree ("key");
   CREATE INDEX IF NOT EXISTS "payload_preferences_updated_at_idx" ON "payload_preferences" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "payload_preferences_created_at_idx" ON "payload_preferences" USING btree ("created_at");
@@ -466,11 +472,12 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TABLE "members" CASCADE;
   DROP TABLE "invitations" CASCADE;
   DROP TABLE "teams" CASCADE;
-  DROP TABLE "jwks" CASCADE;
+  DROP TABLE "projects" CASCADE;
   DROP TABLE "payload_locked_documents" CASCADE;
   DROP TABLE "payload_locked_documents_rels" CASCADE;
   DROP TABLE "payload_preferences" CASCADE;
   DROP TABLE "payload_preferences_rels" CASCADE;
   DROP TABLE "payload_migrations" CASCADE;
-  DROP TYPE "public"."enum_users_role";`)
+  DROP TYPE "public"."enum_users_role";
+  DROP TYPE "public"."enum_projects_status";`)
 }

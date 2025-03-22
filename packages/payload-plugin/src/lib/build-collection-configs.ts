@@ -114,6 +114,9 @@ export function buildCollectionConfigs({
                 accountSlug,
               }),
             ],
+            // beforeLogin: [
+            //   /// reject login to admin if user is not verified when option is enabled
+            // ],
             afterLogin: [
               ...(existingUserCollection?.hooks?.afterLogin ?? []),
               getAfterLoginHook({ sessionsCollectionSlug: sessionSlug }),

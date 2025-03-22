@@ -12,6 +12,7 @@ import {
 } from '../../../helpers/serialize-cookie'
 import { cookies } from 'next/headers'
 import { setSessionCookie } from 'better-auth/cookies'
+import { createAuthMiddleware } from 'better-auth/api'
 
 type AfterLoginOptions = {
   sessionsCollectionSlug: string
@@ -25,14 +26,9 @@ export const getAfterLoginHook = (options: AfterLoginOptions): CollectionAfterLo
   const hook: CollectionAfterLoginHook = async ({ collection, context, req, token, user }) => {
     const config = req.payload.config
     const payload = await getPayloadWithAuth(config)
-    // we just have to signin with better-auth using email and password
-    // NOTE: this might not work for admins who sigin in with social providers
-    // but theres alot that needs to be done to support that anyways
+    const cookieStore = await cookies()
+    const authContext = await payload.betterAuth.$context
 
-    // we just need to create the session and set the cookie directly
-    // reading better-auth code this seems like the process
-
-    //create the data object that will be used to create the session
     const sessionExpiration = payload.betterAuth.options.session?.expiresIn || 60 * 60 * 24 * 7 // 7 days
     const session = await payload.create({
       collection: options.sessionsCollectionSlug,
@@ -43,7 +39,20 @@ export const getAfterLoginHook = (options: AfterLoginOptions): CollectionAfterLo
         token: generateId(32),
         expiresAt: new Date(Date.now() + sessionExpiration * 1000),
       },
+      req,
     })
+
+    const betterAuthHandleRequest = createAuthMiddleware(async (ctx) => {
+      // const newSession = await authContext.internalAdapter.createSession(user.id, req.headers)
+      ctx.context = { ...authContext, user: user }
+      const cookie = await ctx.setSignedCookie(
+        ctx.context.authCookies.sessionToken.name,
+        session.token,
+        ctx.context.secret,
+      )
+      return cookie
+    })
+
     const betterAuthSession = {
       session: {
         id: session.id.toString(),
@@ -65,24 +74,20 @@ export const getAfterLoginHook = (options: AfterLoginOptions): CollectionAfterLo
         role: user.role,
       },
     }
-
-    console.log('betterAuthSession', betterAuthSession)
-    if (!session) {
-      payload.logger.error('Failed to create better auth session')
-      throw new APIError('UNAUTHORIZED', 500)
-    }
-    // finally set the better-auth session cookie with the session and user data
-    // we have to create at least two cookies
-    // the better-auth.session_token cookie
-    // const sessionTokenCookie = await serializeSignedCookie(
-    //   'session_token',
-    //   betterAuthSession.token,
+    // const signedCookie2 = await signCookieValue(
+    //   betterAuthSession.session.token,
     //   process.env.BETTER_AUTH_SECRET || '',
-    //   {
-    //     maxAge: sessionExpiration,
-    //   },
     // )
-    // the better-auth.session_data cookie
+
+    const cookie = await betterAuthHandleRequest(req)
+    const value = decodeURIComponent(cookie.split('=').at(1) || '')
+
+    // console.log('sessionToken', betterAuthSession.session.token)
+
+    // console.log('signedCookieValue', value2)
+    // const value2Signature = value2.includes('.') ? value2.split('.').at(1) || '' : ''
+    // console.log('signedCookieSignature', value2Signature)
+
     const data = base64Url.encode(
       JSON.stringify({
         session: betterAuthSession,
@@ -100,54 +105,93 @@ export const getAfterLoginHook = (options: AfterLoginOptions): CollectionAfterLo
       },
     )
 
-    const authContext = await payload.betterAuth.$context
-
-    const ctx = {
-      context: authContext,
-      setCookie(name, value, options) {
-        const path = options?.path || '/'
-        const maxAge = options?.maxAge ? `; Max-Age=${options.maxAge}` : ''
-        const httpOnly = options?.httpOnly ? '; HttpOnly' : ''
-        const secure = options?.secure ? '; Secure' : ''
-        const sameSite = options?.sameSite ? `; SameSite=${options.sameSite}` : '; SameSite=Lax'
-
-        req.headers.set(
-          'Set-Cookie',
-          `${name}=${value}; Path=${path}${maxAge}${httpOnly}${secure}${sameSite}`,
-        )
-        return name
-      },
-      getSignedCookie: async (key: string, secret: string, prefix?: CookiePrefixOptions) => {
-        return getSignedCookie(key, secret, req.headers, prefix)
-      },
-      setSignedCookie: async (key, value, secret, options) => {
-        const cookie = await serializeSignedCookie(key, value, secret, options)
-        req.headers.append('set-cookie', cookie)
-        return cookie
-      },
-    } as GenericEndpointContext
-
-    await setSessionCookie(ctx, {
-      session: betterAuthSession.session as any,
-      user: betterAuthSession.user as any,
-    })
-
-    const res = authContext.setNewSession({
-      session: betterAuthSession.session as any,
-      user: betterAuthSession.user as any,
-    })
-
     // const sessionDataCookie = serializeCookie('session_data', data, {
     //   maxAge: sessionExpiration,
     // })
 
+    cookieStore.set('better-auth.session_data', data)
+
+    cookieStore.set(authContext.authCookies.sessionToken.name, value, {
+      ...authContext.authCookies.sessionToken.options,
+      sameSite: 'lax',
+    })
+    // cookieStore.set('better-auth.session_token', value2)
+
+    // const signedCookie = await betterAuthHandleRequest(req)
+    // const value = signedCookie.split('=').at(1) || ''
+    // const valueSignature = value.includes('.') ? value.split('.').at(1) || '' : ''
+    // console.log('valueSignature', valueSignature)
+    // console.log('value', value)
+    // console.log('signedCookie', signedCookie)
+    // cookieStore
+
+    // we just have to signin with better-auth using email and password
+    // NOTE: this might not work for admins who sigin in with social providers
+    // but theres alot that needs to be done to support that anyways
+
+    // we just need to create the session and set the cookie directly
+    // reading better-auth code this seems like the process
+
+    //create the data object that will be used to create the session
+    // finally set the better-auth session cookie with the session and user data
+    // we have to create at least two cookies
+    // the better-auth.session_token cookie
+    // const sessionTokenCookie = await serializeSignedCookie(
+    //   'session_token',
+    //   betterAuthSession.token,
+    //   process.env.BETTER_AUTH_SECRET || '',
+    //   {
+    //     maxAge: sessionExpiration,
+    //   },
+    // )
+    // the better-auth.session_data cookie
+
+    // const ctx = {
+    //   context: authContext,
+    //   setCookie(name, value, options) {
+    //     const path = options?.path || '/'
+    //     const maxAge = options?.maxAge ? `; Max-Age=${options.maxAge}` : ''
+    //     const httpOnly = options?.httpOnly ? '; HttpOnly' : ''
+    //     const secure = options?.secure ? '; Secure' : ''
+    //     const sameSite = options?.sameSite ? `; SameSite=${options.sameSite}` : '; SameSite=Lax'
+
+    //     req.headers.set(
+    //       'Set-Cookie',
+    //       `${name}=${value}; Path=${path}${maxAge}${httpOnly}${secure}${sameSite}`,
+    //     )
+    //     return name
+    //   },
+    //   getSignedCookie: async (key: string, secret: string, prefix?: CookiePrefixOptions) => {
+    //     return getSignedCookie(key, secret, req.headers, prefix)
+    //   },
+    //   setSignedCookie: async (key, value, secret, options) => {
+    //     const cookie = await serializeSignedCookie(key, value, secret, options)
+    //     req.headers.append('set-cookie', cookie)
+    //     return cookie
+    //   },
+    // } as GenericEndpointContext
+
+    // await setSessionCookie(ctx, {
+    //   session: betterAuthSession.session as any,
+    //   user: betterAuthSession.user as any,
+    // })
+
+    // const res = authContext.setNewSession({
+    //   session: betterAuthSession.session as any,
+    //   user: betterAuthSession.user as any,
+    // })
+
+    // if (!session) {
+    //   payload.logger.error('Failed to create better auth session')
+    //   throw new APIError('UNAUTHORIZED', 500)
+    // }
+
     // need to actually set the cookies with next cookies api
-    const cookieStore = await cookies()
-    const sessionTokenValue = await signCookieValue(
-      betterAuthSession.session.token,
-      process.env.BETTER_AUTH_SECRET || '',
-    )
-    const sessionDataValue = encodeURIComponent(data)
+    // const sessionTokenValue = await signCookieValue(
+    //   betterAuthSession.session.token,
+    //   process.env.BETTER_AUTH_SECRET || '',
+    // )
+    // const sessionDataValue = encodeURIComponent(data)
     // console.log('sessionTokenValue', sessionTokenValue)
     // console.log('sessionDataValue', sessionDataValue)
     // req.headers.append('set-cookie', `better-auth.session_token=${sessionTokenValue}`)
@@ -155,8 +199,8 @@ export const getAfterLoginHook = (options: AfterLoginOptions): CollectionAfterLo
     // const setCookie = req.headers.getSetCookie()
     // console.log('setCookie', setCookie)
 
-    cookieStore.set('better-auth.session_token', sessionTokenValue)
-    cookieStore.set('better-auth.session_data', sessionDataValue)
+    // cookieStore.set('better-auth.session_token', value)
+    // cookieStore.set('better-auth.session_data', sessionDataValue)
 
     // const sessionAfterLogin = await payload.betterAuth.api.getSession({
     //   headers: req.headers,

@@ -201,6 +201,7 @@ export const signCookieValue = async (value: string, secret: string | BufferSour
   const signature = await makeSignature(value, secret)
   value = `${value}.${signature}`
   value = encodeURIComponent(value)
+  value = decodeURIComponent(value)
   return value
 }
 
