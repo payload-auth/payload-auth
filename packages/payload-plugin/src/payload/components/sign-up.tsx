@@ -71,6 +71,7 @@ export function SignUp({
           },
           body: JSON.stringify({
             role: defaultAdminRole ?? 'admin',
+            overrideAccess: true,
           }),
         },
       )

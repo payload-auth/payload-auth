@@ -11,6 +11,10 @@ import { createTransform } from "./transform/index.js";
 import { generateSchema } from "./generate-schema/index.js";
 import type { PayloadAdapter } from "./types.js";
 
+
+//TODO: ADD DEPTH: 0
+
+
 const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
   function debugLog(message: any[]) {
     if (config.enableDebugLogs) {
@@ -59,6 +63,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
           const result = await payload.create({
             collection: collectionSlug,
             data: transformed,
+            depth: 0,
             select: convertSelect(model, select),
           });
           const transformedResult = transformOutput(result);
