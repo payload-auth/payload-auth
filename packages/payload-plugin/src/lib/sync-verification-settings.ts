@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import type { SanitizedBetterAuthOptions } from '../types.js'
+import type { SanitizedBetterAuthOptions } from '../types'
 
 /**
  * Syncs the verification settings between the collections and the BetterAuth options bidirectionally:
@@ -13,22 +13,27 @@ export function syncVerificationSettings({
   collections: CollectionConfig[]
   sanitizedBAOptions: SanitizedBetterAuthOptions
 }): void {
-  const authCollection = collections.find(collection => Boolean(collection.auth)) || null
-  const hasVerify = authCollection?.auth && typeof authCollection.auth === 'object' && Boolean(authCollection.auth.verify)
-  
-  if (hasVerify && 
-      (!sanitizedBAOptions.emailAndPassword || 
-       sanitizedBAOptions.emailAndPassword.requireEmailVerification !== true)) {
-    
+  const authCollection = collections.find((collection) => Boolean(collection.auth)) || null
+  const hasVerify =
+    authCollection?.auth &&
+    typeof authCollection.auth === 'object' &&
+    Boolean(authCollection.auth.verify)
+
+  if (
+    hasVerify &&
+    (!sanitizedBAOptions.emailAndPassword ||
+      sanitizedBAOptions.emailAndPassword.requireEmailVerification !== true)
+  ) {
     sanitizedBAOptions.emailAndPassword = sanitizedBAOptions?.emailAndPassword || { enabled: true }
     sanitizedBAOptions.emailAndPassword.requireEmailVerification = true
   }
-  
-  if (sanitizedBAOptions.emailAndPassword?.requireEmailVerification === true &&
-      authCollection?.auth && 
-      typeof authCollection.auth === 'object' &&
-      !authCollection.auth.verify) {
-    
+
+  if (
+    sanitizedBAOptions.emailAndPassword?.requireEmailVerification === true &&
+    authCollection?.auth &&
+    typeof authCollection.auth === 'object' &&
+    !authCollection.auth.verify
+  ) {
     authCollection.auth.verify = true
   }
-} 
+}

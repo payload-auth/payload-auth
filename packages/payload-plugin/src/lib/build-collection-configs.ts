@@ -1,19 +1,19 @@
-import type { CollectionConfig, Field } from 'payload'
-import type { PayloadBetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../types.js'
-import { baseCollectionSlugs, betterAuthPluginSlugs } from './config.js'
-import { betterAuthStrategy } from './auth-strategy.js'
-import { getAfterLogoutHook } from '../collections/users/hooks/after-logout.js'
-import { getRefreshTokenEndpoint } from '../collections/users/endpoints/refresh-token.js'
+import type { PayloadBetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../types'
+import { baseCollectionSlugs, betterAuthPluginSlugs } from './config'
+import { betterAuthStrategy } from './auth-strategy'
+import { getAfterLogoutHook } from '../collections/users/hooks/after-logout'
+import { getRefreshTokenEndpoint } from '../collections/users/endpoints/refresh-token'
 import {
   isAdminOrCurrentUserUpdateWithAllowedFields,
   isAdminOrCurrentUserWithRoles,
   isAdminWithRoles,
-} from './payload-access.js'
-import { cleanUpUserAfterDelete } from '../collections/users/hooks/clean-up-user-after-delete.js'
-import { getSyncPasswordToUserHook } from '../collections/accounts/hooks/sync-password-to-user.js'
-import { getSyncAccountHook } from '../collections/users/hooks/sync-account.js'
-import { onVerifiedChange } from '../collections/users/hooks/on-verified-change.js'
-
+} from './payload-access'
+import { cleanUpUserAfterDelete } from '../collections/users/hooks/clean-up-user-after-delete'
+import { getSyncPasswordToUserHook } from '../collections/accounts/hooks/sync-password-to-user'
+import { getSyncAccountHook } from '../collections/users/hooks/sync-account'
+import { onVerifiedChange } from '../collections/users/hooks/on-verified-change'
+import { getAfterLoginHook } from '../collections/users/hooks/after-login'
+import { CollectionConfig, Field } from 'payload'
 /**
  * Builds the required collections based on the BetterAuth options and plugins
  */
@@ -39,31 +39,33 @@ export function buildCollectionConfigs({
     saveUpdatedAtToJWT = true,
     saveCreatedAtToJWT = true,
   }: {
-    saveUpdatedAtToJWT?: boolean;
-    saveCreatedAtToJWT?: boolean;
+    saveUpdatedAtToJWT?: boolean
+    saveCreatedAtToJWT?: boolean
   } = {}): Field[] => {
-    return [{
-      name: 'updatedAt',
-      type: 'date',
-      saveToJWT: saveUpdatedAtToJWT,
-      admin: {
-        disableBulkEdit: true,
-        hidden: true,
+    return [
+      {
+        name: 'updatedAt',
+        type: 'date',
+        saveToJWT: saveUpdatedAtToJWT,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true,
+        },
+        index: true,
+        label: ({ t }) => t('general:updatedAt'),
       },
-      index: true,
-      label: ({ t }) => t('general:updatedAt'),
-    },
-    {
-      name: 'createdAt',
-      saveToJWT: saveCreatedAtToJWT,
-      admin: {
-        disableBulkEdit: true,
-        hidden: true,
+      {
+        name: 'createdAt',
+        saveToJWT: saveCreatedAtToJWT,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true,
+        },
+        type: 'date',
+        index: true,
+        label: ({ t }) => t('general:createdAt'),
       },
-      type: 'date',
-      index: true,
-      label: ({ t }) => t('general:createdAt'),
-    }]
+    ]
   }
 
   const enhancedCollections: CollectionConfig[] = []
@@ -110,7 +112,11 @@ export function buildCollectionConfigs({
               getSyncAccountHook({
                 userSlug,
                 accountSlug,
-              })
+              }),
+            ],
+            afterLogin: [
+              ...(existingUserCollection?.hooks?.afterLogin ?? []),
+              getAfterLoginHook({ sessionsCollectionSlug: sessionSlug }),
             ],
             afterLogout: [
               ...(existingUserCollection?.hooks?.afterLogout ?? []),
@@ -336,11 +342,11 @@ export function buildCollectionConfigs({
             }
           })
         }
-        
+
         if (pluginOptions.users?.collectionOverrides) {
           usersCollection = pluginOptions.users.collectionOverrides({ collection: usersCollection })
         }
-        
+
         enhancedCollections.push(usersCollection)
         break
       case baseCollectionSlugs.accounts:
@@ -477,9 +483,11 @@ export function buildCollectionConfigs({
           ...existingAccountCollection,
         }
         if (pluginOptions.accounts?.collectionOverrides) {
-          accountCollection = pluginOptions.accounts.collectionOverrides({ collection: accountCollection })
+          accountCollection = pluginOptions.accounts.collectionOverrides({
+            collection: accountCollection,
+          })
         }
-        
+
         enhancedCollections.push(accountCollection)
         break
       case baseCollectionSlugs.sessions:
@@ -591,7 +599,9 @@ export function buildCollectionConfigs({
         }
 
         if (pluginOptions.sessions?.collectionOverrides) {
-          sessionCollection = pluginOptions.sessions.collectionOverrides({ collection: sessionCollection })
+          sessionCollection = pluginOptions.sessions.collectionOverrides({
+            collection: sessionCollection,
+          })
         }
 
         enhancedCollections.push(sessionCollection)

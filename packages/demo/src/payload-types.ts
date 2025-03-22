@@ -77,7 +77,6 @@ export interface Config {
     members: Member;
     invitations: Invitation;
     teams: Team;
-    jwks: Jwk;
     projects: Project;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -96,7 +95,6 @@ export interface Config {
     members: MembersSelect<false> | MembersSelect<true>;
     invitations: InvitationsSelect<false> | InvitationsSelect<true>;
     teams: TeamsSelect<false> | TeamsSelect<true>;
-    jwks: JwksSelect<false> | JwksSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -156,6 +154,8 @@ export interface User {
    * The role of the user
    */
   role: 'admin' | 'user';
+  updatedAt: string;
+  createdAt: string;
   /**
    * The normalized email of the user
    */
@@ -188,8 +188,6 @@ export interface User {
    * The date and time when the ban will expire
    */
   banExpires?: string | null;
-  updatedAt: string;
-  createdAt: string;
   /**
    * The email of the user
    */
@@ -198,6 +196,8 @@ export interface User {
   resetPasswordExpiration?: string | null;
   salt?: string | null;
   hash?: string | null;
+  _verified?: boolean | null;
+  _verificationToken?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
   password?: string | null;
@@ -281,6 +281,8 @@ export interface Session {
    * The user agent information of the device
    */
   userAgent?: string | null;
+  updatedAt: string;
+  createdAt: string;
   /**
    * The admin who is impersonating this session
    */
@@ -289,8 +291,6 @@ export interface Session {
    * The currently active organization for the session
    */
   activeOrganization?: (number | null) | Organization;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * Organizations are groups of users that share access to certain resources.
@@ -589,25 +589,6 @@ export interface Invitation {
   createdAt: string;
 }
 /**
- * JWKS are used to verify the signature of the JWT token
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "jwks".
- */
-export interface Jwk {
-  id: number;
-  /**
-   * The public part of the web key
-   */
-  publicKey: string;
-  /**
-   * The private part of the web key
-   */
-  privateKey: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "projects".
  */
@@ -671,10 +652,6 @@ export interface PayloadLockedDocument {
         value: number | Team;
       } | null)
     | ({
-        relationTo: 'jwks';
-        value: number | Jwk;
-      } | null)
-    | ({
         relationTo: 'projects';
         value: number | Project;
       } | null);
@@ -729,6 +706,8 @@ export interface UsersSelect<T extends boolean = true> {
   emailVerified?: T;
   image?: T;
   role?: T;
+  updatedAt?: T;
+  createdAt?: T;
   normalizedEmail?: T;
   twoFactorEnabled?: T;
   isAnonymous?: T;
@@ -737,13 +716,13 @@ export interface UsersSelect<T extends boolean = true> {
   banned?: T;
   banReason?: T;
   banExpires?: T;
-  updatedAt?: T;
-  createdAt?: T;
   email?: T;
   resetPasswordToken?: T;
   resetPasswordExpiration?: T;
   salt?: T;
   hash?: T;
+  _verified?: T;
+  _verificationToken?: T;
   loginAttempts?: T;
   lockUntil?: T;
 }
@@ -775,10 +754,10 @@ export interface SessionsSelect<T extends boolean = true> {
   expiresAt?: T;
   ipAddress?: T;
   userAgent?: T;
-  impersonatedBy?: T;
-  activeOrganization?: T;
   updatedAt?: T;
   createdAt?: T;
+  impersonatedBy?: T;
+  activeOrganization?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -889,16 +868,6 @@ export interface InvitationsSelect<T extends boolean = true> {
 export interface TeamsSelect<T extends boolean = true> {
   name?: T;
   organization?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "jwks_select".
- */
-export interface JwksSelect<T extends boolean = true> {
-  publicKey?: T;
-  privateKey?: T;
   updatedAt?: T;
   createdAt?: T;
 }

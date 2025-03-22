@@ -42,11 +42,12 @@ export const getSyncAccountHook = (
           collection: options.accountSlug,
           data: {
             [userField]: doc.id,
-            accountId: doc.id,
+            accountId: doc.id.toString(),
             providerId: 'credential',
             password: passwordValue,
             context: { syncAccountHook: true },
           },
+          req,
         })
       } catch (error) {
         console.error('Failed to create account for user:', error)
@@ -63,6 +64,7 @@ export const getSyncAccountHook = (
               { providerId: { equals: 'credential' } },
             ],
           },
+          req,
           depth: 0,
           context: { syncAccountHook: true },
         })
@@ -75,6 +77,7 @@ export const getSyncAccountHook = (
             data: {
               password: passwordValue,
             },
+            req,
             context: { syncAccountHook: true },
           })
         }

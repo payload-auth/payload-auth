@@ -97,11 +97,11 @@ export interface PayloadBetterAuthPluginOptions {
     allowedFields?: string[] | undefined
     /**
      * Function to override the collection configuration
-     * 
+     *
      * This allows modifying the collection config after it has been built
      * Example use cases include adding saveToJwt to specific fields or
      * modifying field descriptions
-     * 
+     *
      * @param options Object containing the collection config and potentially additional parameters
      * @returns Modified collection config
      */
@@ -125,9 +125,9 @@ export interface PayloadBetterAuthPluginOptions {
     hidden?: boolean | undefined
     /**
      * Function to override the collection configuration
-     * 
+     *
      * This allows modifying the collection config after it has been built
-     * 
+     *
      * @param options Object containing the collection config and potentially additional parameters
      * @returns Modified collection config
      */
@@ -151,9 +151,9 @@ export interface PayloadBetterAuthPluginOptions {
     hidden?: boolean | undefined
     /**
      * Function to override the collection configuration
-     * 
+     *
      * This allows modifying the collection config after it has been built
-     * 
+     *
      * @param options Object containing the collection config and potentially additional parameters
      * @returns Modified collection config
      */

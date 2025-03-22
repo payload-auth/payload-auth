@@ -1,4 +1,4 @@
-import type { SanitizedBetterAuthOptions } from '../types.js'
+import type { SanitizedBetterAuthOptions } from '../types'
 
 /**
  * Adds a before hook to the user create operation to ensure the password is set.

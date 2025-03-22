@@ -26,7 +26,7 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI,
     },
-    push: true, // Should be false (this is just for demo purposes)
+    push: false, // Should be false (this is just for demo purposes)
     migrationDir: path.resolve(dirname, "lib/migrations"),
   }),
   editor: lexicalEditor(),

@@ -1,7 +1,7 @@
 import { setCookieCache } from 'better-auth/cookies'
 import { createAuthMiddleware } from 'better-auth/api'
 import { getFieldsToSign } from 'payload'
-import type { SanitizedBetterAuthOptions, PayloadBetterAuthPluginOptions } from '../types.js'
+import type { SanitizedBetterAuthOptions, PayloadBetterAuthPluginOptions } from '../types'
 import type { Config, Payload } from 'payload'
 
 /**
@@ -29,7 +29,9 @@ export function setAfterAuthMiddlewareHook({
       const sessionCollectionSlug = pluginOptions.sessions?.slug ?? 'sessions'
 
       const userCollection = payloadConfig?.collections?.find((c) => c.slug === userCollectionSlug)
-      const sessionCollection = payloadConfig?.collections?.find((c) => c.slug === sessionCollectionSlug)
+      const sessionCollection = payloadConfig?.collections?.find(
+        (c) => c.slug === sessionCollectionSlug,
+      )
 
       if (!userCollection) {
         throw new Error(`User collection with slug '${userCollectionSlug}' not found`)
@@ -48,7 +50,7 @@ export function setAfterAuthMiddlewareHook({
           email: newSession.user.email,
           user: newSession.session as any,
         }) as typeof newSession.session
-        
+
         delete filteredSession.email
         delete filteredSession.collection
       }

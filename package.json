@@ -4,12 +4,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build:plugin": "pnpm run build --workspace=@payload-auth/payload-plugin",
-    "build:adapter": "pnpm run build --workspace=@payload-auth/db-adapter",
-    "test:plugin": "pnpm run test --workspace=@payload-auth/payload-plugin",
-    "test:adapter": "pnpm run test --workspace=@payload-auth/db-adapter",
-    "build": "pnpm run build --workspaces",
-    "test": "pnpm run test --workspaces"
+    "clean-all": "find . -type d -name node_modules -o -name dist -o -type f -name tsconfig.tsbuildinfo -o -name pnpm-lock.yaml | xargs rm -rf"
   },
   "keywords": [
     "payload-cms",

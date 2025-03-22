@@ -1,12 +1,8 @@
 import type { PayloadBetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../types.js'
-import {
-  supportedBetterAuthPluginIds,
-  betterAuthPluginSlugs,
-  baseCollectionSlugs,
-} from './config.js'
-import { ensurePasswordSetBeforeUserCreate } from './ensure-password-set-before-create.js'
-import { verifyPassword } from './password.js'
-import { hashPassword } from './password.js'
+import { supportedBetterAuthPluginIds, betterAuthPluginSlugs, baseCollectionSlugs } from './config'
+import { ensurePasswordSetBeforeUserCreate } from './ensure-password-set-before-create'
+import { verifyPassword } from './password'
+import { hashPassword } from './password'
 
 /**
  * Sanitizes the BetterAuth options
@@ -65,25 +61,25 @@ export function sanitizeBetterAuthOptions(
     }
   }
 
-  const originalSendVerificationEmail = baOptions?.emailVerification?.sendVerificationEmail;
+  const originalSendVerificationEmail = baOptions?.emailVerification?.sendVerificationEmail
 
   // Only override sendVerificationEmail if the developer provided their own implementation
   if (typeof originalSendVerificationEmail === 'function') {
-    res.emailVerification = res?.emailVerification || {};
+    res.emailVerification = res?.emailVerification || {}
     res.emailVerification.sendVerificationEmail = async (data, request) => {
       try {
-        const user = data.user;
-        const createdAt = new Date(user.createdAt);
-        const now = new Date();
+        const user = data.user
+        const createdAt = new Date(user.createdAt)
+        const now = new Date()
         // If the user was created less than one minute ago, don't send the verification email
         // as we rely on payload to send the initial email
         if (now.getTime() - createdAt.getTime() < 60000) {
-          return;
+          return
         }
-        
-        await originalSendVerificationEmail(data, request);
+
+        await originalSendVerificationEmail(data, request)
       } catch (error) {
-        console.error('Error sending verification email:', error);
+        console.error('Error sending verification email:', error)
       }
     }
   }

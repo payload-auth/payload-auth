@@ -1,6 +1,6 @@
 import type { AuthStrategy } from 'payload'
-import { getPayloadWithAuth } from '../index.js'
-import type { TPlugins } from '../types.js'
+import { getPayloadWithAuth } from '../index'
+import type { TPlugins } from '../types'
 
 /**
  * Auth strategy for BetterAuth

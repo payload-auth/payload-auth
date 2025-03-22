@@ -5,17 +5,17 @@ import type {
   BetterAuthReturn,
   PayloadBetterAuthPluginOptions,
   TPlugins,
-} from './types.js'
-import { sanitizeBetterAuthOptions } from './lib/sanitize-auth-options.js'
-import { getRequiredCollectionSlugs } from './lib/get-required-collection-slugs.js'
-import { buildCollectionConfigs } from './lib/build-collection-configs.js'
+} from './types'
+import { sanitizeBetterAuthOptions } from './lib/sanitize-auth-options'
+import { getRequiredCollectionSlugs } from './lib/get-required-collection-slugs'
+import { buildCollectionConfigs } from './lib/build-collection-configs'
 import { payloadAdapter } from '@payload-auth/better-auth-db-adapter'
 import { betterAuth } from 'better-auth'
-import { setAfterAuthMiddlewareHook } from './lib/set-after-auth-middleware-hook.js'
-import { syncVerificationSettings } from './lib/sync-verification-settings.js'
+import { setAfterAuthMiddlewareHook } from './lib/set-after-auth-middleware-hook'
+import { syncVerificationSettings } from './lib/sync-verification-settings'
 
-export * from './types.js'
-export * from './helpers/index.js'
+export * from './types'
+export * from './helpers/index'
 
 function initBetterAuth<P extends TPlugins>({
   payload,

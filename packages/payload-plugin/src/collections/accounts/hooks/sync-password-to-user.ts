@@ -58,6 +58,7 @@ export const getSyncPasswordToUserHook = (
           salt,
           hash,
         },
+        req,
         context: { syncPasswordToUser: true },
       })
     } catch (error) {

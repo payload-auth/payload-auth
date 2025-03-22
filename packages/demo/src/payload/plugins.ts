@@ -92,7 +92,7 @@ export const betterAuthPlugins = [
   }),
   multiSession(),
   openAPI(),
-  jwt(),
+  // jwt(),
   nextCookies(),
 ];
 
@@ -101,6 +101,7 @@ export type BetterAuthPlugins = typeof betterAuthPlugins;
 export const betterAuthOptions: PayloadBetterAuthOptions = {
   appName: "payload-better-auth",
   baseURL: "http://localhost:3000",
+  trustedOrigins: ["http://localhost:3000"],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -171,7 +172,7 @@ export const plugins: Plugin[] = [
   payloadBetterAuth({
     disabled: false,
     logTables: false,
-    enableDebugLogs: false,
+    enableDebugLogs: true,
     hidePluginCollections: true,
     users: {
       slug: "users",
