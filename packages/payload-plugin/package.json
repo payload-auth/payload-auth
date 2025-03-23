@@ -57,7 +57,7 @@
   "author": "Forrest Devs <luke.gannon@me.com>",
   "license": "MIT",
   "devDependencies": {
-    "@payloadcms/ui": "3.28.1",
+    "@payloadcms/ui": "3.29",
     "@radix-ui/react-checkbox": "1.1.4",
     "@radix-ui/react-icons": "1.3.2",
     "@radix-ui/react-label": "2.1.2",
