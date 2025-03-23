@@ -11,8 +11,7 @@ import { getRequiredCollectionSlugs } from './lib/get-required-collection-slugs'
 import { buildCollectionConfigs } from './lib/build-collection-configs'
 import { payloadAdapter } from '@payload-auth/better-auth-db-adapter'
 import { betterAuth } from 'better-auth'
-import { setAfterAuthMiddlewareHook } from './lib/set-after-auth-middleware-hook'
-import { syncVerificationSettings } from './lib/sync-verification-settings'
+import { respectSaveToJwtFieldsMiddleware } from './lib/respect-save-to-jwt-fields-middleware'
 
 export * from './types'
 export * from './helpers/index'
@@ -61,12 +60,7 @@ export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions)
       sanitizedBAOptions: sanitzedBetterAuthOptions,
     })
 
-    syncVerificationSettings({
-      collections: config.collections,
-      sanitizedBAOptions: sanitzedBetterAuthOptions,
-    })
-
-    setAfterAuthMiddlewareHook({
+    respectSaveToJwtFieldsMiddleware({
       sanitizedOptions: sanitzedBetterAuthOptions,
       payloadConfig: config,
       pluginOptions,

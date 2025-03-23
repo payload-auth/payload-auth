@@ -13,6 +13,7 @@ import { getSyncPasswordToUserHook } from '../collections/accounts/hooks/sync-pa
 import { getSyncAccountHook } from '../collections/users/hooks/sync-account'
 import { onVerifiedChange } from '../collections/users/hooks/on-verified-change'
 import { getAfterLoginHook } from '../collections/users/hooks/after-login'
+import { getBeforeLoginHook } from '../collections/users/hooks/before-login'
 import { CollectionConfig, Field } from 'payload'
 /**
  * Builds the required collections based on the BetterAuth options and plugins
@@ -114,12 +115,13 @@ export function buildCollectionConfigs({
                 accountSlug,
               }),
             ],
-            // beforeLogin: [
-            //   /// reject login to admin if user is not verified when option is enabled
-            // ],
+            beforeLogin: [
+              ...(existingUserCollection?.hooks?.beforeLogin ?? []),
+              getBeforeLoginHook(),
+            ],
             afterLogin: [
               ...(existingUserCollection?.hooks?.afterLogin ?? []),
-              getAfterLoginHook({ sessionsCollectionSlug: sessionSlug }),
+              getAfterLoginHook({ sessionsCollectionSlug: sessionSlug, usersCollectionSlug: userSlug }),
             ],
             afterLogout: [
               ...(existingUserCollection?.hooks?.afterLogout ?? []),

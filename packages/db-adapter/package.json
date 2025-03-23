@@ -38,11 +38,11 @@
   "license": "MIT",
   "devDependencies": {
     "@changesets/cli": "^2.27.11",
-    "@payloadcms/db-postgres": "3.28.1",
+    "@payloadcms/db-postgres": "3.29",
     "@types/node": "^22.10.5",
     "better-auth": "1.2.4",
     "cross-env": "^7.0.3",
-    "payload": "3.28.1",
+    "payload": "3.29",
     "prettier": "^3.4.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8",
@@ -51,7 +51,7 @@
   },
   "peerDependencies": {
     "better-auth": "1.2.4",
-    "payload": "3.28.1"
+    "payload": "3.29"
   },
   "directories": {
     "test": "test"
