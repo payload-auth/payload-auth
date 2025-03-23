@@ -51,7 +51,7 @@
   },
   "peerDependencies": {
     "better-auth": "1.2.4",
-    "payload": "3.28.1"
+    "payload": "3.29"
   },
   "directories": {
     "test": "test"
