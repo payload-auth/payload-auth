@@ -179,6 +179,7 @@ export const plugins: Plugin[] = [
       hidden: false,
       adminRoles: ["admin"],
       allowedFields: ["name"],
+      blockFirstBetterAuthVerificationEmail: true,
       collectionOverrides: ({ collection }) => {
         return {
           ...collection,

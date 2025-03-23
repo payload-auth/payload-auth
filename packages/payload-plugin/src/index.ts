@@ -12,7 +12,6 @@ import { buildCollectionConfigs } from './lib/build-collection-configs'
 import { payloadAdapter } from '@payload-auth/better-auth-db-adapter'
 import { betterAuth } from 'better-auth'
 import { respectSaveToJwtFieldsMiddleware } from './lib/respect-save-to-jwt-fields-middleware'
-import { syncVerificationSettings } from './lib/sync-verification-settings'
 
 export * from './types'
 export * from './helpers/index'
@@ -58,11 +57,6 @@ export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions)
       incomingCollections: config.collections ?? [],
       requiredCollectionSlugs,
       pluginOptions,
-      sanitizedBAOptions: sanitzedBetterAuthOptions,
-    })
-
-    syncVerificationSettings({
-      collections: config.collections,
       sanitizedBAOptions: sanitzedBetterAuthOptions,
     })
 

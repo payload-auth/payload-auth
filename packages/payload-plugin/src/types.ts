@@ -106,6 +106,13 @@ export interface PayloadBetterAuthPluginOptions {
      * @returns Modified collection config
      */
     collectionOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
+    /**
+     * This will block the first on sign up verification email from better-auth.
+     * If you are using Payload's userCollection.verify option, you will want to set this to true.
+     * Function that will be blocked: options.emailVerificationsendVerificationEmail
+     * @default false
+     */
+    blockFirstBetterAuthVerificationEmail?: boolean
   }
   /**
    * Configure the Accounts collections:
