@@ -119,7 +119,7 @@ export function buildCollectionConfigs({
             // ],
             afterLogin: [
               ...(existingUserCollection?.hooks?.afterLogin ?? []),
-              getAfterLoginHook({ sessionsCollectionSlug: sessionSlug }),
+              getAfterLoginHook({ sessionsCollectionSlug: sessionSlug, usersCollectionSlug: userSlug }),
             ],
             afterLogout: [
               ...(existingUserCollection?.hooks?.afterLogout ?? []),
