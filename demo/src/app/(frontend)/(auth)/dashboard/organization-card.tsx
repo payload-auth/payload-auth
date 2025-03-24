@@ -3,6 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import CopyButton from "@/components/ui/copy-button";
 import {
   Dialog,
   DialogClose,
@@ -30,26 +31,36 @@ import {
 } from "@/components/ui/select";
 import {
   organization,
+  useActiveOrganization,
   useListOrganizations,
   useSession,
 } from "@/lib/auth/client";
-import type { ActiveOrganization, Session } from "@/lib/auth/types";
 import { ChevronDownIcon, PlusIcon } from "@radix-ui/react-icons";
 import { Loader2, MailPlus } from "lucide-react";
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
 import { AnimatePresence, motion } from "motion/react";
-import CopyButton from "@/components/ui/copy-button";
 import Image from "next/image";
+import { use, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Member, Invitation } from "@/payload-types";
+import { useBetterAuth } from "@/lib/auth/context";
 
-export function OrganizationCard(props: {
-  session: Session | null;
-  activeOrganization: ActiveOrganization | null;
-}) {
+export function OrganizationCard() {
   const organizations = useListOrganizations();
-  const [optimisticOrg, setOptimisticOrg] = useState<ActiveOrganization | null>(
-    props.activeOrganization
+  const { data: activeOrganization } = useActiveOrganization();
+  const { sessionPromise, currentUserPromise } = useBetterAuth();
+  const session = use(sessionPromise);
+  const currentUser = use(currentUserPromise);
+  
+  const [optimisticOrg, setOptimisticOrg] = useState<typeof activeOrganization>(
+    activeOrganization || null
   );
+  
+  useEffect(() => {
+    if (activeOrganization) {
+      setOptimisticOrg(activeOrganization);
+    }
+  }, [activeOrganization]);
+  
   const [isRevoking, setIsRevoking] = useState<string[]>([]);
   const inviteVariants = {
     hidden: { opacity: 0, height: 0 },
@@ -57,11 +68,11 @@ export function OrganizationCard(props: {
     exit: { opacity: 0, height: 0 },
   };
 
-  const { data } = useSession();
-  const session = data || props.session;
-
   const currentMember = optimisticOrg?.members.find(
-    (member) => member.userId === session?.user.id
+    (member: Member) => {
+      if(typeof member.user === "object") return member.user.id === session?.user.id;
+      return member.user === session?.user.id;
+    }
   );
 
   return (
@@ -104,7 +115,7 @@ export function OrganizationCard(props: {
                       members: [],
                       invitations: [],
                       ...org,
-                    });
+                    } as typeof activeOrganization);
                     const { data } = await organization.setActive({
                       organizationId: org.id.toString(),
                     });
@@ -145,23 +156,25 @@ export function OrganizationCard(props: {
               Members
             </p>
             <div className="flex flex-col gap-2">
-              {optimisticOrg?.members.map((member) => (
+              {optimisticOrg?.members.map((member: Member) => (
                 <div
                   key={member.id}
                   className="flex justify-between items-center"
                 >
                   <div className="flex items-center gap-2">
+                    {typeof member?.user === "object" && (
                     <Avatar className="sm:flex w-9 h-9">
                       <AvatarImage
-                        src={member.user.image || ""}
+                        src={member?.user?.image || ""}
                         className="object-cover"
                       />
                       <AvatarFallback>
                         {member.user.name?.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
                     <div>
-                      <p className="text-sm">{member.user.name}</p>
+                      <p className="text-sm">{typeof member?.user === "object" ? member?.user?.name : member?.user}</p>
                       <p className="text-xs text-muted-foreground">
                         {member.role}
                       </p>
@@ -209,8 +222,8 @@ export function OrganizationCard(props: {
             <div className="flex flex-col gap-2">
               <AnimatePresence>
                 {optimisticOrg?.invitations
-                  .filter((invitation) => invitation.status === "pending")
-                  .map((invitation) => (
+                  .filter((invitation: Invitation) => invitation.status === "pending")
+                  .map((invitation: Invitation) => (
                     <motion.div
                       key={invitation.id}
                       className="flex items-center justify-between"
@@ -253,9 +266,9 @@ export function OrganizationCard(props: {
                                     ...optimisticOrg,
                                     invitations:
                                       optimisticOrg?.invitations.filter(
-                                        (inv) => inv.id !== invitation.id
+                                        (inv: Invitation) => inv.id !== invitation.id
                                       ),
-                                  });
+                                  } as typeof activeOrganization);
                                 },
                                 onError: (ctx) => {
                                   toast.error(ctx.error.message);
@@ -448,8 +461,8 @@ function InviteMemberDialog({
   setOptimisticOrg,
   optimisticOrg,
 }: {
-  setOptimisticOrg: (org: ActiveOrganization | null) => void;
-  optimisticOrg: ActiveOrganization | null;
+  setOptimisticOrg: React.Dispatch<React.SetStateAction<ReturnType<typeof useActiveOrganization>["data"]>>;
+  optimisticOrg: ReturnType<typeof useActiveOrganization>["data"];
 }) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -506,7 +519,7 @@ function InviteMemberDialog({
                             ...(optimisticOrg?.invitations || []),
                             ctx.data,
                           ],
-                        });
+                        } as typeof optimisticOrg);
                       }
                     },
                   },

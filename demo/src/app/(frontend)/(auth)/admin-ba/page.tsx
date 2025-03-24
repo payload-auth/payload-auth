@@ -20,7 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { toast, Toaster } from 'sonner'
-import { authClient as client } from '@/lib/auth-client'
+import { authClient as client } from '@/lib/auth/client'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { Loader2, Plus, Trash, RefreshCw, UserCircle, Calendar as CalendarIcon } from 'lucide-react'
@@ -37,13 +37,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
-
-type User = {
-  id: string
-  email: string
-  name: string
-  role: 'admin' | 'user'
-}
 
 export default function AdminDashboard() {
   const queryClient = useQueryClient()

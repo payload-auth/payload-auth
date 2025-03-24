@@ -1,45 +1,47 @@
-import "../../lib/styles/globals.css";
+import '@/styles/globals.css'
 
-import React from "react";
-import { PayloadAdminBar } from "@payloadcms/admin-bar";
-import { Geist, Geist_Mono } from "next/font/google";
-import { Metadata } from "next";
-import { WrapperWithQuery } from "@/components/wrapper";
-import { Wrapper } from "@/components/wrapper";
-import { ThemeProvider } from "@/components/theme-provider";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { AdminBar } from '@/components/admin-bar'
+import { Footer } from '@/components/footer'
+import { Header } from '@/components/header'
+import { ThemeProvider } from '@/components/theme-provider'
+import { Metadata } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import React from 'react'
+import { BetterAuthProvider } from '@/lib/auth/context'
+import { getContextProps } from '@/lib/auth/context/get-context-props'
+import { ImpersonatingBar } from '@/components/impersonating-bar'
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+  variable: '--font-geist-sans',
+  subsets: ['latin']
+})
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+  variable: '--font-geist-mono',
+  subsets: ['latin']
+})
 
 export const metadata: Metadata = {
-  title: "Payload Better Auth",
-  description: "A Payload CMS plugin for Better Auth",
-};
+  title: 'Payload Better Auth',
+  description: 'A Payload CMS plugin for Better Auth'
+}
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
-          <Wrapper>
-            <WrapperWithQuery>{children}</WrapperWithQuery>
-          </Wrapper>
+          <div className="app relative flex min-h-screen flex-col">
+            <BetterAuthProvider {...getContextProps()}>
+              <AdminBar />
+              <ImpersonatingBar />
+              <Header />
+              {children}
+              <Footer />
+            </BetterAuthProvider>
+          </div>
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

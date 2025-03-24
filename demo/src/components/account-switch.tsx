@@ -1,15 +1,7 @@
 "use client";
 
-import "@/lib/styles/globals.css";
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandGroup,
@@ -17,15 +9,24 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { authClient } from "@/lib/auth/client";
+import { useBetterAuth } from "@/lib/auth/context";
 import { ChevronDown, PlusCircle } from "lucide-react";
-import type { Session } from "@/lib/auth/types";
-import { authClient, useSession } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
+import { use, useState } from "react";
 
-export default function AccountSwitcher({ sessions }: { sessions: Session[] }) {
-  const { data: currentUser } = useSession();
+export default function AccountSwitcher() {
+  const { currentUserPromise, deviceSessionsPromise } = useBetterAuth();
+  const currentUser = use(currentUserPromise);
+  const deviceSessions = use(deviceSessionsPromise);
   const [open, setOpen] = useState(false);
   const router = useRouter();
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -38,12 +39,12 @@ export default function AccountSwitcher({ sessions }: { sessions: Session[] }) {
         >
           <Avatar className="mr-2 h-6 w-6">
             <AvatarImage
-              src={currentUser?.user?.image || ""}
-              alt={currentUser?.user?.name}
+              src={currentUser?.image || ""}
+              alt={currentUser?.name ?? ""}
             />
-            <AvatarFallback>{currentUser?.user?.name?.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{currentUser?.name?.charAt(0)}</AvatarFallback>
           </Avatar>
-          <span className="truncate">{currentUser?.user?.name}</span>
+          <span className="truncate">{currentUser?.name}</span>
           <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -54,47 +55,47 @@ export default function AccountSwitcher({ sessions }: { sessions: Session[] }) {
               <CommandItem
                 onSelect={() => {}}
                 className="text-sm w-full justify-between hover:bg-accent/50"
-                key={currentUser?.user.id}
+                key={`current-account-${currentUser?.id}`}
               >
                 <div className="flex items-center">
                   <Avatar className="mr-2 h-5 w-5">
                     <AvatarImage
-                      src={currentUser?.user?.image || ""}
-                      alt={currentUser?.user?.name}
+                      src={currentUser?.image || ""}
+                      alt={currentUser?.name ?? ""}
                     />
                     <AvatarFallback className="bg-primary/10 text-primary">
-                      {currentUser?.user?.name?.charAt(0)}
+                      {currentUser?.name?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="font-medium">{currentUser?.user?.name}</span>
+                  <span className="font-medium">{currentUser?.name}</span>
                 </div>
               </CommandItem>
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup heading="Switch Account">
-              {sessions
-                .filter((s) => s.user.id !== currentUser?.user.id)
-                .map((u, i) => (
+              {deviceSessions && deviceSessions
+                .filter((session) => session.user.id !== currentUser?.id)
+                .map((userSession, index) => (
                   <CommandItem
-                    key={i}
+                    key={index}
                     onSelect={async () => {
                       await authClient.multiSession.setActive({
-                        sessionToken: u.session.token,
+                        sessionToken: userSession.session.token,
                       });
                       setOpen(false);
                     }}
                     className="text-sm hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
                   >
                     <Avatar className="mr-2 h-5 w-5">
-                      <AvatarImage src={u.user.image || ""} alt={u.user.name} />
+                      <AvatarImage src={userSession.user.image || ""} alt={userSession.user.name} />
                       <AvatarFallback className="bg-secondary/20 text-secondary">
-                        {u.user.name.charAt(0)}
+                        {userSession.user.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col w-full">
-                      <span className="font-medium">{u.user.name}</span>
+                      <span className="font-medium">{userSession.user.name}</span>
                       <span className="text-xs text-muted-foreground truncate">
-                        {u.user.email}
+                        {userSession.user.email}
                       </span>
                     </div>
                   </CommandItem>
