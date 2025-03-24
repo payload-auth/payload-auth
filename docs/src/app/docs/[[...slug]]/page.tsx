@@ -23,6 +23,7 @@ import { AnimatePresence } from "@/components/mdx/animate-presence";
 import { getPageLinks } from "@/lib/get-page-links";
 import { docLinks } from "@/config";
 import Features from "@/components/landing/features";
+import DatabaseTable from "@/components/mdx/database-table";
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
@@ -87,7 +88,7 @@ export default async function Page(props: {
             DividerText,
             ForkButton,
             Features,
-
+            DatabaseTable,
             Callout: ({ children, ...props }) => (
               <defaultMdxComponents.Callout
                 {...props}

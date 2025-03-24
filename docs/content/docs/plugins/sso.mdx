@@ -229,32 +229,3 @@ The plugin requires additional fields in the `ssoProvider` table to store the pr
 
 **organizationProvisioning**: Options for provisioning users to an organization.
 
-<TypeTable
-  type={{
-    provisionUser: {
-        description: "A custom function to provision a user when they sign in with an SSO provider.",
-        type: "function",
-    },
-    organizationProvisioning: {
-        description: "Options for provisioning users to an organization.",
-        type: "object",
-        properties: {
-            disabled: {
-                description: "Disable organization provisioning.",
-                type: "boolean",
-                default: false,
-            },
-            defaultRole: {
-                description: "The default role for new users.",
-                type: "string",
-                enum: ["member", "admin"],
-                default: "member",
-            },
-            getRole: {
-                description: "A custom function to determine the role for new users.",
-                type: "function",
-            },
-        },
-    },
-  }}
-/>

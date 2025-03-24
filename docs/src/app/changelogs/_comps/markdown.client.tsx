@@ -77,6 +77,7 @@ export function MarkdownClient({ messages }: { messages: any }) {
           <img
             className="rounded-full w-6 h-6 border opacity-70 inline-block"
             style={{ maxWidth: "100%" }}
+            alt={props.alt ?? ""}
             {...props}
           />
         ),

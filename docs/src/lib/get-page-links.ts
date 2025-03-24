@@ -1,4 +1,4 @@
-import { DocLink } from "@/components/layout/sidebar/config";
+import { DocLink } from "@/types";
 import { source } from "./source";
 
 export function getPageLinks(path: string, links: DocLink[]) {
