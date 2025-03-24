@@ -7,6 +7,7 @@ import sharp from "sharp";
 import { fileURLToPath } from "url";
 import { payloadBetterAuthOptions } from "./lib/auth";
 import collections from "./payload/collections";
+import { postgresAdapter } from "@payloadcms/db-postgres";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -21,17 +22,17 @@ export default buildConfig({
     },
   },
   collections,
-  db: mongooseAdapter({
-    url: process.env.DATABASE_URI,
-  }),
-  // db: postgresAdapter({
-  //   disableCreateDatabase: false,
-  //   pool: {
-  //     connectionString: process.env.DATABASE_URI,
-  //   },
-  //   push: false, // Should be false (this is just for demo purposes)
-  //   migrationDir: path.resolve(dirname, "lib/migrations"),
+  // db: mongooseAdapter({
+  //   url: process.env.DATABASE_URI,
   // }),
+  db: postgresAdapter({
+    disableCreateDatabase: false,
+    pool: {
+      connectionString: process.env.DATABASE_URI,
+    },
+    push: false, // Should be false (this is just for demo purposes)
+    migrationDir: path.resolve(dirname, "lib/migrations"),
+  }),
   editor: lexicalEditor(),
   plugins: [payloadBetterAuth(payloadBetterAuthOptions)],
   secret: process.env.PAYLOAD_SECRET || "test-secret_key",
