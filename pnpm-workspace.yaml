@@ -1,5 +1,6 @@
 packages:
-  - "packages/db-adapter"
-  - "packages/payload-plugin"
-  - "packages/demo"
-  - "packages/test-payload"
+  - "packages/better-auth-db-adapter"
+  - "packages/better-auth-plugin"
+  - "www"
+  - "docs"
+  - "demo"
