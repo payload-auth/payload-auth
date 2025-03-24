@@ -1,5 +1,4 @@
-"use server";
-
+import 'server-only'
 import configPromise from "@payload-config";
 import { getPayloadWithAuth } from "@payload-auth/better-auth-plugin";
 import type { BetterAuthPlugins } from "@/lib/auth/types";
