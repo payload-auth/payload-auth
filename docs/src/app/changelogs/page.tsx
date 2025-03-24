@@ -76,7 +76,7 @@ export default async function ChangelogsPage() {
           <hr className="h-px bg-gray-300 mt-5" />
           <div className="mt-8 flex flex-wrap text-gray-600 dark:text-gray-300 gap-x-1 gap-y-3 sm:gap-x-2">
             <IconLink
-              href="/docs"
+              href="/docs/introduction"
               icon={Icons.book2}
               className="flex-none text-gray-600 dark:text-gray-300"
             >
