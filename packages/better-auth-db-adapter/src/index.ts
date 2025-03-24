@@ -33,7 +33,13 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config = {}) => {
   });
   
   async function resolvePayloadClient() {
-    return typeof payloadClient === 'function' ? await payloadClient() : await payloadClient;
+    const payload = typeof payloadClient === 'function' ? await payloadClient() : await payloadClient;
+    if (!payload.config?.custom?.hasBetterAuthPlugin) {
+      throw new BetterAuthError(
+        `Payload is not configured with the better-auth plugin. Please add the plugin to your payload config.`
+      );
+    }
+    return payload;
   }
 
   return (options: BetterAuthOptions): Adapter => {

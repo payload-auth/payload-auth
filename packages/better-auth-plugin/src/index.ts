@@ -39,6 +39,10 @@ export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions)
     if (pluginOptions.disabled) {
       return config
     }
+    config.custom = {
+      ...config.custom,
+      hasBetterAuthPlugin: true,
+    }
 
     if (!config.collections) {
       config.collections = []
