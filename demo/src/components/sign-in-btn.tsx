@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Button } from './ui/button'
 import { headers } from 'next/headers'
-import getPayload from '@/lib/payload'
+import { getPayload } from '@/lib/payload'
 
 export async function SignInButton() {
   const payload = await getPayload()

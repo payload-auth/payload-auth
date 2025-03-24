@@ -24,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
-import { authClient as client, signOut, useSession } from "@/lib/auth-client";
+import { authClient as client, signOut, useSession } from "@/lib/auth/client";
 import type { Session } from "@/lib/auth/types";
 import { MobileIcon } from "@radix-ui/react-icons";
 import {
@@ -55,16 +55,8 @@ import {
 } from "@/components/ui/table";
 import QRCode from "react-qr-code";
 import CopyButton from "@/components/ui/copy-button";
-import { authClient } from "@/lib/auth-client";
-
-interface Account {
-  accountId: string;
-  id: number;
-  provider: string;
-  scopes: string[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { authClient } from "@/lib/auth/client";
+import type { Account } from "@/payload-types";
 
 export default function UserCard(props: {
   session: Session | null;

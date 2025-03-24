@@ -1,12 +1,12 @@
+import { BetterAuthOptions } from 'better-auth'
 import type { PayloadBetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../types.js'
 import {
   supportedBetterAuthPluginIds,
   betterAuthPluginSlugs,
   baseCollectionSlugs,
-} from './config.js'
-import { ensurePasswordSetBeforeUserCreate } from './ensure-password-set-before-create.js'
-import { verifyPassword } from './password.js'
-import { hashPassword } from './password.js'
+} from './config'
+import { ensurePasswordSetBeforeUserCreate } from './ensure-password-set-before-create'
+import { verifyPassword, hashPassword } from './password'
 
 /**
  * Sanitizes the BetterAuth options

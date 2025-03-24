@@ -2,6 +2,6 @@
 
 import configPromise from "@payload-config";
 import { getPayloadWithAuth } from "@payload-auth/better-auth-plugin";
-import { BetterAuthPlugins } from "@/payload/plugins";
+import type { BetterAuthPlugins } from "@/lib/auth/types";
 
-export const getPayload = () => getPayloadWithAuth<BetterAuthPlugins>(configPromise);
+export const getPayload = async () => getPayloadWithAuth<BetterAuthPlugins>(configPromise);

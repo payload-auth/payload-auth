@@ -14,13 +14,13 @@ import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
-import { authClient, signUp } from "@/lib/auth-client";
+import { authClient, signUp } from "@/lib/auth/client";
 import Image from "next/image";
 import { Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { addAdminRole } from "@/lib/actions/auth";
+import { addAdminRole } from "@/lib/auth/actions";
 
 export function SignUp({ admin = false }: { admin?: boolean }) {
   const [firstName, setFirstName] = useState("");

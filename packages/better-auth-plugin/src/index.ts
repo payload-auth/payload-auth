@@ -15,6 +15,7 @@ import { respectSaveToJwtFieldsMiddleware } from './lib/respect-save-to-jwt-fiel
 
 export * from './types'
 export * from './helpers/index'
+export { sanitizeBetterAuthOptions } from './lib/sanitize-auth-options'
 
 function initBetterAuth<P extends TPlugins>({
   payload,
