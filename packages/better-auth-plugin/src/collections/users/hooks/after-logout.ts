@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import type { CollectionAfterLogoutHook } from 'payload'
 import type { CollectionHookWithBetterAuth } from '../../../types'
-import { getPayloadWithAuth } from 'src'
+import { getPayloadWithAuth } from '../../../'
 
 type CollectionAfterLogoutHookWithBetterAuth =
   CollectionHookWithBetterAuth<CollectionAfterLogoutHook>
