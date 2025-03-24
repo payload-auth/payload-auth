@@ -11,8 +11,8 @@ importers:
   demo:
     dependencies:
       '@daveyplate/better-auth-ui':
-        specifier: ^1.2.32
-        version: 1.2.42(46b2d962610569e5a8c7294a91d38453)
+        specifier: 1.2.31
+        version: 1.2.31(56a1ae3c64ad855ce639d90916a0b779)
       '@eslint/eslintrc':
         specifier: ^3.2.0
         version: 3.3.1
@@ -149,8 +149,8 @@ importers:
         specifier: ^4
         version: 4.0.15
       '@tanstack/react-query':
-        specifier: 5.67.2
-        version: 5.67.2(react@19.0.0)
+        specifier: ^5.69.0
+        version: 5.69.0(react@19.0.0)
       '@types/jest':
         specifier: 29.5.12
         version: 29.5.12
@@ -292,6 +292,16 @@ importers:
       zod:
         specifier: ^3.24.2
         version: 3.24.2
+    devDependencies:
+      prettier-plugin-classnames:
+        specifier: ^0.7.7
+        version: 0.7.7(prettier@3.5.3)
+      prettier-plugin-merge:
+        specifier: ^0.7.2
+        version: 0.7.3(prettier@3.5.3)
+      prettier-plugin-tailwindcss:
+        specifier: ^0.6.11
+        version: 0.6.11(prettier@3.5.3)
 
   docs:
     dependencies:
@@ -1305,8 +1315,8 @@ packages:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
-  '@daveyplate/better-auth-ui@1.2.42':
-    resolution: {integrity: sha512-2yzyYGvgOZ+MlaULIaNPzb+sel0oLZwlijYoLFbkCygRD/iqJNGkFGbGZnEx4TZ7bqG1KGLJTdgG7kqWCES6gA==}
+  '@daveyplate/better-auth-ui@1.2.31':
+    resolution: {integrity: sha512-6ZTNA/8aHmw+PfXM70OdEI0tn8DHz72Nd0e8XqJusd3DAn3306nb30UlR5tHlEH3njUGr2rkb2Z+TMBRQ27Vlw==}
     peerDependencies:
       '@daveyplate/better-auth-tanstack': ^1.2.30
       '@radix-ui/react-avatar': '>=1.1.0'
@@ -1318,7 +1328,7 @@ packages:
       '@radix-ui/react-tabs': '>=1.1.0'
       '@react-email/components': '>=0.0.33'
       '@tanstack/react-query': '>=5.66.0'
-      better-auth: '>=1.2.4'
+      better-auth: '>=1.2.0'
       class-variance-authority: '>=0.7.0'
       clsx: '>=2.1.0'
       lucide-react: '>=0.469.0'
@@ -4290,11 +4300,11 @@ packages:
   '@tailwindcss/postcss@4.0.15':
     resolution: {integrity: sha512-qyrpoDKIO7wzkRbKCvGLo7gXRjT9/Njf7ZJiJhG4njrfZkvOhjwnaHpYbpxYeDysEg+9pB1R4jcd+vQ7ZUDsmQ==}
 
-  '@tanstack/query-core@5.67.2':
-    resolution: {integrity: sha512-+iaFJ/pt8TaApCk6LuZ0WHS/ECVfTzrxDOEL9HH9Dayyb5OVuomLzDXeSaI2GlGT/8HN7bDGiRXDts3LV+u6ww==}
+  '@tanstack/query-core@5.69.0':
+    resolution: {integrity: sha512-Kn410jq6vs1P8Nm+ZsRj9H+U3C0kjuEkYLxbiCyn3MDEiYor1j2DGVULqAz62SLZtUZ/e9Xt6xMXiJ3NJ65WyQ==}
 
-  '@tanstack/react-query@5.67.2':
-    resolution: {integrity: sha512-6Sa+BVNJWhAV4QHvIqM73norNeGRWGC3ftN0Ix87cmMvI215I1wyJ44KUTt/9a0V9YimfGcg25AITaYVel71Og==}
+  '@tanstack/react-query@5.69.0':
+    resolution: {integrity: sha512-Ift3IUNQqTcaFa1AiIQ7WCb/PPy8aexZdq9pZWLXhfLcLxH0+PZqJ2xFImxCpdDZrFRZhLJrh76geevS5xjRhA==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -5518,6 +5528,10 @@ packages:
   diff-sequences@29.6.3:
     resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
+
+  diff@5.1.0:
+    resolution: {integrity: sha512-D+mk+qE8VC/PAUrlAU34N+VfXev0ghe5ywmpqrawphmVZc1bEfn56uo9qpyGp1p4xpzOHkSW4ztBd6L7Xx4ACw==}
+    engines: {node: '>=0.3.1'}
 
   diff@5.2.0:
     resolution: {integrity: sha512-uIFDxqpRZGZ6ThOk84hEfqWoHx2devRFvpTZcTHur85vImfaxUbTW9Ryh4CpCuDnToOP1CEtXKIgytHBPVff5A==}
@@ -8235,6 +8249,80 @@ packages:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
 
+  prettier-plugin-classnames@0.7.7:
+    resolution: {integrity: sha512-qn+hhpru++ieZ6B6mKt7j6ETPvgOQnJvJ51Yl4rnHneK/vnFxEFOpzFmp1Urcs7Zd/JgUKiaoHIiSSw3LmPy/Q==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      prettier: ^2 || ^3
+      prettier-plugin-astro: '*'
+      prettier-plugin-svelte: '*'
+    peerDependenciesMeta:
+      prettier-plugin-astro:
+        optional: true
+      prettier-plugin-svelte:
+        optional: true
+
+  prettier-plugin-merge@0.7.3:
+    resolution: {integrity: sha512-5b4h5MZRFFTqlGWMWS3KOFUWTfEesXdMPjaT5LbTw9Jck7Ghu1hjrhM6P0Dfrzhf0zrqdwIjyFMtF6YG90dOXg==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      prettier: ^2 || ^3
+
+  prettier-plugin-tailwindcss@0.6.11:
+    resolution: {integrity: sha512-YxaYSIvZPAqhrrEpRtonnrXdghZg1irNg4qrjboCXrpybLWVs55cW2N3juhspVJiO0JBvYJT8SYsJpc8OQSnsA==}
+    engines: {node: '>=14.21.3'}
+    peerDependencies:
+      '@ianvs/prettier-plugin-sort-imports': '*'
+      '@prettier/plugin-pug': '*'
+      '@shopify/prettier-plugin-liquid': '*'
+      '@trivago/prettier-plugin-sort-imports': '*'
+      '@zackad/prettier-plugin-twig': '*'
+      prettier: ^3.0
+      prettier-plugin-astro: '*'
+      prettier-plugin-css-order: '*'
+      prettier-plugin-import-sort: '*'
+      prettier-plugin-jsdoc: '*'
+      prettier-plugin-marko: '*'
+      prettier-plugin-multiline-arrays: '*'
+      prettier-plugin-organize-attributes: '*'
+      prettier-plugin-organize-imports: '*'
+      prettier-plugin-sort-imports: '*'
+      prettier-plugin-style-order: '*'
+      prettier-plugin-svelte: '*'
+    peerDependenciesMeta:
+      '@ianvs/prettier-plugin-sort-imports':
+        optional: true
+      '@prettier/plugin-pug':
+        optional: true
+      '@shopify/prettier-plugin-liquid':
+        optional: true
+      '@trivago/prettier-plugin-sort-imports':
+        optional: true
+      '@zackad/prettier-plugin-twig':
+        optional: true
+      prettier-plugin-astro:
+        optional: true
+      prettier-plugin-css-order:
+        optional: true
+      prettier-plugin-import-sort:
+        optional: true
+      prettier-plugin-jsdoc:
+        optional: true
+      prettier-plugin-marko:
+        optional: true
+      prettier-plugin-multiline-arrays:
+        optional: true
+      prettier-plugin-organize-attributes:
+        optional: true
+      prettier-plugin-organize-imports:
+        optional: true
+      prettier-plugin-sort-imports:
+        optional: true
+      prettier-plugin-style-order:
+        optional: true
+      prettier-plugin-svelte:
+        optional: true
+
   prettier@2.8.8:
     resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
     engines: {node: '>=10.13.0'}
@@ -10835,17 +10923,17 @@ snapshots:
 
   '@date-fns/tz@1.2.0': {}
 
-  '@daveyplate/better-auth-tanstack@1.2.31(@tanstack/query-core@5.67.2)(@tanstack/react-query@5.67.2(react@19.0.0))(better-auth@1.2.4(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+  '@daveyplate/better-auth-tanstack@1.2.31(@tanstack/query-core@5.69.0)(@tanstack/react-query@5.69.0(react@19.0.0))(better-auth@1.2.4(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
-      '@tanstack/query-core': 5.67.2
-      '@tanstack/react-query': 5.67.2(react@19.0.0)
+      '@tanstack/query-core': 5.69.0
+      '@tanstack/react-query': 5.69.0(react@19.0.0)
       better-auth: 1.2.4(typescript@5.7.3)
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
 
-  '@daveyplate/better-auth-ui@1.2.42(46b2d962610569e5a8c7294a91d38453)':
+  '@daveyplate/better-auth-ui@1.2.31(56a1ae3c64ad855ce639d90916a0b779)':
     dependencies:
-      '@daveyplate/better-auth-tanstack': 1.2.31(@tanstack/query-core@5.67.2)(@tanstack/react-query@5.67.2(react@19.0.0))(better-auth@1.2.4(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@daveyplate/better-auth-tanstack': 1.2.31(@tanstack/query-core@5.69.0)(@tanstack/react-query@5.69.0(react@19.0.0))(better-auth@1.2.4(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@radix-ui/react-avatar': 1.1.3(@types/react-dom@19.0.4(@types/react@19.0.10))(@types/react@19.0.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@radix-ui/react-checkbox': 1.1.4(@types/react-dom@19.0.4(@types/react@19.0.10))(@types/react@19.0.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@radix-ui/react-dialog': 1.1.6(@types/react-dom@19.0.4(@types/react@19.0.10))(@types/react@19.0.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -10854,7 +10942,7 @@ snapshots:
       '@radix-ui/react-slot': 1.1.2(@types/react@19.0.10)(react@19.0.0)
       '@radix-ui/react-tabs': 1.1.3(@types/react-dom@19.0.4(@types/react@19.0.10))(@types/react@19.0.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@react-email/components': 0.0.34(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      '@tanstack/react-query': 5.67.2(react@19.0.0)
+      '@tanstack/react-query': 5.69.0(react@19.0.0)
       better-auth: 1.2.4(typescript@5.7.3)
       class-variance-authority: 0.7.1
       clsx: 2.1.1
@@ -14110,11 +14198,11 @@ snapshots:
       postcss: 8.5.3
       tailwindcss: 4.0.15
 
-  '@tanstack/query-core@5.67.2': {}
+  '@tanstack/query-core@5.69.0': {}
 
-  '@tanstack/react-query@5.67.2(react@19.0.0)':
+  '@tanstack/react-query@5.69.0(react@19.0.0)':
     dependencies:
-      '@tanstack/query-core': 5.67.2
+      '@tanstack/query-core': 5.69.0
       react: 19.0.0
 
   '@tokenizer/token@0.3.0': {}
@@ -15593,6 +15681,8 @@ snapshots:
       dequal: 2.0.3
 
   diff-sequences@29.6.3: {}
+
+  diff@5.1.0: {}
 
   diff@5.2.0: {}
 
@@ -19526,6 +19616,19 @@ snapshots:
   postgres-range@1.1.4: {}
 
   prelude-ls@1.2.1: {}
+
+  prettier-plugin-classnames@0.7.7(prettier@3.5.3):
+    dependencies:
+      prettier: 3.5.3
+
+  prettier-plugin-merge@0.7.3(prettier@3.5.3):
+    dependencies:
+      diff: 5.1.0
+      prettier: 3.5.3
+
+  prettier-plugin-tailwindcss@0.6.11(prettier@3.5.3):
+    dependencies:
+      prettier: 3.5.3
 
   prettier@2.8.8: {}
 

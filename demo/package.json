@@ -9,10 +9,11 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev --turbopack",
-    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload"
+    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "generate:types": "payload generate:types"
   },
   "dependencies": {
-    "@daveyplate/better-auth-ui": "^1.2.32",
+    "@daveyplate/better-auth-ui": "1.2.31",
     "@eslint/eslintrc": "^3.2.0",
     "@hookform/resolvers": "^4.1.3",
     "@payload-auth/better-auth-db-adapter": "workspace:*",
@@ -58,7 +59,7 @@
     "@swc/cli": "0.6.0",
     "@swc/jest": "^0.2.37",
     "@tailwindcss/postcss": "^4",
-    "@tanstack/react-query": "5.67.2",
+    "@tanstack/react-query": "^5.69.0",
     "@types/jest": "29.5.12",
     "@types/node": "^22.5.4",
     "@types/react": "19.0.10",
@@ -106,6 +107,12 @@
     "ua-parser-js": "2.0.2",
     "vaul": "1.1.2",
     "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3",
+    "prettier-plugin-classnames": "^0.7.7",
+    "prettier-plugin-merge": "^0.7.2",
+    "prettier-plugin-tailwindcss": "^0.6.11"
   },
   "engines": {
     "node": "^18.20.2 || >=20.9.0",
