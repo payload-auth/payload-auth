@@ -31,6 +31,10 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config = {}) => {
   const createAdapterContext = (data: Record<string, any>) => ({
     [BETTER_AUTH_CONTEXT_KEY]: { ...data },
   });
+  
+  async function resolvePayloadClient() {
+    return typeof payloadClient === 'function' ? await payloadClient() : await payloadClient;
+  }
 
   return (options: BetterAuthOptions): Adapter => {
     const {
@@ -57,7 +61,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config = {}) => {
         const transformed = transformInput(values, model, "create");
         debugLog(["create", { collectionSlug, transformed, select }]);
         try {
-          const payload = await payloadClient;
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -94,7 +98,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config = {}) => {
         const payloadWhere = convertWhereClause(model, where);
         debugLog(["findOne", { collectionSlug }]);
         try {
-          const payload = await payloadClient;
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -159,7 +163,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config = {}) => {
         const payloadWhere = convertWhereClause(model, where);
         debugLog(["findMany", { collectionSlug, sortBy, limit, offset }]);
         try {
-          const payload = await payloadClient;
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -247,7 +251,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config = {}) => {
         const payloadWhere = convertWhereClause(model, where);
         debugLog(["update", { collectionSlug, update }]);
         try {
-          const payload = await payloadClient;
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -303,7 +307,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config = {}) => {
         const payloadWhere = convertWhereClause(model, where);
         debugLog(["updateMany", { collectionSlug, payloadWhere, update }]);
         try {
-          const payload = await payloadClient;
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -335,7 +339,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config = {}) => {
         const payloadWhere = convertWhereClause(model, where);
         debugLog(["delete", { collectionSlug }]);
         try {
-          const payload = await payloadClient;
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -390,7 +394,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config = {}) => {
         const payloadWhere = convertWhereClause(model, where);
         debugLog(["deleteMany", { collectionSlug, payloadWhere }]);
         try {
-          const payload = await payloadClient;
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -421,7 +425,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config = {}) => {
         const payloadWhere = convertWhereClause(model, where);
         debugLog(["count", { collectionSlug, payloadWhere }]);
         try {
-          const payload = await payloadClient;
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
