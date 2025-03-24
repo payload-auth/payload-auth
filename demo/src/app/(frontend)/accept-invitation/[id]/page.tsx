@@ -13,7 +13,7 @@ import { CheckIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { authClient, organization } from "@/lib/auth-client";
+import { authClient, organization } from "@/lib/auth/client";
 import { InvitationError } from "./invitation-error";
 
 export default function InvitationPage() {

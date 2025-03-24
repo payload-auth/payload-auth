@@ -4,7 +4,7 @@ import React from "react";
 import type { UIFieldClientComponent } from "payload";
 import { useDocumentInfo } from "@payloadcms/ui";
 import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/client";
 
 export default function ImpersonateUser(props: UIFieldClientComponent) {
   const { initialData } = useDocumentInfo();
