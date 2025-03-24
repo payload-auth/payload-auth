@@ -1,0 +1,63 @@
+{
+  "name": "@payload-auth/better-auth-db-adapter",
+  "description": "Payload CMS database adapter for BetterAuth",
+  "scope": "payload-auth",
+  "version": "1.1.2",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo",
+    "build": "pnpm clean && pnpm build:types && pnpm build:swc",
+    "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
+    "build:types": "tsc --project tsconfig.json",
+    "format": "biome format --write",
+    "payload": "cross-env PAYLOAD_SECRET=secret payload"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/forrestdevs/payload-better-auth.git"
+  },
+  "keywords": [
+    "database",
+    "adapter",
+    "betterauth",
+    "better-auth",
+    "auth",
+    "payload",
+    "payloadcms"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "author": "Forrest Devs <luke.gannon@me.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@changesets/cli": "^2.27.11",
+    "@payloadcms/db-postgres": "3.29",
+    "@types/node": "^22.10.5",
+    "better-auth": "1.2.4",
+    "cross-env": "^7.0.3",
+    "payload": "3.29",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "@swc/cli": "0.6.0",
+    "@swc/core": "1.11.8"
+  },
+  "peerDependencies": {
+    "better-auth": "1.2.4",
+    "payload": "3.29"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "bugs": {
+    "url": "https://github.com/forrestdevs/payload-better-auth/issues"
+  },
+  "homepage": "https://github.com/forrestdevs/payload-better-auth#readme"
+}
