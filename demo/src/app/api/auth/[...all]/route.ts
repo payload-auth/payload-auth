@@ -1,5 +1,5 @@
 import { toNextJsHandler } from "better-auth/next-js";
-import getPayload from "@/lib/getPayload";
+import getPayload from "@/lib/payload";
 
 const payload = await getPayload();
 

@@ -1,6 +1,6 @@
 "use server";
 
-import getPayload from "../getPayload";
+import { getPayload } from "../payload";
 
 export async function signUp({
   email,
@@ -27,27 +27,11 @@ export async function signUp({
       role: "admin",
       name,
     },
-  });
-
-  //   const res = await payload.betterAuth.api.signUpEmail({
-  //     asResponse: true,
-  //     body: {
-  //       email,
-  //       password,
-  //       role: "admin",
-  //       name,
-  //       image,
-  //     },
-  //   });
+  })
 
   if (!resFoo.ok) {
     return new Response(resFoo.statusText, { status: resFoo.status });
   }
-
-  //   if (callbackURL) {
-  //     return Response.redirect(`${process.env.NEXT_PUBLIC_URL}/admin`);
-  //   }
-  //   return new Response(resFoo.statusText, { status: 200 });
 }
 
 export async function addAdminRole(userId: string) {

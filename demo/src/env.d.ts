@@ -7,7 +7,7 @@ export const envSchema = z.object({
   CRON_SECRET: z.string(),
   PREVIEW_SECRET: z.string(),
   BETTER_AUTH_SECRET: z.string(),
-  BETTER_AUTH_URL: z.string(),
+  NEXT_PUBLIC_BETTER_AUTH_URL: z.string(),
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
 });

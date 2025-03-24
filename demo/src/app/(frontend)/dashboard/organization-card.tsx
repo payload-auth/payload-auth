@@ -32,8 +32,8 @@ import {
   organization,
   useListOrganizations,
   useSession,
-} from "@/lib/auth-client";
-import { ActiveOrganization, Session } from "@/lib/auth-types";
+} from "@/lib/auth/client";
+import type { ActiveOrganization, Session } from "@/lib/auth/types";
 import { ChevronDownIcon, PlusIcon } from "@radix-ui/react-icons";
 import { Loader2, MailPlus } from "lucide-react";
 import { useState, useEffect } from "react";

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import UserCard from "./user-card";
 import { OrganizationCard } from "./organization-card";
 import AccountSwitcher from "@/components/account-switch";
-import getPayload from "@/lib/getPayload";
+import getPayload from "@/lib/payload";
 import { cookies } from "next/headers";
 
 async function setSessionCookie(session: any) {

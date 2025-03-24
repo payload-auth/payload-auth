@@ -2,7 +2,7 @@ import React from "react";
 import type { AdminViewServerProps, ServerProps } from "payload";
 import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
 import { redirect } from "next/navigation";
-import getPayload from "@/lib/getPayload";
+import getPayload from "@/lib/payload";
 import { AuthForm } from "./form";
 import { Gutter } from "@payloadcms/ui";
 import SignIn from "@/components/sign-in";
