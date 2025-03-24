@@ -37,7 +37,7 @@ export default function Sidebar() {
       <aside
         className={cn(
           "md:transition-all",
-          "border-r border-solid hidden md:flex overflow-y-auto absolute top-[58px] h-screen flex-col justify-between md:w-[268px]"
+          "pt-[var(--fd-nav-height)] border-r border-solid hidden md:flex overflow-y-scroll h-screen flex-col justify-between md:w-[268px] no-scrollbar"
         )}
       >
         <div>
