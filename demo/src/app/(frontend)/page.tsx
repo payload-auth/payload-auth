@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center overflow-hidden px-4 sm:px-6 md:px-8">
-      <main className="flex flex-col gap-6 items-center justify-center w-full">
+      <div className="flex flex-col gap-6 items-center justify-center w-full">
         <div className="flex flex-col gap-3 items-center text-center">
           <h1 className="font-bold text-3xl sm:text-4xl md:text-5xl text-foreground bg-clip-text">
             Better Auth x Payload CMS
@@ -53,7 +53,7 @@ export default function Home() {
             </p>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

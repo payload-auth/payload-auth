@@ -5,7 +5,7 @@ import path from "path";
 import { buildConfig } from "payload";
 import sharp from "sharp";
 import { fileURLToPath } from "url";
-import { payloadBetterAuthOptions } from "./lib/auth";
+import { payloadBetterAuthOptions } from "./lib/auth/options";
 import collections from "./payload/collections";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 

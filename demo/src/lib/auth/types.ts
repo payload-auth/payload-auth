@@ -1,7 +1,11 @@
-import { auth, betterAuthPlugins } from "./";
-import { authClient } from "./client";
+import { getPayload } from "@/lib/payload";
+import { betterAuthPlugins } from "./options";
 
-export type Session = typeof auth.$Infer.Session;
-export type ActiveOrganization = typeof authClient.$Infer.ActiveOrganization;
-export type Invitation = typeof authClient.$Infer.Invitation;
+const payload = await getPayload();
+
+export type Session = typeof payload.betterAuth.$Infer.Session;
+export type ActiveOrganization = typeof payload.betterAuth.$Infer.ActiveOrganization;
+export type Invitation = typeof payload.betterAuth.$Infer.Invitation;
 export type BetterAuthPlugins = typeof betterAuthPlugins;
+export type Account = Awaited<ReturnType<typeof payload.betterAuth.api.listUserAccounts>>[number];
+export type DeviceSession = Awaited<ReturnType<typeof payload.betterAuth.api.listDeviceSessions>>[number];

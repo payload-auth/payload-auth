@@ -1,8 +1,8 @@
 import { generateSchema } from "@payload-auth/better-auth-db-adapter";
-import { betterAuthOptions } from "@/payload/plugins";
+import { betterAuthOptions } from "@/lib/auth/options";
 
 await generateSchema(betterAuthOptions, {
-  output_dir: "./src/payload/schema",
+  outputDir: "./src/payload/schema",
 })
   .then(() => {
     console.log("Schema generated successfully");
