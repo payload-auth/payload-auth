@@ -1,20 +1,17 @@
 import type {
   Adapter,
-  AdapterInstance,
   BetterAuthOptions,
-  InferSession,
-  Prettify,
-  Where,
+  Where
 } from "better-auth";
 import { BetterAuthError } from "better-auth";
-import { createTransform } from "./transform/index.js";
 import { generateSchema } from "./generate-schema/index.js";
+import { createTransform } from "./transform/index.js";
 import type { PayloadAdapter } from "./types.js";
 
 export const BETTER_AUTH_CONTEXT_KEY = "payload-db-adapter";
 const PAYLOAD_QUERY_DEPTH = 2;
 
-const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
+const payloadAdapter: PayloadAdapter = (payloadClient, config = {}) => {
   function debugLog(message: any[]) {
     if (config.enableDebugLogs) {
       console.log("[payload-db-adapter]", ...message);
@@ -34,6 +31,16 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
   const createAdapterContext = (data: Record<string, any>) => ({
     [BETTER_AUTH_CONTEXT_KEY]: { ...data },
   });
+  
+  async function resolvePayloadClient() {
+    const payload = typeof payloadClient === 'function' ? await payloadClient() : await payloadClient;
+    if (!payload.config?.custom?.hasBetterAuthPlugin) {
+      throw new BetterAuthError(
+        `Payload is not configured with the better-auth plugin. Please add the plugin to your payload config.`
+      );
+    }
+    return payload;
+  }
 
   return (options: BetterAuthOptions): Adapter => {
     const {
@@ -60,6 +67,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
         const transformed = transformInput(values, model, "create");
         debugLog(["create", { collectionSlug, transformed, select }]);
         try {
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -96,6 +104,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
         const payloadWhere = convertWhereClause(model, where);
         debugLog(["findOne", { collectionSlug }]);
         try {
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -129,7 +138,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
             });
             result = docs.docs[0];
           }
-          const transformedResult = transformOutput(result) ?? null;
+          const transformedResult = result ? transformOutput(result) : null;
           debugLog([
             "findOne result",
             {
@@ -160,6 +169,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
         const payloadWhere = convertWhereClause(model, where);
         debugLog(["findMany", { collectionSlug, sortBy, limit, offset }]);
         try {
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -247,6 +257,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
         const payloadWhere = convertWhereClause(model, where);
         debugLog(["update", { collectionSlug, update }]);
         try {
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -302,6 +313,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
         const payloadWhere = convertWhereClause(model, where);
         debugLog(["updateMany", { collectionSlug, payloadWhere, update }]);
         try {
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -333,6 +345,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
         const payloadWhere = convertWhereClause(model, where);
         debugLog(["delete", { collectionSlug }]);
         try {
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -387,6 +400,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
         const payloadWhere = convertWhereClause(model, where);
         debugLog(["deleteMany", { collectionSlug, payloadWhere }]);
         try {
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -417,6 +431,7 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
         const payloadWhere = convertWhereClause(model, where);
         debugLog(["count", { collectionSlug, payloadWhere }]);
         try {
+          const payload = await resolvePayloadClient();
           if (!collectionSlug || !(collectionSlug in payload.collections)) {
             collectionSlugError(model);
           }
@@ -457,4 +472,5 @@ const payloadAdapter: PayloadAdapter = (payload, config = {}) => {
   };
 };
 
-export { payloadAdapter, generateSchema };
+export { generateSchema, payloadAdapter };
+

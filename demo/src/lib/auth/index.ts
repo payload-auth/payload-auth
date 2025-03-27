@@ -1,29 +1,25 @@
-import type { AuthCollection, CollectionConfig, Plugin } from "payload";
-import {
-  BetterAuthReturn,
-  payloadBetterAuth,
-  type PayloadBetterAuthOptions,
-} from "@payload-auth/better-auth-plugin";
-import { generateVerifyEmailUrl } from "@payload-auth/better-auth-plugin";
+import { payloadAdapter } from '@payload-auth/better-auth-db-adapter';
+import { generateVerifyEmailUrl, sanitizeBetterAuthOptions } from "@payload-auth/better-auth-plugin";
+import type { BetterAuthReturn, PayloadBetterAuthPluginOptions } from "@payload-auth/better-auth-plugin";
+import { betterAuth, type BetterAuthOptions } from "better-auth";
+import { emailHarmony, phoneHarmony } from "better-auth-harmony";
+import { nextCookies } from "better-auth/next-js";
 import {
   admin,
-  multiSession,
-  organization,
-  twoFactor,
-  oneTap,
-  openAPI,
-  username,
   anonymous,
-  phoneNumber,
-  magicLink,
-  emailOTP,
   apiKey,
-  jwt,
-  createAuthMiddleware,
+  emailOTP,
+  magicLink,
+  multiSession,
+  openAPI,
+  organization,
+  phoneNumber,
+  twoFactor
 } from "better-auth/plugins";
-import { nextCookies } from "better-auth/next-js";
 import { passkey } from "better-auth/plugins/passkey";
-import { emailHarmony, phoneHarmony } from "better-auth-harmony";
+import { getPayload } from "@/lib/payload";
+import type { CollectionConfig } from 'payload';
+import type { BetterAuthPlugins } from './types';
 
 export const betterAuthPlugins = [
   emailHarmony(),
@@ -86,7 +82,7 @@ export const betterAuthPlugins = [
       enabled: true,
     },
     async sendInvitationEmail(data) {
-      const inviteLink = `http://localhost:3000/accept-invitation/${data.id}`;
+      const inviteLink = `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/accept-invitation/${data.id}`;
       console.log("Send invite for org: ", data, inviteLink);
     },
   }),
@@ -96,12 +92,11 @@ export const betterAuthPlugins = [
   nextCookies(),
 ];
 
-export type BetterAuthPlugins = typeof betterAuthPlugins;
-
-export const betterAuthOptions: PayloadBetterAuthOptions = {
+export const betterAuthOptions: BetterAuthOptions = {
   appName: "payload-better-auth",
-  baseURL: "http://localhost:3000",
-  trustedOrigins: ["http://localhost:3000"],
+  database: payloadAdapter(() => getPayload()),
+  baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
+  trustedOrigins: [process.env.NEXT_PUBLIC_BETTER_AUTH_URL],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -168,56 +163,53 @@ export const betterAuthOptions: PayloadBetterAuthOptions = {
   },
 };
 
-export const plugins: Plugin[] = [
-  payloadBetterAuth({
-    disabled: false,
-    logTables: false,
-    enableDebugLogs: false,
-    hidePluginCollections: true,
-    users: {
-      slug: "users",
-      hidden: false,
-      adminRoles: ["admin"],
-      allowedFields: ["name"],
-      blockFirstBetterAuthVerificationEmail: true,
-      collectionOverrides: ({ collection }) => {
-        return {
-          ...collection,
-          auth: {
-            ...(typeof collection?.auth === 'object' ? collection.auth : {}),
-            verify: {
-              generateEmailHTML: async ({ user, req, token }) => {
-                const betterAuth = (req.payload as any).betterAuth as BetterAuthReturn<BetterAuthPlugins>
-                const authContext = await betterAuth.$context
-                const verifyUrl = await generateVerifyEmailUrl({
-                  userEmail: user.email,
-                  secret: authContext.secret,
-                  expiresIn: betterAuth.options?.emailVerification?.expiresIn || 3600,
-                  verifyRouteUrl: `${req.payload.config.serverURL}/api/auth/verify-email`,
-                  callbackURL: "/dashboard",
-                })
+export const payloadBetterAuthOptions: PayloadBetterAuthPluginOptions = {
+  disabled: false,
+  logTables: false,
+  enableDebugLogs: false,
+  hidePluginCollections: true,
+  users: {
+    slug: "users",
+    hidden: false,
+    adminRoles: ["admin"],
+    allowedFields: ["name"],
+    blockFirstBetterAuthVerificationEmail: true,
+    collectionOverrides: ({ collection }) => {
+      return {
+        ...collection,
+        auth: {
+          ...(typeof collection?.auth === 'object' ? collection.auth : {}),
+          verify: {
+            generateEmailHTML: async ({ user, req, token }) => {
+              const betterAuth = (req.payload as any).betterAuth as BetterAuthReturn<BetterAuthPlugins>
+              const authContext = await betterAuth.$context
+              const verifyUrl = await generateVerifyEmailUrl({
+                userEmail: user.email,
+                secret: authContext.secret,
+                expiresIn: betterAuth.options?.emailVerification?.expiresIn || 3600,
+                verifyRouteUrl: `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/verify-email`,
+                callbackURL: "/dashboard",
+              })
 
-                console.log('generateEmailHTML verifyUrl',verifyUrl)
-                
-                return `<p>Verify your email by clicking <a href="${verifyUrl}">here</a></p>`
-              }
+              console.log('generateEmailHTML verifyUrl',verifyUrl)
+              
+              return `<p>Verify your email by clicking <a href="${verifyUrl}">here</a></p>`
             }
           }
-        } satisfies CollectionConfig
-      },
+        }
+      } satisfies CollectionConfig
     },
-    accounts: {
-      slug: "accounts",
-      hidden: false,
-    },
-    sessions: {
-      slug: "sessions",
-      hidden: false,
-    },
-    verifications: {
-      slug: "verifications",
-      hidden: false,
-    },
-    betterAuthOptions,
-  }),
-];
+  },
+  accounts: {
+    slug: 'accounts',
+  },
+  sessions: {
+    slug: 'sessions',
+  },
+  verifications: {
+    slug: 'verifications',
+  },
+  betterAuthOptions: betterAuthOptions
+};
+
+export const auth = betterAuth(sanitizeBetterAuthOptions(payloadBetterAuthOptions)) as BetterAuthReturn<BetterAuthPlugins>;

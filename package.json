@@ -19,6 +19,8 @@
   "license": "MIT",
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@swc/core",
+      "esbuild",
       "sharp"
     ]
   }

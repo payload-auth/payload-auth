@@ -6,6 +6,6 @@ export type PayloadAdapterOptions = {
 };
 
 export type PayloadAdapter = (
-  payloadClient: BasePayload,
+  payloadClient: BasePayload | Promise<BasePayload> | (() => Promise<BasePayload>),
   config?: PayloadAdapterOptions
 ) => AdapterInstance;

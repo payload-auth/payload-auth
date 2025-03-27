@@ -37,9 +37,7 @@ const tabs: { name: string; code: string }[] = [
   },
   {
     name: "get-payload.ts",
-    code: `"use server";
-
-import config from "./payload.config";
+    code: `import config from "./payload.config";
 import type { BAPlugins } from "./plugins";
 import { getPayloadAuth } from 
 "@payload-auth/better-auth-plugin";
@@ -208,7 +206,7 @@ export function CodePreview() {
               </div>
               <div className="absolute bottom-10 lg:bottom-0 right-0">
                 <Link
-                  href="https://demo.better-auth.com"
+                  href="https://demo.payloadauth.com"
                   target="_blank"
                   className="shadow-md  border shadow-primary-foreground mb-4 ml-auto mr-4 mt-auto flex cursor-pointer items-center gap-2 px-3 py-1 transition-all ease-in-out hover:opacity-70"
                 >
