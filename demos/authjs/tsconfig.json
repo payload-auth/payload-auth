@@ -1,22 +1,27 @@
 {
   "exclude": [],
   "include": [
+    "**/*.cjs",
     "**/*.js",
     "**/*.jsx",
     "**/*.mjs",
-    "**/*.cjs",
     "**/*.ts",
     "**/*.tsx",
     "../src/**/*.ts",
     "../src/**/*.tsx",
-    "next.config.ts",
     "better-auth/.next/types/**/*.ts",
-    "types.d.ts"
+    "next.config.ts",
+    "types.d.ts",
+    ".next/types/**/*.ts"
   ],
   "compilerOptions": {
     "baseUrl": ".",
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -29,8 +34,12 @@
     "jsx": "preserve",
     "incremental": true,
     "paths": {
-      "@/*": ["./src/*"],
-      "@payload-config": ["./src/payload.config.ts"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@payload-config": [
+        "./src/payload.config.ts"
+      ]
     },
     "plugins": [
       {

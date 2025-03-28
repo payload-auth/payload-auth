@@ -1,12 +1,12 @@
 {
-	"$schema": "https://swc.rs/schema.json",
+	"$schema": "https://json.schemastore.org/swcrc",
 	"sourceMaps": true,
 	"jsc": {
-		"target": "esnext",
+		"target": "es2022",
 		"parser": {
 			"syntax": "typescript",
 			"tsx": true,
-			"dts": true
+			"decorators": true
 		},
 		"transform": {
 			"react": {
@@ -16,9 +16,18 @@
 				"development": false,
 				"useBuiltins": true
 			}
-		}
+		},
+		"baseUrl": ".",
+		"paths": {
+			"@payload-auth/better-auth": ["./src"],
+			"@payload-auth/better-auth/*": ["./src/*"]
+		},
+		"loose": false,
+		"externalHelpers": false
 	},
 	"module": {
 		"type": "es6"
-	}
+	},
+	"minify": false,
+	"isModule": true
 }

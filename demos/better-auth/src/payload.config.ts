@@ -1,4 +1,4 @@
-import { payloadBetterAuth } from "@payload-auth/better-auth-plugin";
+import { payloadBetterAuth } from "@payload-auth/better-auth";
 import { mongooseAdapter } from "@payloadcms/db-mongodb";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import path from "path";

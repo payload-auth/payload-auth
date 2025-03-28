@@ -1,6 +1,6 @@
-import { payloadAdapter } from '@payload-auth/better-auth-db-adapter';
-import { generateVerifyEmailUrl, sanitizeBetterAuthOptions } from "@payload-auth/better-auth-plugin";
-import type { BetterAuthReturn, PayloadBetterAuthPluginOptions } from "@payload-auth/better-auth-plugin";
+import { payloadAdapter } from '@payload-auth/better-auth';
+import { generateVerifyEmailUrl, sanitizeBetterAuthOptions } from "@payload-auth/better-auth/plugin";
+import type { BetterAuthReturn, PayloadBetterAuthPluginOptions } from "@payload-auth/better-auth/plugin";
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { emailHarmony, phoneHarmony } from "better-auth-harmony";
 import { nextCookies } from "better-auth/next-js";

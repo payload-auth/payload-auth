@@ -9,6 +9,7 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "exports": {
+    "./css/*": "./src/css/*",
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
@@ -33,14 +34,21 @@
       ],
       "types": [
         "dist/types.d.ts"
+      ],
+      "adapter": [
+        "dist/adapter.d.ts"
+      ],
+      "plugin": [
+        "dist/plugin.d.ts"
       ]
     }
   },
   "scripts": {
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo",
     "build": "pnpm clean && pnpm copyfiles && pnpm build:types && pnpm build:swc",
+    "build:dev": "pnpm clean && mkdir -p dist && cp -r src/* dist/ && find dist -name \"*.ts\" -not -name \"*.d.ts\" -exec bash -c 'cp \"$1\" \"${1%.ts}.js\"' _ {} \\;",
     "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
-    "build:types": "tsc --project tsconfig.json",
+    "build:types": "tsc --project tsconfig.json --noEmit false",
     "copyfiles": "copyfiles -u 1 \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist/",
     "lint": "eslint",
     "lint:fix": "eslint ./src --fix",
@@ -55,17 +63,36 @@
   ],
   "author": "Forrest Devs <luke.gannon@me.com>",
   "license": "MIT",
-  "devDependencies": {
+  "dependencies": {
+    "@payloadcms/db-postgres": "^3.31",
+    "@payloadcms/ui": "3.31",
     "@swc-node/register": "1.10.9",
     "@swc/cli": "0.6.0",
     "@swc/core": "1.11.8",
     "@swc/jest": "^0.2.37",
+    "better-auth": "1.2.4",
+    "copyfiles": "^2.4.1",
+    "dotenv": "^16.4.1",
+    "jose": "^5.1.3",
+    "next": "^15.2.0",
+    "payload": "^3.31",
+    "react": "^19",
+    "react-dom": "^19",
+    "uncrypto": "^0.1.3"
+  },
+  "devDependencies": {
     "@types/jest": "29.5.12",
     "@types/node": "^22.13.10",
-    "copyfiles": "^2.4.1",
-    "typescript": "5.8.2"
+    "@types/react": "^19",
+    "lucide-react": "^0.485.0",
+    "sonner": "2.0.1",
+    "typescript": "5.8.2",
+    "vitest": "^1.4.0"
   },
-  "dependencies": {},
+  "peerDependencies": {
+    "next": "^14.0.0",
+    "payload": "^3.0.0"
+  },
   "engines": {
     "node": "^18.20.2 || >=20.9.0",
     "pnpm": "^9 || ^10"

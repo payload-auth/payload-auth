@@ -1,5 +1,5 @@
-import { AdminButtons as AdminButtons_9c0294635421360d3981403ec167ddb7 } from '@payload-auth/better-auth-plugin/client'
+import { AdminButtons as AdminButtons_98163d55ae591a15d446d874780a3951 } from '@payload-auth/better-auth/plugin/client'
 
 export const importMap = {
-  "@payload-auth/better-auth-plugin/client#AdminButtons": AdminButtons_9c0294635421360d3981403ec167ddb7
+  "@payload-auth/better-auth/plugin/client#AdminButtons": AdminButtons_98163d55ae591a15d446d874780a3951
 }

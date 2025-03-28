@@ -9,6 +9,7 @@
     "./better-auth": "./dist/better-auth/index.mjs",
     "./better-auth/adapter": "./dist/better-auth/adapter.mjs",
     "./better-auth/plugin": "./dist/better-auth/plugin.mjs",
+    "./better-auth/types": "./dist/better-auth/types.mjs",
     "./clerk": "./dist/clerk/index.mjs",
     "./kinde": "./dist/kinde/index.mjs",
     "./authjs": "./dist/authjs/index.mjs"
@@ -21,8 +22,11 @@
     "build": "pnpm build:js && pnpm build:types",
     "build:js": "swc src -d dist --config-file .swcrc && pnpm copy:dist",
     "build:types": "tsc --emitDeclarationOnly",
-    "copy:dist": "pnpm copy:provider better-auth && pnpm copy:provider clerk && pnpm copy:provider kinde && pnpm copy:provider authjs",
-    "copy:provider": "cp -r ../$1/dist/* dist/$1/"
+    "copy:dist": "pnpm copy:better-auth && pnpm copy:clerk && pnpm copy:kinde && pnpm copy:authjs",
+    "copy:better-auth": "cp -r ../better-auth/dist/* dist/better-auth/",
+    "copy:clerk": "cp -r ../clerk/dist/* dist/clerk/",
+    "copy:kinde": "cp -r ../kinde/dist/* dist/kinde/",
+    "copy:authjs": "cp -r ../authjs/dist/* dist/authjs/"
   },
   "devDependencies": {
     "@swc/cli": "0.6.0",
