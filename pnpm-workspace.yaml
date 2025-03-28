@@ -1,6 +1,5 @@
 packages:
-  - "packages/better-auth-db-adapter"
-  - "packages/better-auth-plugin"
-  - "www"
   - "docs"
-  - "demo"
+  - "packages/*"
+  - "demos/*"
+

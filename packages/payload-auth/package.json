@@ -1,0 +1,32 @@
+{
+  "name": "payload-auth",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./better-auth": "./dist/better-auth/index.mjs",
+    "./better-auth/adapter": "./dist/better-auth/adapter.mjs",
+    "./better-auth/plugin": "./dist/better-auth/plugin.mjs",
+    "./clerk": "./dist/clerk/index.mjs",
+    "./kinde": "./dist/kinde/index.mjs",
+    "./authjs": "./dist/authjs/index.mjs"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm build:js && pnpm build:types",
+    "build:js": "swc src -d dist --config-file .swcrc && pnpm copy:dist",
+    "build:types": "tsc --emitDeclarationOnly",
+    "copy:dist": "pnpm copy:provider better-auth && pnpm copy:provider clerk && pnpm copy:provider kinde && pnpm copy:provider authjs",
+    "copy:provider": "cp -r ../$1/dist/* dist/$1/"
+  },
+  "devDependencies": {
+    "@swc/cli": "0.6.0",
+    "@swc/core": "1.11.13",
+    "typescript": "5.8.2"
+  }
+}

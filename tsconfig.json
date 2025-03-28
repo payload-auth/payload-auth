@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "better-auth/adapter/*": ["packages/better-auth/adapter/*"],
+      "better-auth/plugin/*": ["packages/better-auth/plugin/*"],
+      "clerk/*": ["packages/clerk/src/*"],
+      "kinde/*": ["packages/kinde/src/*"],
+      "authjs/*": ["packages/authjs/src/*"]
+    }
+  }
+}
