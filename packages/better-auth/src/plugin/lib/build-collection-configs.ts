@@ -151,7 +151,7 @@ export function buildCollectionConfigs({
                 position: 'sidebar',
                 components: {
                   Field: {
-                    path: '@payload-auth/better-auth-plugin/client#AdminButtons',
+                    path: 'payload-auth/better-auth/plugin/client#AdminButtons',
                     clientProps: () => {
                       return {
                         userSlug,

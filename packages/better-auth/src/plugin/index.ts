@@ -11,7 +11,7 @@ export * from './helpers'
 export { sanitizeBetterAuthOptions } from './lib/sanitize-auth-options'
 export { getPayloadAuth } from './lib/get-payload-auth'
 
-export function payloadBetterAuth(pluginOptions: PayloadBetterAuthPluginOptions) {
+export function betterAuthPlugin(pluginOptions: PayloadBetterAuthPluginOptions) {
   return (config: Config): Config => {
     if (pluginOptions.disabled) {
       return config

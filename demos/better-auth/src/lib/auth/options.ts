@@ -1,9 +1,7 @@
-import { payloadAdapter } from 'payload-auth/better-auth/adapter';
-import { generateVerifyEmailUrl, sanitizeBetterAuthOptions } from "payload-auth/better-auth/plugin";
-import type { BetterAuthReturn, PayloadBetterAuthPluginOptions } from "payload-auth/better-auth";
-import { betterAuth, type BetterAuthOptions } from "better-auth";
-import { emailHarmony, phoneHarmony } from "better-auth-harmony";
-import { nextCookies } from "better-auth/next-js";
+import { generateVerifyEmailUrl } from 'payload-auth/better-auth/plugin'
+import type { BetterAuthReturn, PayloadBetterAuthOptions, PayloadBetterAuthPluginOptions } from 'payload-auth/better-auth'
+import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
+import { nextCookies } from 'better-auth/next-js'
 import {
   admin,
   anonymous,
@@ -15,116 +13,111 @@ import {
   organization,
   phoneNumber,
   twoFactor
-} from "better-auth/plugins";
-import { passkey } from "better-auth/plugins/passkey";
-import type { CollectionConfig } from 'payload';
-import type { BetterAuthPlugins } from './types';
+} from 'better-auth/plugins'
+import { passkey } from 'better-auth/plugins/passkey'
+import type { CollectionConfig } from 'payload'
 
 export const betterAuthPlugins = [
   emailHarmony(),
   phoneHarmony({
-    defaultCountry: "CA",
+    defaultCountry: 'CA'
   }),
   twoFactor({
     schema: {
       user: {
-        modelName: "users",
+        modelName: 'users',
         fields: {
-          userId: "user",
-        },
+          userId: 'user'
+        }
       },
       twoFactor: {
-        modelName: "twoFactors",
+        modelName: 'twoFactors',
         fields: {
-          userId: "user",
-        },
-      },
+          userId: 'user'
+        }
+      }
     },
-    issuer: "payload-better-auth",
+    issuer: 'payload-better-auth',
     otpOptions: {
       async sendOTP({ user, otp }) {
-        console.log("Send OTP for user: ", user, otp);
-      },
-    },
+        console.log('Send OTP for user: ', user, otp)
+      }
+    }
   }),
   anonymous({
-    emailDomainName: "payload-better-auth.com",
+    emailDomainName: 'payload-better-auth.com',
     onLinkAccount: async ({ anonymousUser, newUser }) => {
-      console.log("Link account for anonymous user: ", anonymousUser, newUser);
+      console.log('Link account for anonymous user: ', anonymousUser, newUser)
     },
-    disableDeleteAnonymousUser: false,
+    disableDeleteAnonymousUser: false
   }),
   phoneNumber({
     sendOTP: async ({ phoneNumber, code }, req) => {
-      console.log("Send OTP for user: ", phoneNumber, code);
-    },
+      console.log('Send OTP for user: ', phoneNumber, code)
+    }
   }),
   magicLink({
     sendMagicLink: async ({ email, token, url }, request) => {
-      console.log("Send magic link for user: ", email, token, url);
-    },
+      console.log('Send magic link for user: ', email, token, url)
+    }
   }),
   emailOTP({
     async sendVerificationOTP({ email, otp, type }) {
-      console.log("Send verification OTP for user: ", email, otp, type);
-    },
+      console.log('Send verification OTP for user: ', email, otp, type)
+    }
   }),
   passkey({
-    rpID: "payload-better-auth",
-    rpName: "payload-better-auth-demo",
-    origin: "http://localhost:3000",
+    rpID: 'payload-better-auth',
+    rpName: 'payload-better-auth-demo',
+    origin: 'http://localhost:3000'
   }),
   admin(),
   apiKey(),
   organization({
     teams: {
-      enabled: true,
+      enabled: true
     },
     async sendInvitationEmail(data) {
-      const inviteLink = `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/accept-invitation/${data.id}`;
-      console.log("Send invite for org: ", data, inviteLink);
-    },
+      const inviteLink = `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/accept-invitation/${data.id}`
+      console.log('Send invite for org: ', data, inviteLink)
+    }
   }),
   multiSession(),
   openAPI(),
-  nextCookies(),
-];
+  nextCookies()
+]
 
-export const betterAuthOptions: BetterAuthOptions = {
-  appName: "payload-better-auth",
+export type BetterAuthPlugins = typeof betterAuthPlugins
+
+export const betterAuthOptions: PayloadBetterAuthOptions = {
+  appName: 'payload-better-auth',
   baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
   trustedOrigins: [process.env.NEXT_PUBLIC_BETTER_AUTH_URL],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
     async sendResetPassword({ user, url }) {
-      console.log("Send reset password for user: ", user, url);
-    },
+      console.log('Send reset password for user: ', user, url)
+    }
   },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    },
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string
+    }
   },
   emailVerification: {
     async sendVerificationEmail({ user, url }) {
-      console.log("Send verification email for user: ", user, url);
-    },
+      console.log('Send verification email for user: ', user, url)
+    }
   },
   plugins: betterAuthPlugins,
   user: {
     changeEmail: {
       enabled: true,
       sendChangeEmailVerification: async ({ user, newEmail, url, token }) => {
-        console.log(
-          "Send change email verification for user: ",
-          user,
-          newEmail,
-          url,
-          token
-        );
-      },
+        console.log('Send change email verification for user: ', user, newEmail, url, token)
+      }
     },
     deleteUser: {
       enabled: true,
@@ -136,40 +129,40 @@ export const betterAuthOptions: BetterAuthOptions = {
       },
       afterDelete: async (user) => {
         // Perform cleanup after user deletion
-      },
+      }
     },
     additionalFields: {
       role: {
-        type: "string",
-        defaultValue: "user",
-        input: false,
-      },
-    },
+        type: 'string',
+        defaultValue: 'user',
+        input: false
+      }
+    }
   },
   session: {
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60, // Cache duration in seconds
-    },
+      maxAge: 5 * 60 // Cache duration in seconds
+    }
   },
   account: {
     accountLinking: {
       enabled: true,
-      trustedProviders: ["google", "email-password"],
-    },
-  },
-};
+      trustedProviders: ['google', 'email-password']
+    }
+  }
+}
 
-export const payloadBetterAuthOptions: PayloadBetterAuthPluginOptions = {
+export const betterAuthPluginOptions: PayloadBetterAuthPluginOptions = {
   disabled: false,
   logTables: false,
   enableDebugLogs: false,
   hidePluginCollections: true,
   users: {
-    slug: "users",
+    slug: 'users',
     hidden: false,
-    adminRoles: ["admin"],
-    allowedFields: ["name"],
+    adminRoles: ['admin'],
+    allowedFields: ['name'],
     blockFirstBetterAuthVerificationEmail: true,
     collectionOverrides: ({ collection }) => {
       return {
@@ -185,26 +178,26 @@ export const payloadBetterAuthOptions: PayloadBetterAuthPluginOptions = {
                 secret: authContext.secret,
                 expiresIn: betterAuth.options?.emailVerification?.expiresIn || 3600,
                 verifyRouteUrl: `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/verify-email`,
-                callbackURL: "/dashboard",
+                callbackURL: '/dashboard'
               })
 
-              console.log('generateEmailHTML verifyUrl',verifyUrl)
-              
+              console.log('generateEmailHTML verifyUrl', verifyUrl)
+
               return `<p>Verify your email by clicking <a href="${verifyUrl}">here</a></p>`
             }
           }
         }
       } satisfies CollectionConfig
-    },
+    }
   },
   accounts: {
-    slug: 'accounts',
+    slug: 'accounts'
   },
   sessions: {
-    slug: 'sessions',
+    slug: 'sessions'
   },
   verifications: {
-    slug: 'verifications',
+    slug: 'verifications'
   },
   betterAuthOptions: betterAuthOptions
-}; 
+}

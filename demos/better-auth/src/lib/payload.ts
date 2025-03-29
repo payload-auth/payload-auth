@@ -1,5 +1,5 @@
 import configPromise from '@payload-config'
-import type { BetterAuthPlugins } from '@/lib/auth/types'
-import { getPayloadAuth } from 'payload-auth/better-auth'
+import { getPayloadAuth } from 'payload-auth'
+import type { BetterAuthPlugins } from './auth/options'
 
 export const getPayload = async () => getPayloadAuth<BetterAuthPlugins>(configPromise)

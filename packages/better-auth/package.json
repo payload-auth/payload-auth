@@ -85,7 +85,7 @@
     "@radix-ui/react-label": "2.1.2",
     "@radix-ui/react-slot": "1.1.2",
     "@better-auth/utils": "0.2.4",
-    "better-auth": "1.2.4",
+    "better-auth": "1.2.5",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "jose": "^6.0.10",
@@ -98,7 +98,7 @@
   "devDependencies": {
     "@changesets/cli": "^2.27.11",
     "@payloadcms/db-postgres": "3.31",
-    "better-auth": "1.2.4",
+    "better-auth": "1.2.5",
     "cross-env": "^7.0.3",
     "payload": "3.31",
     "@swc-node/register": "1.10.9",

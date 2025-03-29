@@ -51,8 +51,8 @@ export function OrganizationCard() {
   }
 
   const currentMember = optimisticOrg?.members.find((member: Member) => {
-    if (typeof member.user === 'object') return member.user.id === session?.user.id
-    return member.user === session?.user.id
+    if (typeof member.user === 'object') return member.user.id === parseInt(session?.user.id || '0')
+    return member.user === parseInt(session?.user.id || '0')
   })
 
   return (

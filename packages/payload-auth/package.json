@@ -1,9 +1,10 @@
 {
   "name": "payload-auth",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "type": "module",
   "exports": {
     ".": "./dist/index.js",
     "./better-auth": {
