@@ -13,12 +13,12 @@ import {
   type AuthView,
   type SocialProvider,
 } from "@daveyplate/better-auth-ui";
-import { PasswordInput } from "@daveyplate/better-auth-ui";
 import { useIsRestoring } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { PasswordInput } from "@/components/ui/password-input";
 
 // import type { AuthLocalization } from "../../lib/auth-localization";
 // import { AuthUIContext } from "../../lib/auth-ui-provider";
