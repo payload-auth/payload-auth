@@ -3,7 +3,6 @@
   "description": "Monorepo for the most powerful authentication solution for Payload CMS",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@9.14.2",
   "scripts": {
     "clean-all": "find . -type d -name node_modules -o -name dist -o -name .turbo -o -name .next -o -type f -name tsconfig.tsbuildinfo -o -name pnpm-lock.yaml | xargs rm -rf",
     "build:packages": "turbo run build --filter=./packages/*",
@@ -20,13 +19,11 @@
   ],
   "author": "forrestdevs <luke.gannon@me.com>",
   "license": "MIT",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@swc/core",
-      "esbuild",
-      "sharp"
-    ]
-  },
+  "onlyBuiltDependencies": [
+    "@swc/core",
+    "esbuild",
+    "sharp"
+  ],
   "devDependencies": {
     "turbo": "^2.4.4"
   }
