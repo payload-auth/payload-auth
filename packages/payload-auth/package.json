@@ -1,0 +1,67 @@
+{
+  "name": "payload-auth",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./better-auth": {
+      "import": "./dist/better-auth/index.js",
+      "types": "./dist/better-auth/index.d.ts",
+      "default": "./dist/better-auth/index.js"
+    },
+    "./better-auth/adapter": {
+      "import": "./dist/better-auth/adapter/index.js",
+      "types": "./dist/better-auth/adapter/index.d.ts",
+      "default": "./dist/better-auth/adapter/index.js"
+    },
+    "./better-auth/plugin": {
+      "import": "./dist/better-auth/plugin/index.js",
+      "types": "./dist/better-auth/plugin/index.d.ts",
+      "default": "./dist/better-auth/plugin/index.js"
+    },
+    "./better-auth/plugin/client": {
+      "import": "./dist/better-auth/plugin/payload/exports/client.js",
+      "types": "./dist/better-auth/plugin/payload/exports/client.d.ts",
+      "default": "./dist/better-auth/plugin/payload/exports/client.js"
+    },
+    "./better-auth/plugin/rsc": {
+      "import": "./dist/better-auth/plugin/payload/exports/rsc.js",
+      "types": "./dist/better-auth/plugin/payload/exports/rsc.d.ts",
+      "default": "./dist/better-auth/plugin/payload/exports/rsc.js"
+    },
+    "./clerk": {
+      "import": "./dist/clerk/index.js",
+      "types": "./dist/clerk/index.d.ts",
+      "default": "./dist/clerk/index.js"
+    },
+    "./kinde": {
+      "import": "./dist/kinde/index.js",
+      "types": "./dist/kinde/index.d.ts",
+      "default": "./dist/kinde/index.js"
+    },
+    "./authjs": {
+      "import": "./dist/authjs/index.js",
+      "types": "./dist/authjs/index.d.ts",
+      "default": "./dist/authjs/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo",
+    "build": "pnpm clean && pnpm copy:dist && pnpm build:swc",
+    "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
+    "build:types": "tsc --project tsconfig.json",
+    "copy:dist": "pnpm copy:provider better-auth && pnpm copy:provider clerk && pnpm copy:provider kinde && pnpm copy:provider authjs",
+    "copy:provider": "./copy-provider.sh"
+  },
+  "devDependencies": {
+    "@swc/cli": "0.6.0",
+    "@swc/core": "1.11.13",
+    "typescript": "5.8.2"
+  }
+}

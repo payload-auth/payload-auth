@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "strict": true,
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "payload-auth/better-auth": ["packages/better-auth/src"],
+      "payload-auth/better-auth/*": ["packages/better-auth/src/*"],
+      "payload-auth/clerk/*": ["packages/clerk/src/*"],
+      "payload-auth/clerk": ["packages/clerk/src"],
+      "payload-auth/kinde/*": ["packages/kinde/src/*"],
+      "payload-auth/kinde": ["packages/kinde/src"],
+      "payload-auth/authjs/*": ["packages/authjs/src/*"],
+      "payload-auth/authjs": ["packages/authjs/src"]
+    }
+  }
+}

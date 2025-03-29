@@ -1,10 +1,13 @@
 {
-  "name": "payload-better-auth",
-  "description": "Monorepo for Payload CMS Better Auth plugin and adapter",
+  "name": "payload-auth-monorepo",
+  "description": "Monorepo for the most powerful authentication solution for Payload CMS",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@9.14.2",
   "scripts": {
-    "clean-all": "find . -type d -name node_modules -o -name dist -o -type f -name tsconfig.tsbuildinfo -o -name pnpm-lock.yaml | xargs rm -rf"
+    "clean-all": "find . -type d -name node_modules -o -name dist -o -name .turbo -o -name .next -o -type f -name tsconfig.tsbuildinfo -o -name pnpm-lock.yaml | xargs rm -rf",
+    "build:packages": "turbo run build --filter=./packages/*",
+    "publish": "cd packages/payload-auth && pnpm publish --access public"
   },
   "keywords": [
     "payload-cms",
@@ -23,5 +26,8 @@
       "esbuild",
       "sharp"
     ]
+  },
+  "devDependencies": {
+    "turbo": "^2.4.4"
   }
 }
