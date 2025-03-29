@@ -1,5 +1,5 @@
-export * from "../../better-auth/adapter";
-export * from "../../better-auth/plugin/index";
-export * from "../../clerk/src/index";
-export * from "../../kinde/src/index";
-export * from "../../authjs/src/index";
+// These re-exports will be used by consumers of the library
+export * from "payload-auth/better-auth";
+export * from "payload-auth/clerk";
+export * from "payload-auth/kinde";
+export * from "payload-auth/authjs";

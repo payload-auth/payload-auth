@@ -1,15 +1,8 @@
-import { SVGProps } from "react";
+import { SVGProps } from 'react'
 
 export const Logo = (props: SVGProps<any>) => {
   return (
-    <svg
-      width="60"
-      height="45"
-      viewBox="0 0 60 45"
-      fill="none"
-      className="w-5 h-5"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="60" height="45" viewBox="0 0 60 45" fill="none" className="h-5 w-5" xmlns="http://www.w3.org/2000/svg">
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -17,5 +10,5 @@ export const Logo = (props: SVGProps<any>) => {
         className="fill-black dark:fill-white"
       />
     </svg>
-  );
-};
+  )
+}

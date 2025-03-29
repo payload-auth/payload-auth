@@ -17,11 +17,5 @@ export async function AdminBar({ path }: AdminBarProps) {
 
   const { isEnabled: isPreviewMode } = await draftMode()
 
-  return (
-    <AdminBarClient
-      user={user}
-      userCollectionSlug={user.collection}
-      isPreviewMode={isPreviewMode}
-    />
-  )
+  return <AdminBarClient user={user} userCollectionSlug={user.collection} isPreviewMode={isPreviewMode} />
 }

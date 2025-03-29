@@ -24,11 +24,11 @@ import { UAParser } from 'ua-parser-js'
 
 export function UserCard() {
   const router = useRouter()
-  const { sessionPromise, userAccountsPromise, deviceSessionsPromise, currentUserPromise } = useBetterAuth();
-  const session = use(sessionPromise);
-  const accounts = use(userAccountsPromise);
-  const sessions = use(deviceSessionsPromise);
-  const currentUser = use(currentUserPromise);
+  const { sessionPromise, userAccountsPromise, deviceSessionsPromise, currentUserPromise } = useBetterAuth()
+  const session = use(sessionPromise)
+  const accounts = use(userAccountsPromise)
+  const sessions = use(deviceSessionsPromise)
+  const currentUser = use(currentUserPromise)
   const [isTerminating, setIsTerminating] = useState<string | undefined>(undefined)
   const [isPendingTwoFa, setIsPendingTwoFa] = useState<boolean>(false)
   const [twoFaPassword, setTwoFaPassword] = useState<string>('')
@@ -471,7 +471,7 @@ function ChangePassword() {
 
 function EditUserDialog() {
   const { currentUserPromise } = useBetterAuth()
-  const currentUser = use(currentUserPromise);
+  const currentUser = use(currentUserPromise)
   const [name, setName] = useState<string>()
   const router = useRouter()
   const [image, setImage] = useState<File | null>(null)
@@ -541,25 +541,27 @@ function EditUserDialog() {
             disabled={isLoading}
             onClick={async () => {
               setIsLoading(true)
-              await client.updateUser({
-                image: image ? await convertImageToBase64(image) : undefined,
-                name: name ? name : undefined,
-                fetchOptions: {
-                  onSuccess: () => {
-                    setOpen(false)
-                    toast.success('User updated successfully')
-                  },
-                  onError: (error) => {
-                    toast.error(error.error.message)
+              await client
+                .updateUser({
+                  image: image ? await convertImageToBase64(image) : undefined,
+                  name: name ? name : undefined,
+                  fetchOptions: {
+                    onSuccess: () => {
+                      setOpen(false)
+                      toast.success('User updated successfully')
+                    },
+                    onError: (error) => {
+                      toast.error(error.error.message)
+                    }
                   }
-                }
-              }).finally(() => {
-                setName('')
-                setImage(null)
-                setImagePreview(null)
-                setIsLoading(false)
-                router.refresh()
-              })
+                })
+                .finally(() => {
+                  setName('')
+                  setImage(null)
+                  setImagePreview(null)
+                  setIsLoading(false)
+                  router.refresh()
+                })
             }}>
             {isLoading ? <Loader2 size={15} className="animate-spin" /> : 'Update'}
           </Button>

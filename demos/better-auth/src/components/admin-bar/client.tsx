@@ -28,7 +28,7 @@ export function AdminBarClient({ user, isPreviewMode, userCollectionSlug, icons 
 
   return (
     <div className="admin-bar text-foreground bg-background border-border fixed top-0 z-50 w-full border-b text-sm [body:has(.admin-bar):has(&)]:mt-[36px] [body:has(.admin-bar):has(&)_.app>header]:top-[36px]">
-      <div className="container ms-auto max-w-screen-xl flex flex-wrap items-center justify-between">
+      <div className="container ms-auto flex max-w-screen-xl flex-wrap items-center justify-between">
         <div className="flex flex-wrap items-center gap-4">
           <Link href="/admin" className={linkClasses}>
             {icons && <LayoutDashboard className="h-4 w-4" />}

@@ -6,18 +6,15 @@ import { getPayload } from '@/lib/payload'
 export async function SignInButton() {
   const payload = await getPayload()
   const session = await payload.betterAuth.api.getSession({
-    headers: await headers(),
+    headers: await headers()
   })
 
   return (
     <Link href={session?.session ? '/dashboard' : '/sign-in'} className="flex justify-center">
-      <Button className="gap-2  justify-between" variant="default">
+      <Button className="justify-between gap-2" variant="default">
         {!session?.session ? (
           <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24">
-            <path
-              fill="currentColor"
-              d="M5 3H3v4h2V5h14v14H5v-2H3v4h18V3zm12 8h-2V9h-2V7h-2v2h2v2H3v2h10v2h-2v2h2v-2h2v-2h2z"
-            ></path>
+            <path fill="currentColor" d="M5 3H3v4h2V5h14v14H5v-2H3v4h18V3zm12 8h-2V9h-2V7h-2v2h2v2H3v2h10v2h-2v2h2v-2h2v-2h2z"></path>
           </svg>
         ) : (
           <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24">
@@ -32,8 +29,7 @@ export async function SignInButton() {
 
 function checkOptimisticSession(headers: Headers) {
   const guessIsSignIn =
-    headers.get('cookie')?.includes('better-auth.session') ||
-    headers.get('cookie')?.includes('__Secure-better-auth.session-token')
+    headers.get('cookie')?.includes('better-auth.session') || headers.get('cookie')?.includes('__Secure-better-auth.session-token')
   return !!guessIsSignIn
 }
 
@@ -42,13 +38,10 @@ export async function SignInFallback() {
   const guessIsSignIn = checkOptimisticSession(await headers())
   return (
     <Link href={guessIsSignIn ? '/dashboard' : '/sign-in'} className="flex justify-center">
-      <Button className="gap-2  justify-between" variant="default">
+      <Button className="justify-between gap-2" variant="default">
         {!guessIsSignIn ? (
           <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24">
-            <path
-              fill="currentColor"
-              d="M5 3H3v4h2V5h14v14H5v-2H3v4h18V3zm12 8h-2V9h-2V7h-2v2h2v2H3v2h10v2h-2v2h2v-2h2v-2h2z"
-            ></path>
+            <path fill="currentColor" d="M5 3H3v4h2V5h14v14H5v-2H3v4h18V3zm12 8h-2V9h-2V7h-2v2h2v2H3v2h10v2h-2v2h2v-2h2v-2h2z"></path>
           </svg>
         ) : (
           <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24">

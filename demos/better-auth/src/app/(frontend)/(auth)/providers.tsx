@@ -1,14 +1,14 @@
-"use client"
- 
-import { AuthUIProvider } from "@daveyplate/better-auth-ui"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import type { ReactNode } from "react"
-import { authClient } from "@/lib/auth/client"
-import { QueryClient } from "@tanstack/react-query"
-import { QueryClientProvider } from "@tanstack/react-query"
+'use client'
 
-const queryClient = new QueryClient();
+import { AuthUIProvider } from '@daveyplate/better-auth-ui'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import type { ReactNode } from 'react'
+import { authClient } from '@/lib/auth/client'
+import { QueryClient } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
 
 export function Providers({ children }: { children: ReactNode }) {
   const router = useRouter()
@@ -19,15 +19,16 @@ export function Providers({ children }: { children: ReactNode }) {
         authClient={authClient}
         navigate={router.push}
         replace={router.replace}
-        onSessionChange={() => { router.refresh() }}
+        onSessionChange={() => {
+          router.refresh()
+        }}
         magicLink={true}
-        providers={["google"]}
+        providers={['google']}
         viewPaths={{
-          settings: "dashboard",
+          settings: 'dashboard'
         }}
         basePath="/"
-        LinkComponent={Link}
-      >
+        LinkComponent={Link}>
         {children}
       </AuthUIProvider>
     </QueryClientProvider>

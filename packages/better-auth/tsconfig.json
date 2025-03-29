@@ -5,5 +5,5 @@
     "declaration": true,
     "emitDeclarationOnly": true
   },
-  "include": ["adapter/**/*", "plugin/**/*"]
+  "include": ["src/**/*", "eslint.config.js", "jest.config.js"]
 }

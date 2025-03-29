@@ -1,54 +1,46 @@
-"use client";
+'use client'
 
-import { authClient } from "@/lib/auth/client";
-import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
-import { Input } from "./ui/input";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { PasswordInput } from "./ui/password-input";
-import { Checkbox } from "./ui/checkbox";
-import { Button } from "./ui/button";
-import { Key, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { Label } from "./ui/label";
+import { authClient } from '@/lib/auth/client'
+import { useEffect, useState } from 'react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog'
+import { Input } from './ui/input'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { PasswordInput } from './ui/password-input'
+import { Checkbox } from './ui/checkbox'
+import { Button } from './ui/button'
+import { Key, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { Label } from './ui/label'
 
 export function OneTap() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false)
   useEffect(() => {
     // authClient.oneTap({
     //   onPromptNotification(notification) {
     //     setIsOpen(true)
     //   },
     // })
-  }, []);
+  }, [])
   return (
     <Dialog open={isOpen} onOpenChange={(change) => setIsOpen(change)}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="text-lg md:text-xl">Sign In</DialogTitle>
-          <DialogDescription className="text-xs md:text-sm">
-            Enter your email below to login to your account
-          </DialogDescription>
+          <DialogDescription className="text-xs md:text-sm">Enter your email below to login to your account</DialogDescription>
         </DialogHeader>
         <SignInBox />
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 function SignInBox() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
   return (
     <div className="grid gap-4">
       <div className="grid gap-2">
@@ -59,7 +51,7 @@ function SignInBox() {
           placeholder="m@example.com"
           required
           onChange={(e) => {
-            setEmail(e.target.value);
+            setEmail(e.target.value)
           }}
           value={email}
         />
@@ -67,10 +59,7 @@ function SignInBox() {
       <div className="grid gap-2">
         <div className="flex items-center">
           <Label htmlFor="password">Password</Label>
-          <Link
-            href="/forget-password"
-            className="ml-auto inline-block text-sm underline"
-          >
+          <Link href="/forget-password" className="ml-auto inline-block text-sm underline">
             Forgot your password?
           </Link>
         </div>
@@ -85,7 +74,7 @@ function SignInBox() {
       <div className="flex items-center gap-2">
         <Checkbox
           onClick={() => {
-            setRememberMe(!rememberMe);
+            setRememberMe(!rememberMe)
           }}
         />
         <Label>Remember me</Label>
@@ -100,41 +89,34 @@ function SignInBox() {
             {
               email: email,
               password: password,
-              callbackURL: "/dashboard",
-              rememberMe,
+              callbackURL: '/dashboard',
+              rememberMe
             },
             {
               onRequest: () => {
-                setLoading(true);
+                setLoading(true)
               },
               onResponse: () => {
-                setLoading(false);
+                setLoading(false)
               },
               onError: (ctx) => {
-                toast.error(ctx.error.message);
-              },
+                toast.error(ctx.error.message)
+              }
             }
-          );
-        }}
-      >
-        {loading ? <Loader2 size={16} className="animate-spin" /> : "Login"}
+          )
+        }}>
+        {loading ? <Loader2 size={16} className="animate-spin" /> : 'Login'}
       </Button>
       <Button
         variant="outline"
-        className=" gap-2"
+        className="gap-2"
         onClick={async () => {
           await authClient.signIn.social({
-            provider: "google",
-            callbackURL: "/dashboard",
-          });
-        }}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="0.98em"
-          height="1em"
-          viewBox="0 0 256 262"
-        >
+            provider: 'google',
+            callbackURL: '/dashboard'
+          })
+        }}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="0.98em" height="1em" viewBox="0 0 256 262">
           <path
             fill="#4285F4"
             d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622l38.755 30.023l2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
@@ -161,18 +143,17 @@ function SignInBox() {
           await authClient.signIn.passkey({
             fetchOptions: {
               onSuccess(context) {
-                router.push("/dashboard");
+                router.push('/dashboard')
               },
               onError(context) {
-                toast.error(context.error.message);
-              },
-            },
-          });
-        }}
-      >
+                toast.error(context.error.message)
+              }
+            }
+          })
+        }}>
         <Key size={16} />
         Sign-in with Passkey
       </Button>
     </div>
-  );
+  )
 }

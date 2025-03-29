@@ -1,4 +1,4 @@
-import z from "zod";
+import z from 'zod'
 
 export const envSchema = z.object({
   DATABASE_URI: z.string(),
@@ -9,8 +9,8 @@ export const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string(),
   NEXT_PUBLIC_BETTER_AUTH_URL: z.string(),
   GOOGLE_CLIENT_ID: z.string(),
-  GOOGLE_CLIENT_SECRET: z.string(),
-});
+  GOOGLE_CLIENT_SECRET: z.string()
+})
 
 declare global {
   namespace NodeJS {

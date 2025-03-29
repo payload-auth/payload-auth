@@ -1,17 +1,17 @@
-import { betterAuth } from "better-auth";
-import type { BetterAuthReturn } from "@payload-auth/better-auth-plugin";
-import { sanitizeBetterAuthOptions } from "@payload-auth/better-auth-plugin";
-import type { BetterAuthPlugins } from './types';
-import { payloadBetterAuthOptions } from './options';
-import { payloadAdapter } from '@payload-auth/better-auth-db-adapter';
-import { getPayload } from '@/lib/payload';
+import { betterAuth } from 'better-auth'
+import type { BetterAuthReturn } from 'payload-auth/better-auth'
+import { sanitizeBetterAuthOptions } from 'payload-auth/better-auth/plugin'
+import type { BetterAuthPlugins } from './types'
+import { payloadBetterAuthOptions } from './options'
+import { payloadAdapter } from 'payload-auth/better-auth/adapter'
+import { getPayload } from '@/lib/payload'
 
 const options = {
   ...payloadBetterAuthOptions,
   betterAuthOptions: {
     ...payloadBetterAuthOptions.betterAuthOptions,
-    database: payloadAdapter(() => getPayload()),
-  },
-};
+    database: payloadAdapter(() => getPayload())
+  }
+}
 
-export const auth = betterAuth(sanitizeBetterAuthOptions(options)) as BetterAuthReturn<BetterAuthPlugins>;
+export const auth = betterAuth(sanitizeBetterAuthOptions(options)) as BetterAuthReturn<BetterAuthPlugins>

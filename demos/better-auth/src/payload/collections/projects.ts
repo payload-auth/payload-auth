@@ -1,25 +1,25 @@
-import { CollectionConfig } from "payload";
+import { CollectionConfig } from 'payload'
 
 export const projects: CollectionConfig = {
-  slug: "projects",
+  slug: 'projects',
   admin: {
-    useAsTitle: "name",
+    useAsTitle: 'name'
   },
   fields: [
     {
-      name: "name",
-      type: "text",
+      name: 'name',
+      type: 'text'
     },
     {
-      name: "description",
-      type: "textarea",
+      name: 'description',
+      type: 'textarea'
     },
     {
-      name: "status",
-      type: "select",
-      options: ["active", "inactive"],
-    },
-  ],
-} as const;
+      name: 'status',
+      type: 'select',
+      options: ['active', 'inactive']
+    }
+  ]
+} as const
 
-export default projects;
+export default projects

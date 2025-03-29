@@ -1,5 +1,5 @@
-import projects from "./projects";
+import projects from './projects'
 
-export const collections = [projects];
+export const collections = [projects]
 
-export default collections;
+export default collections

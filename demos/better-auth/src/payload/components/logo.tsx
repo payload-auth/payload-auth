@@ -1,16 +1,9 @@
-import React from "react";
+import React from 'react'
 
 export default function Logo() {
   return (
-    <div className="flex items-center justify-center w-full mb-8">
-      <svg
-        width="60"
-        height="45"
-        viewBox="0 0 60 45"
-        fill="none"
-        className="w-5 h-5"
-        xmlns="http://www.w3.org/2000/svg"
-      >
+    <div className="mb-8 flex w-full items-center justify-center">
+      <svg width="60" height="45" viewBox="0 0 60 45" fill="none" className="h-5 w-5" xmlns="http://www.w3.org/2000/svg">
         <path
           fillRule="evenodd"
           clipRule="evenodd"
@@ -19,10 +12,8 @@ export default function Logo() {
         />
       </svg>
       <div className="ml-2 font-semibold text-black dark:text-white">
-        Payload{" "}
-        <span className="text-blue-600 dark:text-blue-400">&times;</span> Better
-        Auth
+        Payload <span className="text-blue-600 dark:text-blue-400">&times;</span> Better Auth
       </div>
     </div>
-  );
+  )
 }

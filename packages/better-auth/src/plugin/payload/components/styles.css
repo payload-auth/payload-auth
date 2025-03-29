@@ -1,0 +1,73 @@
+:root {
+  --background-color: #f9fafb;
+  --border-color: #e5e7eb;
+  --text-color: #374151;
+  --heading-color: #1f2937;
+  --button-text: white;
+
+  /* Admin action button colors */
+  --impersonate-bg: #6366f1;
+  --impersonate-border: #4f46e5;
+  --impersonate-hover: #4f46e5;
+
+  --revoke-bg: #64748b;
+  --revoke-border: #4b5563;
+  --revoke-hover: #4b5563;
+
+  --ban-bg: #f43f5e;
+  --ban-border: #e11d48;
+  --ban-hover: #e11d48;
+
+  --unban-bg: #10b981;
+  --unban-border: #059669;
+  --unban-hover: #059669;
+}
+
+[data-theme='dark'] {
+  --background-color: #111827;
+  --border-color: #1f2937;
+  --text-color: #e5e7eb;
+  --heading-color: #f9fafb;
+
+  /* Admin action button colors - slightly adjusted for dark theme */
+  --impersonate-bg: #4f46e5;
+  --impersonate-border: #4338ca;
+  --impersonate-hover: #4338ca;
+
+  --revoke-bg: #4b5563;
+  --revoke-border: #374151;
+  --revoke-hover: #374151;
+
+  --ban-bg: #e11d48;
+  --ban-border: #be123c;
+  --ban-hover: #be123c;
+
+  --unban-bg: #059669;
+  --unban-border: #047857;
+  --unban-hover: #047857;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --background-color: #111827;
+    --border-color: #1f2937;
+    --text-color: #e5e7eb;
+    --heading-color: #f9fafb;
+
+    --impersonate-bg: #4f46e5;
+    --impersonate-border: #4338ca;
+    --impersonate-hover: #4338ca;
+
+    --revoke-bg: #4b5563;
+    --revoke-border: #374151;
+    --revoke-hover: #374151;
+
+    --ban-bg: #e11d48;
+    --ban-border: #be123c;
+    --ban-hover: #be123c;
+
+    --unban-bg: #059669;
+    --unban-border: #047857;
+    --unban-hover: #047857;
+  }
+}
