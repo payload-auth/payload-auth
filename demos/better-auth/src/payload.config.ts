@@ -1,5 +1,4 @@
 import { betterAuthPlugin } from 'payload-auth/better-auth'
-import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -7,7 +6,7 @@ import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 import { betterAuthPluginOptions } from './lib/auth/options'
 import collections from './payload/collections'
-import { postgresAdapter } from '@payloadcms/db-postgres'
+import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -22,10 +21,7 @@ export default buildConfig({
     }
   },
   collections,
-  // db: mongooseAdapter({
-  //   url: process.env.DATABASE_URI,
-  // }),
-  db: postgresAdapter({
+  db: vercelPostgresAdapter({
     disableCreateDatabase: false,
     pool: {
       connectionString: process.env.DATABASE_URI
