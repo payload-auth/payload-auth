@@ -30,3 +30,4 @@ test.ts
 tsconfig.json
 .turbo
 node_modules
+copy-provider.sh
