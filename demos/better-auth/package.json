@@ -15,7 +15,6 @@
   "dependencies": {
     "payload-auth": "1.0.1",
     "@payloadcms/admin-bar": "3.31",
-    "@payloadcms/db-mongodb": "^3.31",
     "@payloadcms/db-vercel-postgres": "3.31",
     "@payloadcms/next": "3.31",
     "@payloadcms/richtext-lexical": "3.31",
@@ -60,7 +59,6 @@
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
-    "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.2",
     "graphql": "^16.8.1",
     "input-otp": "1.4.2",
