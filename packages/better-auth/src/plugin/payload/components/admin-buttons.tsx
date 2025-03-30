@@ -4,9 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { adminClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-import { Toaster } from 'sonner'
-import { Button } from '@payloadcms/ui'
+import { Button, toast } from '@payloadcms/ui'
 import './styles.css'
 
 import '@payloadcms/ui/styles.css'
@@ -207,7 +205,6 @@ export default function AdminButtons({ userSlug }: { userSlug: string }) {
           </Button>
         </div>
       </div>
-      <Toaster />
     </>
   )
 }

@@ -2,6 +2,8 @@ import type { AuthStrategy } from 'payload'
 import { auth } from '@clerk/nextjs/server'
 import { getUserByClerkId } from '../utils/user'
 
+const CLERK_AUTH_STRATEGY_NAME = 'clerk'
+
 /**
  * Authentication strategy for Clerk
  * Integrates Payload with Clerk using the official Clerk auth method
@@ -12,10 +14,9 @@ import { getUserByClerkId } from '../utils/user'
  */
 export function clerkAuthStrategy(userSlug: string = 'users'): AuthStrategy {
   return {
-    name: 'clerk',
-    authenticate: async ({ payload }) => {
+    name: CLERK_AUTH_STRATEGY_NAME,
+    authenticate: async ({ payload, strategyName = CLERK_AUTH_STRATEGY_NAME }) => {
       try {
-
         const { userId } = await auth()
         
         if (!userId) {
@@ -32,7 +33,7 @@ export function clerkAuthStrategy(userSlug: string = 'users'): AuthStrategy {
           user: {
             ...user,
             collection: userSlug,
-            _strategy: 'clerk',
+            _strategy: strategyName,
           },
         }
       } catch (error) {
