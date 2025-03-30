@@ -15,6 +15,10 @@
     "./types": {
       "import": "./dist/types.js",
       "types": "./dist/types.d.ts"
+    },
+    "./plugin": {
+      "import": "./dist/plugin/index.js",
+      "types": "./dist/plugin/index.d.ts"
     }
   },
   "typesVersions": {
@@ -24,15 +28,18 @@
       ],
       "types": [
         "dist/types.d.ts"
+      ],
+      "plugin": [
+        "dist/plugin/index.d.ts"
       ]
     }
   },
   "scripts": {
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo",
     "build": "pnpm clean && pnpm copyfiles && pnpm build:types && pnpm build:swc",
-    "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
+    "copyfiles": "copyfiles -u 1 \"src/plugin/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist",
     "build:types": "tsc --project tsconfig.json",
-    "copyfiles": "copyfiles -u 1 \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist/",
+    "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
     "lint": "eslint",
     "lint:fix": "eslint ./src --fix",
     "test": "jest"
@@ -54,9 +61,13 @@
     "@types/jest": "29.5.12",
     "@types/node": "^22.13.10",
     "copyfiles": "^2.4.1",
+    "payload": "^3",
     "typescript": "5.8.2"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@clerk/nextjs": "^6.12.12",
+    "svix": "^1.62.0"
+  },
   "engines": {
     "node": "^18.20.2 || >=20.9.0",
     "pnpm": "^9 || ^10"

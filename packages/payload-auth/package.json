@@ -37,6 +37,11 @@
       "types": "./dist/clerk/index.d.ts",
       "default": "./dist/clerk/index.js"
     },
+    "./clerk/plugin": {
+      "import": "./dist/clerk/plugin/index.js",
+      "types": "./dist/clerk/plugin/index.d.ts",
+      "default": "./dist/clerk/plugin/index.js"
+    },
     "./kinde": {
       "import": "./dist/kinde/index.js",
       "types": "./dist/kinde/index.d.ts",
@@ -76,6 +81,8 @@
     "@radix-ui/react-slot": "1.1.2",
     "@better-auth/utils": "0.2.4",
     "better-auth": "1.2.5",
+    "@clerk/nextjs": "^6.12.12",  
+    "svix": "^1.62.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "jose": "^6.0.10",
