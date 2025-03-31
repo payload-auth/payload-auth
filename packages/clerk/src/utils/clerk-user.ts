@@ -2,15 +2,16 @@
  * Helper functions for processing Clerk user data
  */
 
-import { ClerkMappingFunction, ClerkUser } from '../types'
+import { ClerkToPayloadMappingFunction } from '../types'
+import type { User, UserJSON } from '@clerk/backend'
 
 /**
  * Default mapping function for Clerk user data to Payload fields
  */
-export const defaultClerkMapping: ClerkMappingFunction = (clerkUser: ClerkUser) => {
+export const defaultClerkMapping: ClerkToPayloadMappingFunction = (clerkUser: UserJSON) => {
   return {
     clerkId: clerkUser.id,
-    email: getPrimaryEmail(clerkUser),
+    email: getPrimaryEmailFromJson(clerkUser),
     emailVerified: clerkUser.email_addresses?.[0]?.verification?.status === 'verified',
     firstName: clerkUser.first_name,
     lastName: clerkUser.last_name,
@@ -24,16 +25,16 @@ export const defaultClerkMapping: ClerkMappingFunction = (clerkUser: ClerkUser) 
  * Ensures that essential Clerk fields are always set regardless of the mapping function
  * This wrapper guarantees that clerkId and email will always be present in the mapped data
  */
-export const ensureRequiredClerkFields = (
-  mappingFunction: ClerkMappingFunction
-): ClerkMappingFunction => {
-  return (clerkUser: ClerkUser) => {
+export const createMappingWithRequiredClerkFields = (
+  mappingFunction: ClerkToPayloadMappingFunction
+): ClerkToPayloadMappingFunction => {
+  return (clerkUser: UserJSON) => {
     const mappedData = mappingFunction(clerkUser)
     
     return {
       ...mappedData,
       clerkId: clerkUser.id,
-      email: mappedData.email || getPrimaryEmail(clerkUser),
+      email: mappedData.email || getPrimaryEmailFromJson(clerkUser),
     }
   }
 }
@@ -41,13 +42,19 @@ export const ensureRequiredClerkFields = (
 /**
  * Extracts the primary email from Clerk user data
  */
-export function getPrimaryEmail(clerkUser: ClerkUser): string | undefined {
-  // Find primary email if marked
+export function getPrimaryEmail(clerkUser: User): string | undefined {
+  const primaryEmail = clerkUser.emailAddresses?.find(
+    (email) => email.id === clerkUser.primaryEmailAddressId
+  )
+  
+  return primaryEmail?.emailAddress || clerkUser.emailAddresses?.[0]?.emailAddress
+}
+
+export function getPrimaryEmailFromJson(clerkUser: UserJSON): string | undefined {
   const primaryEmail = clerkUser.email_addresses?.find(
     (email) => email.id === clerkUser.primary_email_address_id
   )
   
-  // Fallback to first email
   return primaryEmail?.email_address || clerkUser.email_addresses?.[0]?.email_address
 }
 

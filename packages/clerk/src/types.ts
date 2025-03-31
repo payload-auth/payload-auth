@@ -1,28 +1,10 @@
-import { CollectionConfig } from 'payload'
-
-/**
- * User data from Clerk webhooks
- */
-export interface ClerkUser {
-  id: string
-  email_addresses?: Array<{
-    email_address: string
-    id: string
-    verification?: {
-      status: string
-    }
-  }>
-  primary_email_address_id?: string
-  first_name?: string
-  last_name?: string
-  image_url?: string
-  [key: string]: any
-}
+import type { UserJSON } from '@clerk/backend'
+import type { CollectionConfig, User } from 'payload'
 
 /**
  * Function type for mapping Clerk user data to Payload fields
  */
-export type ClerkMappingFunction = (clerkUser: ClerkUser) => Record<string, any>
+export type ClerkToPayloadMappingFunction = (clerkUser: UserJSON) => Omit<User, 'id'>
 
 export interface ClerkPluginOptions {
   /**
@@ -66,7 +48,7 @@ export interface ClerkPluginOptions {
      * Custom function to map Clerk user data to Payload fields
      * If not provided, default mapping will be used
      */
-    clerkMapping?: ClerkMappingFunction
+    clerkToPayloadMapping?: ClerkToPayloadMappingFunction
   }
 
   /**

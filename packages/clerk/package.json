@@ -60,17 +60,28 @@
     "@swc/jest": "^0.2.37",
     "@types/jest": "29.5.12",
     "@types/node": "^22.13.10",
+    "@types/react": "^19.0.12",
     "copyfiles": "^2.4.1",
     "payload": "^3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "typescript": "5.8.2"
   },
   "dependencies": {
+    "@clerk/backend": "^1.25.8",
     "@clerk/nextjs": "^6.12.12",
+    "@clerk/types": "^4.50.1",
+    "@payloadcms/ui": "~3.31.0",
+    "next": "^15.2.4",
     "svix": "^1.62.0"
   },
   "engines": {
     "node": "^18.20.2 || >=20.9.0",
     "pnpm": "^9 || ^10"
   },
-  "registry": "https://registry.npmjs.org/"
+  "registry": "https://registry.npmjs.org/",
+  "peerDependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
 }

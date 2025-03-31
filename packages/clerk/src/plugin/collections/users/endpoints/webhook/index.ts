@@ -1,9 +1,7 @@
 import { APIError, Endpoint } from 'payload'
 import { ClerkPluginOptions } from '../../../../../types'
-import { defaultClerkMapping, ensureRequiredClerkFields } from '../../../../../utils/clerk-user'
 import { validateWebhook } from '../../../../../utils/svix'
 import { handleUserCreated, handleUserDeleted, handleUserUpdated } from './handlers'
-import { logWebhookEvent, parseWebhookData } from './utils'
 
 interface ClerkWebhookEndpointOptions {
   userSlug: string
@@ -17,9 +15,12 @@ export const clerkWebhookEndpoint = ({
   userSlug, 
   options 
 }: ClerkWebhookEndpointOptions): Endpoint => {
-  const userMappingFunction = options.users?.clerkMapping ?? defaultClerkMapping
-  const mappingFunction = ensureRequiredClerkFields(userMappingFunction)
+  const mappingFunction = options.users?.clerkToPayloadMapping // This is forced to be set by the plugin.ts
   
+  if (!mappingFunction) { // This should never happen. Just to make TS happy.
+    throw new Error('Clerk to Payload mapping function is not set')
+  }
+
   return {
     path: '/clerk-webhook',
     method: 'post',
@@ -45,7 +46,9 @@ export const clerkWebhookEndpoint = ({
         const webhookData = parseWebhookData(rawBody)
         const { type, data } = webhookData
         
-        logWebhookEvent(type, options)
+        if (options.enableDebugLogs) {
+          console.log(`Processing Clerk webhook: ${type}`)
+        }
         
         switch (type) {
           case 'user.created':
@@ -63,7 +66,7 @@ export const clerkWebhookEndpoint = ({
               data,
               payload,
               userSlug,
-              mappingFunction,
+              mappingFunction: mappingFunction as any, // @TODO: Type this properly
               options
             })
             break
@@ -93,4 +96,8 @@ export const clerkWebhookEndpoint = ({
       }
     },
   }
-} 
+}
+
+function parseWebhookData(rawBody: any): { type: string; data: any } {
+  return typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody
+}

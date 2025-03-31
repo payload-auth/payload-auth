@@ -1,12 +1,14 @@
-import { Payload } from 'payload'
-import { ClerkUser, ClerkPluginOptions } from '../../../../../../types'
+import type { UserJSON } from '@clerk/backend'
+import type { BasePayload, User } from 'payload'
+import { ClerkPluginOptions } from '../../../../../../types'
 import { findUserFromClerkUser } from '../../../../../../utils/user'
+
 
 interface UserCreatedHandlerParams {
   data: any
-  payload: Payload
+  payload: BasePayload
   userSlug: string
-  mappingFunction: (clerkUser: ClerkUser) => Record<string, any>
+  mappingFunction: (clerkUser: UserJSON) => Omit<User, 'id'>
   options: ClerkPluginOptions
 }
 
@@ -17,7 +19,7 @@ export async function handleUserCreated({
   mappingFunction,
   options
 }: UserCreatedHandlerParams): Promise<void> {
-  const clerkUser = data as ClerkUser
+  const clerkUser = data as UserJSON
   
   try {
     const existingUsers = await findUserFromClerkUser({

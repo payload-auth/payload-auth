@@ -1,12 +1,13 @@
-import { Payload } from 'payload'
-import { ClerkUser, ClerkPluginOptions } from '../../../../../../types'
+import { Payload, User } from 'payload'
+import { ClerkPluginOptions } from '../../../../../../types'
 import { findUserFromClerkUser } from '../../../../../../utils/user'
+import type { UserJSON } from '@clerk/types'
 
 interface UserUpdatedHandlerParams {
   data: any
   payload: Payload
   userSlug: string
-  mappingFunction: (clerkUser: ClerkUser) => Record<string, any>
+  mappingFunction: (clerkUser: Partial<UserJSON>) => Omit<User, 'id'>
   options: ClerkPluginOptions
 }
 
@@ -17,7 +18,7 @@ export async function handleUserUpdated({
   mappingFunction,
   options
 }: UserUpdatedHandlerParams): Promise<void> {
-  const clerkUser = data as ClerkUser
+  const clerkUser = data as UserJSON
   
   try {
     const existingUsers = await findUserFromClerkUser({
