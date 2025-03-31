@@ -7,5 +7,5 @@ authentication providers to provide enhanced authentication capabilities for you
 
 - ✅ [Better Auth](https://github.com/better-auth/better-auth) Better authentication for typescript
 - 🟧 [Auth.js](https://authjs.dev) - Authentication for the Web
-- 🟧 [Clerk](https://clerk.com) - Complete user management and authentication
+- 🚧 [Clerk](https://clerk.com) - Complete user management and authentication
 - 🟧 [Kinde](https://kinde.com) - Modern authentication and user management
