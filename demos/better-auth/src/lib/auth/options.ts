@@ -85,8 +85,8 @@ export const betterAuthPlugins = [
   }),
   multiSession(),
   openAPI(),
-  nextCookies(),
   expo()
+  nextCookies(),
 ]
 
 export type BetterAuthPlugins = typeof betterAuthPlugins
