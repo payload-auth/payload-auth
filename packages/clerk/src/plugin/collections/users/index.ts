@@ -1,10 +1,11 @@
-import type { CollectionConfig } from 'payload'
+import { type CollectionConfig } from 'payload'
 import type { ClerkPluginOptions } from '../../../types'
-import { clerkUserFields } from './fields'
-import { clerkWebhookEndpoint } from './endpoints/webhook/index'
-import { syncClerkUsersEndpoint } from './endpoints/sync-from-clerk'
 import { clerkAuthStrategy } from '../../auth-strategy'
-import { getReadAccess, getCreateAccess, getUpdateAccess, getDeleteAccess } from './access'
+import { getCreateAccess, getDeleteAccess, getReadAccess, getUpdateAccess } from './access'
+import { syncClerkUsersEndpoint } from './endpoints/sync-from-clerk'
+import { clerkWebhookEndpoint } from './endpoints/webhook/index'
+import { clerkUserFields } from './fields'
+import { cookies } from 'next/headers'
 
 export interface WithClerkUsersCollectionOptions {
   collection?: Partial<CollectionConfig>
@@ -38,7 +39,7 @@ export function withClerkUsersCollection({
             apiBasePath,
             adminBasePath,
           }
-        },
+        }
       }
     },
     fields: [
@@ -60,8 +61,23 @@ export function withClerkUsersCollection({
     endpoints: [
       ...(collection.endpoints || []),
       clerkWebhookEndpoint({ userSlug, options }),
-      syncClerkUsersEndpoint({ userCollectionSlug: userSlug }),
-    ]
+      syncClerkUsersEndpoint({ userCollectionSlug: userSlug })
+    ],
+    hooks: {
+      afterLogout: [
+        async () => {
+          const cookieStore = await cookies()
+          
+          // Get all cookies and delete any with __session or __clerk in their name
+          const allCookies = cookieStore.getAll()
+          allCookies.forEach(cookie => {
+            if (cookie.name.includes('__session') || cookie.name.includes('__clerk')) {
+              cookieStore.delete(cookie.name)
+            }
+          })
+        }
+      ]
+    }
   }
 
   if (options.users?.collectionOverrides) {

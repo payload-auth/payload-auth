@@ -33,6 +33,18 @@ export function clerkPlugin(pluginOptions: ClerkPluginOptions = {}) {
       config.collections = [];
     }
 
+    config.admin = {
+      ...config.admin,
+      components: {
+        ...config.admin?.components,
+        afterLogin: [
+          {
+            path: "payload-auth/clerk/admin/ui#AfterLoginForm",
+            clientProps: { redirectOnLoginTo: config?.routes?.admin },
+          },
+        ],
+      },
+    };
     const userSlug = pluginOptions.users?.slug ?? "users";
 
     const existingUserCollection = config.collections.find(
