@@ -1,4 +1,5 @@
 import { getPayload } from '@/lib/payload'
+import { betterAuthPlugins } from "./options";
 
 const payload = await getPayload()
 
@@ -7,3 +8,4 @@ export type ActiveOrganization = typeof payload.betterAuth.$Infer.ActiveOrganiza
 export type Invitation = typeof payload.betterAuth.$Infer.Invitation
 export type Account = Awaited<ReturnType<typeof payload.betterAuth.api.listUserAccounts>>[number]
 export type DeviceSession = Awaited<ReturnType<typeof payload.betterAuth.api.listDeviceSessions>>[number]
+export type BetterAuthPlugins = typeof betterAuthPlugins;
