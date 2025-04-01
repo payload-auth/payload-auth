@@ -1,3 +1,4 @@
+import { expo } from '@better-auth/expo'
 import { generateVerifyEmailUrl } from 'payload-auth/better-auth/plugin'
 import type { BetterAuthReturn, PayloadBetterAuthOptions, PayloadBetterAuthPluginOptions } from 'payload-auth/better-auth'
 import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
@@ -84,7 +85,8 @@ export const betterAuthPlugins = [
   }),
   multiSession(),
   openAPI(),
-  nextCookies()
+  expo()
+  nextCookies(),
 ]
 
 export type BetterAuthPlugins = typeof betterAuthPlugins
