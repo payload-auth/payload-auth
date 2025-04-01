@@ -1,4 +1,4 @@
-import type { SanitizedBetterAuthOptions } from '..'
+import type { SanitizedBetterAuthOptions } from '../../..'
 
 /**
  * Adds a before hook to the user create operation to ensure the password is set.

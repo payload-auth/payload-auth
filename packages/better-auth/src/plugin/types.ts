@@ -203,6 +203,15 @@ export interface BetterAuthPluginOptions {
      * Hide the `verifications` collection from the payload admin UI
      */
     hidden?: boolean | undefined
+    /**
+     * Function to override the collection configuration
+     *
+     * This allows modifying the collection config after it has been built
+     *
+     * @param options Object containing the collection config and potentially additional parameters
+     * @returns Modified collection config
+     */
+    collectionOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
   }
   /**
    * BetterAuth options with the following caveats:

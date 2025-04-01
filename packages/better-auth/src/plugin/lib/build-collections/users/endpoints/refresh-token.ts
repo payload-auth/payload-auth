@@ -16,11 +16,10 @@ export const getRefreshTokenEndpoint = (options?: RefreshTokenEndpointOptions): 
     method: 'post',
     handler: async (req) => {
       const payload = await getPayloadAuth(req.payload.config)
-      const betterAuth = payload.betterAuth
-      const authContext = await betterAuth?.$context
+      const authContext = await payload.betterAuth?.$context
       const userCollection = payload.collections[userSlug as CollectionSlug]
 
-      if (!betterAuth || !authContext) {
+      if (!payload.betterAuth || !authContext) {
         return new Response(JSON.stringify({ message: 'BetterAuth not initialized' }), {
           status: 500,
         })
@@ -40,8 +39,7 @@ export const getRefreshTokenEndpoint = (options?: RefreshTokenEndpointOptions): 
         }
       }
 
-      // @ts-ignore - @TODO, fix type of .api
-      const session = await betterAuth.api.getSession({
+      const session = await payload.betterAuth.api.getSession({
         headers: req.headers,
         query: { disableCookieCache: true },
       })

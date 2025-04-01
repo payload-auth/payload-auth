@@ -1,6 +1,6 @@
 import type { AuthStrategy } from 'payload'
-import { getPayloadAuth } from './get-payload-auth'
-import type { TPlugins } from '..'
+import { getPayloadAuth } from '../../lib/get-payload-auth'
+import type { TPlugins } from '../..'
 
 /**
  * Auth strategy for BetterAuth

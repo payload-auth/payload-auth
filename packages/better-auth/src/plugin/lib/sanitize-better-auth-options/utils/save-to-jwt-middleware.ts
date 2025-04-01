@@ -1,8 +1,8 @@
 import { setCookieCache } from 'better-auth/cookies'
 import { createAuthMiddleware } from 'better-auth/api'
-import type { SanitizedBetterAuthOptions, BetterAuthPluginOptions } from '..'
+import type { SanitizedBetterAuthOptions, BetterAuthPluginOptions } from '../../..'
 import type { Config, Payload } from 'payload'
-import { prepareSessionData } from './prepare-session-data'
+import { prepareSessionData } from '../../../helpers/prepare-session-data'
 
 /**
  * Sets up a middleware that enforces the saveToJwt configuration when setting session data.
@@ -12,7 +12,7 @@ import { prepareSessionData } from './prepare-session-data'
  * The middleware runs after authentication and filters the session data based on
  * the collection configurations before storing it in the cookie cache.
  */
-export function respectSaveToJwtFieldsMiddleware({
+export function saveToJwtMiddleware({
   sanitizedOptions,
   payloadConfig,
   pluginOptions,
