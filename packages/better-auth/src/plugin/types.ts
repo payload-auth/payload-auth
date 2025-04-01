@@ -1,7 +1,7 @@
 import type { UnionToIntersection, betterAuth } from 'better-auth'
 import type {
-  BetterAuthOptions,
-  BetterAuthPlugin,
+  BetterAuthOptions as BetterAuthOptionsType,
+  BetterAuthPlugin as BetterAuthPluginType,
   InferAPI,
   InferPluginTypes,
 } from 'better-auth/types'
@@ -17,40 +17,61 @@ import type { BasePayload, CollectionConfig, Config, Endpoint, PayloadRequest } 
  *
  * @see https://www.better-auth.com/docs/reference/options
  */
-export interface PayloadBetterAuthOptions
+export interface BetterAuthOptions
   extends Omit<
-    BetterAuthOptions,
+    BetterAuthOptionsType,
     'database' | 'user' | 'account' | 'verification' | 'session' | 'advanced'
   > {
-  user?: Omit<NonNullable<BetterAuthOptions['user']>, 'modelName' | 'fields'> | undefined
-  account?: Omit<NonNullable<BetterAuthOptions['account']>, 'modelName' | 'fields'> | undefined
-  session?: Omit<NonNullable<BetterAuthOptions['session']>, 'modelName' | 'fields'> | undefined
+  user?: Omit<NonNullable<BetterAuthOptionsType['user']>, 'modelName' | 'fields'> | undefined
+  account?: Omit<NonNullable<BetterAuthOptionsType['account']>, 'modelName' | 'fields'> | undefined
+  session?: Omit<NonNullable<BetterAuthOptionsType['session']>, 'modelName' | 'fields'> | undefined
   verification?:
-    | Omit<NonNullable<BetterAuthOptions['verification']>, 'modelName' | 'fields'>
+    | Omit<NonNullable<BetterAuthOptionsType['verification']>, 'modelName' | 'fields'>
     | undefined
-  advanced?: Omit<NonNullable<BetterAuthOptions['advanced']>, 'generateId'> | undefined
+  advanced?: Omit<NonNullable<BetterAuthOptionsType['advanced']>, 'generateId'> | undefined
 }
 
-export interface SanitizedBetterAuthOptions extends Omit<BetterAuthOptions, 'database'> {}
+export interface SanitizedBetterAuthOptions extends Omit<BetterAuthOptionsType, 'database'> {}
 
-export interface PayloadBetterAuthPluginOptions {
+export interface BetterAuthPluginOptions {
   /**
    * Disable the plugin
    * @default false
    */
   disabled?: boolean
+
   /**
-   * Enable debug logs
+   * Disable the default payload auth
+   *
+   * This will ensure that better-auth handles both admin and frontend auth
+   * 
+   * Admin will make use of custom admin routes for auth and give you more control
+   *
+   * Note: This will override the option passed in the users collection config
+   *
+   * Read about this more in the docs
+   * @see https://www.payloadauth.com/docs/better-auth#disable-default-payload-auth
+   *
    * @default false
    */
-  enableDebugLogs?: boolean
+  disableDefaultPayloadAuth?: boolean
   /**
-   * Log the tables that are needed for better-auth on init
-   * @default false
+   * Debug options
    */
-  logTables?: boolean
+  debug?: {
+    /**
+     * Enable debug logs
+     * @default false
+     */
+    enableDebugLogs?: boolean
+    /**
+     * Log the tables that are needed for better-auth on init
+     * @default false
+     */
+    logTables?: boolean
+  }
   /**
-   * Hide the plugin collections from the payload admin UI
+   * Hide the better-authplugin collections from the payload admin UI
    * @default false
    */
   hidePluginCollections?: boolean
@@ -193,15 +214,15 @@ export interface PayloadBetterAuthPluginOptions {
    *
    * @see https://www.better-auth.com/docs/reference/options
    */
-  betterAuthOptions?: PayloadBetterAuthOptions
+  betterAuthOptions?: BetterAuthOptions
 }
 
-export interface PayloadBetterAuthPlugin {
+export interface BetterAuthPlugin {
   (config: Config): Config
-  pluginOptions: PayloadBetterAuthPluginOptions
+  pluginOptions: BetterAuthPluginOptions
 }
 
-export interface PayloadRequestWithBetterAuth<TPlugins extends BetterAuthPlugin[] = []>
+export interface PayloadRequestWithBetterAuth<TPlugins extends BetterAuthPluginType[] = []>
   extends PayloadRequest {
   payload: BasePayload & {
     betterAuth: BetterAuthReturn<TPlugins>
@@ -224,7 +245,8 @@ export type ExtractEndpoints<T> = T extends BetterAuthPlugin
     : {}
   : {}
 
-export type TPlugins<TPlugins extends BetterAuthPlugin[] = BetterAuthPlugin[]> = TPlugins
+export type TPlugins<TPlugins extends BetterAuthPluginType[] = BetterAuthPluginType[]> = TPlugins
+
 export type PluginInferTypes<T extends TPlugins> = {
   [K in keyof InferPluginTypes<{ plugins: T }>]: InferPluginTypes<{ plugins: T }>[K]
 }

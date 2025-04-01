@@ -1,4 +1,4 @@
-import type { PayloadBetterAuthPluginOptions, SanitizedBetterAuthOptions } from '..'
+import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '..'
 import { supportedBetterAuthPluginIds, betterAuthPluginSlugs, baseCollectionSlugs } from './config'
 import { ensurePasswordSetBeforeUserCreate } from './ensure-password-set-before-create'
 import { verifyPassword, hashPassword } from './password'
@@ -7,7 +7,7 @@ import { verifyPassword, hashPassword } from './password'
  * Sanitizes the BetterAuth options
  */
 export function sanitizeBetterAuthOptions(
-  options: PayloadBetterAuthPluginOptions,
+  options: BetterAuthPluginOptions,
 ): SanitizedBetterAuthOptions {
   const baOptions = options.betterAuthOptions
   const userCollectionSlug = options.users?.slug ?? 'users'

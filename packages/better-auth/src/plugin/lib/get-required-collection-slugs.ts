@@ -1,5 +1,5 @@
 import { getAuthTables } from 'better-auth/db'
-import type { PayloadBetterAuthPluginOptions, SanitizedBetterAuthOptions } from '..'
+import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '..'
 
 /**
  * Determines which collections are required based on the BetterAuth options and plugins
@@ -10,7 +10,7 @@ export function getRequiredCollectionSlugs({
   sanitizedBAOptions,
 }: {
   logTables: boolean
-  pluginOptions: PayloadBetterAuthPluginOptions
+  pluginOptions: BetterAuthPluginOptions
   sanitizedBAOptions: SanitizedBetterAuthOptions
 }) {
   // Always include the base required collections (User, Account, Session, Verification)

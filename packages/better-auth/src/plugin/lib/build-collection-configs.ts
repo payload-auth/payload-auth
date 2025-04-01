@@ -1,4 +1,4 @@
-import type { PayloadBetterAuthPluginOptions, SanitizedBetterAuthOptions } from '..'
+import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '..'
 import { baseCollectionSlugs, betterAuthPluginSlugs } from './config'
 import { betterAuthStrategy } from './auth-strategy'
 import { getAfterLogoutHook } from '../collections/users/hooks/after-logout'
@@ -26,7 +26,7 @@ export function buildCollectionConfigs({
 }: {
   incomingCollections: CollectionConfig[]
   requiredCollectionSlugs: Set<string>
-  pluginOptions: PayloadBetterAuthPluginOptions
+  pluginOptions: BetterAuthPluginOptions
   sanitizedBAOptions: SanitizedBetterAuthOptions
 }): CollectionConfig[] {
   const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users

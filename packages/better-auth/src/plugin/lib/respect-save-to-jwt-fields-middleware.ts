@@ -1,6 +1,6 @@
 import { setCookieCache } from 'better-auth/cookies'
 import { createAuthMiddleware } from 'better-auth/api'
-import type { SanitizedBetterAuthOptions, PayloadBetterAuthPluginOptions } from '..'
+import type { SanitizedBetterAuthOptions, BetterAuthPluginOptions } from '..'
 import type { Config, Payload } from 'payload'
 import { prepareSessionData } from './prepare-session-data'
 
@@ -19,7 +19,7 @@ export function respectSaveToJwtFieldsMiddleware({
 }: {
   sanitizedOptions: SanitizedBetterAuthOptions
   payloadConfig: Payload['config'] | Config
-  pluginOptions: PayloadBetterAuthPluginOptions
+  pluginOptions: BetterAuthPluginOptions
 }) {
   if (typeof sanitizedOptions.hooks !== 'object') sanitizedOptions.hooks = {}
 

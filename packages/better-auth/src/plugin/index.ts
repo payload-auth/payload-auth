@@ -1,5 +1,5 @@
 import type { BasePayload, Config } from 'payload'
-import type { PayloadBetterAuthPluginOptions } from './types'
+import type { BetterAuthPluginOptions } from './types'
 import { sanitizeBetterAuthOptions } from './lib/sanitize-auth-options'
 import { getRequiredCollectionSlugs } from './lib/get-required-collection-slugs'
 import { buildCollectionConfigs } from './lib/build-collection-configs'
@@ -11,7 +11,7 @@ export * from './helpers'
 export { sanitizeBetterAuthOptions } from './lib/sanitize-auth-options'
 export { getPayloadAuth } from './lib/get-payload-auth'
 
-export function betterAuthPlugin(pluginOptions: PayloadBetterAuthPluginOptions) {
+export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
   return (config: Config): Config => {
     if (pluginOptions.disabled) {
       return config
@@ -29,7 +29,7 @@ export function betterAuthPlugin(pluginOptions: PayloadBetterAuthPluginOptions) 
 
     // Determine which collections to add based on the options and plugins
     const requiredCollectionSlugs = getRequiredCollectionSlugs({
-      logTables: pluginOptions.logTables ?? false,
+      logTables: pluginOptions.debug?.logTables ?? false,
       pluginOptions,
       sanitizedBAOptions: sanitzedBetterAuthOptions,
     })
@@ -61,7 +61,7 @@ export function betterAuthPlugin(pluginOptions: PayloadBetterAuthPluginOptions) 
         payload,
         options: {
           ...sanitzedBetterAuthOptions,
-          enableDebugLogs: pluginOptions.enableDebugLogs,
+          enableDebugLogs: pluginOptions.debug?.enableDebugLogs ?? false,
           plugins: [...(sanitzedBetterAuthOptions.plugins ?? [])],
         },
       })
