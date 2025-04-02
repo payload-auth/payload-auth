@@ -1,7 +1,9 @@
-import { SyncClerkUsersButton } from './plugin/collections/users/components/sync-clerk-users-button'
-import { AfterLoginForm } from './plugin/collections/users/components/after-login-form'
+import { SyncClerkUsersButton } from './plugin/components/sync-clerk-users-button'
+import { AfterLoginForm } from './plugin/components/after-login-form'
+import { LogoutButton } from './plugin/components/logout-button'
 
 export {
   SyncClerkUsersButton,
-  AfterLoginForm
+  AfterLoginForm,
+  LogoutButton
 }

@@ -3,7 +3,7 @@
 import { Button, toast } from "@payloadcms/ui";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import type { SyncClerkUsersResponse } from "../endpoints/sync-from-clerk";
+import type { SyncClerkUsersResponse } from "../collections/users/endpoints/sync-from-clerk";
 
 export const SyncClerkUsersButton = ({
   userCollectionSlug,

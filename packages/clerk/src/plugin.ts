@@ -37,6 +37,11 @@ export function clerkPlugin(pluginOptions: ClerkPluginOptions = {}) {
       ...config.admin,
       components: {
         ...config.admin?.components,
+        logout: {
+          Button: {
+            path: "payload-auth/clerk/admin/ui#LogoutButton",
+          }
+        },
         afterLogin: [
           {
             path: "payload-auth/clerk/admin/ui#AfterLoginForm",

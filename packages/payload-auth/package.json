@@ -42,6 +42,11 @@
       "types": "./dist/clerk/plugin/index.d.ts",
       "default": "./dist/clerk/plugin/index.js"
     },
+    "./clerk/utils": {
+      "import": "./dist/clerk/utils/index.js",
+      "types": "./dist/clerk/utils/index.d.ts",
+      "default": "./dist/clerk/utils/index.js"
+    },
     "./clerk/admin/ui": {
       "import": "./dist/clerk/admin-ui.js",
       "types": "./dist/clerk/admin-ui.d.ts",
