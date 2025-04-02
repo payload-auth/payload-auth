@@ -62,7 +62,7 @@
     "@types/node": "^22.13.10",
     "@types/react": "^19.0.12",
     "copyfiles": "^2.4.1",
-    "payload": "^3",
+    "payload": "^3.32",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "typescript": "5.8.2"
@@ -72,7 +72,7 @@
     "@clerk/clerk-js": "^5.58.1",
     "@clerk/nextjs": "^6.12.12",
     "@clerk/types": "^4.50.1",
-    "@payloadcms/ui": "~3.31.0",
+    "@payloadcms/ui": "^3.32.0",
     "cross-env": "^7.0.3",
     "next": "^15.2.4",
     "svix": "^1.62.0"
