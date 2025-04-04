@@ -233,7 +233,7 @@ export async function runAdapterTest(opts: AdapterTestOptions) {
         direction: 'asc',
       },
     })
-    expect(res[0].name).toBe('a')
+    expect(res[0]?.name).toBe('a')
 
     const res2 = await adapter.findMany<User>({
       model: 'user',
@@ -243,7 +243,7 @@ export async function runAdapterTest(opts: AdapterTestOptions) {
       },
     })
 
-    expect(res2[res2.length - 1].name).toBe('a')
+    expect(res2[res2.length - 1]?.name).toBe('a')
   })
 
   test('should find many with limit', async () => {

@@ -1,9 +1,6 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "declaration": true,
-    "emitDeclarationOnly": true
-  },
-  "include": ["src/**/*", "eslint.config.js", "jest.config.js"]
+    "baseUrl": "."
+  }
 }

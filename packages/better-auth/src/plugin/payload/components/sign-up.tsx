@@ -1,17 +1,15 @@
 'use client'
 
-import { Button } from './ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card'
-import { Input } from './ui/input'
-import { Label } from './ui/label'
-import { PasswordInput } from './ui/password-input'
+import { Button } from './ui/button.js'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card.js'
+import { Input } from './ui/input.js'
+import { Label } from './ui/label.js'
+import { PasswordInput } from './ui/password-input.js'
 import { DiscordLogoIcon, GitHubLogoIcon } from '@radix-ui/react-icons'
 import { useState } from 'react'
-import Image from 'next/image'
 import { Loader2, X } from 'lucide-react'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation.js'
 import { createAuthClient } from 'better-auth/react'
 import { inferAdditionalFields } from 'better-auth/client/plugins'
 
@@ -173,7 +171,7 @@ export function SignUp({
               <div className="flex items-center gap-3">
                 {imagePreview && (
                   <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                    <Image src={imagePreview} alt="Profile preview" fill className="object-cover" />
+                    <img src={imagePreview} alt="Profile preview" className="object-cover" />
                   </div>
                 )}
                 <div className="flex-1 flex items-center gap-2">
@@ -430,12 +428,12 @@ export function SignUp({
         <div className="w-full border-t pt-4">
           <p className="text-center text-xs text-muted-foreground">
             Secured by{' '}
-            <Link
+            <a
               className="font-medium text-orange-500"
               href="https://github.com/forrestdevs/payload-better-auth"
             >
               payload-better-auth
-            </Link>
+            </a>
           </p>
         </div>
       </CardFooter>

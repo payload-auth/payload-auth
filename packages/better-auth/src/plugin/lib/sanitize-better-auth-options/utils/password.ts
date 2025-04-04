@@ -74,7 +74,7 @@ export const verifyPassword = async ({
     if (parts.length !== 2) {
       return false
     }
-    ;[saltValue, storedHash] = parts
+    ;[saltValue, storedHash] = parts as [string, string]
   }
 
   if (!saltValue || !storedHash) {

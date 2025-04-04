@@ -1,4 +1,4 @@
-import type { UnionToIntersection, betterAuth } from 'better-auth'
+import type { Prettify, UnionToIntersection, betterAuth } from 'better-auth'
 import type {
   BetterAuthOptions as BetterAuthOptionsType,
   BetterAuthPlugin as BetterAuthPluginType,
@@ -33,18 +33,26 @@ export interface BetterAuthOptions
 
 export interface SanitizedBetterAuthOptions extends Omit<BetterAuthOptionsType, 'database'> {}
 
+export type SocialProvider = keyof NonNullable<BetterAuthOptionsType['socialProviders']>
+
+export type SocialProviders = {
+  [key in SocialProvider]?: {
+    enabled?: boolean
+    disableSignUp?: boolean
+  }
+}
+
 export interface BetterAuthPluginOptions {
   /**
    * Disable the plugin
    * @default false
    */
   disabled?: boolean
-
   /**
    * Disable the default payload auth
    *
    * This will ensure that better-auth handles both admin and frontend auth
-   * 
+   *
    * Admin will make use of custom admin routes for auth and give you more control
    *
    * Note: This will override the option passed in the users collection config
@@ -55,6 +63,21 @@ export interface BetterAuthPluginOptions {
    * @default false
    */
   disableDefaultPayloadAuth?: boolean
+  /**
+   * Custom admin components when disableDefaultPayloadAuth is true
+   *
+   * These components will be used to render the login, create first admin, and other auth-related views
+   */
+  adminComponents?: {
+    /**
+     * Custom social providers
+     *
+     * This will add social providers to the login view
+     *
+     * Make sure to include the provider in the betterAuthOptions.socialProviders array
+     */
+    socialProviders?: SocialProviders
+  }
   /**
    * Debug options
    */

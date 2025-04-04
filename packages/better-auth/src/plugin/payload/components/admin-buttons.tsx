@@ -3,10 +3,10 @@
 import React, { useEffect, useState } from 'react'
 import { adminClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
-import { useParams, usePathname, useRouter } from 'next/navigation'
+import { useParams, usePathname, useRouter } from 'next/navigation.js'
 import { toast } from 'sonner'
 import { Toaster } from 'sonner'
-import { Button } from '@payloadcms/ui'
+import { Button, useAuth, useConfig, useDocumentInfo, useTranslation } from '@payloadcms/ui'
 import './styles.css'
 
 import '@payloadcms/ui/styles.css'
@@ -32,7 +32,7 @@ async function getDocumentData(id: string, path: string) {
           jsonRows.forEach((row) => {
             const keyMatch = row.innerHTML.match(/"([^"]+)"\s*:/)
             if (keyMatch) {
-              const key = keyMatch[1].trim()
+              const key = keyMatch[1]?.trim() ?? ''
               const valueElement = row.querySelector('.query-inspector__value')
               if (valueElement) {
                 let value = valueElement.textContent?.trim() ?? ''
@@ -63,12 +63,20 @@ async function getDocumentData(id: string, path: string) {
   }
 }
 
-export default function AdminButtons({ userSlug }: { userSlug: string }) {
+type AdminButtonsProps = {
+  userSlug: string
+}
+
+const AdminButtons: React.FC<AdminButtonsProps> = (props) => {
+  const { userSlug } = props
   const router = useRouter()
   const path = usePathname()
   const params = useParams()
   const [id, setId] = useState('')
   const [documentData, setDocumentData] = useState<any>(null)
+
+  const { collectionSlug } = useDocumentInfo()
+  console.log(collectionSlug)
 
   const authClient = createAuthClient({
     plugins: [adminClient()],
@@ -83,6 +91,11 @@ export default function AdminButtons({ userSlug }: { userSlug: string }) {
         userSlugIndex !== -1 && userSlugIndex < segments.length - 1
           ? segments[userSlugIndex + 1]
           : segments[segments.length - 1]
+
+      if (!id) {
+        console.error('No ID found in URL')
+        return
+      }
 
       const documentData = await getDocumentData(id, path)
       setId(id)
@@ -211,3 +224,5 @@ export default function AdminButtons({ userSlug }: { userSlug: string }) {
     </>
   )
 }
+
+export default AdminButtons

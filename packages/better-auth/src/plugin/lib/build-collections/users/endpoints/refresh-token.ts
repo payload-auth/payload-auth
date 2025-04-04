@@ -1,8 +1,8 @@
 import { setCookieCache } from 'better-auth/cookies'
 import { CollectionSlug, type Endpoint, getFieldsToSign, refreshOperation, User } from 'payload'
 import { GenericEndpointContext } from 'better-auth/types'
-import { EndpointWithBetterAuth } from '../../../types'
-import { getPayloadAuth } from '../../../lib/get-payload-auth'
+import { EndpointWithBetterAuth } from '../../../../types.js'
+import { getPayloadAuth } from '../../../../lib/get-payload-auth.js'
 
 type RefreshTokenEndpointOptions = {
   userSlug: CollectionSlug
@@ -18,6 +18,12 @@ export const getRefreshTokenEndpoint = (options?: RefreshTokenEndpointOptions): 
       const payload = await getPayloadAuth(req.payload.config)
       const authContext = await payload.betterAuth?.$context
       const userCollection = payload.collections[userSlug as CollectionSlug]
+
+      if (!userCollection) {
+        return new Response(JSON.stringify({ message: 'User collection not found' }), {
+          status: 500,
+        })
+      }
 
       if (!payload.betterAuth || !authContext) {
         return new Response(JSON.stringify({ message: 'BetterAuth not initialized' }), {
@@ -58,7 +64,7 @@ export const getRefreshTokenEndpoint = (options?: RefreshTokenEndpointOptions): 
       }
 
       const cookieCacheFields = getFieldsToSign({
-        collectionConfig: userCollection.config,
+        collectionConfig: userCollection?.config,
         email: user.email,
         user: user as User,
       })

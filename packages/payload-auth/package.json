@@ -1,5 +1,5 @@
 {
-  "name": "payload-auth",
+  "name": "old-auth",
   "version": "1.0.1",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -12,7 +12,7 @@
       "types": "./dist/better-auth/index.d.ts",
       "default": "./dist/better-auth/index.js"
     },
-    "./better-auth/adapter": {
+    "./better-auth/adapter/index.js": {
       "import": "./dist/better-auth/adapter/index.js",
       "types": "./dist/better-auth/adapter/index.d.ts",
       "default": "./dist/better-auth/adapter/index.js"
@@ -61,15 +61,27 @@
     "copy:provider": "./copy-provider.sh"
   },
   "devDependencies": {
-    "@swc/cli": "0.6.0",
-    "@swc/core": "1.11.13",
-    "typescript": "5.8.2"
-  },
-  "dependencies": {
     "next": "15.2.3",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "payload": "3.31",
     "@payloadcms/ui": "3.31",
+    "@payloadcms/translations": "3.31",
+    "@swc/cli": "0.6.0",
+    "@swc/core": "1.11.13",
+    "@types/react": "19.0.12",
+    "@types/react-dom": "19.0.4",
+    "typescript": "5.8.2"
+  },
+  "peerDependencies": {
+    "next": "15.2.3",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "payload": "3.31",
+    "@payloadcms/ui": "3.31",
+    "@payloadcms/translations": "3.31"
+  },
+  "dependencies": {
     "@radix-ui/react-checkbox": "1.1.4",
     "@radix-ui/react-icons": "1.3.2",
     "@radix-ui/react-label": "2.1.2",
@@ -80,7 +92,6 @@
     "clsx": "2.1.1",
     "jose": "^6.0.10",
     "lucide-react": "0.482.0",
-    "payload": "3.31",
     "sonner": "2.0.1",
     "tailwind-merge": "3.0.2",
     "uncrypto": "^0.1.3"

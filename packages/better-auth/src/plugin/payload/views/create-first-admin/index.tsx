@@ -1,10 +1,10 @@
 import React from 'react'
 import type { AdminViewServerProps, ServerProps } from 'payload'
 import { RenderServerComponent } from '@payloadcms/ui/elements/RenderServerComponent'
-import { redirect } from 'next/navigation'
+import { redirect } from 'next/navigation.js'
 import { Gutter } from '@payloadcms/ui'
-import { SignUp } from '../../components/sign-up'
-import Logo from '../../components/logo'
+import { SignUp } from '../../components/sign-up.js'
+import Logo from '../../components/logo.js'
 
 export default async function CreateFirstAdmin({
   initPageResult,

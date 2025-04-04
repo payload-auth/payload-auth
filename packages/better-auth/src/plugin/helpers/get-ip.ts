@@ -23,7 +23,7 @@ export function getIp(headers: Headers, options: BetterAuthOptions): string | nu
   for (const key of keys) {
     const value = headers.get(key)
     if (typeof value === 'string') {
-      const ip = value.split(',')[0].trim()
+      const ip = value.split(',')[0]?.trim()
       if (ip) return ip
     }
   }
