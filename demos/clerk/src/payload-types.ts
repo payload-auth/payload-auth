@@ -120,6 +120,8 @@ export interface UserAuthOperations {
 export interface User {
   id: string;
   name?: string | null;
+  packageField?: string | null;
+  localField?: string | null;
   /**
    * Clerk user ID
    */
@@ -244,6 +246,8 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  packageField?: T;
+  localField?: T;
   clerkId?: T;
   emailVerified?: T;
   firstName?: T;
