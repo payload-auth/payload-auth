@@ -1,61 +1,62 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
-import { betterAuthPluginSlugs } from '../config'
-import { getTimestampFields } from './utils/get-timestamp-fields'
+import { CollectionConfig } from "payload";
+import { BetterAuthPluginOptions } from "../../types";
+import { betterAuthPluginSlugs } from "../config";
+import { getTimestampFields } from "./utils/get-timestamp-fields";
 
 export function buildOrganizationsCollection({
   pluginOptions,
 }: {
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: BetterAuthPluginOptions;
 }): CollectionConfig {
-  const organizationSlug = betterAuthPluginSlugs.organizations
+  const organizationSlug = betterAuthPluginSlugs.organizations;
 
   const organizationCollection: CollectionConfig = {
     slug: organizationSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: 'name',
-      description: 'Organizations are groups of users that share access to certain resources.',
+      useAsTitle: "name",
+      description:
+        "Organizations are groups of users that share access to certain resources.",
     },
     fields: [
       {
-        name: 'name',
-        type: 'text',
+        name: "name",
+        type: "text",
         required: true,
-        label: 'Name',
+        label: "Name",
         admin: {
-          description: 'The name of the organization.',
+          description: "The name of the organization.",
         },
       },
       {
-        name: 'slug',
-        type: 'text',
+        name: "slug",
+        type: "text",
         unique: true,
         index: true,
-        label: 'Slug',
+        label: "Slug",
         admin: {
-          description: 'The slug of the organization.',
+          description: "The slug of the organization.",
         },
       },
       {
-        name: 'logo',
-        type: 'text',
-        label: 'Logo',
+        name: "logo",
+        type: "text",
+        label: "Logo",
         admin: {
-          description: 'The logo of the organization.',
+          description: "The logo of the organization.",
         },
       },
       {
-        name: 'metadata',
-        type: 'json',
-        label: 'Metadata',
+        name: "metadata",
+        type: "json",
+        label: "Metadata",
         admin: {
-          description: 'Additional metadata for the organization.',
+          description: "Additional metadata for the organization.",
         },
       },
       ...getTimestampFields(),
     ],
-  }
+  };
 
-  return organizationCollection
+  return organizationCollection;
 }

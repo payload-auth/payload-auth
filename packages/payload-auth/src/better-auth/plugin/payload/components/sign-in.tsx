@@ -1,30 +1,38 @@
-'use client'
+"use client";
 
-import { createAuthClient } from 'better-auth/react'
-import { Button } from './ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card'
-import { Checkbox } from './ui/checkbox'
-import { Input } from './ui/input'
-import { Label } from './ui/label'
-import { PasswordInput } from './ui/password-input'
-import { DiscordLogoIcon, GitHubLogoIcon } from '@radix-ui/react-icons'
-import { Key, Loader2 } from 'lucide-react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { toast } from 'sonner'
-import { passkeyClient } from 'better-auth/client/plugins'
+import React from "react";
+import { createAuthClient } from "better-auth/react";
+import { Button } from "./ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Checkbox } from "./ui/checkbox";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { PasswordInput } from "./ui/password-input";
+import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
+import { Key, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { passkeyClient } from "better-auth/client/plugins";
 
-export default function SignIn({ admin = false }: { admin?: boolean }) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [rememberMe, setRememberMe] = useState(false)
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
+const SignIn: React.FC<{ admin?: boolean }> = ({ admin = false }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const authClient = createAuthClient({
     plugins: [passkeyClient()],
-  })
+  });
 
   return (
     <Card className="z-50 rounded-md rounded-t-none w-full max-w-md shadow-lg">
@@ -32,8 +40,8 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
         <CardTitle className="text-xl md:text-2xl font-bold">Sign In</CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
           {admin
-            ? 'Enter your credentials to access the admin dashboard'
-            : 'Enter your credentials to access your account'}
+            ? "Enter your credentials to access the admin dashboard"
+            : "Enter your credentials to access your account"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -48,7 +56,7 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
               placeholder="m@example.com"
               required
               onChange={(e) => {
-                setEmail(e.target.value)
+                setEmail(e.target.value);
               }}
               value={email}
               className="w-full"
@@ -59,7 +67,10 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
               <Label htmlFor="password" className="text-sm font-medium">
                 Password
               </Label>
-              <Link href="/forget-password" className="text-xs text-primary hover:underline">
+              <Link
+                href="/forget-password"
+                className="text-xs text-primary hover:underline"
+              >
                 Forgot password?
               </Link>
             </div>
@@ -77,7 +88,7 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
               <Checkbox
                 id="remember"
                 onClick={() => {
-                  setRememberMe(!rememberMe)
+                  setRememberMe(!rememberMe);
                 }}
               />
               <Label htmlFor="remember" className="text-sm">
@@ -95,31 +106,35 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
               await authClient.signIn.email({
                 email: email,
                 password: password,
-                callbackURL: admin ? '/admin' : '/dashboard',
+                callbackURL: admin ? "/admin" : "/dashboard",
                 rememberMe,
                 fetchOptions: {
                   onRequest: () => {
-                    setLoading(true)
+                    setLoading(true);
                   },
                   onResponse: () => {
-                    setLoading(false)
+                    setLoading(false);
                   },
                   onError: (ctx) => {
-                    toast.error(ctx.error.message)
+                    toast.error(ctx.error.message);
                   },
                 },
-              })
+              });
             }}
           >
-            {loading ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
-            {loading ? 'Signing in...' : 'Sign in'}
+            {loading ? (
+              <Loader2 size={16} className="animate-spin mr-2" />
+            ) : null}
+            {loading ? "Signing in..." : "Sign in"}
           </Button>
 
           {!admin && (
             <div>
               <div className="relative my-4">
                 <div className="relative flex justify-center text-xs uppercase border-b border-muted pb-4">
-                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
                 </div>
               </div>
 
@@ -130,9 +145,9 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
                   className="h-10 w-10"
                   onClick={async () => {
                     await authClient.signIn.social({
-                      provider: 'github',
-                      callbackURL: '/dashboard',
-                    })
+                      provider: "github",
+                      callbackURL: "/dashboard",
+                    });
                   }}
                   title="GitHub"
                 >
@@ -144,9 +159,9 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
                   className="h-10 w-10"
                   onClick={async () => {
                     await authClient.signIn.social({
-                      provider: 'discord',
-                      callbackURL: '/dashboard',
-                    })
+                      provider: "discord",
+                      callbackURL: "/dashboard",
+                    });
                   }}
                   title="Discord"
                 >
@@ -158,9 +173,9 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
                   className="h-10 w-10"
                   onClick={async () => {
                     await authClient.signIn.social({
-                      provider: 'google',
-                      callbackURL: '/dashboard',
-                    })
+                      provider: "google",
+                      callbackURL: "/dashboard",
+                    });
                   }}
                   title="Google"
                 >
@@ -194,9 +209,9 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
                   className="h-10 w-10"
                   onClick={async () => {
                     const { data } = await authClient.signIn.social({
-                      provider: 'microsoft',
-                      callbackURL: '/dashboard',
-                    })
+                      provider: "microsoft",
+                      callbackURL: "/dashboard",
+                    });
                   }}
                   title="Microsoft"
                 >
@@ -218,9 +233,9 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
                   className="h-10 w-10"
                   onClick={async () => {
                     await authClient.signIn.social({
-                      provider: 'twitch',
-                      callbackURL: '/dashboard',
-                    })
+                      provider: "twitch",
+                      callbackURL: "/dashboard",
+                    });
                   }}
                   title="Twitch"
                 >
@@ -242,9 +257,9 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
                   className="h-10 w-10"
                   onClick={async () => {
                     await authClient.signIn.social({
-                      provider: 'facebook',
-                      callbackURL: '/dashboard',
-                    })
+                      provider: "facebook",
+                      callbackURL: "/dashboard",
+                    });
                   }}
                   title="Facebook"
                 >
@@ -266,9 +281,9 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
                   className="h-10 w-10"
                   onClick={async () => {
                     await authClient.signIn.social({
-                      provider: 'twitter',
-                      callbackURL: '/dashboard',
-                    })
+                      provider: "twitter",
+                      callbackURL: "/dashboard",
+                    });
                   }}
                   title="Twitter"
                 >
@@ -303,13 +318,13 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
               await authClient.signIn.passkey({
                 fetchOptions: {
                   onSuccess(context) {
-                    router.push(admin ? '/admin' : '/dashboard')
+                    router.push(admin ? "/admin" : "/dashboard");
                   },
                   onError(context) {
-                    toast.error(context.error.message)
+                    toast.error(context.error.message);
                   },
                 },
-              })
+              });
             }}
           >
             <Key size={16} />
@@ -320,7 +335,7 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
       <CardFooter className="flex flex-col">
         <div className="w-full border-t pt-4">
           <p className="text-center text-xs text-muted-foreground">
-            Secured by{' '}
+            Secured by{" "}
             <Link
               href="https://github.com/forrestdevs/payload-better-auth"
               className="font-medium text-orange-500"
@@ -331,5 +346,7 @@ export default function SignIn({ admin = false }: { admin?: boolean }) {
         </div>
       </CardFooter>
     </Card>
-  )
-}
+  );
+};
+
+export default SignIn;

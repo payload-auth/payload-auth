@@ -1,82 +1,85 @@
-'use client'
+"use client";
 
-import { Button } from './ui/button.js'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card.js'
-import { Input } from './ui/input.js'
-import { Label } from './ui/label.js'
-import { PasswordInput } from './ui/password-input.js'
-import { DiscordLogoIcon, GitHubLogoIcon } from '@radix-ui/react-icons'
-import { useState } from 'react'
-import { Loader2, X } from 'lucide-react'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation.js'
-import { createAuthClient } from 'better-auth/react'
-import { inferAdditionalFields } from 'better-auth/client/plugins'
+import React from "react";
+import { Button } from "./ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { PasswordInput } from "./ui/password-input";
+import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
+import { useState } from "react";
+import { Loader2, X } from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { createAuthClient } from "better-auth/react";
+import { inferAdditionalFields } from "better-auth/client/plugins";
 
-export function SignUp({
-  admin = false,
-  apiRoute,
-  userSlug,
-  defaultAdminRole,
-}: {
-  admin?: boolean
-  apiRoute: string
-  userSlug: string
-  defaultAdminRole: string
-}) {
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [passwordConfirmation, setPasswordConfirmation] = useState('')
-  const [image, setImage] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const router = useRouter()
+const SignUp: React.FC<{
+  admin?: boolean;
+  apiRoute: string;
+  userSlug: string;
+  defaultAdminRole: string;
+}> = ({ admin = false, apiRoute, userSlug, defaultAdminRole }) => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const router = useRouter();
 
   const authClient = createAuthClient({
     plugins: [
       inferAdditionalFields({
         user: {
           role: {
-            type: 'string',
+            type: "string",
           },
         },
       }),
     ],
-  })
+  });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setImage(file)
-      const reader = new FileReader()
+      setImage(file);
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const addAdminRole = async (userId: string) => {
     try {
       const req = await fetch(
         `${process.env.NEXT_PUBLIC_SERVER_URL}${apiRoute}/${userSlug}/${userId}`,
         {
-          method: 'PATCH',
-          credentials: 'include',
+          method: "PATCH",
+          credentials: "include",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            role: defaultAdminRole ?? 'admin',
+            role: defaultAdminRole ?? "admin",
           }),
-        },
-      )
+        }
+      );
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
-  }
-  const [loading, setLoading] = useState(false)
+  };
+  const [loading, setLoading] = useState(false);
 
   return (
     <Card className="z-50 rounded-md rounded-t-none w-full max-w-md shadow-lg">
@@ -98,7 +101,7 @@ export function SignUp({
                 placeholder="Max"
                 required
                 onChange={(e) => {
-                  setFirstName(e.target.value)
+                  setFirstName(e.target.value);
                 }}
                 value={firstName}
                 className="w-full"
@@ -113,7 +116,7 @@ export function SignUp({
                 placeholder="Robinson"
                 required
                 onChange={(e) => {
-                  setLastName(e.target.value)
+                  setLastName(e.target.value);
                 }}
                 value={lastName}
                 className="w-full"
@@ -130,7 +133,7 @@ export function SignUp({
               placeholder="m@example.com"
               required
               onChange={(e) => {
-                setEmail(e.target.value)
+                setEmail(e.target.value);
               }}
               value={email}
               className="w-full"
@@ -150,7 +153,10 @@ export function SignUp({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password_confirmation" className="text-sm font-medium">
+            <Label
+              htmlFor="password_confirmation"
+              className="text-sm font-medium"
+            >
               Confirm Password
             </Label>
             <PasswordInput
@@ -171,7 +177,11 @@ export function SignUp({
               <div className="flex items-center gap-3">
                 {imagePreview && (
                   <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                    <img src={imagePreview} alt="Profile preview" className="object-cover" />
+                    <img
+                      src={imagePreview}
+                      alt="Profile preview"
+                      className="object-cover"
+                    />
                   </div>
                 )}
                 <div className="flex-1 flex items-center gap-2">
@@ -188,8 +198,8 @@ export function SignUp({
                       size="icon"
                       className="h-8 w-8 flex-shrink-0"
                       onClick={() => {
-                        setImage(null)
-                        setImagePreview(null)
+                        setImage(null);
+                        setImagePreview(null);
                       }}
                     >
                       <X className="h-4 w-4" />
@@ -206,48 +216,54 @@ export function SignUp({
             disabled={loading}
             onClick={async () => {
               if (password !== passwordConfirmation) {
-                toast.error('Please ensure your password and confirm password match.')
-                return
+                toast.error(
+                  "Please ensure your password and confirm password match."
+                );
+                return;
               }
               const user = await authClient.signUp.email({
                 email,
                 password,
                 // @ts-ignore
-                role: admin ? 'admin' : 'user',
+                role: admin ? "admin" : "user",
                 name: `${firstName} ${lastName}`,
-                callbackURL: admin ? '/admin' : '/dashboard',
+                callbackURL: admin ? "/admin" : "/dashboard",
                 fetchOptions: {
                   onResponse: () => {
-                    setLoading(false)
+                    setLoading(false);
                   },
                   onRequest: () => {
-                    setLoading(true)
+                    setLoading(true);
                   },
                   onError: (ctx) => {
-                    toast.error(ctx.error.message)
+                    toast.error(ctx.error.message);
                   },
                   onSuccess: async () => {
-                    router.push(admin ? '/admin' : '/dashboard')
+                    router.push(admin ? "/admin" : "/dashboard");
                   },
                 },
-              })
+              });
 
-              const userId = user.data?.user.id
+              const userId = user.data?.user.id;
 
               if (userId && admin) {
-                await addAdminRole(userId)
+                await addAdminRole(userId);
               }
             }}
           >
-            {loading ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
-            {loading ? 'Creating account...' : 'Create an account'}
+            {loading ? (
+              <Loader2 size={16} className="animate-spin mr-2" />
+            ) : null}
+            {loading ? "Creating account..." : "Create an account"}
           </Button>
 
           {!admin && (
             <div>
               <div className="relative my-4">
                 <div className="relative flex justify-center text-xs uppercase border-b border-muted pb-4">
-                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
                 </div>
               </div>
               <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
@@ -257,9 +273,9 @@ export function SignUp({
                   className="h-10 w-10"
                   onClick={async () => {
                     await authClient.signIn.social({
-                      provider: 'github',
-                      callbackURL: '/dashboard',
-                    })
+                      provider: "github",
+                      callbackURL: "/dashboard",
+                    });
                   }}
                   title="GitHub"
                 >
@@ -271,9 +287,9 @@ export function SignUp({
                   className="h-10 w-10"
                   onClick={async () => {
                     await authClient.signIn.social({
-                      provider: 'discord',
-                      callbackURL: '/dashboard',
-                    })
+                      provider: "discord",
+                      callbackURL: "/dashboard",
+                    });
                   }}
                   title="Discord"
                 >
@@ -285,9 +301,9 @@ export function SignUp({
                   className="h-10 w-10"
                   onClick={async () => {
                     await authClient.signIn.social({
-                      provider: 'google',
-                      callbackURL: '/dashboard',
-                    })
+                      provider: "google",
+                      callbackURL: "/dashboard",
+                    });
                   }}
                   title="Google"
                 >
@@ -321,9 +337,9 @@ export function SignUp({
                   className="h-10 w-10"
                   onClick={async () => {
                     const { data } = await authClient.signIn.social({
-                      provider: 'microsoft',
-                      callbackURL: '/dashboard',
-                    })
+                      provider: "microsoft",
+                      callbackURL: "/dashboard",
+                    });
                   }}
                   title="Microsoft"
                 >
@@ -345,9 +361,9 @@ export function SignUp({
                   className="h-10 w-10"
                   onClick={async () => {
                     await authClient.signIn.social({
-                      provider: 'twitch',
-                      callbackURL: '/dashboard',
-                    })
+                      provider: "twitch",
+                      callbackURL: "/dashboard",
+                    });
                   }}
                   title="Twitch"
                 >
@@ -369,9 +385,9 @@ export function SignUp({
                   className="h-10 w-10"
                   onClick={async () => {
                     await authClient.signIn.social({
-                      provider: 'facebook',
-                      callbackURL: '/dashboard',
-                    })
+                      provider: "facebook",
+                      callbackURL: "/dashboard",
+                    });
                   }}
                   title="Facebook"
                 >
@@ -393,9 +409,9 @@ export function SignUp({
                   className="h-10 w-10"
                   onClick={async () => {
                     await authClient.signIn.social({
-                      provider: 'twitter',
-                      callbackURL: '/dashboard',
-                    })
+                      provider: "twitter",
+                      callbackURL: "/dashboard",
+                    });
                   }}
                   title="Twitter"
                 >
@@ -428,7 +444,7 @@ export function SignUp({
       <CardFooter className="flex flex-col">
         <div className="w-full border-t pt-4">
           <p className="text-center text-xs text-muted-foreground">
-            Secured by{' '}
+            Secured by{" "}
             <a
               className="font-medium text-orange-500"
               href="https://github.com/forrestdevs/payload-better-auth"
@@ -439,14 +455,7 @@ export function SignUp({
         </div>
       </CardFooter>
     </Card>
-  )
-}
+  );
+};
 
-async function convertImageToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onloadend = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
+export default SignUp;

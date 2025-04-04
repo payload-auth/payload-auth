@@ -1,7 +1,11 @@
-import { betterAuthPluginSlugs } from '../config'
+import { betterAuthPluginSlugs } from "../config";
 
-export function configureApiKeyPlugin(plugin: any) {
-  plugin.schema = plugin.schema || {}
+type ApiKeyPluginConfig = {
+  plugin: any;
+};
+
+export function configureApiKeyPlugin({ plugin }: ApiKeyPluginConfig) {
+  plugin.schema = plugin.schema || {};
   plugin.schema.apikey = {
     ...(plugin.schema.apikey || {}),
     modelName: betterAuthPluginSlugs.apiKeys,
@@ -9,8 +13,8 @@ export function configureApiKeyPlugin(plugin: any) {
       ...(plugin.schema.apikey?.fields || {}),
       userId: {
         ...(plugin.schema.apikey?.fields?.userId || {}),
-        fieldName: 'user',
+        fieldName: "user",
       },
     },
-  }
+  };
 }

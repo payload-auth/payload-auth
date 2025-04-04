@@ -1,4 +1,4 @@
-import crypto from 'crypto'
+import crypto from "crypto";
 
 /**
  * Mimics Payload's internal password hashing using pbkdf2
@@ -8,10 +8,10 @@ import crypto from 'crypto'
  */
 function pbkdf2Promisified(password: string, salt: string): Promise<Buffer> {
   return new Promise((resolve, reject) =>
-    crypto.pbkdf2(password, salt, 25000, 512, 'sha256', (err, hashRaw) =>
-      err ? reject(err) : resolve(hashRaw),
-    ),
-  )
+    crypto.pbkdf2(password, salt, 25000, 512, "sha256", (err, hashRaw) =>
+      err ? reject(err) : resolve(hashRaw)
+    )
+  );
 }
 
 /**
@@ -19,8 +19,10 @@ function pbkdf2Promisified(password: string, salt: string): Promise<Buffer> {
  */
 function randomBytes(): Promise<Buffer> {
   return new Promise((resolve, reject) =>
-    crypto.randomBytes(32, (err, saltBuffer) => (err ? reject(err) : resolve(saltBuffer))),
-  )
+    crypto.randomBytes(32, (err, saltBuffer) =>
+      err ? reject(err) : resolve(saltBuffer)
+    )
+  );
 }
 
 /**
@@ -33,14 +35,14 @@ function randomBytes(): Promise<Buffer> {
  * @returns A string in the format {salt}:{hash}
  */
 export const hashPassword = async (password: string): Promise<string> => {
-  const saltBuffer = await randomBytes()
-  const salt = saltBuffer.toString('hex')
+  const saltBuffer = await randomBytes();
+  const salt = saltBuffer.toString("hex");
 
-  const hashRaw = await pbkdf2Promisified(password, salt)
-  const hash = hashRaw.toString('hex')
+  const hashRaw = await pbkdf2Promisified(password, salt);
+  const hash = hashRaw.toString("hex");
 
-  return `${salt}:${hash}`
-}
+  return `${salt}:${hash}`;
+};
 
 /**
  * Verifies a password against a stored hash
@@ -57,32 +59,32 @@ export const verifyPassword = async ({
   password,
   salt,
 }: {
-  hash: string
-  password: string
-  salt?: string
+  hash: string;
+  password: string;
+  salt?: string;
 }): Promise<boolean> => {
-  let saltValue: string
-  let storedHash: string
+  let saltValue: string;
+  let storedHash: string;
 
   // If salt is provided separately (from user record), use it with the hash
   if (salt) {
-    saltValue = salt
-    storedHash = hash
+    saltValue = salt;
+    storedHash = hash;
   } else {
     // Otherwise, split the combined format (from account.password)
-    const parts = hash.split(':')
+    const parts = hash.split(":");
     if (parts.length !== 2) {
-      return false
+      return false;
     }
-    ;[saltValue, storedHash] = parts as [string, string]
+    [saltValue, storedHash] = parts as [string, string];
   }
 
   if (!saltValue || !storedHash) {
-    return false
+    return false;
   }
 
-  const hashRaw = await pbkdf2Promisified(password, saltValue)
-  const computedHash = hashRaw.toString('hex')
+  const hashRaw = await pbkdf2Promisified(password, saltValue);
+  const computedHash = hashRaw.toString("hex");
 
-  return storedHash === computedHash
-}
+  return storedHash === computedHash;
+};

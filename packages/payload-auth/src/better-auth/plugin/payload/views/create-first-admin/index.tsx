@@ -1,41 +1,48 @@
-import React from 'react'
-import type { AdminViewServerProps, ServerProps } from 'payload'
-import { RenderServerComponent } from '@payloadcms/ui/elements/RenderServerComponent'
-import { redirect } from 'next/navigation.js'
-import { Gutter } from '@payloadcms/ui'
-import { SignUp } from '../../components/sign-up.js'
-import Logo from '../../components/logo.js'
+import React from "react";
+import type { AdminViewServerProps, ServerProps } from "payload";
+import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
+import { redirect } from "next/navigation";
+import { Gutter } from "@payloadcms/ui";
+import Logo from "../../components/logo";
+import SignUp from "../../components/sign-up";
 
-export default async function CreateFirstAdmin({
+type CreateFirstAdminProps = AdminViewServerProps & {
+  defaultAdminRole: string;
+};
+
+const CreateFirstAdmin: React.FC<CreateFirstAdminProps> = async ({
   initPageResult,
   params,
   searchParams,
   defaultAdminRole,
-}: AdminViewServerProps & { defaultAdminRole: string }) {
-  const { locale, permissions, req } = initPageResult
+}: CreateFirstAdminProps) => {
+  const { locale, permissions, req } = initPageResult;
   const {
     i18n,
     payload: { config },
     payload,
     user,
-  } = req
+  } = req;
 
   const {
-    admin: { components: { afterLogin, beforeLogin, graphics } = {}, user: userSlug },
+    admin: {
+      components: { afterLogin, beforeLogin, graphics } = {},
+      user: userSlug,
+    },
     routes: { admin, api },
-  } = config
+  } = config;
 
   const adminCount = await req.payload.count({
     collection: userSlug,
     where: {
       role: {
-        equals: defaultAdminRole ?? 'admin',
+        equals: defaultAdminRole ?? "admin",
       },
     },
-  })
+  });
 
   if (adminCount.totalDocs > 0) {
-    redirect(admin)
+    redirect(admin);
   }
 
   // const addRoleAction = async (userId: string) => {
@@ -51,24 +58,26 @@ export default async function CreateFirstAdmin({
 
   // Filter out the first component from afterLogin array or set to undefined if not more than 1
   const filteredAfterLogin =
-    Array.isArray(afterLogin) && afterLogin.length > 1 ? afterLogin.slice(1) : undefined
+    Array.isArray(afterLogin) && afterLogin.length > 1
+      ? afterLogin.slice(1)
+      : undefined;
 
   return (
     <Gutter className="mt-40">
       <div
         style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'center',
-            width: '100%',
-            marginBottom: '1.5rem',
+            display: "flex",
+            justifyContent: "center",
+            width: "100%",
+            marginBottom: "1.5rem",
           }}
         >
           {RenderServerComponent({
@@ -101,10 +110,10 @@ export default async function CreateFirstAdmin({
         })}
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <SignUp
@@ -129,5 +138,7 @@ export default async function CreateFirstAdmin({
         })}
       </div>
     </Gutter>
-  )
-}
+  );
+};
+
+export default CreateFirstAdmin;

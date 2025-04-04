@@ -1,15 +1,18 @@
-import { configureAdminPlugin } from './admin-plugin'
-import { configureApiKeyPlugin } from './api-key-plugin'
-import { configureOrganizationPlugin } from './organizations-plugin'
-import { configurePasskeyPlugin } from './passkey-plugin'
-import { configureSsoPlugin } from './sso-plugin'
-import { configureOidcPlugin } from './oidc-plugin'
-import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../../types'
-import { supportedBetterAuthPluginIds } from '../config'
-import { ensurePasswordSetBeforeUserCreate } from './utils/ensure-password-set-before-create'
-import { verifyPassword, hashPassword } from './utils/password'
-import type { Config, Payload } from 'payload'
-import { saveToJwtMiddleware } from './utils/save-to-jwt-middleware'
+import { configureAdminPlugin } from "./admin-plugin";
+import { configureApiKeyPlugin } from "./api-key-plugin";
+import { configureOrganizationPlugin } from "./organizations-plugin";
+import { configurePasskeyPlugin } from "./passkey-plugin";
+import { configureSsoPlugin } from "./sso-plugin";
+import { configureOidcPlugin } from "./oidc-plugin";
+import type {
+  BetterAuthPluginOptions,
+  SanitizedBetterAuthOptions,
+} from "../../types";
+import { supportedBetterAuthPluginIds } from "../config";
+import { ensurePasswordSetBeforeUserCreate } from "./utils/ensure-password-set-before-create";
+import { verifyPassword, hashPassword } from "./utils/password";
+import type { Config, Payload } from "payload";
+import { saveToJwtMiddleware } from "./utils/save-to-jwt-middleware";
 /**
  * Sanitizes the BetterAuth options
  */
@@ -17,14 +20,15 @@ export function sanitizeBetterAuthOptions({
   config,
   options,
 }: {
-  config: Payload['config'] | Config
-  options: BetterAuthPluginOptions
+  config: Payload["config"] | Config;
+  options: BetterAuthPluginOptions;
 }): SanitizedBetterAuthOptions {
-  const baOptions = options.betterAuthOptions || {}
-  const userCollectionSlug = options.users?.slug ?? 'users'
-  const accountCollectionSlug = options.accounts?.slug ?? 'accounts'
-  const sessionCollectionSlug = options.sessions?.slug ?? 'sessions'
-  const verificationCollectionSlug = options.verifications?.slug ?? 'verifications'
+  const baOptions = options.betterAuthOptions || {};
+  const userCollectionSlug = options.users?.slug ?? "users";
+  const accountCollectionSlug = options.accounts?.slug ?? "accounts";
+  const sessionCollectionSlug = options.sessions?.slug ?? "sessions";
+  const verificationCollectionSlug =
+    options.verifications?.slug ?? "verifications";
 
   // Initialize with base configuration
   let res: SanitizedBetterAuthOptions = {
@@ -36,12 +40,12 @@ export function sanitizeBetterAuthOptions({
     account: {
       ...(baOptions.account || {}),
       modelName: accountCollectionSlug,
-      fields: { userId: 'user' },
+      fields: { userId: "user" },
     },
     session: {
       ...(baOptions.session || {}),
       modelName: sessionCollectionSlug,
-      fields: { userId: 'user' },
+      fields: { userId: "user" },
     },
     verification: {
       ...(baOptions.verification || {}),
@@ -51,7 +55,7 @@ export function sanitizeBetterAuthOptions({
       ...(baOptions.emailAndPassword || {}),
       enabled: baOptions.emailAndPassword?.enabled ?? true,
     },
-  }
+  };
 
   // Configure password handling
   if (res.emailAndPassword?.enabled && !options.disableDefaultPayloadAuth) {
@@ -59,31 +63,36 @@ export function sanitizeBetterAuthOptions({
       ...(res.emailAndPassword.password || {}),
       verify: ({ hash, password }) => verifyPassword({ hash, password }),
       hash: (password) => hashPassword(password),
-    }
+    };
   }
 
   // Handle verification email blocking
-  if (options.users?.blockFirstBetterAuthVerificationEmail && !options.disableDefaultPayloadAuth) {
-    const originalSendEmail = baOptions?.emailVerification?.sendVerificationEmail
-    if (typeof originalSendEmail === 'function') {
-      res.emailVerification = res.emailVerification || {}
+  if (
+    options.users?.blockFirstBetterAuthVerificationEmail &&
+    !options.disableDefaultPayloadAuth
+  ) {
+    const originalSendEmail =
+      baOptions?.emailVerification?.sendVerificationEmail;
+    if (typeof originalSendEmail === "function") {
+      res.emailVerification = res.emailVerification || {};
       res.emailVerification.sendVerificationEmail = async (data, request) => {
         try {
-          const timeSinceCreation = new Date().getTime() - new Date(data.user.createdAt).getTime()
+          const timeSinceCreation =
+            new Date().getTime() - new Date(data.user.createdAt).getTime();
           // Skip if user was created less than a minute ago (rely on Payload's email)
           if (timeSinceCreation >= 60000) {
-            await originalSendEmail(data, request)
+            await originalSendEmail(data, request);
           }
         } catch (error) {
-          console.error('Error sending verification email:', error)
+          console.error("Error sending verification email:", error);
         }
-      }
+      };
     }
   }
 
   // Ensure password is set before user creation
   if (!options.disableDefaultPayloadAuth) {
-    ensurePasswordSetBeforeUserCreate(res)
+    ensurePasswordSetBeforeUserCreate(res);
   }
 
   // Process plugins
@@ -91,39 +100,45 @@ export function sanitizeBetterAuthOptions({
     try {
       // Filter to only supported plugins
       const supportedPlugins = res.plugins.filter((plugin) =>
-        Object.values(supportedBetterAuthPluginIds).includes(plugin.id as any),
-      )
+        Object.values(supportedBetterAuthPluginIds).includes(plugin.id as any)
+      );
 
       // Log warning for unsupported plugins
       if (supportedPlugins.length !== res.plugins.length) {
         const unsupportedIds = res.plugins
-          .filter((p) => !Object.values(supportedBetterAuthPluginIds).includes(p.id as any))
+          .filter(
+            (p) =>
+              !Object.values(supportedBetterAuthPluginIds).includes(p.id as any)
+          )
           .map((p) => p.id)
-          .join(', ')
+          .join(", ");
 
         console.warn(
-          `Unsupported BetterAuth plugins: ${unsupportedIds}. Supported: ${Object.values(supportedBetterAuthPluginIds).join(', ')}`,
-        )
+          `Unsupported BetterAuth plugins: ${unsupportedIds}. Supported: ${Object.values(supportedBetterAuthPluginIds).join(", ")}`
+        );
       }
 
       // Configure plugins by type
       const pluginConfigurators = {
-        [supportedBetterAuthPluginIds.admin]: (p: any) => configureAdminPlugin(p, options),
+        [supportedBetterAuthPluginIds.admin]: (p: any) =>
+          configureAdminPlugin({ plugin: p, options }),
         [supportedBetterAuthPluginIds.apiKey]: configureApiKeyPlugin,
         [supportedBetterAuthPluginIds.passkey]: configurePasskeyPlugin,
-        [supportedBetterAuthPluginIds.organization]: configureOrganizationPlugin,
+        [supportedBetterAuthPluginIds.organization]:
+          configureOrganizationPlugin,
         [supportedBetterAuthPluginIds.sso]: configureSsoPlugin,
         [supportedBetterAuthPluginIds.oidc]: configureOidcPlugin,
-      }
+      };
 
       supportedPlugins.forEach((plugin) => {
-        const configurator = pluginConfigurators[plugin.id as keyof typeof pluginConfigurators]
-        if (configurator) configurator(plugin as any)
-      })
+        const configurator =
+          pluginConfigurators[plugin.id as keyof typeof pluginConfigurators];
+        if (configurator) configurator(plugin as any);
+      });
 
-      res.plugins = supportedPlugins
+      res.plugins = supportedPlugins;
     } catch (error) {
-      throw new Error(`Error sanitizing BetterAuth plugins: ${error}`)
+      throw new Error(`Error sanitizing BetterAuth plugins: ${error}`);
     }
   }
 
@@ -131,7 +146,7 @@ export function sanitizeBetterAuthOptions({
     sanitizedOptions: res,
     payloadConfig: config,
     pluginOptions: options,
-  })
+  });
 
-  return res
+  return res;
 }

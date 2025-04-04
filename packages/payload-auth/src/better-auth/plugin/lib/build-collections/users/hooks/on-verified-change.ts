@@ -1,17 +1,21 @@
-import { CollectionBeforeChangeHook } from 'payload'
+import { CollectionBeforeChangeHook } from "payload";
 
-export const onVerifiedChange: CollectionBeforeChangeHook = async ({ data, originalDoc }) => {
-  const isVerifiedChangingToTrue = Boolean(data._verified) && !Boolean(originalDoc?._verified)
+export const onVerifiedChange: CollectionBeforeChangeHook = async ({
+  data,
+  originalDoc,
+}) => {
+  const isVerifiedChangingToTrue =
+    Boolean(data._verified) && !Boolean(originalDoc?._verified);
   const isEmailVerifiedChangingToTrue =
-    Boolean(data.emailVerified) && !Boolean(originalDoc?.emailVerified)
+    Boolean(data.emailVerified) && !Boolean(originalDoc?.emailVerified);
 
   if (!isVerifiedChangingToTrue && !isEmailVerifiedChangingToTrue) {
-    return data
+    return data;
   }
 
   return {
     ...data,
     _verified: true,
     emailVerified: true,
-  }
-}
+  };
+};

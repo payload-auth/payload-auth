@@ -1,115 +1,115 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
-import { betterAuthPluginSlugs, baseCollectionSlugs } from '../config'
-import { getTimestampFields } from './utils/get-timestamp-fields'
+import { CollectionConfig } from "payload";
+import { BetterAuthPluginOptions } from "../../types";
+import { betterAuthPluginSlugs, baseCollectionSlugs } from "../config";
+import { getTimestampFields } from "./utils/get-timestamp-fields";
 
 export function buildOauthApplicationsCollection({
   pluginOptions,
 }: {
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: BetterAuthPluginOptions;
 }) {
-  const oauthApplicationSlug = betterAuthPluginSlugs.oauthApplications
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
+  const oauthApplicationSlug = betterAuthPluginSlugs.oauthApplications;
+  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users;
 
   const oauthApplicationCollection: CollectionConfig = {
     slug: oauthApplicationSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: 'name',
-      description: 'OAuth applications are custom OAuth clients',
+      useAsTitle: "name",
+      description: "OAuth applications are custom OAuth clients",
     },
     fields: [
       {
-        name: 'clientId',
-        type: 'text',
+        name: "clientId",
+        type: "text",
         unique: true,
         index: true,
         required: true,
-        label: 'Client ID',
+        label: "Client ID",
         admin: {
           readOnly: true,
-          description: 'Unique identifier for each OAuth client',
+          description: "Unique identifier for each OAuth client",
         },
       },
       {
-        name: 'clientSecret',
-        type: 'text',
+        name: "clientSecret",
+        type: "text",
         required: true,
-        label: 'Client Secret',
+        label: "Client Secret",
         admin: {
           readOnly: true,
-          description: 'Secret key for the OAuth client',
+          description: "Secret key for the OAuth client",
         },
       },
       {
-        name: 'name',
-        type: 'text',
+        name: "name",
+        type: "text",
         required: true,
         index: true,
-        label: 'Name',
+        label: "Name",
         admin: {
-          description: 'Name of the OAuth application',
+          description: "Name of the OAuth application",
         },
       },
       {
-        name: 'redirectURLs',
-        type: 'text',
+        name: "redirectURLs",
+        type: "text",
         required: true,
-        label: 'Redirect URLs',
+        label: "Redirect URLs",
         admin: {
-          description: 'Comma-separated list of redirect URLs',
+          description: "Comma-separated list of redirect URLs",
         },
       },
       {
-        name: 'metadata',
-        type: 'json',
+        name: "metadata",
+        type: "json",
         admin: {
           readOnly: true,
-          description: 'Additional metadata for the OAuth application',
+          description: "Additional metadata for the OAuth application",
         },
       },
       {
-        name: 'type',
-        type: 'text',
+        name: "type",
+        type: "text",
         required: true,
-        label: 'Type',
+        label: "Type",
         admin: {
           readOnly: true,
-          description: 'Type of OAuth client (e.g., web, mobile)',
+          description: "Type of OAuth client (e.g., web, mobile)",
         },
       },
       {
-        name: 'disabled',
-        type: 'checkbox',
+        name: "disabled",
+        type: "checkbox",
         defaultValue: false,
         required: true,
-        label: 'Disabled',
+        label: "Disabled",
         admin: {
-          description: 'Indicates if the client is disabled',
+          description: "Indicates if the client is disabled",
         },
       },
       {
-        name: 'icon',
-        type: 'text',
-        label: 'Icon',
+        name: "icon",
+        type: "text",
+        label: "Icon",
         admin: {
-          description: 'Icon of the OAuth application',
+          description: "Icon of the OAuth application",
         },
       },
       {
-        name: 'user',
-        type: 'relationship',
+        name: "user",
+        type: "relationship",
         relationTo: userSlug,
         required: false,
-        label: 'User',
+        label: "User",
         admin: {
           readOnly: true,
-          description: 'ID of the user who owns the client. (optional)',
+          description: "ID of the user who owns the client. (optional)",
         },
       },
       ...getTimestampFields(),
     ],
-  }
+  };
 
-  return oauthApplicationCollection
+  return oauthApplicationCollection;
 }

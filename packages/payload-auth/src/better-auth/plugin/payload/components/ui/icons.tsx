@@ -1,4 +1,5 @@
-import { SVGProps } from 'react'
+import React from "react";
+import { SVGProps } from "react";
 
 export const Icons = {
   apple: (props?: SVGProps<any>) => (
@@ -100,7 +101,10 @@ export const Icons = {
       viewBox="0 0 24 24"
       {...props}
     >
-      <path fill="currentColor" d="M2 3h9v9H2zm9 19H2v-9h9zM21 3v9h-9V3zm0 19h-9v-9h9z"></path>
+      <path
+        fill="currentColor"
+        d="M2 3h9v9H2zm9 19H2v-9h9zM21 3v9h-9V3zm0 19h-9v-9h9z"
+      ></path>
     </svg>
   ),
   tiktok: (props?: SVGProps<any>) => (
@@ -257,4 +261,4 @@ C0.7,239.6,62.1,0.5,62.2,0.4c0,0,54,13.8,119.9,30.8S302.1,62,302.2,62c0.2,0,0.2,
       />
     </svg>
   ),
-}
+};

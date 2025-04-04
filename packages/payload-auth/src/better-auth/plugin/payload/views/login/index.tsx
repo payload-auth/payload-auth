@@ -1,36 +1,38 @@
+import React from "react";
 import {
   createClientConfig,
-  sanitizeConfig,
   type AdminViewServerProps,
   type ServerProps,
-} from 'payload'
-import { RenderServerComponent } from '@payloadcms/ui/elements/RenderServerComponent'
-import { redirect } from 'next/navigation.js'
-import { Gutter } from '@payloadcms/ui'
-import Logo from '../../components/logo.js'
-import { LoginForm } from './form/index.js'
-import { getSafeRedirect } from '../../utils/get-safe-redirect.js'
-import type { BetterAuthPluginOptions } from '../../../types.js'
+} from "payload";
+import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
+import { redirect } from "next/navigation";
+import { Gutter } from "@payloadcms/ui";
+import Logo from "../../components/logo";
+import { LoginForm } from "./form/index";
+import { getSafeRedirect } from "../../utils/get-safe-redirect";
+import type { BetterAuthPluginOptions } from "../../../types";
 
-export const loginBaseClass = 'login'
+export const loginBaseClass = "login";
 
-export default async function LoginView({
+type LoginViewProps = AdminViewServerProps & {
+  defaultAdminRole: string;
+  options: BetterAuthPluginOptions["adminComponents"];
+};
+
+const LoginView: React.FC<LoginViewProps> = async ({
   initPageResult,
   params,
   searchParams,
   defaultAdminRole,
   options,
-}: AdminViewServerProps & {
-  defaultAdminRole: string
-  options: BetterAuthPluginOptions['adminComponents']
-}) {
-  const { locale, permissions, req } = initPageResult
+}: LoginViewProps) => {
+  const { locale, permissions, req } = initPageResult;
   const {
     i18n,
     payload: { config },
     payload,
     user,
-  } = req
+  } = req;
 
   const {
     admin: {
@@ -39,54 +41,57 @@ export default async function LoginView({
       routes: { forgot: forgotRoute },
     },
     routes: { admin: adminRoute },
-  } = config
+  } = config;
 
-  const redirectUrl = getSafeRedirect(searchParams?.redirect ?? '', adminRoute)
+  const redirectUrl = getSafeRedirect(searchParams?.redirect ?? "", adminRoute);
 
   if (user) {
-    redirect(redirectUrl)
+    redirect(redirectUrl);
   }
 
   const adminCount = await req.payload.count({
     collection: userSlug,
     where: {
       role: {
-        equals: defaultAdminRole ?? 'admin',
+        equals: defaultAdminRole ?? "admin",
       },
     },
-  })
+  });
 
   // Filter out the first component from afterLogin array or set to undefined if not more than 1
   const filteredAfterLogin =
-    Array.isArray(afterLogin) && afterLogin.length > 1 ? afterLogin.slice(1) : undefined
+    Array.isArray(afterLogin) && afterLogin.length > 1
+      ? afterLogin.slice(1)
+      : undefined;
 
   const prefillAutoLogin =
-    typeof config.admin?.autoLogin === 'object' && config.admin?.autoLogin.prefillOnly
+    typeof config.admin?.autoLogin === "object" &&
+    config.admin?.autoLogin.prefillOnly;
 
   const prefillUsername =
-    prefillAutoLogin && typeof config.admin?.autoLogin === 'object'
+    prefillAutoLogin && typeof config.admin?.autoLogin === "object"
       ? config.admin?.autoLogin.username
-      : undefined
+      : undefined;
 
   const prefillEmail =
-    prefillAutoLogin && typeof config.admin?.autoLogin === 'object'
+    prefillAutoLogin && typeof config.admin?.autoLogin === "object"
       ? config.admin?.autoLogin.email
-      : undefined
+      : undefined;
 
   const prefillPassword =
-    prefillAutoLogin && typeof config.admin?.autoLogin === 'object'
+    prefillAutoLogin && typeof config.admin?.autoLogin === "object"
       ? config.admin?.autoLogin.password
-      : undefined
+      : undefined;
 
   if (adminCount.totalDocs === 0) {
-    redirect(`${adminRoute}/create-first-admin`)
+    redirect(`${adminRoute}/create-first-admin`);
   }
 
   const clientConfig = createClientConfig({
     config,
     i18n,
     importMap: payload.importMap,
-  })
+  });
 
   return (
     <Gutter className="mt-40">
@@ -141,5 +146,7 @@ export default async function LoginView({
         } satisfies ServerProps,
       })}
     </Gutter>
-  )
-}
+  );
+};
+
+export default LoginView;

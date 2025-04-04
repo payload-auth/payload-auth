@@ -1,6 +1,6 @@
-import React from 'react'
+import React from "react";
 
-export default function Logo() {
+const Logo: React.FC = () => {
   return (
     <div className="flex items-center justify-center w-full mb-8">
       <svg
@@ -19,8 +19,12 @@ export default function Logo() {
         />
       </svg>
       <div className="ml-2 font-semibold text-black dark:text-white">
-        Payload <span className="text-blue-600 dark:text-blue-400">&times;</span> Better Auth
+        Payload{" "}
+        <span className="text-blue-600 dark:text-blue-400">&times;</span> Better
+        Auth
       </div>
     </div>
-  )
-}
+  );
+};
+
+export default Logo;
