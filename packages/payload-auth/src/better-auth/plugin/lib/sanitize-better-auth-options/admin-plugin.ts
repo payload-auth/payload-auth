@@ -1,10 +1,8 @@
 import type { BetterAuthPluginOptions } from "../../types";
 
-type AdminPluginConfig = {
-  plugin: any;
-  options: BetterAuthPluginOptions;
-};
-
-export function configureAdminPlugin({ plugin, options }: AdminPluginConfig) {
+export function configureAdminPlugin(
+  plugin: any,
+  options: BetterAuthPluginOptions
+) {
   plugin.adminRoles = options.users?.adminRoles ?? ["admin"];
 }

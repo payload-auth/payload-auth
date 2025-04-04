@@ -121,13 +121,15 @@ export function sanitizeBetterAuthOptions({
       // Configure plugins by type
       const pluginConfigurators = {
         [supportedBetterAuthPluginIds.admin]: (p: any) =>
-          configureAdminPlugin({ plugin: p, options }),
-        [supportedBetterAuthPluginIds.apiKey]: configureApiKeyPlugin,
-        [supportedBetterAuthPluginIds.passkey]: configurePasskeyPlugin,
-        [supportedBetterAuthPluginIds.organization]:
-          configureOrganizationPlugin,
-        [supportedBetterAuthPluginIds.sso]: configureSsoPlugin,
-        [supportedBetterAuthPluginIds.oidc]: configureOidcPlugin,
+          configureAdminPlugin(p, options),
+        [supportedBetterAuthPluginIds.apiKey]: (p: any) =>
+          configureApiKeyPlugin(p),
+        [supportedBetterAuthPluginIds.passkey]: (p: any) =>
+          configurePasskeyPlugin(p),
+        [supportedBetterAuthPluginIds.organization]: (p: any) =>
+          configureOrganizationPlugin(p),
+        [supportedBetterAuthPluginIds.sso]: (p: any) => configureSsoPlugin(p),
+        [supportedBetterAuthPluginIds.oidc]: (p: any) => configureOidcPlugin(p),
       };
 
       supportedPlugins.forEach((plugin) => {

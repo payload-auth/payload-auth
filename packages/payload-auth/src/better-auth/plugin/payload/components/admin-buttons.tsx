@@ -5,7 +5,7 @@ import { adminClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Button, useDocumentInfo } from "@payloadcms/ui";
+import { Button, useConfig, useDocumentInfo } from "@payloadcms/ui";
 
 import "./styles.css";
 
@@ -76,8 +76,8 @@ const AdminButtons: React.FC<AdminButtonsProps> = (props) => {
   const [id, setId] = useState("");
   const [documentData, setDocumentData] = useState<any>(null);
 
-  const { collectionSlug } = useDocumentInfo();
-  console.log(collectionSlug);
+  const { config } = useConfig();
+  console.log(config.collections);
 
   const authClient = createAuthClient({
     plugins: [adminClient()],
