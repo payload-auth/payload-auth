@@ -4,14 +4,6 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
-    },
-    "payload-auth#build": {
-      "dependsOn": [
-        "@payload-auth/better-auth#build",
-        "@payload-auth/clerk#build",
-        "@payload-auth/kinde#build",
-        "@payload-auth/authjs#build"
-      ]
     }
   }
 }
