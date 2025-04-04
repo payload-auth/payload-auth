@@ -1,6 +1,6 @@
 import { expo } from '@better-auth/expo'
 import { generateVerifyEmailUrl } from 'payload-auth/better-auth/plugin'
-import type { BetterAuthReturn, PayloadBetterAuthOptions, PayloadBetterAuthPluginOptions } from 'payload-auth/better-auth'
+import type { BetterAuthReturn, BetterAuthOptions, BetterAuthPluginOptions } from 'payload-auth/better-auth'
 import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
 import { nextCookies } from 'better-auth/next-js'
 import {
@@ -85,13 +85,13 @@ export const betterAuthPlugins = [
   }),
   multiSession(),
   openAPI(),
-  expo()
-  nextCookies(),
+  expo(),
+  nextCookies()
 ]
 
 export type BetterAuthPlugins = typeof betterAuthPlugins
 
-export const betterAuthOptions: PayloadBetterAuthOptions = {
+export const betterAuthOptions: BetterAuthOptions = {
   appName: 'payload-better-auth',
   baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
   trustedOrigins: [process.env.NEXT_PUBLIC_BETTER_AUTH_URL],
@@ -155,10 +155,13 @@ export const betterAuthOptions: PayloadBetterAuthOptions = {
   }
 }
 
-export const betterAuthPluginOptions: PayloadBetterAuthPluginOptions = {
+export const betterAuthPluginOptions: BetterAuthPluginOptions = {
   disabled: false,
-  logTables: false,
-  enableDebugLogs: false,
+  debug: {
+    logTables: false,
+    enableDebugLogs: false
+  },
+  disableDefaultPayloadAuth: false,
   hidePluginCollections: true,
   users: {
     slug: 'users',

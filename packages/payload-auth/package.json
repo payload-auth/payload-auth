@@ -75,8 +75,8 @@
     "build:types": "tsc --project tsconfig.json"
   },
   "peerDependencies": {
-    "payload": "^3.32",
-    "next": "^15.2",
+    "payload": "^3.33.0",
+    "next": "^15.2.4",
     "react": "^19",
     "react-dom": "^19"
   },
@@ -92,7 +92,7 @@
     "vitest": "^1.0.0"
   },
   "dependencies": {
-    "@payloadcms/ui": "^3.32",
+    "@payloadcms/ui": "^3.33.0",
     "@better-auth/utils": "0.2.4",
     "@clerk/backend": "^1.25.8",
     "@clerk/clerk-js": "^5.58.1",

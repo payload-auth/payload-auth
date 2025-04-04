@@ -1,156 +1,174 @@
-'use client'
+"use client";
 
-import React, { useEffect, useState } from 'react'
-import { adminClient } from 'better-auth/client/plugins'
-import { createAuthClient } from 'better-auth/react'
-import { useParams, usePathname, useRouter } from 'next/navigation'
-import { Button, toast } from '@payloadcms/ui'
-import './styles.css'
+import React, { useEffect, useState } from "react";
+import { adminClient } from "better-auth/client/plugins";
+import { createAuthClient } from "better-auth/react";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button, useConfig, useDocumentInfo } from "@payloadcms/ui";
 
-import '@payloadcms/ui/styles.css'
+import "./styles.css";
+
+import "@payloadcms/ui/styles.css";
 
 async function getDocumentData(id: string, path: string) {
-  const apiUrl = `${path}/api`
+  const apiUrl = `${path}/api`;
   try {
     // Try to load the /api page and parse the HTML response
-    const response = await fetch(apiUrl)
+    const response = await fetch(apiUrl);
     if (response.ok) {
-      const htmlResponse = await response.text()
+      const htmlResponse = await response.text();
       // Parse the HTML to extract user data
       try {
-        let documentData: any = null
-        const parser = new DOMParser()
-        const doc = parser.parseFromString(htmlResponse, 'text/html')
+        let documentData: any = null;
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlResponse, "text/html");
 
         // Look for the JSON data in the query inspector
-        const jsonRows = doc.querySelectorAll('.query-inspector__row-line')
+        const jsonRows = doc.querySelectorAll(".query-inspector__row-line");
         if (jsonRows.length > 0) {
-          documentData = {}
+          documentData = {};
 
           jsonRows.forEach((row) => {
-            const keyMatch = row.innerHTML.match(/"([^"]+)"\s*:/)
+            const keyMatch = row.innerHTML.match(/"([^"]+)"\s*:/);
             if (keyMatch) {
-              const key = keyMatch[1].trim()
-              const valueElement = row.querySelector('.query-inspector__value')
+              const key = keyMatch[1]?.trim() ?? "";
+              const valueElement = row.querySelector(".query-inspector__value");
               if (valueElement) {
-                let value = valueElement.textContent?.trim() ?? ''
+                let value = valueElement.textContent?.trim() ?? "";
 
                 // Convert values to appropriate types
-                if (value === 'true') value = 'true'
-                else if (value === 'false') value = 'false'
-                else if (value === 'null') value = 'null'
-                else if (!isNaN(Number(value))) value = Number(value).toString()
+                if (value === "true") value = "true";
+                else if (value === "false") value = "false";
+                else if (value === "null") value = "null";
+                else if (!isNaN(Number(value)))
+                  value = Number(value).toString();
                 else if (value.startsWith('"') && value.endsWith('"')) {
-                  value = value.substring(1, value.length - 1).trim()
+                  value = value.substring(1, value.length - 1).trim();
                 }
 
-                documentData[key] = value
+                documentData[key] = value;
               }
             }
-          })
+          });
         }
 
-        return documentData
+        return documentData;
       } catch (parseError) {
-        console.error('Error parsing document data from HTML:', parseError)
-        return null
+        console.error("Error parsing document data from HTML:", parseError);
+        return null;
       }
     }
   } catch (apiError) {
-    console.error('Error fetching document data from API:', apiError)
+    console.error("Error fetching document data from API:", apiError);
   }
 }
 
-export default function AdminButtons({ userSlug }: { userSlug: string }) {
-  const router = useRouter()
-  const path = usePathname()
-  const params = useParams()
-  const [id, setId] = useState('')
-  const [documentData, setDocumentData] = useState<any>(null)
+type AdminButtonsProps = {
+  userSlug: string;
+};
+
+const AdminButtons: React.FC<AdminButtonsProps> = (props) => {
+  const { userSlug } = props;
+  const router = useRouter();
+  const path = usePathname();
+  const params = useParams();
+  const [id, setId] = useState("");
+  const [documentData, setDocumentData] = useState<any>(null);
+
+  const { config } = useConfig();
+  console.log(config.collections);
 
   const authClient = createAuthClient({
     plugins: [adminClient()],
-  })
+  });
 
   useEffect(() => {
     async function fetchDocumentData() {
       // Get the ID from the params.segments array
-      const segments = params.segments as string[]
-      const userSlugIndex = segments.findIndex((segment) => segment === userSlug)
+      const segments = params.segments as string[];
+      const userSlugIndex = segments.findIndex(
+        (segment) => segment === userSlug
+      );
       const id =
         userSlugIndex !== -1 && userSlugIndex < segments.length - 1
           ? segments[userSlugIndex + 1]
-          : segments[segments.length - 1]
+          : segments[segments.length - 1];
 
-      const documentData = await getDocumentData(id, path)
-      setId(id)
-      setDocumentData(documentData)
+      if (!id) {
+        console.error("No ID found in URL");
+        return;
+      }
+
+      const documentData = await getDocumentData(id, path);
+      setId(id);
+      setDocumentData(documentData);
     }
-    fetchDocumentData()
-  }, [params, path, userSlug])
+    fetchDocumentData();
+  }, [params, path, userSlug]);
 
   const handleImpersonate = async () => {
     await authClient.admin.impersonateUser({
       userId: id,
       fetchOptions: {
         onSuccess() {
-          router.push('/')
+          router.push("/");
         },
         onError(error: any) {
-          console.error('Error impersonating user:', error)
-          toast.error('Failed to impersonate user')
+          console.error("Error impersonating user:", error);
+          toast.error("Failed to impersonate user");
         },
       },
-    })
-  }
+    });
+  };
 
   const handleBan = async () => {
     await authClient.admin.banUser({
       userId: id,
       fetchOptions: {
         onSuccess() {
-          toast.success('User banned successfully')
-          router.refresh()
+          toast.success("User banned successfully");
+          router.refresh();
         },
         onError(error: any) {
-          console.error('Error banning user:', error)
-          toast.error('Failed to ban user')
+          console.error("Error banning user:", error);
+          toast.error("Failed to ban user");
         },
       },
-    })
-  }
+    });
+  };
 
   const handleUnban = async () => {
     await authClient.admin.unbanUser({
       userId: id,
       fetchOptions: {
         onSuccess() {
-          toast.success('User unbanned successfully')
-          router.refresh()
+          toast.success("User unbanned successfully");
+          router.refresh();
         },
         onError(error: any) {
-          console.error('Error unbanning user:', error)
-          toast.error('Failed to unban user')
+          console.error("Error unbanning user:", error);
+          toast.error("Failed to unban user");
         },
       },
-    })
-  }
+    });
+  };
 
   const handleRevokeAllSessions = async () => {
     await authClient.admin.revokeUserSessions({
       userId: id,
       fetchOptions: {
         onSuccess() {
-          toast.success('All sessions revoked successfully')
-          router.refresh()
+          toast.success("All sessions revoked successfully");
+          router.refresh();
         },
         onError(error: any) {
-          console.error('Error revoking all sessions:', error)
-          toast.error('Failed to revoke all sessions')
+          console.error("Error revoking all sessions:", error);
+          toast.error("Failed to revoke all sessions");
         },
       },
-    })
-  }
+    });
+  };
 
   return (
     <>
@@ -186,7 +204,7 @@ export default function AdminButtons({ userSlug }: { userSlug: string }) {
       `}</style>
       <div className="admin-actions-container">
         <h3>Admin Actions</h3>
-        <div style={{ display: 'flex', flexWrap: 'wrap', columnGap: '0.5rem' }}>
+        <div style={{ display: "flex", flexWrap: "wrap", columnGap: "0.5rem" }}>
           <Button onClick={handleImpersonate} buttonStyle="primary">
             Impersonate
           </Button>
@@ -197,7 +215,11 @@ export default function AdminButtons({ userSlug }: { userSlug: string }) {
           >
             Revoke All Sessions
           </Button>
-          <Button onClick={handleBan} buttonStyle="error" className="ban-button">
+          <Button
+            onClick={handleBan}
+            buttonStyle="error"
+            className="ban-button"
+          >
             Ban
           </Button>
           <Button onClick={handleUnban} buttonStyle="primary">
@@ -206,5 +228,7 @@ export default function AdminButtons({ userSlug }: { userSlug: string }) {
         </div>
       </div>
     </>
-  )
-}
+  );
+};
+
+export default AdminButtons;
