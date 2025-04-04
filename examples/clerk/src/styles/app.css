@@ -1,0 +1,107 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@plugin "tailwindcss-animate";
+
+@variant dark (&:where(.dark, .dark *));
+@theme {
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before {
+    min-height: 0;
+  }
+  :root {
+    --background: var(--color-zinc-50);
+    --foreground: var(--color-zinc-800);
+    --card: var(--color-zinc-75);
+    --card-border: var(--color-zinc-100);
+    --card-foreground: var(--color-zinc-800);
+    --popover: var(--color-zinc-50);
+    --popover-foreground: var(--color-zinc-800);
+    --primary: var(--color-zinc-700);
+    --primary-foreground: var(--color-zinc-50);
+    --secondary: var(--color-zinc-50);
+    --secondary-foreground: var(--color-zinc-800);
+    --muted: var(--color-zinc-100);
+    --muted-foreground: var(--color-zinc-500);
+    --accent: var(--color-zinc-100);
+    --accent-foreground: var(--color-zinc-700);
+    --destructive: var(--color-destructive);
+    --destructive-foreground: var(--color-zinc-50);
+    --border: var(--color-zinc-200);
+    --input: var(--color-zinc-50);
+    --ring: var(--color-zinc-400);
+  }
+
+  .dark {
+    --background: var(--color-zinc-900);
+    --foreground: var(--color-zinc-50);
+    --card: var(--color-zinc-850);
+    --card-border: var(--color-zinc-800);
+    --card-foreground: var(--color-zinc-50);
+    --popover: var(--color-zinc-800);
+    --popover-foreground: var(--color-zinc-50);
+    --primary: var(--color-zinc-50);
+    --primary-foreground: var(--color-zinc-950);
+    --secondary: var(--color-zinc-800);
+    --secondary-foreground: var(--color-zinc-50);
+    --muted: var(--color-zinc-800);
+    --muted-foreground: var(--color-zinc-400);
+    --accent: var(--color-zinc-700);
+    --accent-foreground: var(--color-zinc-50);
+    --destructive: var(--color-destructive);
+    --destructive-foreground: var(--color-zinc-50);
+    --border: var(--color-zinc-800);
+    --input: var(--color-zinc-850);
+    --ring: var(--color-blue-500);
+  }
+}
+
+@utility container {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  max-width: 1160px;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

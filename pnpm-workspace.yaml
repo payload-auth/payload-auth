@@ -1,5 +1,14 @@
 packages:
-  - "docs"
-  - "packages/*"
-  - "demos/*"
-
+  - docs
+  - demo
+  - packages/payload-auth
+  - examples/*
+onlyBuiltDependencies:
+  - "@clerk/shared"
+  - "@swc/core"
+  - browser-tabs-lock
+  - bufferutil
+  - core-js
+  - esbuild
+  - sharp
+  - utf-8-validate
