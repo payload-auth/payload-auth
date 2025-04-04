@@ -1,10 +1,11 @@
 packages:
   - docs
+  - demo
   - packages/payload-auth
-  - demos/*
+  - examples/*
 onlyBuiltDependencies:
-  - '@clerk/shared'
-  - '@swc/core'
+  - "@clerk/shared"
+  - "@swc/core"
   - browser-tabs-lock
   - bufferutil
   - core-js
