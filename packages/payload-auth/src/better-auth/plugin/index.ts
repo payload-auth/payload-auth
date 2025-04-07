@@ -46,7 +46,8 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
                 path: 'payload-auth/better-auth/plugin/rsc#Login',
                 serverProps: {
                   defaultAdminRole: pluginOptions.users?.adminRoles?.[0],
-                  options: pluginOptions.adminComponents,
+                  pluginOptions: pluginOptions,
+                  betterAuthOptions: betterAuthOptions,
                 },
               },
             },
@@ -56,7 +57,8 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
                 path: 'payload-auth/better-auth/plugin/rsc#CreateFirstAdmin',
                 serverProps: {
                   defaultAdminRole: pluginOptions.users?.adminRoles?.[0],
-                  options: pluginOptions.adminComponents,
+                  pluginOptions: pluginOptions,
+                  betterAuthOptions: betterAuthOptions,
                 },
               },
             },

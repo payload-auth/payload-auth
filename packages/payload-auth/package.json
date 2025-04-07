@@ -75,6 +75,7 @@
     "build:types": "tsc --project tsconfig.json"
   },
   "peerDependencies": {
+    "@payloadcms/ui": "^3.33.0",
     "payload": "^3.33.0",
     "next": "^15.2.4",
     "react": "^19",

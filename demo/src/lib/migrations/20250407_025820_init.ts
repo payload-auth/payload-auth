@@ -7,11 +7,14 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE TABLE IF NOT EXISTS "users" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"name" varchar,
+  	"email" varchar NOT NULL,
   	"email_verified" boolean DEFAULT false NOT NULL,
   	"image" varchar,
   	"role" "enum_users_role" DEFAULT 'user' NOT NULL,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+  	"username" varchar,
+  	"display_username" varchar,
   	"normalized_email" varchar,
   	"two_factor_enabled" boolean DEFAULT false,
   	"is_anonymous" boolean DEFAULT false,
@@ -19,16 +22,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"phone_number_verified" boolean DEFAULT false,
   	"banned" boolean DEFAULT false,
   	"ban_reason" varchar,
-  	"ban_expires" timestamp(3) with time zone,
-  	"email" varchar NOT NULL,
-  	"reset_password_token" varchar,
-  	"reset_password_expiration" timestamp(3) with time zone,
-  	"salt" varchar,
-  	"hash" varchar,
-  	"_verified" boolean,
-  	"_verificationtoken" varchar,
-  	"login_attempts" numeric DEFAULT 0,
-  	"lock_until" timestamp(3) with time zone
+  	"ban_expires" timestamp(3) with time zone
   );
   
   CREATE TABLE IF NOT EXISTS "accounts" (
@@ -383,10 +377,11 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
    WHEN duplicate_object THEN null;
   END $$;
   
+  CREATE UNIQUE INDEX IF NOT EXISTS "users_email_idx" ON "users" USING btree ("email");
   CREATE INDEX IF NOT EXISTS "users_updated_at_idx" ON "users" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "users_created_at_idx" ON "users" USING btree ("created_at");
+  CREATE UNIQUE INDEX IF NOT EXISTS "users_username_idx" ON "users" USING btree ("username");
   CREATE UNIQUE INDEX IF NOT EXISTS "users_normalized_email_idx" ON "users" USING btree ("normalized_email");
-  CREATE UNIQUE INDEX IF NOT EXISTS "users_email_idx" ON "users" USING btree ("email");
   CREATE INDEX IF NOT EXISTS "accounts_user_idx" ON "accounts" USING btree ("user_id");
   CREATE INDEX IF NOT EXISTS "accounts_account_id_idx" ON "accounts" USING btree ("account_id");
   CREATE INDEX IF NOT EXISTS "accounts_updated_at_idx" ON "accounts" USING btree ("updated_at");

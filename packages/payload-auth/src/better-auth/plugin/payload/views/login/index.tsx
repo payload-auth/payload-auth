@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import {
   createClientConfig,
   type AdminViewServerProps,
@@ -10,13 +10,18 @@ import { Gutter } from "@payloadcms/ui";
 import Logo from "../../components/logo";
 import { LoginForm } from "./form/index";
 import { getSafeRedirect } from "../../utils/get-safe-redirect";
-import type { BetterAuthPluginOptions } from "../../../types";
+import type {
+  BetterAuthPluginOptions,
+  SanitizedBetterAuthOptions,
+} from "../../../types";
+import { checkUsernamePlugin } from "../../../helpers/check-username-plugin";
 
 export const loginBaseClass = "login";
 
 type LoginViewProps = AdminViewServerProps & {
   defaultAdminRole: string;
-  options: BetterAuthPluginOptions["adminComponents"];
+  pluginOptions: BetterAuthPluginOptions;
+  betterAuthOptions: SanitizedBetterAuthOptions;
 };
 
 const LoginView: React.FC<LoginViewProps> = async ({
@@ -24,7 +29,8 @@ const LoginView: React.FC<LoginViewProps> = async ({
   params,
   searchParams,
   defaultAdminRole,
-  options,
+  pluginOptions,
+  betterAuthOptions,
 }: LoginViewProps) => {
   const { locale, permissions, req } = initPageResult;
   const {
@@ -38,7 +44,6 @@ const LoginView: React.FC<LoginViewProps> = async ({
     admin: {
       components: { afterLogin, beforeLogin, graphics } = {},
       user: userSlug,
-      routes: { forgot: forgotRoute },
     },
     routes: { admin: adminRoute },
   } = config;
@@ -87,14 +92,13 @@ const LoginView: React.FC<LoginViewProps> = async ({
     redirect(`${adminRoute}/create-first-admin`);
   }
 
-  const clientConfig = createClientConfig({
-    config,
-    i18n,
-    importMap: payload.importMap,
-  });
+  const canLoginWithUsername = checkUsernamePlugin(betterAuthOptions);
+  const socialProviders = pluginOptions.adminComponents?.socialProviders ?? {};
+
+  console.log(socialProviders);
 
   return (
-    <Gutter className="mt-40">
+    <Fragment>
       <div className={`${loginBaseClass}__brand`}>
         {RenderServerComponent({
           Component: graphics?.Logo,
@@ -125,8 +129,8 @@ const LoginView: React.FC<LoginViewProps> = async ({
         } satisfies ServerProps,
       })}
       <LoginForm
-        clientConfig={clientConfig}
-        options={options}
+        hasUsernamePlugin={canLoginWithUsername}
+        socialProviders={socialProviders}
         prefillEmail={prefillEmail}
         prefillPassword={prefillPassword}
         prefillUsername={prefillUsername}
@@ -145,7 +149,7 @@ const LoginView: React.FC<LoginViewProps> = async ({
           user: user ?? undefined,
         } satisfies ServerProps,
       })}
-    </Gutter>
+    </Fragment>
   );
 };
 

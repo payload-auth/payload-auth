@@ -13,12 +13,14 @@ import {
   openAPI,
   organization,
   phoneNumber,
-  twoFactor
+  twoFactor,
+  username
 } from 'better-auth/plugins'
 import { passkey } from 'better-auth/plugins/passkey'
 import type { CollectionConfig } from 'payload'
 
 export const betterAuthPlugins = [
+  username(),
   emailHarmony(),
   phoneHarmony({
     defaultCountry: 'CA'
@@ -97,7 +99,7 @@ export const betterAuthOptions: BetterAuthOptions = {
   trustedOrigins: [process.env.NEXT_PUBLIC_BETTER_AUTH_URL],
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    // requireEmailVerification: true,
     async sendResetPassword({ user, url }) {
       console.log('Send reset password for user: ', user, url)
     }
@@ -161,7 +163,15 @@ export const betterAuthPluginOptions: BetterAuthPluginOptions = {
     logTables: false,
     enableDebugLogs: false
   },
-  disableDefaultPayloadAuth: false,
+  disableDefaultPayloadAuth: true,
+  adminComponents: {
+    socialProviders: {
+      google: {
+        enabled: true,
+        disableSignUp: true
+      }
+    }
+  },
   hidePluginCollections: true,
   users: {
     slug: 'users',
@@ -190,6 +200,9 @@ export const betterAuthPluginOptions: BetterAuthPluginOptions = {
 
               return `<p>Verify your email by clicking <a href="${verifyUrl}">here</a></p>`
             }
+          },
+          loginWithUsername: {
+            allowEmailLogin: true
           }
         }
       } satisfies CollectionConfig

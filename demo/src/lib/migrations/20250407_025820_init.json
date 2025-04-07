@@ -1,5 +1,5 @@
 {
-  "id": "44efea51-a3ec-4df2-91c1-cd09a5654221",
+  "id": "f9a378ba-4e61-4724-8157-acafde19212d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -19,6 +19,12 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
         },
         "email_verified": {
           "name": "email_verified",
@@ -54,6 +60,18 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "username": {
+          "name": "username",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "display_username": {
+          "name": "display_username",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
         },
         "normalized_email": {
           "name": "normalized_email",
@@ -106,64 +124,24 @@
           "type": "timestamp(3) with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "email": {
-          "name": "email",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reset_password_token": {
-          "name": "reset_password_token",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "reset_password_expiration": {
-          "name": "reset_password_expiration",
-          "type": "timestamp(3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "salt": {
-          "name": "salt",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "hash": {
-          "name": "hash",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "_verified": {
-          "name": "_verified",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "_verificationtoken": {
-          "name": "_verificationtoken",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "login_attempts": {
-          "name": "login_attempts",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false,
-          "default": 0
-        },
-        "lock_until": {
-          "name": "lock_until",
-          "type": "timestamp(3) with time zone",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
+        "users_email_idx": {
+          "name": "users_email_idx",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "users_updated_at_idx": {
           "name": "users_updated_at_idx",
           "columns": [
@@ -194,11 +172,11 @@
           "method": "btree",
           "with": {}
         },
-        "users_normalized_email_idx": {
-          "name": "users_normalized_email_idx",
+        "users_username_idx": {
+          "name": "users_username_idx",
           "columns": [
             {
-              "expression": "normalized_email",
+              "expression": "username",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -209,11 +187,11 @@
           "method": "btree",
           "with": {}
         },
-        "users_email_idx": {
-          "name": "users_email_idx",
+        "users_normalized_email_idx": {
+          "name": "users_normalized_email_idx",
           "columns": [
             {
-              "expression": "email",
+              "expression": "normalized_email",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

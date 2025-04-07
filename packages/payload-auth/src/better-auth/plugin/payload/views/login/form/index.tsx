@@ -1,63 +1,79 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { createAuthClient } from "better-auth/react";
 import { passkeyClient } from "better-auth/client/plugins";
-import { Key, Loader2 } from "lucide-react";
+import { Key } from "lucide-react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation.js";
+import { useRouter } from "next/navigation";
 import type {
   BetterAuthPluginOptions,
+  SanitizedBetterAuthOptions,
   SocialProviders,
-} from "../../../../types.js";
-import type { ClientConfig, FormState } from "payload";
+} from "../../../../types";
+import type { Data, FormState } from "payload";
 import {
   Button,
   Form,
   FormSubmit,
   Link,
   PasswordField,
+  useAuth,
   useConfig,
   useTranslation,
 } from "@payloadcms/ui";
 
-import { getSafeRedirect } from "../../../utils/get-safe-redirect.js";
-
-import type { LoginFieldProps } from "./login-field.js";
-import { Icons } from "../../../components/ui/icons.js";
+import { getSafeRedirect } from "../../../utils/get-safe-redirect";
+import { Icons } from "../../../components/ui/icons";
 
 import "./index.scss";
-import { getTranslation, t } from "@payloadcms/translations";
+import { formatAdminURL, getLoginOptions } from "payload/shared";
+import { LoginField, LoginFieldProps } from "./fields/login-field";
+import { checkUsernamePlugin } from "../../../../helpers/check-username-plugin";
 const baseClass = "login__form";
 
-export const LoginForm: React.FC<{
-  clientConfig: ClientConfig;
-  options: BetterAuthPluginOptions["adminComponents"];
+type LoginFormProps = {
+  socialProviders: SocialProviders;
+  hasUsernamePlugin: boolean;
   prefillEmail?: string;
   prefillPassword?: string;
   prefillUsername?: string;
   searchParams: { [key: string]: string | string[] | undefined };
-}> = ({
-  clientConfig,
-  options,
+};
+
+export const LoginForm: React.FC<LoginFormProps> = ({
+  socialProviders,
+  hasUsernamePlugin,
   prefillEmail,
   prefillPassword,
   prefillUsername,
   searchParams,
 }) => {
   const router = useRouter();
-  const [loading, setLoading] = React.useState(false);
-  const loginWithUsername = false;
-  const canLoginWithEmail = true;
-  const canLoginWithUsername = false;
+  const { t } = useTranslation();
+  const { setUser } = useAuth();
+  const { config, getEntityConfig } = useConfig();
+  const [loading, setLoading] = useState<Boolean>(false);
 
-  const { getEntityConfig } = useConfig();
+  const {
+    admin: {
+      routes: { forgot: forgotRoute },
+      user: userSlug,
+    },
+    routes: { admin: adminRoute, api: apiRoute },
+  } = config;
+
+  const collectionConfig = getEntityConfig({ collectionSlug: userSlug });
+  const { auth: authOptions } = collectionConfig;
+  const loginWithUsername = authOptions?.loginWithUsername ?? false;
+  const { canLoginWithEmail, canLoginWithUsername } =
+    getLoginOptions(loginWithUsername);
 
   const [loginType] = React.useState<LoginFieldProps["type"]>(() => {
-    if (canLoginWithEmail && canLoginWithUsername) {
+    if (canLoginWithEmail && canLoginWithUsername && hasUsernamePlugin) {
       return "emailOrUsername";
     }
-    if (canLoginWithUsername) {
+    if (canLoginWithUsername && hasUsernamePlugin) {
       return "username";
     }
     return "email";
@@ -93,25 +109,30 @@ export const LoginForm: React.FC<{
     };
   }
 
-  const adminRoute = clientConfig.routes.admin;
+  const handleLogin = (data: any) => {
+    console.log("Successfully logged in", data);
+    setUser(data);
+  };
 
-  const handleSubmit = (data: unknown) => {
-    const { email, password } = data as { email: string; password: string };
-    authClient.signIn.email({
-      email,
-      password,
-      callbackURL: adminRoute,
+  const handleSubmit = async (fields: FormState, data: Data) => {
+    console.log(fields);
+    console.log(data);
+    await fetch(`${apiRoute}/${userSlug}/login`, {
+      method: "POST",
+      body: JSON.stringify(data),
     });
   };
 
   return (
     <div className="space-y-4">
-      {/* <Form
+      <Form
+        action={`${apiRoute}/${userSlug}/login`}
         className={baseClass}
         disableSuccessStatus
         initialState={initialState}
         method="POST"
-        onSubmit={handleSubmit}
+        // onSubmit={handleSubmit}
+        onSuccess={handleLogin}
         redirect={getSafeRedirect(searchParams?.redirect as string, adminRoute)}
         waitForAutocomplete
       >
@@ -119,8 +140,8 @@ export const LoginForm: React.FC<{
           <LoginField type={loginType} />
           <PasswordField
             field={{
-              name: 'password',
-              label: getTranslation('general:password', clientConfig.i18n),
+              name: "password",
+              label: t("general:password"),
               required: true,
             }}
             path="password"
@@ -128,24 +149,15 @@ export const LoginForm: React.FC<{
         </div>
         <Link
           href={formatAdminURL({
-            adminRoute: clientConfig.routes.admin,
-            path: clientConfig.admin.routes.forgot,
+            adminRoute: adminRoute,
+            path: forgotRoute,
           })}
           prefetch={false}
         >
-          {getTranslation('authentication:forgotPasswordQuestion', clientConfig.admin.i18n)}
+          {t("authentication:forgotPasswordQuestion")}
         </Link>
-        <FormSubmit size="large" disabled={loading}>
-          {loading ? (
-            <>
-              <Loader2 size={16} className="animate-spin mr-2" />
-              {getTranslation('authentication:login', clientConfig.i18n)}
-            </>
-          ) : (
-            getTranslation('authentication:login', clientConfig.i18n)
-          )}
-        </FormSubmit>
-      </Form> */}
+        <FormSubmit size="large">{t("authentication:login")}</FormSubmit>
+      </Form>
 
       <div className="relative my-4">
         <div className="relative flex justify-center text-xs uppercase border-b border-muted pb-4">
@@ -156,9 +168,9 @@ export const LoginForm: React.FC<{
       </div>
 
       <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
-        {Object.keys(options?.socialProviders ?? {}).map((provider) => {
+        {Object.keys(socialProviders ?? {}).map((provider) => {
           const typedProvider = provider as keyof SocialProviders;
-          const providerConfig = options?.socialProviders?.[typedProvider];
+          const providerConfig = socialProviders?.[typedProvider];
 
           const Icon = Icons[provider as keyof typeof Icons];
 

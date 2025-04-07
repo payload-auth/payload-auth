@@ -116,22 +116,34 @@ export interface Config {
   };
 }
 export interface UserAuthOperations {
-  forgotPassword: {
-    email: string;
-    password: string;
-  };
-  login: {
-    email: string;
-    password: string;
-  };
+  forgotPassword:
+    | {
+        email: string;
+      }
+    | {
+        username: string;
+      };
+  login:
+    | {
+        email: string;
+        password: string;
+      }
+    | {
+        password: string;
+        username: string;
+      };
   registerFirstUser: {
-    email: string;
     password: string;
+    username: string;
+    email?: string;
   };
-  unlock: {
-    email: string;
-    password: string;
-  };
+  unlock:
+    | {
+        email: string;
+      }
+    | {
+        username: string;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -143,6 +155,10 @@ export interface User {
    * Users chosen display name
    */
   name?: string | null;
+  /**
+   * The email of the user
+   */
+  email: string;
   /**
    * Whether the email of the user has been verified
    */
@@ -157,6 +173,14 @@ export interface User {
   role: 'admin' | 'user';
   updatedAt: string;
   createdAt: string;
+  /**
+   * The username of the user
+   */
+  username?: string | null;
+  /**
+   * The display username of the user
+   */
+  displayUsername?: string | null;
   /**
    * The normalized email of the user
    */
@@ -189,19 +213,6 @@ export interface User {
    * The date and time when the ban will expire
    */
   banExpires?: string | null;
-  /**
-   * The email of the user
-   */
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  _verified?: boolean | null;
-  _verificationToken?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
 }
 /**
  * Accounts are used to store user accounts for authentication providers
@@ -704,11 +715,14 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  email?: T;
   emailVerified?: T;
   image?: T;
   role?: T;
   updatedAt?: T;
   createdAt?: T;
+  username?: T;
+  displayUsername?: T;
   normalizedEmail?: T;
   twoFactorEnabled?: T;
   isAnonymous?: T;
@@ -717,15 +731,6 @@ export interface UsersSelect<T extends boolean = true> {
   banned?: T;
   banReason?: T;
   banExpires?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  _verified?: T;
-  _verificationToken?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

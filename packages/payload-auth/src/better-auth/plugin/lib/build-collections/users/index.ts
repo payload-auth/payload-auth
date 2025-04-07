@@ -18,6 +18,7 @@ import { getAfterLogoutHook } from "./hooks/after-logout";
 import { getAfterDeleteHook } from "./hooks/after-delete";
 import { betterAuthStrategy } from "./better-auth-strategy";
 import { getTimestampFields } from "../utils/get-timestamp-fields";
+import { getLoginEndpoint } from "./endpoints/login";
 
 export function buildUsersCollection({
   incomingCollections,
@@ -95,6 +96,9 @@ export function buildUsersCollection({
         ? existingUserCollection.endpoints
         : []),
       getRefreshTokenEndpoint({ userSlug }),
+      ...(pluginOptions.disableDefaultPayloadAuth
+        ? [getLoginEndpoint(sanitizedBAOptions)]
+        : []),
     ],
     hooks: {
       beforeChange: [
@@ -275,7 +279,7 @@ export function buildUsersCollection({
             {
               name: "displayUsername",
               type: "text",
-              required: true,
+              required: false,
               label: "Display Username",
               admin: {
                 description: "The display username of the user",
