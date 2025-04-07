@@ -2,8 +2,8 @@ import React from "react";
 import type { AdminViewServerProps, ServerProps } from "payload";
 import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
 import { redirect } from "next/navigation";
-import { Gutter } from "@payloadcms/ui";
-import Logo from "../../components/logo";
+import { Gutter, PayloadIcon } from "@payloadcms/ui";
+import { PayloadLogo } from "@payloadcms/ui/graphics/Logo";
 import SignUp from "../../components/sign-up";
 
 type CreateFirstAdminProps = AdminViewServerProps & {
@@ -45,17 +45,6 @@ const CreateFirstAdmin: React.FC<CreateFirstAdminProps> = async ({
     redirect(admin);
   }
 
-  // const addRoleAction = async (userId: string) => {
-  //   'use server'
-  //   await payload.update({
-  //     collection: userSlug,
-  //     id: userId,
-  //     data: {
-  //       role: defaultAdminRole ?? 'admin',
-  //     },
-  //   })
-  // }
-
   // Filter out the first component from afterLogin array or set to undefined if not more than 1
   const filteredAfterLogin =
     Array.isArray(afterLogin) && afterLogin.length > 1
@@ -82,7 +71,7 @@ const CreateFirstAdmin: React.FC<CreateFirstAdminProps> = async ({
         >
           {RenderServerComponent({
             Component: graphics?.Logo,
-            Fallback: () => <Logo />,
+            Fallback: () => <PayloadLogo />,
             importMap: payload.importMap,
             serverProps: {
               i18n,
