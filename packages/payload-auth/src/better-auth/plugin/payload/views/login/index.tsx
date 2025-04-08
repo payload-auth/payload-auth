@@ -1,20 +1,18 @@
-import React, { Fragment } from "react";
-import {
-  createClientConfig,
-  type AdminViewServerProps,
-  type ServerProps,
-} from "payload";
 import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
+import { PayloadLogo } from "@payloadcms/ui/graphics/Logo";
 import { redirect } from "next/navigation";
-import { Gutter } from "@payloadcms/ui";
-import Logo from "../../components/logo";
-import { LoginForm } from "./form/index";
-import { getSafeRedirect } from "../../utils/get-safe-redirect";
+import {
+  type AdminViewServerProps,
+  type ServerProps
+} from "payload";
+import React from "react";
+import { checkUsernamePlugin } from "../../../helpers/check-username-plugin";
 import type {
   BetterAuthPluginOptions,
   SanitizedBetterAuthOptions,
 } from "../../../types";
-import { checkUsernamePlugin } from "../../../helpers/check-username-plugin";
+import { getSafeRedirect } from "../../utils/get-safe-redirect";
+import { LoginForm } from "./form/index";
 
 export const loginBaseClass = "login";
 
@@ -95,14 +93,13 @@ const LoginView: React.FC<LoginViewProps> = async ({
   const canLoginWithUsername = checkUsernamePlugin(betterAuthOptions);
   const socialProviders = pluginOptions.adminComponents?.socialProviders ?? {};
 
-  console.log(socialProviders);
-
   return (
-    <Fragment>
+    <section className="login template-minimal template-minimal--width-normal">
+      <div className="template-minimal__wrap">
       <div className={`${loginBaseClass}__brand`}>
         {RenderServerComponent({
           Component: graphics?.Logo,
-          Fallback: () => <Logo />,
+          Fallback: () => <PayloadLogo />,
           importMap: payload.importMap,
           serverProps: {
             i18n,
@@ -148,8 +145,9 @@ const LoginView: React.FC<LoginViewProps> = async ({
           searchParams,
           user: user ?? undefined,
         } satisfies ServerProps,
-      })}
-    </Fragment>
+        })}
+      </div>
+    </section>
   );
 };
 

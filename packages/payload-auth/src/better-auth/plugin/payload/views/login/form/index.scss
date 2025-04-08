@@ -1,10 +1,19 @@
 @layer payload-default {
   .login__form {
-    &__inputWrap {
+    &__wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__input-wrap {
       display: flex;
       flex-direction: column;
       gap: var(--base);
       margin-bottom: calc(var(--base) / 4);
+    }
+
+    button[type="submit"] {
+      margin-bottom: 0;
     }
   }
 }
