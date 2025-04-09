@@ -1,79 +1,119 @@
-import React from 'react'
-import type { AdminViewServerProps, ServerProps } from 'payload'
-import { RenderServerComponent } from '@payloadcms/ui/elements/RenderServerComponent'
-import { redirect } from 'next/navigation'
-import { Gutter } from '@payloadcms/ui'
-import { SignUp } from '../../components/sign-up'
-import Logo from '../../components/logo'
+import React from "react";
+import type { AdminViewServerProps } from "payload";
+import "./index.scss";
+import { CreateFirstUserClient } from "./client";
+import {
+  BetterAuthPluginOptions,
+  SanitizedBetterAuthOptions,
+} from "../../../types";
+import { checkUsernamePlugin } from "../../../helpers/check-username-plugin";
+import { getSafeRedirect } from "../../utils/get-safe-redirect";
+import { redirect } from "next/navigation";
 
-export default async function CreateFirstAdmin({
+type CreateFirstAdminProps = AdminViewServerProps & {
+  defaultAdminRole: string;
+  pluginOptions: BetterAuthPluginOptions;
+  betterAuthOptions: SanitizedBetterAuthOptions;
+};
+
+const CreateFirstAdmin: React.FC<CreateFirstAdminProps> = async ({
   initPageResult,
   params,
   searchParams,
   defaultAdminRole,
-}: AdminViewServerProps & { defaultAdminRole: string }) {
-  const { locale, permissions, req } = initPageResult
+  pluginOptions,
+  betterAuthOptions,
+}: CreateFirstAdminProps) => {
   const {
-    i18n,
-    payload: { config },
-    payload,
-    user,
-  } = req
+    locale,
+    req,
+    req: {
+      payload: {
+        collections,
+        config: {
+          admin: { user: userSlug },
+          routes: { admin },
+        },
+      },
+    },
+  } = initPageResult;
 
-  const {
-    admin: { components: { afterLogin, beforeLogin, graphics } = {}, user: userSlug },
-    routes: { admin, api },
-  } = config
+  const collectionConfig = collections?.[userSlug]?.config;
+  const { auth: authOptions } = collectionConfig;
+  const hasUsernamePlugin = checkUsernamePlugin(betterAuthOptions);
+  const loginWithUsername = authOptions.loginWithUsername;
+  const canLoginWithUsername =
+    (hasUsernamePlugin && loginWithUsername) ?? false;
 
   const adminCount = await req.payload.count({
     collection: userSlug,
     where: {
       role: {
-        equals: defaultAdminRole ?? 'admin',
+        equals: defaultAdminRole ?? "admin",
       },
     },
-  })
+  });
+
+  const redirectUrl = getSafeRedirect(searchParams?.redirect ?? "", admin);
 
   if (adminCount.totalDocs > 0) {
-    redirect(admin)
+    redirect(redirectUrl);
   }
-
-  // const addRoleAction = async (userId: string) => {
-  //   'use server'
-  //   await payload.update({
-  //     collection: userSlug,
-  //     id: userId,
-  //     data: {
-  //       role: defaultAdminRole ?? 'admin',
-  //     },
-  //   })
-  // }
-
-  // Filter out the first component from afterLogin array or set to undefined if not more than 1
-  const filteredAfterLogin =
-    Array.isArray(afterLogin) && afterLogin.length > 1 ? afterLogin.slice(1) : undefined
+  const socialProviders = pluginOptions.adminComponents?.socialProviders ?? {};
 
   return (
-    <Gutter className="mt-40">
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <div
+    <section className="create-first-user login template-minimal template-minimal--width-normal">
+      <div className="template-minimal__wrap">
+        <h1>{req.t("general:welcome")}</h1>
+        <p>{req.t("authentication:beginCreateFirstUser")}</p>
+        <CreateFirstUserClient
+          defaultAdminRole={defaultAdminRole}
+          socialProviders={socialProviders}
+          searchParams={searchParams ?? {}}
+          loginWithUsername={canLoginWithUsername}
+          userSlug={userSlug}
+        />
+      </div>
+    </section>
+  );
+};
+
+export default CreateFirstAdmin;
+
+{
+  /* <div
           style={{
-            display: 'flex',
-            justifyContent: 'center',
-            width: '100%',
-            marginBottom: '1.5rem',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              width: "100%",
+              marginBottom: "1.5rem",
+            }}
+          >
+            {RenderServerComponent({
+              Component: graphics?.Logo,
+              Fallback: () => <PayloadLogo />,
+              importMap: payload.importMap,
+              serverProps: {
+                i18n,
+                locale,
+                params,
+                payload,
+                permissions,
+                searchParams,
+                user: user ?? undefined,
+              } satisfies ServerProps,
+            })}
+          </div>
           {RenderServerComponent({
-            Component: graphics?.Logo,
-            Fallback: () => <Logo />,
+            Component: beforeLogin,
             importMap: payload.importMap,
             serverProps: {
               i18n,
@@ -85,49 +125,33 @@ export default async function CreateFirstAdmin({
               user: user ?? undefined,
             } satisfies ServerProps,
           })}
-        </div>
-        {RenderServerComponent({
-          Component: beforeLogin,
-          importMap: payload.importMap,
-          serverProps: {
-            i18n,
-            locale,
-            params,
-            payload,
-            permissions,
-            searchParams,
-            user: user ?? undefined,
-          } satisfies ServerProps,
-        })}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <SignUp
-            admin={true}
-            apiRoute={api}
-            userSlug={userSlug}
-            defaultAdminRole={defaultAdminRole}
-          />
-        </div>
-        {RenderServerComponent({
-          Component: filteredAfterLogin,
-          importMap: payload.importMap,
-          serverProps: {
-            i18n,
-            locale,
-            params,
-            payload,
-            permissions,
-            searchParams,
-            user: user ?? undefined,
-          } satisfies ServerProps,
-        })}
-      </div>
-    </Gutter>
-  )
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <SignUp
+              admin={true}
+              apiRoute={api}
+              userSlug={userSlug}
+              defaultAdminRole={defaultAdminRole}
+            />
+          </div>
+          {RenderServerComponent({
+            Component: filteredAfterLogin,
+            importMap: payload.importMap,
+            serverProps: {
+              i18n,
+              locale,
+              params,
+              payload,
+              permissions,
+              searchParams,
+              user: user ?? undefined,
+            } satisfies ServerProps,
+          })}
+        </div> */
 }

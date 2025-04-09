@@ -1,5 +1,8 @@
-import { redirect } from 'next/navigation'
+import React from "react";
+import { redirect } from "next/navigation";
 
-export default function LoginRedirect() {
-  redirect('/admin/login')
-}
+const LoginRedirect: React.FC = () => {
+  redirect("/admin/login");
+};
+
+export default LoginRedirect;

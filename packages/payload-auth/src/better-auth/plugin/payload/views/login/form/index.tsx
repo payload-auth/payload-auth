@@ -1,0 +1,144 @@
+"use client";
+
+import {
+  Form,
+  FormSubmit,
+  Link,
+  PasswordField,
+  useAuth,
+  useConfig,
+  useTranslation,
+} from "@payloadcms/ui";
+import type { FormState } from "payload";
+import React, { useState } from "react";
+import type { SocialProviders } from "../../../../types";
+
+import { AdminSocialProviderButtons } from "../../../components/admin-social-provider-buttons";
+import { getSafeRedirect } from "../../../utils/get-safe-redirect";
+
+import "./index.scss";
+
+import { formatAdminURL, getLoginOptions } from "payload/shared";
+import { LoginField, LoginFieldProps } from "./fields/login-field";
+const baseClass = "login__form";
+
+type LoginFormProps = {
+  socialProviders: SocialProviders;
+  hasUsernamePlugin: boolean;
+  prefillEmail?: string;
+  prefillPassword?: string;
+  prefillUsername?: string;
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
+export const LoginForm: React.FC<LoginFormProps> = ({
+  socialProviders,
+  hasUsernamePlugin,
+  prefillEmail,
+  prefillPassword,
+  prefillUsername,
+  searchParams,
+}) => {
+  const { t } = useTranslation();
+  const { setUser } = useAuth();
+  const { config, getEntityConfig } = useConfig();
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const {
+    admin: {
+      routes: { forgot: forgotRoute },
+      user: userSlug,
+    },
+    routes: { admin: adminRoute, api: apiRoute },
+  } = config;
+
+  const collectionConfig = getEntityConfig({ collectionSlug: userSlug });
+  const { auth: authOptions } = collectionConfig;
+  const loginWithUsername = authOptions?.loginWithUsername ?? false;
+  const { canLoginWithEmail, canLoginWithUsername } =
+    getLoginOptions(loginWithUsername);
+
+  const [loginType] = React.useState<LoginFieldProps["type"]>(() => {
+    if (canLoginWithEmail && canLoginWithUsername && hasUsernamePlugin) {
+      return "emailOrUsername";
+    }
+    if (canLoginWithUsername && hasUsernamePlugin) {
+      return "username";
+    }
+    return "email";
+  });
+
+  const initialState: FormState = {
+    password: {
+      initialValue: prefillPassword ?? undefined,
+      valid: true,
+      value: prefillPassword ?? undefined,
+    },
+  };
+
+  if (loginType === "emailOrUsername" || loginType === "username") {
+    initialState.username = {
+      initialValue: prefillUsername ?? undefined,
+      valid: true,
+      value: prefillUsername ?? undefined,
+    };
+  }
+  if (loginType === "emailOrUsername" || loginType === "email") {
+    initialState.email = {
+      initialValue: prefillEmail ?? undefined,
+      valid: true,
+      value: prefillEmail ?? undefined,
+    };
+  }
+
+  const handleLogin = (data: any) => {
+    setUser(data);
+  };
+
+  return (
+    <div className={`${baseClass}__wrapper`}>
+      <Form
+        action={`${apiRoute}/${userSlug}/login`}
+        className={baseClass}
+        disableSuccessStatus
+        initialState={initialState}
+        method="POST"
+        onSuccess={handleLogin}
+        redirect={getSafeRedirect(searchParams?.redirect as string, adminRoute)}
+        waitForAutocomplete
+      >
+        <div className={`${baseClass}__input-wrap`}>
+          <LoginField type={loginType} />
+          <PasswordField
+            field={{
+              name: "password",
+              label: t("general:password"),
+              required: true,
+            }}
+            path="password"
+          />
+        </div>
+        <div className={`${baseClass}__forgot-password-wrap`}>
+          <Link
+            href={formatAdminURL({
+              adminRoute: adminRoute,
+              path: forgotRoute,
+            })}
+            prefetch={false}
+          >
+            {t("authentication:forgotPasswordQuestion")}
+          </Link>
+        </div>
+        <FormSubmit size="large" disabled={loading}>
+          {t("authentication:login")}
+        </FormSubmit>
+      </Form>
+      <AdminSocialProviderButtons
+        isFirstAdmin={false}
+        socialProviders={socialProviders}
+        setLoading={setLoading}
+        searchParams={searchParams}
+      />
+    </div>
+  );
+};
