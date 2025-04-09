@@ -73,7 +73,6 @@ export const AdminSocialProviderButtons: React.FC<
               },
               {
                 onSuccess: async (context) => {
-                  console.log(context);
                   const data = context.data;
                   if (isFirstAdmin) {
                     const user =
