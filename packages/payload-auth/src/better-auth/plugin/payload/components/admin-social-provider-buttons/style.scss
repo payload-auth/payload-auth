@@ -13,6 +13,8 @@
 
   .btn__label {
     gap: 0.5rem;
+    display: flex;
+    align-items: center;
   }
 
   &--count-many {

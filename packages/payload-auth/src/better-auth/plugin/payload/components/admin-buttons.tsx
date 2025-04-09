@@ -1,115 +1,35 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { Button, toast, useDocumentInfo, useField } from "@payloadcms/ui";
 import { adminClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
-import { useParams, usePathname, useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { Button, useConfig, useDocumentInfo } from "@payloadcms/ui";
+import { useRouter } from "next/navigation";
+import React from "react";
 
 import "./styles.css";
 
 import "@payloadcms/ui/styles.css";
 
-async function getDocumentData(id: string, path: string) {
-  const apiUrl = `${path}/api`;
-  try {
-    // Try to load the /api page and parse the HTML response
-    const response = await fetch(apiUrl);
-    if (response.ok) {
-      const htmlResponse = await response.text();
-      // Parse the HTML to extract user data
-      try {
-        let documentData: any = null;
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlResponse, "text/html");
-
-        // Look for the JSON data in the query inspector
-        const jsonRows = doc.querySelectorAll(".query-inspector__row-line");
-        if (jsonRows.length > 0) {
-          documentData = {};
-
-          jsonRows.forEach((row) => {
-            const keyMatch = row.innerHTML.match(/"([^"]+)"\s*:/);
-            if (keyMatch) {
-              const key = keyMatch[1]?.trim() ?? "";
-              const valueElement = row.querySelector(".query-inspector__value");
-              if (valueElement) {
-                let value = valueElement.textContent?.trim() ?? "";
-
-                // Convert values to appropriate types
-                if (value === "true") value = "true";
-                else if (value === "false") value = "false";
-                else if (value === "null") value = "null";
-                else if (!isNaN(Number(value)))
-                  value = Number(value).toString();
-                else if (value.startsWith('"') && value.endsWith('"')) {
-                  value = value.substring(1, value.length - 1).trim();
-                }
-
-                documentData[key] = value;
-              }
-            }
-          });
-        }
-
-        return documentData;
-      } catch (parseError) {
-        console.error("Error parsing document data from HTML:", parseError);
-        return null;
-      }
-    }
-  } catch (apiError) {
-    console.error("Error fetching document data from API:", apiError);
-  }
-}
-
 type AdminButtonsProps = {
   userSlug: string;
 };
 
-const AdminButtons: React.FC<AdminButtonsProps> = (props) => {
-  const { userSlug } = props;
+const AdminButtons: React.FC<AdminButtonsProps> = () => {
   const router = useRouter();
-  const path = usePathname();
-  const params = useParams();
-  const [id, setId] = useState("");
-  const [documentData, setDocumentData] = useState<any>(null);
+  const { id } = useDocumentInfo();
+  const { value: isBanned } = useField({ path: "banned" });
 
-  const { config } = useConfig();
-  console.log(config.collections);
+  if (!id) {
+    return null;
+  }
 
   const authClient = createAuthClient({
     plugins: [adminClient()],
   });
 
-  useEffect(() => {
-    async function fetchDocumentData() {
-      // Get the ID from the params.segments array
-      const segments = params.segments as string[];
-      const userSlugIndex = segments.findIndex(
-        (segment) => segment === userSlug
-      );
-      const id =
-        userSlugIndex !== -1 && userSlugIndex < segments.length - 1
-          ? segments[userSlugIndex + 1]
-          : segments[segments.length - 1];
-
-      if (!id) {
-        console.error("No ID found in URL");
-        return;
-      }
-
-      const documentData = await getDocumentData(id, path);
-      setId(id);
-      setDocumentData(documentData);
-    }
-    fetchDocumentData();
-  }, [params, path, userSlug]);
-
   const handleImpersonate = async () => {
     await authClient.admin.impersonateUser({
-      userId: id,
+      userId: String(id),
       fetchOptions: {
         onSuccess() {
           router.push("/");
@@ -124,7 +44,7 @@ const AdminButtons: React.FC<AdminButtonsProps> = (props) => {
 
   const handleBan = async () => {
     await authClient.admin.banUser({
-      userId: id,
+      userId: String(id),
       fetchOptions: {
         onSuccess() {
           toast.success("User banned successfully");
@@ -140,7 +60,7 @@ const AdminButtons: React.FC<AdminButtonsProps> = (props) => {
 
   const handleUnban = async () => {
     await authClient.admin.unbanUser({
-      userId: id,
+      userId: String(id),
       fetchOptions: {
         onSuccess() {
           toast.success("User unbanned successfully");
@@ -156,7 +76,7 @@ const AdminButtons: React.FC<AdminButtonsProps> = (props) => {
 
   const handleRevokeAllSessions = async () => {
     await authClient.admin.revokeUserSessions({
-      userId: id,
+      userId: String(id),
       fetchOptions: {
         onSuccess() {
           toast.success("All sessions revoked successfully");
@@ -173,15 +93,15 @@ const AdminButtons: React.FC<AdminButtonsProps> = (props) => {
   return (
     <>
       <style>{`
-        .admin-actions-container {
-          display: flex;
-          flex-direction: column;
+        .doc-tabs__tabs:has(.impersonate-button) .doc-tab {
+          order: 10;
         }
-        .admin-actions-container h3 {
-          margin-bottom: 1rem;
-        }
-        .admin-actions-container .btn {
-          margin-block: 0.5rem;
+        .impersonate-button, .revoke-sessions-button, .ban-button, .unban-button {
+          display: inline-flex;
+          align-items: center;
+          margin-block: 0;
+          padding-block: 0.23rem;
+          text-wrap: nowrap;
         }
         .ban-button {
           background-color: oklch(0.258 0.092 26.042);
@@ -202,31 +122,37 @@ const AdminButtons: React.FC<AdminButtonsProps> = (props) => {
           }
         }
       `}</style>
-      <div className="admin-actions-container">
-        <h3>Admin Actions</h3>
-        <div style={{ display: "flex", flexWrap: "wrap", columnGap: "0.5rem" }}>
-          <Button onClick={handleImpersonate} buttonStyle="primary">
-            Impersonate
-          </Button>
-          <Button
-            onClick={handleRevokeAllSessions}
-            buttonStyle="secondary"
-            className="revoke-sessions-button"
-          >
-            Revoke All Sessions
-          </Button>
-          <Button
-            onClick={handleBan}
-            buttonStyle="error"
-            className="ban-button"
-          >
-            Ban
-          </Button>
-          <Button onClick={handleUnban} buttonStyle="primary">
-            Unban
-          </Button>
-        </div>
-      </div>
+      <Button
+        onClick={handleImpersonate}
+        buttonStyle="pill"
+        className="impersonate-button"
+        size="medium"
+      >
+        Impersonate
+      </Button>
+      <Button
+        onClick={handleRevokeAllSessions}
+        buttonStyle="secondary"
+        className="revoke-sessions-button"
+        size="medium"
+      >
+        Revoke All Sessions
+      </Button>
+      {!isBanned ? (
+        <Button
+          onClick={handleBan}
+          buttonStyle="error"
+          className="ban-button"
+          size="medium"
+        >
+          Ban
+        </Button>
+      ) : null}
+      {isBanned ? (
+        <Button onClick={handleUnban} buttonStyle="primary" className="unban-button" size="medium">
+          Unban
+        </Button>
+      ) : null}
     </>
   );
 };

@@ -1,54 +1,50 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   Button,
   Select,
-  TextField,
   useConfig,
   toast,
-  TabsField,
-  CloseMenuIcon,
-  XIcon,
-  CopyIcon,
   TextInput,
 } from "@payloadcms/ui";
-import { Copy, Mail, Plus, X } from "lucide-react";
+import { Loader2, Copy, XIcon } from "lucide-react";
 import { useTranslation, Modal, useModal } from "@payloadcms/ui";
 import "./index.scss";
-import { Tabs, TabsTrigger, TabsContent, TabsList } from "../tabs";
+import type { Option } from "@payloadcms/ui/elements/ReactSelect";
+import { usePathname } from "next/navigation";
 const baseClass = "admin-invite-modal";
 
-const tabs = [
-  {
-    name: "Send Email",
-    value: "send-email",
-    content: "Send an email to the admin with a link to sign in.",
-  },
-  {
-    name: "Copy Link",
-    value: "copy-link",
-    content: "Copy the invite link to your clipboard.",
-  },
-];
-
 const AdminInviteButton: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState<Option | undefined>(undefined);
   const [email, setEmail] = useState("");
   const [inviteLink, setInviteLink] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCopyLoading, setIsCopyLoading] = useState(false);
   const { toggleModal } = useModal();
+  const pathname = usePathname();
 
   const i18n = useTranslation();
   const {
+    getEntityConfig,
     config: {
       serverURL,
-      routes: { api: apiRoute },
+      routes: { api: apiRoute, admin: adminRoute },
       admin: { user: userSlug },
     },
   } = useConfig();
+  if(pathname !== `${adminRoute}/collections/${userSlug}`) return null;
+  const userCollection = getEntityConfig({ collectionSlug: "users" });
+  const { fields: userFields } = userCollection;
+  const roleField = userFields.find((field) => 'name' in field && field.name === "role");
+  let roleOptions: { label: string; value: string }[] = [];
+  if(roleField && 'options' in roleField) {
+    roleOptions = roleField.options.map((option: any) => ({
+      label: option.label,
+      value: option.value,
+    }));
+  }
 
-  const handleGenerateInvite = async () => {
+  const handleGenerateInvite = async () => {  
     try {
       setIsLoading(true);
       const response = await fetch(
@@ -68,9 +64,11 @@ const AdminInviteButton: React.FC = () => {
       const data = await response.json();
       setInviteLink(data.inviteLink);
       setIsLoading(false);
+      return data.inviteLink;
     } catch (error) {
       toast.error("Failed to generate invite link");
       setIsLoading(false);
+      return null;
     }
   };
 
@@ -98,17 +96,30 @@ const AdminInviteButton: React.FC = () => {
 
       toast.success("Invite sent successfully");
       setIsLoading(false);
-      setIsOpen(false);
+      toggleModal("admin-invite-modal");
     } catch (error) {
       toast.error("Failed to send invite email");
       setIsLoading(false);
     }
   };
 
-  const handleCopyLink = () => {
-    if (inviteLink) {
-      navigator.clipboard.writeText(inviteLink);
-      toast.success("Invite link copied to clipboard");
+  const handleCopyLink = async () => {
+    try {
+      setIsCopyLoading(true);
+      let linkToCopy = inviteLink;
+      
+      if (!linkToCopy) {
+        linkToCopy = await handleGenerateInvite();
+      }
+      
+      if (linkToCopy) {
+        await navigator.clipboard.writeText(linkToCopy);
+        toast.success("Invite link copied to clipboard");
+      }
+    } catch (error) {
+      toast.error("Failed to copy invite link");
+    } finally {
+      setIsCopyLoading(false);
     }
   };
 
@@ -116,36 +127,17 @@ const AdminInviteButton: React.FC = () => {
     toggleModal("admin-invite-modal");
   };
 
-  //   const componentRef = useRef<HTMLDivElement | null>(null);
-
-  //   useEffect(() => {
-  //     if (componentRef.current) {
-  //       const parentNode = componentRef.current.parentNode as HTMLElement;
-  //       if (
-  //         parentNode &&
-  //         parentNode.classList &&
-  //         parentNode.classList.contains("collection-list__sub-header")
-  //       ) {
-  //         // Option 1: Remove the class
-  //         parentNode.classList.remove("collection-list__sub-header");
-
-  //         // Option 2: Or copy your content to a new element and replace the parent
-  //         // This is more extreme and might cause issues
-  //       }
-  //     }
-  //   }, []);
-
   return (
-    <div className="test-description">
+    <>
       <Button
         onClick={handleToggleModal}
         type="button"
-        size="small"
-        buttonStyle="pill"
-      >
+        size="medium"
+        buttonStyle="primary"
+        className="admin-invite-button">
         Invite User
       </Button>
-      <Modal slug="admin-invite-modal" className={`${baseClass}`}>
+      <Modal slug="admin-invite-modal" className={`${baseClass}`} closeOnBlur>
         <div className={`${baseClass}__wrapper`}>
           <Button
             onClick={handleToggleModal}
@@ -153,63 +145,58 @@ const AdminInviteButton: React.FC = () => {
             size="small"
             className={`${baseClass}__close-button`}
           >
-            <XIcon />
+            <XIcon size={24} />
           </Button>
-          <div className={`${baseClass}__content`}>
+          <div className={`${baseClass}__content`} style={{ maxWidth: '38rem' }}>
             <h1>Invite User</h1>
             <p>
               Invite a user to your application. Select the role of the user and
-              either send the invite via email or copy the link and send
-              manually.
+              send the invite via email or copy the invite link.
             </p>
-            <Select
-              options={[
-                { label: "Admin", value: "admin" },
-                { label: "Editor", value: "editor" },
-                { label: "User", value: "user" },
-              ]}
+            <Select 
+              options={roleOptions} 
+              value={role} 
+              placeholder="Select Role"
+              onChange={(option: any) => setRole(option)} 
             />
-            <Tabs defaultValue={"email"}>
-              <TabsList>
-                <TabsTrigger value={"email"}>
-                  <span>Send Email</span>
-                </TabsTrigger>
-                <TabsTrigger value={"link"}>
-                  <span>Copy Link</span>
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value={"email"}>
-                <div className={`${baseClass}__tabs-content-email`}>
-                  <TextInput
-                    path="email"
-                    onChange={(e: any) => setEmail(e.target.value)}
-                  />
-                  <Button type="button" onClick={handleSendEmail}>
-                    Send Email
-                  </Button>
-                </div>
-              </TabsContent>
-              <TabsContent value={"link"}>
-                <div className={`${baseClass}__tabs-content-link`}>
-                  <code className="text-[13px]">
-                    Copy the invite link to your clipboard.
-                  </code>
-                  <Button
-                    size="small"
-                    buttonStyle="icon-label"
-                    className={`${baseClass}__copy-button`}
-                    type="button"
-                    onClick={handleCopyLink}
-                  >
-                    <CopyIcon />
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
+            
+            <div className={`${baseClass}__invite-controls`}>
+              <div className={`${baseClass}__email-field`}>
+                <TextInput
+                  label="Email Address"
+                  path="email"
+                  value={email}
+                  onChange={(e: any) => setEmail(e.target.value)}
+                  placeholder="user@example.com"
+                />
+              </div>
+              
+              <div className={`${baseClass}__buttons`}>
+                <Button 
+                  type="button" 
+                  onClick={handleSendEmail}
+                  disabled={isLoading}
+                >
+                  {isLoading ? <Loader2 size={24} className="animate-spin mr-2" /> : null}
+                  Send Email
+                </Button>
+                
+                <Button
+                  size="medium"
+                  buttonStyle="transparent"
+                  className={`${baseClass}__copy-button`}
+                  type="button"
+                  onClick={handleCopyLink}
+                  disabled={isCopyLoading}
+                >
+                  {isCopyLoading ? <Loader2 size={20} strokeWidth={1.5} className="animate-spin" /> : <Copy size={20} strokeWidth={1.5} />}
+                  Generate Link</Button>
+              </div>
+            </div>
           </div>
         </div>
       </Modal>
-    </div>
+    </>
   );
 };
 
