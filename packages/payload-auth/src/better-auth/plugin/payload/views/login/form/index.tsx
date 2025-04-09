@@ -92,7 +92,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   }
 
   const handleLogin = (data: any) => {
-    console.log("Successfully logged in via form", data);
     setUser(data);
   };
 
@@ -134,8 +133,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           {t("authentication:login")}
         </FormSubmit>
       </Form>
-
       <AdminSocialProviderButtons
+        isFirstAdmin={false}
         socialProviders={socialProviders}
         setLoading={setLoading}
         searchParams={searchParams}

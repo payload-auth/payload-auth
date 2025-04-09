@@ -1,10 +1,6 @@
 import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
-import { PayloadLogo } from "@payloadcms/ui/graphics/Logo";
 import { redirect } from "next/navigation";
-import {
-  type AdminViewServerProps,
-  type ServerProps
-} from "payload";
+import { type AdminViewServerProps, type ServerProps } from "payload";
 import React from "react";
 import { checkUsernamePlugin } from "../../../helpers/check-username-plugin";
 import type {
@@ -13,6 +9,9 @@ import type {
 } from "../../../types";
 import { getSafeRedirect } from "../../utils/get-safe-redirect";
 import { LoginForm } from "./form/index";
+import { Logo } from "../../components/logo";
+
+
 
 export const loginBaseClass = "login";
 
@@ -96,10 +95,19 @@ const LoginView: React.FC<LoginViewProps> = async ({
   return (
     <section className="login template-minimal template-minimal--width-normal">
       <div className="template-minimal__wrap">
-      <div className={`${loginBaseClass}__brand`}>
+        <div className={`${loginBaseClass}__brand`}>
+          <Logo
+            i18n={i18n}
+            locale={locale}
+            params={params}
+            payload={payload}
+            permissions={permissions}
+            searchParams={searchParams}
+            user={user ?? undefined}
+          />
+        </div>
         {RenderServerComponent({
-          Component: graphics?.Logo,
-          Fallback: () => <PayloadLogo />,
+          Component: beforeLogin,
           importMap: payload.importMap,
           serverProps: {
             i18n,
@@ -111,40 +119,26 @@ const LoginView: React.FC<LoginViewProps> = async ({
             user: user ?? undefined,
           } satisfies ServerProps,
         })}
-      </div>
-      {RenderServerComponent({
-        Component: beforeLogin,
-        importMap: payload.importMap,
-        serverProps: {
-          i18n,
-          locale,
-          params,
-          payload,
-          permissions,
-          searchParams,
-          user: user ?? undefined,
-        } satisfies ServerProps,
-      })}
-      <LoginForm
-        hasUsernamePlugin={canLoginWithUsername}
-        socialProviders={socialProviders}
-        prefillEmail={prefillEmail}
-        prefillPassword={prefillPassword}
-        prefillUsername={prefillUsername}
-        searchParams={searchParams ?? {}}
-      />
-      {RenderServerComponent({
-        Component: filteredAfterLogin,
-        importMap: payload.importMap,
-        serverProps: {
-          i18n,
-          locale,
-          params,
-          payload,
-          permissions,
-          searchParams,
-          user: user ?? undefined,
-        } satisfies ServerProps,
+        <LoginForm
+          hasUsernamePlugin={canLoginWithUsername}
+          socialProviders={socialProviders}
+          prefillEmail={prefillEmail}
+          prefillPassword={prefillPassword}
+          prefillUsername={prefillUsername}
+          searchParams={searchParams ?? {}}
+        />
+        {RenderServerComponent({
+          Component: filteredAfterLogin,
+          importMap: payload.importMap,
+          serverProps: {
+            i18n,
+            locale,
+            params,
+            payload,
+            permissions,
+            searchParams,
+            user: user ?? undefined,
+          } satisfies ServerProps,
         })}
       </div>
     </section>

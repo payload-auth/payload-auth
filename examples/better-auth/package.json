@@ -13,7 +13,6 @@
     "build:prod": "payload migrate && pnpm build"
   },
   "dependencies": {
-    "@better-auth/expo": "1.2.5",
     "@daveyplate/better-auth-ui": "1.2.31",
     "@eslint/eslintrc": "^3.2.0",
     "@hookform/resolvers": "^4.1.3",

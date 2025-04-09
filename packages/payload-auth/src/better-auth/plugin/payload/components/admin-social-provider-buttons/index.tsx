@@ -11,30 +11,38 @@ import "./style.scss";
 import { passkeyClient } from "better-auth/client/plugins";
 
 type AdminSocialProviderButtonsProps = {
+  isFirstAdmin: boolean;
   socialProviders: SocialProviders;
   setLoading: (loading: boolean) => void;
   searchParams?: { [key: string]: string | string[] | undefined };
+  defaultAdminRole?: string;
 };
 
 const baseClass = "admin-social-provider-buttons";
 
 export const AdminSocialProviderButtons: React.FC<
   AdminSocialProviderButtonsProps
-> = ({ socialProviders, setLoading, searchParams }) => {
+> = ({
+  isFirstAdmin,
+  socialProviders,
+  setLoading,
+  searchParams,
+  defaultAdminRole,
+}) => {
+  const { config } = useConfig();
+  const router = useRouter();
+  const adminRoute = config?.routes?.admin;
   const authClient = useMemo(
     () => createAuthClient({ plugins: [passkeyClient()] }),
     []
   );
-  const { config } = useConfig();
-  const router = useRouter();
-  const adminRoute = config?.routes?.admin;
 
   const providers = Object.keys(socialProviders ?? {}) as Array<
     keyof SocialProviders
   >;
   const providerCount = providers.length;
-  
-  const hasPasskeySupport = 'passkey' in authClient.signIn;
+
+  const hasPasskeySupport = "passkey" in authClient.signIn;
 
   const renderProviderButton = (
     provider: keyof SocialProviders,
@@ -42,8 +50,7 @@ export const AdminSocialProviderButtons: React.FC<
   ) => {
     const providerConfig = socialProviders?.[provider];
     const Icon = Icons[provider as keyof typeof Icons];
-    const providerName =
-      provider.charAt(0).toUpperCase() + provider.slice(1);
+    const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
 
     return (
       <Button
@@ -54,24 +61,86 @@ export const AdminSocialProviderButtons: React.FC<
         onClick={async () => {
           setLoading(true);
           try {
-            await authClient.signIn.social({
-              provider: provider,
-              callbackURL: getSafeRedirect(
-                searchParams?.redirect as string,
-                adminRoute
-              ),
-              requestSignUp:
-                providerConfig?.disableSignUp === undefined
-                  ? false
-                  : !providerConfig.disableSignUp,
-            });
+            await authClient.signIn.social(
+              {
+                provider: provider,
+                requestSignUp: isFirstAdmin
+                  ? true
+                  : providerConfig?.disableSignUp === undefined
+                    ? false
+                    : !providerConfig.disableSignUp,
+                newUserCallbackURL: `http://localhost:3000/api/${config.admin.user}/set-first-admin`,
+              },
+              {
+                onSuccess: async (context) => {
+                  console.log(context);
+                  const data = context.data;
+                  if (isFirstAdmin) {
+                    const user =
+                      typeof data === "object" && "user" in data
+                        ? data.user
+                        : null;
+                    if (user && user.id) {
+                      console.log("user", user);
+                      try {
+                        // Update the first user to have admin role
+                        const response = await fetch(
+                          `${process.env.NEXT_PUBLIC_API_URL}/api/${config.admin.user}/${user.id}`,
+                          {
+                            method: "PATCH",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              overrideAccess: true,
+                              role: defaultAdminRole,
+                            }),
+                          }
+                        );
+
+                        console.log(response);
+
+                        if (!response.ok) {
+                          console.error(
+                            "Failed to set admin role for the first user"
+                          );
+                        }
+                      } catch (error) {
+                        console.error("Error setting admin role:", error);
+                      }
+                    }
+                    const callbackURL = getSafeRedirect(
+                      searchParams?.redirect as string,
+                      adminRoute
+                    );
+                    router.push(callbackURL);
+                  } else {
+                    const callbackURL = getSafeRedirect(
+                      searchParams?.redirect as string,
+                      adminRoute
+                    );
+                    router.push(callbackURL);
+                  }
+                },
+              }
+            );
+
+            // console.log(data);
+
+            // if (error) {
+            //   toast.error(`Failed to sign in with ${providerName}`);
+            // } else if (data) {
+            //
+            // }
           } catch (error: any) {
             toast.error(`Failed to sign in with ${providerName}`);
           } finally {
             setLoading(false);
           }
         }}
-        icon={showIconOnly ? <Icon className={`${baseClass}__icon`} /> : undefined}
+        icon={
+          showIconOnly ? <Icon className={`${baseClass}__icon`} /> : undefined
+        }
         tooltip={showIconOnly ? `Sign in with ${providerName}` : undefined}
       >
         {!showIconOnly && <span>{providerName}</span>}
@@ -91,9 +160,11 @@ export const AdminSocialProviderButtons: React.FC<
         showIconOnly ? "many" : providerCount
       }`}
     >
-      {providers.map((provider) => renderProviderButton(provider, showIconOnly))}
-      
-      {hasPasskeySupport && (
+      {providers.map((provider) =>
+        renderProviderButton(provider, showIconOnly)
+      )}
+
+      {hasPasskeySupport && !isFirstAdmin && (
         <Button
           type="button"
           size="large"
@@ -115,7 +186,9 @@ export const AdminSocialProviderButtons: React.FC<
                     }
                   },
                   onError(context: any) {
-                    toast.error(context.error.message || "Failed to sign in with passkey");
+                    toast.error(
+                      context.error.message || "Failed to sign in with passkey"
+                    );
                   },
                 },
               });

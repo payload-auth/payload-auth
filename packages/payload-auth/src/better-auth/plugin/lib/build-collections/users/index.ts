@@ -19,6 +19,7 @@ import { getAfterDeleteHook } from "./hooks/after-delete";
 import { betterAuthStrategy } from "./better-auth-strategy";
 import { getTimestampFields } from "../utils/get-timestamp-fields";
 import { getLoginEndpoint } from "./endpoints/login";
+import { getSetFirstAdminEndpoint } from "./endpoints/set-first-admin";
 
 export function buildUsersCollection({
   incomingCollections,
@@ -76,7 +77,11 @@ export function buildUsersCollection({
             },
           },
         },
+        Description: {
+          path: "payload-auth/better-auth/plugin/client#AdminInviteButton",
+        },
       },
+      description: {},
     },
     access: {
       admin: ({ req }) =>
@@ -99,6 +104,7 @@ export function buildUsersCollection({
       ...(pluginOptions.disableDefaultPayloadAuth
         ? [getLoginEndpoint(sanitizedBAOptions)]
         : []),
+      getSetFirstAdminEndpoint(pluginOptions),
     ],
     hooks: {
       beforeChange: [

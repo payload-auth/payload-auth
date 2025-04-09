@@ -1,4 +1,4 @@
-import { expo } from '@better-auth/expo'
+// import { expo } from '@better-auth/expo'
 import { generateVerifyEmailUrl } from 'payload-auth/better-auth/plugin'
 import type { BetterAuthReturn, BetterAuthOptions, BetterAuthPluginOptions } from 'payload-auth/better-auth'
 import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
@@ -87,7 +87,7 @@ export const betterAuthPlugins = [
   }),
   multiSession(),
   openAPI(),
-  expo(),
+  // expo(),
   nextCookies()
 ]
 

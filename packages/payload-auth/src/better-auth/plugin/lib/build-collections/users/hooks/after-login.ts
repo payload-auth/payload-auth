@@ -75,7 +75,13 @@ export const getAfterLoginHook = (
       }
     );
 
-    const responseHeaders = await betterAuthHandleRequest(req);
+    // Create a modified request object that matches the expected MiddlewareInputContext type
+    const modifiedReq = {
+      ...req,
+      body: undefined // Explicitly set body to undefined to satisfy type constraint
+    };
+    
+    const responseHeaders = await betterAuthHandleRequest(modifiedReq);
     const responseCookies = responseHeaders
       ?.getSetCookie()
       .map((cookie) => parseSetCookie(cookie))

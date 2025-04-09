@@ -1,12 +1,7 @@
 import { type Endpoint } from "payload";
 import { status as httpStatus } from "http-status";
-import { headersWithCors } from "payload";
-import { getRequestCollection } from "../../../../helpers/get-requst-collection";
 import { SanitizedBetterAuthOptions } from "../../../../types";
-import { checkUsernamePlugin } from "../../../../helpers/check-username-plugin";
-import { isNumber } from "payload/shared";
-import { setCookieCache, setSessionCookie } from "better-auth/cookies";
-import { GenericEndpointContext } from "better-auth/types";
+
 
 export const getLoginEndpoint = (
   betterAuthOptions: SanitizedBetterAuthOptions
@@ -114,7 +109,6 @@ export const getLoginEndpoint = (
       }
 
       const responseData = await result.json();
-      
 
       // Create the response with the appropriate data
       const response = new Response(
@@ -132,7 +126,6 @@ export const getLoginEndpoint = (
         // Set-Cookie headers are typically returned as a single string with multiple cookies separated by commas
         const cookies = setCookieHeader.split(",");
         cookies.forEach((cookie) => {
-          console.log("COOKIE", cookie);
           response.headers.append("Set-Cookie", cookie.trim());
         });
       }
