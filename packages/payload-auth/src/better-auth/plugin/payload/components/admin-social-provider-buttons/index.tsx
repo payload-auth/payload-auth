@@ -69,11 +69,10 @@ export const AdminSocialProviderButtons: React.FC<
                   : providerConfig?.disableSignUp === undefined
                     ? false
                     : !providerConfig.disableSignUp,
-                newUserCallbackURL: `http://localhost:3000/api/${config.admin.user}/set-first-admin`,
+                newUserCallbackURL: `${config.serverURL}${config.routes.api}/${config.admin.user}/set-first-admin`,
               },
               {
                 onSuccess: async (context) => {
-                  console.log(context);
                   const data = context.data;
                   if (isFirstAdmin) {
                     const user =
@@ -143,7 +142,7 @@ export const AdminSocialProviderButtons: React.FC<
         }
         tooltip={showIconOnly ? `Sign in with ${providerName}` : undefined}
       >
-        {!showIconOnly && <span>{providerName}</span>}
+        {!showIconOnly && <><Icon className={`${baseClass}__icon`} /> <span>{providerName}</span></>}
       </Button>
     );
   };

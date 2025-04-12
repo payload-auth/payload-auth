@@ -53,17 +53,18 @@ export function buildUsersCollection({
       ...existingUserCollection?.admin,
       hidden: pluginOptions.users?.hidden ?? false,
       components: {
+        Description: {
+          path: "payload-auth/better-auth/plugin/client#AdminInviteButton"
+        },
         views: {
           edit: {
             adminButtons: {
               tab: {
                 Component: {
                   path: "payload-auth/better-auth/plugin/client#AdminButtons",
-                  clientProps: () => {
-                    return {
-                      userSlug,
-                    };
-                  },
+                  clientProps: {
+                    userSlug
+                  }
                 },
                 condition: () => {
                   // Only show the impersonate button if the admin plugin is enabled
@@ -76,12 +77,8 @@ export function buildUsersCollection({
               },
             },
           },
-        },
-        Description: {
-          path: "payload-auth/better-auth/plugin/client#AdminInviteButton",
-        },
-      },
-      description: {},
+        }
+      }
     },
     access: {
       admin: ({ req }) =>
