@@ -79,10 +79,20 @@ export function buildCollections({
 
   // Build required collections and filter out incoming collections that would conflict
   const collectionConfigs = Array.from(requiredCollectionSlugs)
-    .map((slug) =>
-      buildCollectionMap[slug as keyof typeof buildCollectionMap]?.()
-    )
-    .filter(Boolean);
+    .map((slug) => {
+      const buildFn =
+        buildCollectionMap[slug as keyof typeof buildCollectionMap];
+      if (!buildFn) return null;
+      return buildFn();
+    })
+    .filter((config): config is NonNullable<typeof config> => Boolean(config))
+    .map((config) => ({
+      ...config,
+      admin: {
+        ...(config.admin || {}),
+        group: pluginOptions?.collectionAdminGroup ?? "Auth",
+      },
+    }));
 
   return [
     ...collectionConfigs,

@@ -99,6 +99,11 @@ export interface BetterAuthPluginOptions {
    */
   hidePluginCollections?: boolean
   /**
+   * Defines the admin group for collections.
+   * @default "Auth"
+   */
+  collectionAdminGroup?: string
+  /**
    * Configure the Users collections:
    */
   users?: {
