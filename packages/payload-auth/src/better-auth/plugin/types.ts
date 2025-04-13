@@ -1,4 +1,4 @@
-import type { Prettify, UnionToIntersection, betterAuth } from "better-auth";
+import type { UnionToIntersection, betterAuth } from "better-auth";
 import type {
   BetterAuthOptions as BetterAuthOptionsType,
   BetterAuthPlugin as BetterAuthPluginType,
@@ -10,6 +10,7 @@ import type {
   CollectionConfig,
   Config,
   Endpoint,
+  Payload,
   PayloadRequest,
 } from "payload";
 
@@ -323,6 +324,16 @@ export interface BetterAuthPluginOptions {
      * Hide the `admin-invitations` collection from the payload admin UI
      */
     hidden?: boolean | undefined;
+    /**
+     * This will be used to generate the admin invite url
+     *
+     * @param options Object containing the payload and token
+     * @returns The admin invite url
+     */
+    generateInviteUrl?: (options: {
+      payload: Payload;
+      token: string;
+    }) => string;
     /**
      * Function to override the collection configuration
      *

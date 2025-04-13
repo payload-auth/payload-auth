@@ -2,6 +2,7 @@ import { type Endpoint } from "payload";
 import { status as httpStatus } from "http-status";
 import { BetterAuthPluginOptions } from "../../types";
 import { addDataAndFileToRequest } from "payload";
+import { generateAdminInviteUrl } from "../utils/generate-admin-invite-url";
 
 type InviteEndpointProps = {
   roles: { label: string; value: string }[];
@@ -19,17 +20,8 @@ export const getGenerateInviteUrlEndpoint = ({
     method: "post",
     handler: async (req) => {
       await addDataAndFileToRequest(req);
-      const {
-        payload: { config },
-      } = req;
-
-      const {
-        routes: { admin: adminRoute },
-      } = config;
-
-      const body = req.data as {
-        role: { label: string; value: string };
-      };
+      const body = req.data as { role: { label: string; value: string }; };
+      const generateAdminInviteUrlFn = pluginOptions?.adminInvitations?.generateInviteUrl ?? generateAdminInviteUrl;
 
       if (!body) {
         return Response.json(
@@ -52,7 +44,10 @@ export const getGenerateInviteUrlEndpoint = ({
         );
       }
       const token = crypto.randomUUID();
-      const inviteLink = `${baseUrl}${adminRoute}/invite?token=${token}`;
+      const inviteLink = generateAdminInviteUrlFn({
+        payload: req.payload,
+        token,
+      });
 
       try {
         await req.payload.create({

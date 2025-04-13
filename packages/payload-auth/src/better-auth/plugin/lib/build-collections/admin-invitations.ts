@@ -2,6 +2,7 @@ import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../../types";
 import { isAdminWithRoles } from "./utils/payload-access";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
+import { generateAdminInviteUrl } from "../../payload/utils/generate-admin-invite-url";
 
 export function buildAdminInvitationsCollection({
   incomingCollections,
@@ -10,6 +11,7 @@ export function buildAdminInvitationsCollection({
   incomingCollections: CollectionConfig[];
   pluginOptions: BetterAuthPluginOptions;
 }) {
+  const generateAdminInviteUrlFn = pluginOptions.adminInvitations?.generateInviteUrl ?? generateAdminInviteUrl;
   const adminInvitationSlug =
     pluginOptions.adminInvitations?.slug ?? "admin-invitations";
   const adminRoles = pluginOptions.users?.adminRoles ?? ["admin"];
@@ -44,6 +46,7 @@ export function buildAdminInvitationsCollection({
       update: isAdminWithRoles({ adminRoles }),
       ...(existingAdminInvitationCollection?.access ?? {}),
     },
+    timestamps: true,
     fields: [
       {
         label: "Role",
@@ -67,14 +70,26 @@ export function buildAdminInvitationsCollection({
         name: "url",
         label: "URL",
         type: "text",
+        hooks: {
+          beforeChange: [
+            ({ siblingData }) => {
+              delete siblingData['url']
+            }
+          ],
+          afterRead: [
+            ({ data, req }) => { 
+              return generateAdminInviteUrlFn({
+                payload: req.payload,
+                token: data?.token,
+              });
+            }
+          ],
+        },
         admin: {
           readOnly: true,
         },
-      },
-      ...getTimestampFields({
-        saveCreatedAtToJWT: false,
-        saveUpdatedAtToJWT: false,
-      }),
+        virtual: true,
+      }
     ],
   };
 

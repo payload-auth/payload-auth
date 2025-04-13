@@ -1,10 +1,10 @@
 "use client";
-import React, { useState } from "react";
-import { Button, Select, useConfig, toast, TextInput } from "@payloadcms/ui";
-import { Loader2, Copy, XIcon } from "lucide-react";
-import { useTranslation, Modal, useModal } from "@payloadcms/ui";
-import "./index.scss";
+import { Button, Modal, Select, TextInput, toast, useConfig, useModal } from "@payloadcms/ui";
 import type { Option } from "@payloadcms/ui/elements/ReactSelect";
+import { Copy, Loader2, XIcon } from "lucide-react";
+import React, { useState } from "react";
+
+import "./index.scss";
 import { usePathname } from "next/navigation";
 
 const baseClass = "admin-invite-modal";
@@ -24,12 +24,14 @@ const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
   const {
     config: {
       serverURL,
-      routes: { api: apiRoute },
+      routes: { api: apiRoute, admin: adminRoute },
       admin: { user: userSlug },
     },
   } = useConfig();
 
-  // if(pathname !== `${adminRoute}/collections/${userSlug}`) return null;
+  // Only render invite button in list view.
+  const pathname = usePathname();
+  if(pathname !== `${adminRoute}/collections/${userSlug}`) return null;
 
   const handleGenerateInvite = async () => {
     try {
@@ -132,7 +134,7 @@ const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
             className={`${baseClass}__content`}
             style={{ maxWidth: "38rem" }}
           >
-            <h1>Invite User</h1>
+            <h2>Invite User</h2>
             <p>
               Invite a user to your application. Select the role of the user and
               send the invite via email or copy the invite link.

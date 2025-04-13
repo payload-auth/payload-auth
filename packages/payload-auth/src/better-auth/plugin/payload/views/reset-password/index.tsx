@@ -1,13 +1,9 @@
-import React from "react";
+import { MinimalTemplate } from "@payloadcms/next/templates";
+import { Link } from "@payloadcms/ui";
 import type { AdminViewServerProps } from "payload";
-import { Button, Link } from "@payloadcms/ui";
-import { Translation } from "@payloadcms/ui/shared";
 import { formatAdminURL } from "payload/shared";
-import { ResetPasswordForm } from "./form";
-
-// import { FormHeader } from "../../elements/FormHeader/index.js";
-
-import "./index.scss";
+import React from "react";
+import { PasswordResetForm } from "./form";
 
 export const resetPasswordBaseClass = "reset-password";
 
@@ -26,64 +22,29 @@ const ResetPassword: React.FC<AdminViewServerProps> = ({
   const [_, token] = segments;
 
   const {
-    i18n,
+    i18n: { t },
     payload: { config },
-    user,
   } = req;
 
-  const {
-    admin: {
-      routes: { account: accountRoute, login: loginRoute },
-    },
-    routes: { admin: adminRoute },
-  } = config;
-
-  if (user) {
-    return (
-      <div className={`${resetPasswordBaseClass}__wrap`}>
-        {/* <FormHeader
-          description={
-            <Translation
-              elements={{
-                "0": ({ children }) => (
-                  <Link
-                    href={formatAdminURL({
-                      adminRoute,
-                      path: accountRoute,
-                    })}
-                    prefetch={false}
-                  >
-                    {children}
-                  </Link>
-                ),
-              }}
-              i18nKey="authentication:loggedInChangePassword"
-              t={i18n.t}
-            />
-          }
-          heading={i18n.t("authentication:alreadyLoggedIn")}
-        /> */}
-        <Button buttonStyle="secondary" el="link" size="large" to={adminRoute}>
-          {i18n.t("general:backToDashboard")}
-        </Button>
-      </div>
-    );
-  }
+  const { routes: { admin: adminRoute } } = config;
+  const loginRoute = config.admin?.custom?.betterAuth?.adminRoutes?.login ?? config.admin?.routes?.login;
 
   return (
-    <div className={`${resetPasswordBaseClass}__wrap`}>
-      {/* <FormHeader heading={i18n.t("authentication:resetPassword")} /> */}
-      <ResetPasswordForm token={token ?? ""} />
-      <Link
-        href={formatAdminURL({
-          adminRoute,
-          path: loginRoute,
-        })}
-        prefetch={false}
-      >
-        {i18n.t("authentication:backToLogin")}
-      </Link>
-    </div>
+    <MinimalTemplate className={`${resetPasswordBaseClass}`}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <h1>{t("authentication:resetPassword")}</h1>
+        <PasswordResetForm token={token ?? ""} />
+        <Link
+          href={formatAdminURL({
+            adminRoute,
+            path: loginRoute,
+          })}
+          prefetch={false}
+        >
+          {t("authentication:backToLogin")}
+        </Link>
+      </div>
+    </MinimalTemplate>
   );
 };
 

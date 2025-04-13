@@ -10,6 +10,7 @@
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev --turbopack",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "generate:importmap": "payload generate:importmap",
     "build:prod": "payload migrate && pnpm build"
   },
   "dependencies": {

@@ -2,7 +2,7 @@ import { Button, toast, useConfig } from "@payloadcms/ui";
 import { createAuthClient } from "better-auth/react";
 import React, { useMemo } from "react";
 import type { SocialProviders } from "../../../../types";
-import { Icons } from "../../components/ui/icons";
+import { Icons } from "../icons";
 import { Key } from "lucide-react";
 import { getSafeRedirect } from "../../utils/get-safe-redirect";
 import { useRouter } from "next/navigation";

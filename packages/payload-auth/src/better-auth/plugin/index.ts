@@ -51,13 +51,23 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
 
     // Set custom admin components if disableDefaultPayloadAuth is true
     if (pluginOptions.disableDefaultPayloadAuth) {
+
+      const routes = {
+        forgot: "/forgot",
+        reset: "/reset",
+        login: "/login",
+      }
+
       config.admin = {
         ...config.admin,
         components: {
           ...config.admin?.components,
           afterLogin: [
             {
-              path: "payload-auth/better-auth/plugin/rsc#LoginRedirect",
+              path: "payload-auth/better-auth/plugin/rsc#RSCRedirect",
+              serverProps: {
+                redirectTo: `${config.routes?.admin || "/admin"}${routes.login}`,
+              }
             },
             ...(config.admin?.components?.afterLogin || []),
           ],
@@ -69,12 +79,12 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
           views: {
             ...config.admin?.components?.views,
             login: {
-              path: "/login",
+              path: routes.login,
               Component: {
                 path: "payload-auth/better-auth/plugin/rsc#Login",
                 serverProps: {
                   pluginOptions: pluginOptions,
-                  betterAuthOptions: betterAuthOptions,
+                  betterAuthOptions: betterAuthOptions
                 },
               },
             },
@@ -95,7 +105,7 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
               },
             },
             forgot: {
-              path: "/forgot-password",
+              path: routes.forgot,
               Component: {
                 path: "payload-auth/better-auth/plugin/rsc#Forgot",
               },
@@ -117,7 +127,7 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
               },
             },
             resetPassword: {
-              path: "/reset-password",
+              path: routes.reset,
               Component: {
                 path: "payload-auth/better-auth/plugin/rsc#ResetPassword",
               },
@@ -133,10 +143,24 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
         routes: {
           ...config.admin?.routes,
           login: "/login-redirect",
+          forgot: undefined, // Deactivate default forgot route
+          reset: undefined, // Deactivate default reset route
           logout: "/logout",
           inactivity: "/inactivity",
         },
-      };
+        // Add admin routes to the custom object
+        // We need this to create links in the admin views.
+        custom: {
+          ...config.admin?.custom,
+          betterAuth: {
+            ...config.admin?.custom?.betterAuth,
+            adminRoutes: {
+              ...routes,
+              ...(config.admin?.custom?.betterAuth?.adminRoutes || {}),
+            }
+          }
+        }
+      }
     }
 
     // Determine which collections to add based on the options and plugins
