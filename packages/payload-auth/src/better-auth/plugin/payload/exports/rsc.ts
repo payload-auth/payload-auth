@@ -1,4 +1,3 @@
-import LoginRedirect from "../components/login-redirect";
 import CreateFirstAdmin from "../views/create-first-admin";
 import Login from "../views/login";
 import Logout from "../views/logout";
@@ -10,7 +9,6 @@ import VerifyEmail from "../views/verify";
 import RSCRedirect from "../components/rsc-redirect";
 
 export {
-  LoginRedirect,
   CreateFirstAdmin,
   Login,
   Forgot,
