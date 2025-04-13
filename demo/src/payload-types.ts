@@ -71,6 +71,7 @@ export interface Config {
     accounts: Account;
     sessions: Session;
     verifications: Verification;
+    'admin-invitations': AdminInvitation;
     twoFactors: TwoFactor;
     passkeys: Passkey;
     apiKeys: ApiKey;
@@ -89,6 +90,7 @@ export interface Config {
     accounts: AccountsSelect<false> | AccountsSelect<true>;
     sessions: SessionsSelect<false> | SessionsSelect<true>;
     verifications: VerificationsSelect<false> | VerificationsSelect<true>;
+    'admin-invitations': AdminInvitationsSelect<false> | AdminInvitationsSelect<true>;
     twoFactors: TwoFactorsSelect<false> | TwoFactorsSelect<true>;
     passkeys: PasskeysSelect<false> | PasskeysSelect<true>;
     apiKeys: ApiKeysSelect<false> | ApiKeysSelect<true>;
@@ -359,6 +361,18 @@ export interface Verification {
    * The date and time when the verification request will expire
    */
   expiresAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admin-invitations".
+ */
+export interface AdminInvitation {
+  id: number;
+  role: 'admin' | 'user';
+  token: string;
+  url?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -636,6 +650,10 @@ export interface PayloadLockedDocument {
         value: number | Verification;
       } | null)
     | ({
+        relationTo: 'admin-invitations';
+        value: number | AdminInvitation;
+      } | null)
+    | ({
         relationTo: 'twoFactors';
         value: number | TwoFactor;
       } | null)
@@ -773,6 +791,17 @@ export interface VerificationsSelect<T extends boolean = true> {
   identifier?: T;
   value?: T;
   expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admin-invitations_select".
+ */
+export interface AdminInvitationsSelect<T extends boolean = true> {
+  role?: T;
+  token?: T;
+  url?: T;
   updatedAt?: T;
   createdAt?: T;
 }

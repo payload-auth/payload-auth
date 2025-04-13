@@ -18,8 +18,8 @@ import { getAfterLogoutHook } from "./hooks/after-logout";
 import { getAfterDeleteHook } from "./hooks/after-delete";
 import { betterAuthStrategy } from "./better-auth-strategy";
 import { getTimestampFields } from "../utils/get-timestamp-fields";
-import { getLoginEndpoint } from "./endpoints/login";
-import { getSetFirstAdminEndpoint } from "./endpoints/set-first-admin";
+import { getLoginEndpoint } from "../../../payload/endpoints/login";
+import { getAllRoleOptions } from "../../../helpers/get-all-roles";
 
 export function buildUsersCollection({
   incomingCollections,
@@ -37,6 +37,7 @@ export function buildUsersCollection({
     pluginOptions.sessions?.slug ?? baseCollectionSlugs.sessions;
   const baPlugins = sanitizedBAOptions.plugins ?? null;
   const adminRoles = pluginOptions.users?.adminRoles ?? ["admin"];
+  const allRoleOptions = getAllRoleOptions(pluginOptions);
 
   const existingUserCollection = incomingCollections.find(
     (collection) => collection.slug === userSlug
@@ -50,11 +51,15 @@ export function buildUsersCollection({
     admin: {
       defaultColumns: ["email"],
       useAsTitle: "email",
+      group: pluginOptions?.collectionAdminGroup ?? "Auth",
       ...existingUserCollection?.admin,
       hidden: pluginOptions.users?.hidden ?? false,
       components: {
         Description: {
-          path: "payload-auth/better-auth/plugin/client#AdminInviteButton"
+          path: "payload-auth/better-auth/plugin/client#AdminInviteButton",
+          clientProps: {
+            roles: allRoleOptions,
+          },
         },
         views: {
           edit: {
@@ -63,8 +68,8 @@ export function buildUsersCollection({
                 Component: {
                   path: "payload-auth/better-auth/plugin/client#AdminButtons",
                   clientProps: {
-                    userSlug
-                  }
+                    userSlug,
+                  },
                 },
                 condition: () => {
                   // Only show the impersonate button if the admin plugin is enabled
@@ -77,8 +82,8 @@ export function buildUsersCollection({
               },
             },
           },
-        }
-      }
+        },
+      },
     },
     access: {
       admin: ({ req }) =>
@@ -97,11 +102,10 @@ export function buildUsersCollection({
       ...(existingUserCollection?.endpoints
         ? existingUserCollection.endpoints
         : []),
-      getRefreshTokenEndpoint({ userSlug }),
       ...(pluginOptions.disableDefaultPayloadAuth
         ? [getLoginEndpoint(sanitizedBAOptions)]
         : []),
-      getSetFirstAdminEndpoint(pluginOptions),
+      getRefreshTokenEndpoint(userSlug),
     ],
     hooks: {
       beforeChange: [
@@ -153,31 +157,10 @@ export function buildUsersCollection({
       disableLocalStrategy: pluginOptions.disableDefaultPayloadAuth
         ? true
         : undefined,
-      strategies: [betterAuthStrategy(adminRoles, userSlug)],
+      strategies: [betterAuthStrategy(userSlug)],
     },
     fields: [
       ...(existingUserCollection?.fields ?? []),
-      //   {
-      //     name: 'betterAuthAdminButtons',
-      //     type: 'ui',
-      //     admin: {
-      //       position: 'sidebar',
-      //       components: {
-      //         Field: {
-      //           path: 'payload-auth/better-auth/plugin/client#AdminButtons',
-      //           clientProps: () => {
-      //             return {
-      //               userSlug,
-      //             }
-      //           },
-      //         },
-      //       },
-      //       condition: () => {
-      //         // Only show the impersonate button if the admin plugin is enabled
-      //         return (baPlugins && baPlugins.some((plugin) => plugin.id === 'admin')) ?? false
-      //       },
-      //     },
-      //   },
       {
         name: "name",
         type: "text",
@@ -220,27 +203,12 @@ export function buildUsersCollection({
       },
       {
         name: "role",
+        label: "Role",
         type: "select",
         required: true,
-        defaultValue: "user",
+        defaultValue: pluginOptions.users?.defaultRole ?? "user",
         saveToJWT: true,
-        options: [
-          ...(
-            pluginOptions.users?.roles ?? [
-              { label: "Admin", value: "admin" },
-              { label: "User", value: "user" },
-            ]
-          ).map((role) => {
-            if (typeof role === "string") {
-              return {
-                label: role.charAt(0).toUpperCase() + role.slice(1),
-                value: role,
-              };
-            }
-            return role;
-          }),
-        ],
-        label: "Role",
+        options: allRoleOptions,
         admin: {
           description: "The role of the user",
         },

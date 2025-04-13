@@ -10,13 +10,11 @@ import type {
 import { getSafeRedirect } from "../../utils/get-safe-redirect";
 import { LoginForm } from "./form/index";
 import { Logo } from "../../components/logo";
-
-
+import { checkPasskeyPlugin } from "../../../helpers/check-passkey-plugin";
 
 export const loginBaseClass = "login";
 
 type LoginViewProps = AdminViewServerProps & {
-  defaultAdminRole: string;
   pluginOptions: BetterAuthPluginOptions;
   betterAuthOptions: SanitizedBetterAuthOptions;
 };
@@ -25,7 +23,6 @@ const LoginView: React.FC<LoginViewProps> = async ({
   initPageResult,
   params,
   searchParams,
-  defaultAdminRole,
   pluginOptions,
   betterAuthOptions,
 }: LoginViewProps) => {
@@ -45,6 +42,7 @@ const LoginView: React.FC<LoginViewProps> = async ({
     routes: { admin: adminRoute },
   } = config;
 
+  const adminRole = pluginOptions.users?.defaultAdminRole ?? "admin";
   const redirectUrl = getSafeRedirect(searchParams?.redirect ?? "", adminRoute);
 
   if (user) {
@@ -55,7 +53,7 @@ const LoginView: React.FC<LoginViewProps> = async ({
     collection: userSlug,
     where: {
       role: {
-        equals: defaultAdminRole ?? "admin",
+        equals: adminRole,
       },
     },
   });
@@ -90,6 +88,7 @@ const LoginView: React.FC<LoginViewProps> = async ({
   }
 
   const canLoginWithUsername = checkUsernamePlugin(betterAuthOptions);
+  const hasPasskeyPlugin = checkPasskeyPlugin(betterAuthOptions);
   const socialProviders = pluginOptions.adminComponents?.socialProviders ?? {};
 
   return (
@@ -120,6 +119,7 @@ const LoginView: React.FC<LoginViewProps> = async ({
           } satisfies ServerProps,
         })}
         <LoginForm
+          hasPasskeySupport={hasPasskeyPlugin}
           hasUsernamePlugin={canLoginWithUsername}
           socialProviders={socialProviders}
           prefillEmail={prefillEmail}

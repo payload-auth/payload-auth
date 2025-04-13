@@ -57,7 +57,6 @@ const Verify: React.FC<AdminViewServerProps> = async ({
     <Fragment>
       <div className={`${verifyBaseClass}__brand`}>
         <Logo
-
           i18n={i18n}
           locale={locale}
           params={params}

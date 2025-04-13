@@ -2,7 +2,7 @@ import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../types";
 import { baseCollectionSlugs, betterAuthPluginSlugs } from "../config";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
-
+import { getAdminAccess } from "../../helpers/get-admin-access";
 export function buildPasskeysCollection({
   pluginOptions,
 }: {
@@ -17,6 +17,10 @@ export function buildPasskeysCollection({
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: "name",
       description: "Passkeys are used to authenticate users",
+      group: pluginOptions?.collectionAdminGroup ?? "Auth",
+    },
+    access: {
+      ...getAdminAccess(pluginOptions),
     },
     fields: [
       {

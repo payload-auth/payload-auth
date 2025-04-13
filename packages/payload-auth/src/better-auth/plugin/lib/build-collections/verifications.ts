@@ -1,6 +1,7 @@
 import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../types";
 import { baseCollectionSlugs } from "../config";
+import { getAdminAccess } from "../../helpers/get-admin-access";
 
 export function buildVerificationsCollection({
   incomingCollections,
@@ -17,10 +18,14 @@ export function buildVerificationsCollection({
   let verificationCollection: CollectionConfig = {
     slug: verificationSlug,
     admin: {
-      ...existingVerificationCollection?.admin,
-      hidden: pluginOptions.verifications?.hidden,
       useAsTitle: "identifier",
       description: "Verifications are used to verify authentication requests",
+      group: pluginOptions?.collectionAdminGroup ?? "Auth",
+      ...existingVerificationCollection?.admin,
+      hidden: pluginOptions.verifications?.hidden,
+    },
+    access: {
+      ...getAdminAccess(pluginOptions),
     },
     fields: [
       ...(existingVerificationCollection?.fields ?? []),

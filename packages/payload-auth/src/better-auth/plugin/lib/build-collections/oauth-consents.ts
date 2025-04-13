@@ -2,6 +2,7 @@ import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../types";
 import { betterAuthPluginSlugs, baseCollectionSlugs } from "../config";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
+import { getAdminAccess } from "../../helpers/get-admin-access";
 
 export function buildOauthConsentsCollection({
   pluginOptions,
@@ -17,6 +18,10 @@ export function buildOauthConsentsCollection({
       hidden: pluginOptions.hidePluginCollections ?? false,
       description:
         "OAuth consents are used to store user consents for OAuth clients",
+      group: pluginOptions?.collectionAdminGroup ?? "Auth",
+    },
+    access: {
+      ...getAdminAccess(pluginOptions),
     },
     fields: [
       {

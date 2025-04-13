@@ -2,6 +2,7 @@ import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../types";
 import { betterAuthPluginSlugs, baseCollectionSlugs } from "../config";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
+import { getAdminAccess } from "../../helpers/get-admin-access";
 
 export function buildApiKeysCollection({
   pluginOptions,
@@ -10,6 +11,7 @@ export function buildApiKeysCollection({
 }) {
   const apiKeySlug = betterAuthPluginSlugs.apiKeys;
   const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users;
+  const adminRoles = pluginOptions.users?.adminRoles ?? ["admin"];
 
   const apiKeyCollection: CollectionConfig = {
     slug: apiKeySlug,
@@ -17,6 +19,10 @@ export function buildApiKeysCollection({
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: "name",
       description: "API keys are used to authenticate requests to the API.",
+      group: pluginOptions?.collectionAdminGroup ?? "Auth",
+    },
+    access: {
+      ...getAdminAccess(pluginOptions),
     },
     fields: [
       {

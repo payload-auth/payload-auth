@@ -30,6 +30,7 @@ export function buildAccountsCollection({
       useAsTitle: "accountId",
       description:
         "Accounts are used to store user accounts for authentication providers",
+      group: pluginOptions?.collectionAdminGroup ?? "Auth",
       ...existingAccountCollection?.admin,
       hidden: pluginOptions.accounts?.hidden,
     },

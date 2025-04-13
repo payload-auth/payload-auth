@@ -20,7 +20,6 @@ const CreateFirstAdmin: React.FC<CreateFirstAdminProps> = async ({
   initPageResult,
   params,
   searchParams,
-  defaultAdminRole,
   pluginOptions,
   betterAuthOptions,
 }: CreateFirstAdminProps) => {
@@ -37,7 +36,7 @@ const CreateFirstAdmin: React.FC<CreateFirstAdminProps> = async ({
       },
     },
   } = initPageResult;
-
+  const adminRole = pluginOptions.users?.defaultAdminRole ?? "admin";
   const collectionConfig = collections?.[userSlug]?.config;
   const { auth: authOptions } = collectionConfig;
   const hasUsernamePlugin = checkUsernamePlugin(betterAuthOptions);
@@ -49,7 +48,7 @@ const CreateFirstAdmin: React.FC<CreateFirstAdminProps> = async ({
     collection: userSlug,
     where: {
       role: {
-        equals: defaultAdminRole ?? "admin",
+        equals: adminRole,
       },
     },
   });
@@ -61,13 +60,24 @@ const CreateFirstAdmin: React.FC<CreateFirstAdminProps> = async ({
   }
   const socialProviders = pluginOptions.adminComponents?.socialProviders ?? {};
 
+  // create an admin invitation to validate the secure admin signup
+  const token = crypto.randomUUID();
+  const adminInvitation = await req.payload.create({
+    collection: pluginOptions.adminInvitations?.slug ?? "admin-invitations",
+    data: {
+      role: adminRole,
+      token,
+    },
+  });
+
   return (
     <section className="create-first-user login template-minimal template-minimal--width-normal">
       <div className="template-minimal__wrap">
         <h1>{req.t("general:welcome")}</h1>
         <p>{req.t("authentication:beginCreateFirstUser")}</p>
         <CreateFirstUserClient
-          defaultAdminRole={defaultAdminRole}
+          token={token}
+          defaultAdminRole={adminRole}
           socialProviders={socialProviders}
           searchParams={searchParams ?? {}}
           loginWithUsername={canLoginWithUsername}

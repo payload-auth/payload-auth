@@ -1,35 +1,44 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
-import type { LoginWithUsernameOptions } from "payload";
+import type { FormProps, UserWithToken } from "@payloadcms/ui";
+import type {
+  DocumentPreferences,
+  FormState,
+  LoginWithUsernameOptions,
+  Params,
+  SanitizedDocumentPermissions,
+} from "payload";
 import {
   ConfirmPasswordField,
   EmailAndUsernameFields,
   Form,
   FormSubmit,
   PasswordField,
+  RenderFields,
   useAuth,
   useConfig,
+  useServerFunctions,
   useTranslation,
 } from "@payloadcms/ui";
 import { abortAndIgnore } from "@payloadcms/ui/shared";
+
 import { AdminSocialProviderButtons } from "../../components/admin-social-provider-buttons";
 import { SocialProviders } from "../../../types";
 import { getSafeRedirect } from "../../utils/get-safe-redirect";
 
-export const CreateFirstUserClient: React.FC<{
-  token: string;
-  defaultAdminRole: string;
+export const AcceptInviteClient: React.FC<{
+  role: string;
   socialProviders: SocialProviders;
-  searchParams: { [key: string]: string | string[] | undefined };
   loginWithUsername?: false | LoginWithUsernameOptions;
   userSlug: string;
+  token: string;
+  searchParams: Params | undefined;
 }> = ({
-  token,
   loginWithUsername,
-  defaultAdminRole,
   userSlug,
   socialProviders,
+  role,
+  token,
   searchParams,
 }) => {
   const {
@@ -37,11 +46,18 @@ export const CreateFirstUserClient: React.FC<{
       routes: { admin: adminRoute, api: apiRoute },
       serverURL,
     },
+    getEntityConfig,
   } = useConfig();
+
+  const { getFormState } = useServerFunctions();
+  const [loading, setLoading] = useState(false);
+
   const { t } = useTranslation();
   const { setUser } = useAuth();
-  const [loading, setLoading] = useState(false);
+
   const abortOnChangeRef = React.useRef<AbortController>(null);
+
+  const collectionConfig = getEntityConfig({ collectionSlug: userSlug });
 
   const handleSignup = (data: any) => {
     setUser(data);
@@ -54,7 +70,6 @@ export const CreateFirstUserClient: React.FC<{
       abortAndIgnore(abortOnChange ?? new AbortController());
     };
   }, []);
-
   const redirectUrl = getSafeRedirect(
     searchParams?.redirect as string,
     adminRoute
@@ -63,11 +78,10 @@ export const CreateFirstUserClient: React.FC<{
   return (
     <div>
       <Form
-        action={`${serverURL}${apiRoute}/signup?token=${token}&role=${defaultAdminRole}&redirect=${redirectUrl}`}
+        action={`${serverURL}${apiRoute}/signup?token=${token}&role=${role}&redirect=${redirectUrl}`}
         method="POST"
         onSuccess={handleSignup}
         redirect={redirectUrl}
-        validationOperation="create"
       >
         <EmailAndUsernameFields
           className="emailAndUsername"
@@ -90,8 +104,9 @@ export const CreateFirstUserClient: React.FC<{
       </Form>
       <AdminSocialProviderButtons
         token={token}
+        hasPasskeySupport={false}
+        adminRole={role}
         allowSignup={true}
-        adminRole={defaultAdminRole}
         socialProviders={socialProviders}
         setLoading={setLoading}
         searchParams={searchParams}

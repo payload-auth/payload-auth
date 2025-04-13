@@ -6,16 +6,19 @@ import { Icons } from "../../components/ui/icons";
 import { Key } from "lucide-react";
 import { getSafeRedirect } from "../../utils/get-safe-redirect";
 import { useRouter } from "next/navigation";
+import { passkeyClient } from "better-auth/client/plugins";
+import type { Params } from "payload";
 
 import "./style.scss";
-import { passkeyClient } from "better-auth/client/plugins";
 
 type AdminSocialProviderButtonsProps = {
-  isFirstAdmin: boolean;
+  allowSignup: boolean;
   socialProviders: SocialProviders;
   setLoading: (loading: boolean) => void;
-  searchParams?: { [key: string]: string | string[] | undefined };
-  defaultAdminRole?: string;
+  searchParams?: Params | undefined;
+  adminRole?: string;
+  token?: string;
+  hasPasskeySupport?: boolean;
 };
 
 const baseClass = "admin-social-provider-buttons";
@@ -23,11 +26,13 @@ const baseClass = "admin-social-provider-buttons";
 export const AdminSocialProviderButtons: React.FC<
   AdminSocialProviderButtonsProps
 > = ({
-  isFirstAdmin,
+  token,
+  allowSignup,
   socialProviders,
   setLoading,
   searchParams,
-  defaultAdminRole,
+  adminRole,
+  hasPasskeySupport,
 }) => {
   const { config } = useConfig();
   const router = useRouter();
@@ -36,13 +41,12 @@ export const AdminSocialProviderButtons: React.FC<
     () => createAuthClient({ plugins: [passkeyClient()] }),
     []
   );
-
   const providers = Object.keys(socialProviders ?? {}) as Array<
     keyof SocialProviders
   >;
   const providerCount = providers.length;
-
-  const hasPasskeySupport = "passkey" in authClient.signIn;
+  const redirectUrl = getSafeRedirect(searchParams?.redirect ?? "", adminRoute);
+  const newUserCallbackURL = `${config.serverURL}${config.routes.api}/set-admin-role?role=${adminRole}&token=${token}&redirect=${redirectUrl}`;
 
   const renderProviderButton = (
     provider: keyof SocialProviders,
@@ -61,76 +65,14 @@ export const AdminSocialProviderButtons: React.FC<
         onClick={async () => {
           setLoading(true);
           try {
-            await authClient.signIn.social(
-              {
-                provider: provider,
-                requestSignUp: isFirstAdmin
-                  ? true
-                  : providerConfig?.disableSignUp === undefined
-                    ? false
-                    : !providerConfig.disableSignUp,
-                newUserCallbackURL: `${config.serverURL}${config.routes.api}/${config.admin.user}/set-first-admin`,
-              },
-              {
-                onSuccess: async (context) => {
-                  const data = context.data;
-                  if (isFirstAdmin) {
-                    const user =
-                      typeof data === "object" && "user" in data
-                        ? data.user
-                        : null;
-                    if (user && user.id) {
-                      console.log("user", user);
-                      try {
-                        // Update the first user to have admin role
-                        const response = await fetch(
-                          `${process.env.NEXT_PUBLIC_API_URL}/api/${config.admin.user}/${user.id}`,
-                          {
-                            method: "PATCH",
-                            headers: {
-                              "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({
-                              overrideAccess: true,
-                              role: defaultAdminRole,
-                            }),
-                          }
-                        );
-
-                        console.log(response);
-
-                        if (!response.ok) {
-                          console.error(
-                            "Failed to set admin role for the first user"
-                          );
-                        }
-                      } catch (error) {
-                        console.error("Error setting admin role:", error);
-                      }
-                    }
-                    const callbackURL = getSafeRedirect(
-                      searchParams?.redirect as string,
-                      adminRoute
-                    );
-                    router.push(callbackURL);
-                  } else {
-                    const callbackURL = getSafeRedirect(
-                      searchParams?.redirect as string,
-                      adminRoute
-                    );
-                    router.push(callbackURL);
-                  }
-                },
-              }
-            );
-
-            // console.log(data);
-
-            // if (error) {
-            //   toast.error(`Failed to sign in with ${providerName}`);
-            // } else if (data) {
-            //
-            // }
+            await authClient.signIn.social({
+              provider: provider,
+              requestSignUp: allowSignup
+                ? true
+                : !providerConfig?.disableSignUp,
+              callbackURL: redirectUrl,
+              newUserCallbackURL: newUserCallbackURL,
+            });
           } catch (error: any) {
             toast.error(`Failed to sign in with ${providerName}`);
           } finally {
@@ -142,7 +84,12 @@ export const AdminSocialProviderButtons: React.FC<
         }
         tooltip={showIconOnly ? `Sign in with ${providerName}` : undefined}
       >
-        {!showIconOnly && <><Icon className={`${baseClass}__icon`} /> <span>{providerName}</span></>}
+        {!showIconOnly && (
+          <>
+            <Icon className={`${baseClass}__icon`} />{" "}
+            <span>{providerName}</span>
+          </>
+        )}
       </Button>
     );
   };
@@ -163,7 +110,7 @@ export const AdminSocialProviderButtons: React.FC<
         renderProviderButton(provider, showIconOnly)
       )}
 
-      {hasPasskeySupport && !isFirstAdmin && (
+      {hasPasskeySupport && !allowSignup && (
         <Button
           type="button"
           size="large"
@@ -171,17 +118,12 @@ export const AdminSocialProviderButtons: React.FC<
           onClick={async () => {
             setLoading(true);
             try {
-              await (authClient.signIn as any).passkey({
+              await authClient.signIn.passkey({
                 fetchOptions: {
                   onSuccess() {
                     // Only redirect if router is available
                     if (router && searchParams) {
-                      router.push(
-                        getSafeRedirect(
-                          searchParams?.redirect as string,
-                          adminRoute
-                        )
-                      );
+                      router.push(redirectUrl);
                     }
                   },
                   onError(context: any) {

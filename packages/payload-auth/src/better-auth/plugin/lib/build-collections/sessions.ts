@@ -5,6 +5,7 @@ import {
 } from "../../types";
 import { baseCollectionSlugs, betterAuthPluginSlugs } from "../config";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
+import { getAdminAccess } from "../../helpers/get-admin-access";
 
 export function buildSessionsCollection({
   incomingCollections,
@@ -30,6 +31,10 @@ export function buildSessionsCollection({
       hidden: pluginOptions.sessions?.hidden,
       description:
         "Sessions are active sessions for users. They are used to authenticate users with a session token",
+      group: pluginOptions?.collectionAdminGroup ?? "Auth",
+    },
+    access: {
+      ...getAdminAccess(pluginOptions),
     },
     fields: [
       ...(existingSessionCollection?.fields ?? []),

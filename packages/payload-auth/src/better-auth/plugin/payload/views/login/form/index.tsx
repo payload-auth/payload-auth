@@ -25,6 +25,7 @@ const baseClass = "login__form";
 type LoginFormProps = {
   socialProviders: SocialProviders;
   hasUsernamePlugin: boolean;
+  hasPasskeySupport: boolean;
   prefillEmail?: string;
   prefillPassword?: string;
   prefillUsername?: string;
@@ -34,6 +35,7 @@ type LoginFormProps = {
 export const LoginForm: React.FC<LoginFormProps> = ({
   socialProviders,
   hasUsernamePlugin,
+  hasPasskeySupport,
   prefillEmail,
   prefillPassword,
   prefillUsername,
@@ -134,10 +136,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         </FormSubmit>
       </Form>
       <AdminSocialProviderButtons
-        isFirstAdmin={false}
+        allowSignup={false}
         socialProviders={socialProviders}
         setLoading={setLoading}
         searchParams={searchParams}
+        hasPasskeySupport={hasPasskeySupport}
       />
     </div>
   );

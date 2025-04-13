@@ -20,27 +20,25 @@
 }
 
 @layer payload-default {
-  .list-header:has(.collection-list__sub-header .admin-invite-button) {
-    display: flex;
-    align-items: center;
+  .collection-list__sub-header:has(.admin-invite-button) {
+    flex-basis: auto !important;
   }
+  // .list-header:has(.collection-list__sub-header .admin-invite-button) {
+  //   display: flex;
+  //   align-items: center;
+  // }
 
-  .list-header:has(.collection-list__sub-header .admin-invite-button) .collection-list__sub-header {
-    margin-left: auto;
-    display: flex;
-    justify-content: flex-start;
-    flex-basis: 100%;
-  }
-  .list-header:has(.collection-list__sub-header .admin-invite-button) .btn {
-    flex-shrink: 0;
-    margin-bottom: 0;
-  }
-  @media (min-width: 768px) {
-    .list-header:has(.collection-list__sub-header .admin-invite-button) .collection-list__sub-header {
-      flex-basis: 70%;
-      justify-content: flex-end;
-    }
-  }
+  // .list-header:has(.collection-list__sub-header .admin-invite-button)
+  //   .collection-list__sub-header {
+  //   margin-left: auto;
+  //   display: flex;
+  //   justify-content: flex-start;
+  //   flex-basis: auto !important;
+  // }
+  // .list-header:has(.collection-list__sub-header .admin-invite-button) .btn {
+  //   flex-shrink: 0;
+  //   margin-bottom: 0;
+  // }
 }
 
 @layer payload-default {
@@ -109,7 +107,7 @@
       align-items: center;
       justify-content: flex-end;
       > .btn {
-        margin-block: .5rem !important;
+        margin-block: 0.5rem !important;
       }
     }
 
@@ -117,7 +115,7 @@
       &:hover {
         background-color: var(--theme-elevation-200) !important;
       }
-      
+
       .btn__label {
         gap: 0.5rem;
         display: flex;
@@ -128,7 +126,6 @@
   }
 
   .admin-invite-button {
-    margin-left: auto;
-    margin-block: 0 !important;
+    display: block;
   }
 }

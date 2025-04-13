@@ -1,73 +1,53 @@
 "use client";
 import React, { useState } from "react";
-import {
-  Button,
-  Select,
-  useConfig,
-  toast,
-  TextInput,
-} from "@payloadcms/ui";
+import { Button, Select, useConfig, toast, TextInput } from "@payloadcms/ui";
 import { Loader2, Copy, XIcon } from "lucide-react";
 import { useTranslation, Modal, useModal } from "@payloadcms/ui";
 import "./index.scss";
 import type { Option } from "@payloadcms/ui/elements/ReactSelect";
 import { usePathname } from "next/navigation";
+
 const baseClass = "admin-invite-modal";
 
-const AdminInviteButton: React.FC = () => {
+type AdminInviteButtonProps = {
+  roles: { label: string; value: string }[];
+};
+
+const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
   const [role, setRole] = useState<Option | undefined>(undefined);
   const [email, setEmail] = useState("");
   const [inviteLink, setInviteLink] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isCopyLoading, setIsCopyLoading] = useState(false);
   const { toggleModal } = useModal();
-  const pathname = usePathname();
 
-  const i18n = useTranslation();
   const {
-    getEntityConfig,
     config: {
       serverURL,
-      routes: { api: apiRoute, admin: adminRoute },
+      routes: { api: apiRoute },
       admin: { user: userSlug },
     },
   } = useConfig();
-  if(pathname !== `${adminRoute}/collections/${userSlug}`) return null;
-  const userCollection = getEntityConfig({ collectionSlug: "users" });
-  const { fields: userFields } = userCollection;
-  const roleField = userFields.find((field) => 'name' in field && field.name === "role");
-  let roleOptions: { label: string; value: string }[] = [];
-  if(roleField && 'options' in roleField) {
-    roleOptions = roleField.options.map((option: any) => ({
-      label: option.label,
-      value: option.value,
-    }));
-  }
 
-  const handleGenerateInvite = async () => {  
+  // if(pathname !== `${adminRoute}/collections/${userSlug}`) return null;
+
+  const handleGenerateInvite = async () => {
     try {
-      setIsLoading(true);
-      const response = await fetch(
-        `${serverURL}${apiRoute}/${userSlug}/invite`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ role }),
-          credentials: "include",
-        }
-      );
-
+      const url = `${serverURL}${apiRoute}/generate-invite-url`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ role }),
+        credentials: "include",
+      });
       if (!response.ok) throw new Error("Failed to generate invite");
-
       const data = await response.json();
       setInviteLink(data.inviteLink);
-      setIsLoading(false);
       return data.inviteLink;
     } catch (error) {
       toast.error("Failed to generate invite link");
-      setIsLoading(false);
       return null;
     }
   };
@@ -91,9 +71,7 @@ const AdminInviteButton: React.FC = () => {
           credentials: "include",
         }
       );
-
       if (!response.ok) throw new Error("Failed to send invite");
-
       toast.success("Invite sent successfully");
       setIsLoading(false);
       toggleModal("admin-invite-modal");
@@ -106,15 +84,17 @@ const AdminInviteButton: React.FC = () => {
   const handleCopyLink = async () => {
     try {
       setIsCopyLoading(true);
+      console.log("inviteLink", inviteLink);
       let linkToCopy = inviteLink;
-      
+
       if (!linkToCopy) {
         linkToCopy = await handleGenerateInvite();
       }
-      
+
       if (linkToCopy) {
         await navigator.clipboard.writeText(linkToCopy);
         toast.success("Invite link copied to clipboard");
+        toggleModal("admin-invite-modal");
       }
     } catch (error) {
       toast.error("Failed to copy invite link");
@@ -132,9 +112,10 @@ const AdminInviteButton: React.FC = () => {
       <Button
         onClick={handleToggleModal}
         type="button"
-        size="medium"
-        buttonStyle="primary"
-        className="admin-invite-button">
+        size="small"
+        buttonStyle="pill"
+        className="admin-invite-button"
+      >
         Invite User
       </Button>
       <Modal slug="admin-invite-modal" className={`${baseClass}`} closeOnBlur>
@@ -147,19 +128,22 @@ const AdminInviteButton: React.FC = () => {
           >
             <XIcon size={24} />
           </Button>
-          <div className={`${baseClass}__content`} style={{ maxWidth: '38rem' }}>
+          <div
+            className={`${baseClass}__content`}
+            style={{ maxWidth: "38rem" }}
+          >
             <h1>Invite User</h1>
             <p>
               Invite a user to your application. Select the role of the user and
               send the invite via email or copy the invite link.
             </p>
-            <Select 
-              options={roleOptions} 
-              value={role} 
+            <Select
+              options={roles}
+              value={role}
               placeholder="Select Role"
-              onChange={(option: any) => setRole(option)} 
+              onChange={(option: any) => setRole(option)}
             />
-            
+
             <div className={`${baseClass}__invite-controls`}>
               <div className={`${baseClass}__email-field`}>
                 <TextInput
@@ -170,17 +154,19 @@ const AdminInviteButton: React.FC = () => {
                   placeholder="user@example.com"
                 />
               </div>
-              
+
               <div className={`${baseClass}__buttons`}>
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   onClick={handleSendEmail}
                   disabled={isLoading}
                 >
-                  {isLoading ? <Loader2 size={24} className="animate-spin mr-2" /> : null}
+                  {isLoading ? (
+                    <Loader2 size={24} className="animate-spin mr-2" />
+                  ) : null}
                   Send Email
                 </Button>
-                
+
                 <Button
                   size="medium"
                   buttonStyle="transparent"
@@ -189,8 +175,17 @@ const AdminInviteButton: React.FC = () => {
                   onClick={handleCopyLink}
                   disabled={isCopyLoading}
                 >
-                  {isCopyLoading ? <Loader2 size={20} strokeWidth={1.5} className="animate-spin" /> : <Copy size={20} strokeWidth={1.5} />}
-                  Generate Link</Button>
+                  {isCopyLoading ? (
+                    <Loader2
+                      size={20}
+                      strokeWidth={1.5}
+                      className="animate-spin"
+                    />
+                  ) : (
+                    <Copy size={20} strokeWidth={1.5} />
+                  )}
+                  Generate Link
+                </Button>
               </div>
             </div>
           </div>

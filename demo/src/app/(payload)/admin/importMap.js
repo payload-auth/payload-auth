@@ -6,7 +6,7 @@ import { Login as Login_5afe2312a68aef77a0242fe42f239ed0 } from 'payload-auth/be
 import { Logout as Logout_5afe2312a68aef77a0242fe42f239ed0 } from 'payload-auth/better-auth/plugin/rsc'
 import { CreateFirstAdmin as CreateFirstAdmin_5afe2312a68aef77a0242fe42f239ed0 } from 'payload-auth/better-auth/plugin/rsc'
 import { Forgot as Forgot_5afe2312a68aef77a0242fe42f239ed0 } from 'payload-auth/better-auth/plugin/rsc'
-import { Invite as Invite_5afe2312a68aef77a0242fe42f239ed0 } from 'payload-auth/better-auth/plugin/rsc'
+import { AdminInvite as AdminInvite_5afe2312a68aef77a0242fe42f239ed0 } from 'payload-auth/better-auth/plugin/rsc'
 import { Inactivity as Inactivity_5afe2312a68aef77a0242fe42f239ed0 } from 'payload-auth/better-auth/plugin/rsc'
 import { ResetPassword as ResetPassword_5afe2312a68aef77a0242fe42f239ed0 } from 'payload-auth/better-auth/plugin/rsc'
 import { VerifyEmail as VerifyEmail_5afe2312a68aef77a0242fe42f239ed0 } from 'payload-auth/better-auth/plugin/rsc'
@@ -20,7 +20,7 @@ export const importMap = {
   "payload-auth/better-auth/plugin/rsc#Logout": Logout_5afe2312a68aef77a0242fe42f239ed0,
   "payload-auth/better-auth/plugin/rsc#CreateFirstAdmin": CreateFirstAdmin_5afe2312a68aef77a0242fe42f239ed0,
   "payload-auth/better-auth/plugin/rsc#Forgot": Forgot_5afe2312a68aef77a0242fe42f239ed0,
-  "payload-auth/better-auth/plugin/rsc#Invite": Invite_5afe2312a68aef77a0242fe42f239ed0,
+  "payload-auth/better-auth/plugin/rsc#AdminInvite": AdminInvite_5afe2312a68aef77a0242fe42f239ed0,
   "payload-auth/better-auth/plugin/rsc#Inactivity": Inactivity_5afe2312a68aef77a0242fe42f239ed0,
   "payload-auth/better-auth/plugin/rsc#ResetPassword": ResetPassword_5afe2312a68aef77a0242fe42f239ed0,
   "payload-auth/better-auth/plugin/rsc#VerifyEmail": VerifyEmail_5afe2312a68aef77a0242fe42f239ed0

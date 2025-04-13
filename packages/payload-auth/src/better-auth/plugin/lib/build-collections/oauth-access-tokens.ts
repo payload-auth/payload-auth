@@ -2,6 +2,7 @@ import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../types";
 import { betterAuthPluginSlugs, baseCollectionSlugs } from "../config";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
+import { getAdminAccess } from "../../helpers/get-admin-access";
 
 export function buildOauthAccessTokensCollection({
   pluginOptions,
@@ -18,6 +19,10 @@ export function buildOauthAccessTokensCollection({
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: "accessToken",
       description: "OAuth access tokens for custom OAuth clients",
+      group: pluginOptions?.collectionAdminGroup ?? "Auth",
+    },
+    access: {
+      ...getAdminAccess(pluginOptions),
     },
     fields: [
       {

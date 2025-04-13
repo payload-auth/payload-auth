@@ -26,6 +26,7 @@ export const baseCollectionSlugs = {
   sessions: "sessions",
   accounts: "accounts",
   verifications: "verifications",
+  adminInvitations: "admin-invitations",
 } as const;
 
 export const betterAuthPluginSlugs = {

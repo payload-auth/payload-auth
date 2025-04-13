@@ -2,6 +2,7 @@ import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../types";
 import { betterAuthPluginSlugs } from "../config";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
+import { getAdminAccess } from "../../helpers/get-admin-access";
 
 export function buildTeamsCollection({
   pluginOptions,
@@ -17,6 +18,10 @@ export function buildTeamsCollection({
       useAsTitle: "name",
       description:
         "Teams are groups of users that share access to certain resources.",
+      group: pluginOptions?.collectionAdminGroup ?? "Auth",
+    },
+    access: {
+      ...getAdminAccess(pluginOptions),
     },
     fields: [
       {

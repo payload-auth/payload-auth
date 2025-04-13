@@ -2,7 +2,7 @@ import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../types";
 import { betterAuthPluginSlugs } from "../config";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
-
+import { getAdminAccess } from "../../helpers/get-admin-access";
 export function buildJwksCollection({
   pluginOptions,
 }: {
@@ -16,6 +16,10 @@ export function buildJwksCollection({
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: "publicKey",
       description: "JWKS are used to verify the signature of the JWT token",
+      group: pluginOptions?.collectionAdminGroup ?? "Auth",
+    },
+    access: {
+      ...getAdminAccess(pluginOptions),
     },
     fields: [
       {

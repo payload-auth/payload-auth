@@ -2,6 +2,7 @@ import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../types";
 import { baseCollectionSlugs, betterAuthPluginSlugs } from "../config";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
+import { getAdminAccess } from "../../helpers/get-admin-access";
 
 export function buildSsoProvidersCollection({
   pluginOptions,
@@ -18,6 +19,10 @@ export function buildSsoProvidersCollection({
       useAsTitle: "issuer",
       description:
         "SSO providers are used to authenticate users with an external provider",
+      group: pluginOptions?.collectionAdminGroup ?? "Auth",
+    },
+    access: {
+      ...getAdminAccess(pluginOptions),
     },
     fields: [
       {

@@ -2,7 +2,7 @@ import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../types";
 import { betterAuthPluginSlugs, baseCollectionSlugs } from "../config";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
-
+import { getAdminAccess } from "../../helpers/get-admin-access";
 export function buildOauthApplicationsCollection({
   pluginOptions,
 }: {
@@ -17,6 +17,10 @@ export function buildOauthApplicationsCollection({
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: "name",
       description: "OAuth applications are custom OAuth clients",
+      group: pluginOptions?.collectionAdminGroup ?? "Auth",
+    },
+    access: {
+      ...getAdminAccess(pluginOptions),
     },
     fields: [
       {

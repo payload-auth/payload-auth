@@ -4,7 +4,10 @@ import { sanitizeBetterAuthOptions } from "./lib/sanitize-better-auth-options/in
 import { getRequiredCollectionSlugs } from "./lib/get-required-collection-slugs.js";
 import { buildCollections } from "./lib/build-collections/index.js";
 import { initBetterAuth } from "./lib/init-better-auth.js";
-
+import { getSetAdminRoleEndpoint } from "./payload/endpoints/set-admin-role";
+import { getAllRoleOptions } from "./helpers/get-all-roles";
+import { getGenerateInviteUrlEndpoint } from "./payload/endpoints/generate-invite-url";
+import { getSignupEndpoint } from "./payload/endpoints/signup.js";
 export * from "./types.js";
 export * from "./helpers/index.js";
 export { sanitizeBetterAuthOptions } from "./lib/sanitize-better-auth-options/index.js";
@@ -26,6 +29,26 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
       hasBetterAuthPlugin: true,
     };
 
+    const allRoleOptions = getAllRoleOptions(pluginOptions);
+    const baseUrl =
+      betterAuthOptions.baseURL ??
+      process.env.NEXT_PUBLIC_URL ??
+      "http://localhost:3000";
+
+    config.endpoints = [
+      ...(config.endpoints ?? []),
+      getSetAdminRoleEndpoint(
+        pluginOptions,
+        pluginOptions.users?.slug ?? "users"
+      ),
+      getGenerateInviteUrlEndpoint({
+        roles: allRoleOptions,
+        baseUrl,
+        pluginOptions,
+      }),
+      getSignupEndpoint(pluginOptions, betterAuthOptions),
+    ];
+
     // Set custom admin components if disableDefaultPayloadAuth is true
     if (pluginOptions.disableDefaultPayloadAuth) {
       config.admin = {
@@ -43,7 +66,6 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
               path: "payload-auth/better-auth/plugin/client#LogoutButton",
             },
           },
-
           views: {
             ...config.admin?.components?.views,
             login: {
@@ -51,7 +73,6 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
               Component: {
                 path: "payload-auth/better-auth/plugin/rsc#Login",
                 serverProps: {
-                  defaultAdminRole: pluginOptions.users?.adminRoles?.[0],
                   pluginOptions: pluginOptions,
                   betterAuthOptions: betterAuthOptions,
                 },
@@ -68,7 +89,6 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
               Component: {
                 path: "payload-auth/better-auth/plugin/rsc#CreateFirstAdmin",
                 serverProps: {
-                  defaultAdminRole: pluginOptions.users?.adminRoles?.[0],
                   pluginOptions: pluginOptions,
                   betterAuthOptions: betterAuthOptions,
                 },
@@ -80,10 +100,14 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
                 path: "payload-auth/better-auth/plugin/rsc#Forgot",
               },
             },
-            invite: {
-              path: "/invite-admin",
+            signup: {
+              path: "/admin-invite",
               Component: {
-                path: "payload-auth/better-auth/plugin/rsc#Invite",
+                path: "payload-auth/better-auth/plugin/rsc#AdminInvite",
+                serverProps: {
+                  pluginOptions: pluginOptions,
+                  betterAuthOptions: betterAuthOptions,
+                },
               },
             },
             inactivity: {

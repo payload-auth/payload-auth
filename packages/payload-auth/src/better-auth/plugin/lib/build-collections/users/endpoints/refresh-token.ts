@@ -7,25 +7,16 @@ import {
   User,
 } from "payload";
 import { GenericEndpointContext } from "better-auth/types";
-import { EndpointWithBetterAuth } from "../../../../types";
 import { getPayloadAuth } from "../../../../lib/get-payload-auth";
 
-type RefreshTokenEndpointOptions = {
-  userSlug: CollectionSlug;
-};
-
-export const getRefreshTokenEndpoint = (
-  options?: RefreshTokenEndpointOptions
-): Endpoint => {
-  const userSlug = options?.userSlug;
-
-  const endpoint: EndpointWithBetterAuth = {
+export const getRefreshTokenEndpoint = (userSlug: string): Endpoint => {
+  const endpoint: Endpoint = {
     path: "/refresh-token",
     method: "post",
     handler: async (req) => {
       const payload = await getPayloadAuth(req.payload.config);
       const authContext = await payload.betterAuth?.$context;
-      const userCollection = payload.collections[userSlug as CollectionSlug];
+      const userCollection = payload.collections[userSlug];
 
       if (!userCollection) {
         return new Response(
@@ -65,20 +56,20 @@ export const getRefreshTokenEndpoint = (
         }
       }
 
-      const session = await payload.betterAuth.api.getSession({
+      const res = await payload.betterAuth.api.getSession({
         headers: req.headers,
         query: { disableCookieCache: true },
       });
 
-      if (!session?.session?.userId) {
-        return new Response(JSON.stringify({ message: "No user in session" }), {
+      if (!res) {
+        return new Response(JSON.stringify({ message: "No current session" }), {
           status: 401,
         });
       }
 
       const user = await payload.findByID({
         collection: userSlug as string,
-        id: session.session.userId,
+        id: res.session.userId,
       });
 
       if (!user) {
@@ -124,7 +115,7 @@ export const getRefreshTokenEndpoint = (
       } as GenericEndpointContext;
 
       await setCookieCache(ctx, {
-        session: session.session,
+        session: res.session,
         user: cookieCacheFields as any,
       });
 
@@ -132,5 +123,5 @@ export const getRefreshTokenEndpoint = (
     },
   };
 
-  return endpoint as unknown as Endpoint;
+  return endpoint;
 };

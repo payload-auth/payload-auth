@@ -20,6 +20,7 @@ import { buildOauthAccessTokensCollection } from "./oauth-access-tokens";
 import { buildOauthConsentsCollection } from "./oauth-consents";
 import { buildPasskeysCollection } from "./passkeys";
 import { buildSsoProvidersCollection } from "./sso-providers";
+import { buildAdminInvitationsCollection } from "./admin-invitations";
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
@@ -52,6 +53,11 @@ export function buildCollections({
       }),
     [baseCollectionSlugs.verifications]: () =>
       buildVerificationsCollection({ incomingCollections, pluginOptions }),
+    [baseCollectionSlugs.adminInvitations]: () =>
+      buildAdminInvitationsCollection({
+        incomingCollections,
+        pluginOptions,
+      }),
     [betterAuthPluginSlugs.organizations]: () =>
       buildOrganizationsCollection({ pluginOptions }),
     [betterAuthPluginSlugs.members]: () =>
@@ -88,10 +94,6 @@ export function buildCollections({
     .filter((config): config is NonNullable<typeof config> => Boolean(config))
     .map((config) => ({
       ...config,
-      admin: {
-        ...(config.admin || {}),
-        group: pluginOptions?.collectionAdminGroup ?? "Auth",
-      },
     }));
 
   return [

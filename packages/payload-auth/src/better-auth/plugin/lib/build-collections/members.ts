@@ -2,6 +2,7 @@ import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../types";
 import { betterAuthPluginSlugs, baseCollectionSlugs } from "../config";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
+import { getAdminAccess } from "../../helpers/get-admin-access";
 export function buildMembersCollection({
   pluginOptions,
 }: {
@@ -17,6 +18,10 @@ export function buildMembersCollection({
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: "organization",
       description: "Members of an organization.",
+      group: pluginOptions?.collectionAdminGroup ?? "Auth",
+    },
+    access: {
+      ...getAdminAccess(pluginOptions),
     },
     fields: [
       {

@@ -23,6 +23,8 @@ export function getRequiredCollectionSlugs({
     pluginOptions.accounts?.slug ?? baseCollectionSlugs.accounts,
     pluginOptions.sessions?.slug ?? baseCollectionSlugs.sessions,
     pluginOptions.verifications?.slug ?? baseCollectionSlugs.verifications,
+    pluginOptions.adminInvitations?.slug ??
+      baseCollectionSlugs.adminInvitations,
   ]);
 
   // Add additional collections from auth tables if available
