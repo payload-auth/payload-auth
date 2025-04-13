@@ -39,7 +39,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   prefillEmail,
   prefillPassword,
   prefillUsername,
-  searchParams,
+  searchParams
 }) => {
   const { t } = useTranslation();
   const { setUser } = useAuth();
@@ -48,11 +48,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
   const {
     admin: {
-      routes: { forgot: forgotRoute },
       user: userSlug,
     },
     routes: { admin: adminRoute, api: apiRoute },
   } = config;
+  const forgotRoute = config.admin?.custom?.betterAuth?.adminRoutes?.forgot ?? config.admin?.routes?.forgot;
 
   const collectionConfig = getEntityConfig({ collectionSlug: userSlug });
   const { auth: authOptions } = collectionConfig;

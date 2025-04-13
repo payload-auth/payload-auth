@@ -7,6 +7,7 @@ import AdminInvite from "../views/admin-invite";
 import Inactivity from "../views/inactivity";
 import ResetPassword from "../views/reset-password";
 import VerifyEmail from "../views/verify";
+import RSCRedirect from "../components/rsc-redirect";
 
 export {
   LoginRedirect,
@@ -18,4 +19,5 @@ export {
   Logout,
   ResetPassword,
   VerifyEmail,
+  RSCRedirect,
 };

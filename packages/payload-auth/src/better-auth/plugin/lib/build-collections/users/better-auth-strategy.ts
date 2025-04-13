@@ -14,11 +14,17 @@ export function betterAuthStrategy(userSlug?: string): AuthStrategy {
         const payloadAuth = await getPayloadAuth(payload.config);
         const res = await payloadAuth.betterAuth.api.getSession({
           headers,
+          query: { disableCookieCache: true },
         });
         if (!res) {
           return { user: null };
         }
-        const userId = res.session.userId;
+        const userId =
+          res.user.id ??
+          res.session.userId ??
+          ("user" in res.session && typeof res.session.user === "string"
+            ? res.session.user
+            : null);
         if (!userId) {
           return { user: null };
         }
