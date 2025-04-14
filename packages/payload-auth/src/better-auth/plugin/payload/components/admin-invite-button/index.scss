@@ -1,0 +1,131 @@
+@mixin blur-bg($color: var(--theme-bg), $opacity: 0.75) {
+  &:before,
+  &:after {
+    content: " ";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  &:before {
+    background: $color;
+    opacity: $opacity;
+  }
+
+  &:after {
+    backdrop-filter: blur(8px);
+  }
+}
+
+@layer payload-default {
+  // .collection-list__sub-header:has(.admin-invite-button) {
+  //   flex-basis: auto !important;
+  // }
+  .list-header:has(.collection-list__sub-header .admin-invite-button) {
+    display: flex;
+    align-items: center;
+  }
+
+  .list-header:has(.collection-list__sub-header .admin-invite-button)
+    .collection-list__sub-header {
+    margin-left: auto;
+    display: flex;
+    justify-content: flex-start;
+    flex-basis: auto !important;
+  }
+  .list-header:has(.collection-list__sub-header .admin-invite-button) .btn {
+    flex-shrink: 0;
+    margin-bottom: 0;
+  }
+}
+
+@layer payload-default {
+  .admin-invite-modal {
+    @include blur-bg;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+
+    &__wrapper {
+      z-index: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      border-radius: 3px;
+      border: 1px solid var(--theme-border-color);
+      background-color: var(--theme-elevation-50);
+    }
+
+    &__close-button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      margin-block: 0 !important;
+      padding: 10px !important;
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding: 1rem;
+
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      p {
+        margin: 0;
+        color: var(--theme-elevation-500);
+      }
+    }
+
+    &__invite-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    &__email-field {
+      width: 100%;
+    }
+
+    &__buttons {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      justify-content: flex-end;
+      > .btn {
+        margin-block: 0.5rem !important;
+      }
+    }
+
+    &__copy-button {
+      &:hover {
+        background-color: var(--theme-elevation-200) !important;
+      }
+
+      .btn__label {
+        gap: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+
+  .admin-invite-button {
+    display: block;
+  }
+}

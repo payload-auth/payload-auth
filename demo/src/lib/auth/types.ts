@@ -1,11 +1,11 @@
 import { getPayload } from '@/lib/payload'
 import { betterAuthPlugins } from "./options";
 
-const payload = await getPayload()
+type PayloadWithBetterAuth = Awaited<ReturnType<typeof getPayload>>
 
-export type Session = typeof payload.betterAuth.$Infer.Session
-export type ActiveOrganization = typeof payload.betterAuth.$Infer.ActiveOrganization
-export type Invitation = typeof payload.betterAuth.$Infer.Invitation
-export type Account = Awaited<ReturnType<typeof payload.betterAuth.api.listUserAccounts>>[number]
-export type DeviceSession = Awaited<ReturnType<typeof payload.betterAuth.api.listDeviceSessions>>[number]
+export type Session = PayloadWithBetterAuth['betterAuth']['$Infer']['Session']
+export type ActiveOrganization = PayloadWithBetterAuth['betterAuth']['$Infer']['ActiveOrganization']
+export type Invitation = PayloadWithBetterAuth['betterAuth']['$Infer']['Invitation']
+export type Account = Awaited<ReturnType<PayloadWithBetterAuth['betterAuth']['api']['listUserAccounts']>>[number]
+export type DeviceSession = Awaited<ReturnType<PayloadWithBetterAuth['betterAuth']['api']['listSessions']>>[number]
 export type BetterAuthPlugins = typeof betterAuthPlugins;
