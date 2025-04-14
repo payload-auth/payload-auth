@@ -58,12 +58,12 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
                 },
               },
             },
-            logout: {
-              path: adminRoutes.logout,
-              Component: {
-                path: "payload-auth/better-auth/plugin/rsc#Logout",
-              },
-            },
+            // logout: {
+            //   path: adminRoutes.logout,
+            //   Component: {
+            //     path: "payload-auth/better-auth/plugin/rsc#Logout",
+            //   },
+            // },
             createFirstAdmin: {
               path: adminRoutes.createFirstAdmin,
               Component: {
@@ -105,19 +105,11 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
                 path: "payload-auth/better-auth/plugin/rsc#Inactivity",
               },
             },
-            verifyEmail: {
-              path: adminRoutes.verifyEmail,
-              Component: {
-                path: "payload-auth/better-auth/plugin/rsc#VerifyEmail",
-              },
-            },
           },
         },
         routes: {
           ...config.admin?.routes,
           login: adminRoutes.loginRedirect,
-          forgot: undefined, // Deactivate default forgot route
-          reset: undefined, // Deactivate default reset route
         },
         // Add admin routes to the custom object
         // We need this to create links in the admin views.

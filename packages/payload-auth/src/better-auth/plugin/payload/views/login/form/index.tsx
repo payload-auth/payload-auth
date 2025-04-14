@@ -8,6 +8,7 @@ import {
   useAuth,
   useConfig,
   useTranslation,
+  toast,
 } from "@payloadcms/ui";
 import type { FormState } from "payload";
 import React, { useState } from "react";
@@ -21,6 +22,7 @@ import "./index.scss";
 import { formatAdminURL, getLoginOptions } from "payload/shared";
 import { LoginField, LoginFieldProps } from "./fields/login-field";
 import { getAdminRoutes } from "../../../../helpers/get-admin-routes";
+import { useRouter } from "next/navigation";
 const baseClass = "login__form";
 
 type LoginFormProps = {
@@ -42,10 +44,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   prefillUsername,
   searchParams,
 }) => {
+  const router = useRouter();
   const { t } = useTranslation();
   const { setUser } = useAuth();
   const { config, getEntityConfig } = useConfig();
   const [loading, setLoading] = useState<boolean>(false);
+  const [requireEmailVerification, setRequireEmailVerification] =
+    useState<boolean>(false);
 
   const {
     admin: { user: userSlug },
@@ -101,51 +106,73 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     setUser(data);
   };
 
+  const handleResponse = (res: Response) => {
+    res.json().then((json: any) => {
+      if (json.requireEmailVerification) {
+        setRequireEmailVerification(true);
+        toast.message(json.message);
+      } else {
+        toast.success(json.message);
+        router.push(redirectUrl);
+      }
+    });
+  };
+
   return (
     <div className={`${baseClass}__wrapper`}>
-      <Form
-        action={`${apiRoute}/${userSlug}/login`}
-        className={baseClass}
-        disableSuccessStatus
-        initialState={initialState}
-        method="POST"
-        onSuccess={handleLogin}
-        redirect={redirectUrl}
-        waitForAutocomplete
-      >
-        <div className={`${baseClass}__input-wrap`}>
-          <LoginField type={loginType} />
-          <PasswordField
-            field={{
-              name: "password",
-              label: t("general:password"),
-              required: true,
-            }}
-            path="password"
-          />
-        </div>
-        <div className={`${baseClass}__forgot-password-wrap`}>
-          <Link
-            href={formatAdminURL({
-              adminRoute: adminRoute,
-              path: adminRoutes.forgotPassword as `/${string}`,
-            })}
-            prefetch={false}
+      {requireEmailVerification ? (
+        <h1 className={`${baseClass}__email-verification-required`}>
+          Please verify your email to login. Check your email for a verification
+          link.
+        </h1>
+      ) : (
+        <>
+          <Form
+            action={`${apiRoute}/${userSlug}/login`}
+            className={baseClass}
+            disableSuccessStatus
+            initialState={initialState}
+            method="POST"
+            onSuccess={handleLogin}
+            handleResponse={handleResponse}
+            redirect={redirectUrl}
+            waitForAutocomplete
           >
-            {t("authentication:forgotPasswordQuestion")}
-          </Link>
-        </div>
-        <FormSubmit size="large" disabled={loading}>
-          {t("authentication:login")}
-        </FormSubmit>
-      </Form>
-      <AdminSocialProviderButtons
-        allowSignup={false}
-        socialProviders={socialProviders}
-        setLoading={setLoading}
-        hasPasskeySupport={hasPasskeySupport}
-        redirectUrl={redirectUrl}
-      />
+            <div className={`${baseClass}__input-wrap`}>
+              <LoginField type={loginType} />
+              <PasswordField
+                field={{
+                  name: "password",
+                  label: t("general:password"),
+                  required: true,
+                }}
+                path="password"
+              />
+            </div>
+            <div className={`${baseClass}__forgot-password-wrap`}>
+              <Link
+                href={formatAdminURL({
+                  adminRoute: adminRoute,
+                  path: adminRoutes.forgotPassword as `/${string}`,
+                })}
+                prefetch={false}
+              >
+                {t("authentication:forgotPasswordQuestion")}
+              </Link>
+            </div>
+            <FormSubmit size="large" disabled={loading}>
+              {t("authentication:login")}
+            </FormSubmit>
+          </Form>
+          <AdminSocialProviderButtons
+            allowSignup={false}
+            socialProviders={socialProviders}
+            setLoading={setLoading}
+            hasPasskeySupport={hasPasskeySupport}
+            redirectUrl={redirectUrl}
+          />
+        </>
+      )}
     </div>
   );
 };

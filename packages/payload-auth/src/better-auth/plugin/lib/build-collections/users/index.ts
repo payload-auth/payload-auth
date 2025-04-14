@@ -15,7 +15,7 @@ import { getSyncAccountHook } from "./hooks/sync-account";
 import { getBeforeLoginHook } from "./hooks/before-login";
 import { getAfterLoginHook } from "./hooks/after-login";
 import { getAfterLogoutHook } from "./hooks/after-logout";
-import { getAfterDeleteHook } from "./hooks/after-delete";
+import { getBeforeDeleteHook } from "./hooks/before-delete";
 import { betterAuthStrategy } from "./better-auth-strategy";
 import { getTimestampFields } from "../utils/get-timestamp-fields";
 import { getLoginEndpoint } from "./endpoints/login";
@@ -171,9 +171,9 @@ export function buildUsersCollection({
         ...(existingUserCollection?.hooks?.afterLogout ?? []),
         getAfterLogoutHook({ sessionsCollectionSlug: sessionSlug }),
       ],
-      afterDelete: [
-        ...(existingUserCollection?.hooks?.afterDelete ?? []),
-        getAfterDeleteHook({
+      beforeDelete: [
+        ...(existingUserCollection?.hooks?.beforeDelete ?? []),
+        getBeforeDeleteHook({
           accountsSlug: accountSlug,
           sessionsSlug: sessionSlug,
           verificationsSlug: verificationsSlug,

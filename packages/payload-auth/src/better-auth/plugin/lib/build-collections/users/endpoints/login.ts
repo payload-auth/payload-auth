@@ -2,6 +2,8 @@ import { addDataAndFileToRequest, type Endpoint } from "payload";
 import { status as httpStatus } from "http-status";
 import { SanitizedBetterAuthOptions } from "../../../../types";
 import z from "zod";
+import { getRequestCollection } from "../../../../helpers/get-requst-collection";
+import { InferErrorCodes } from "better-auth";
 
 const loginSchema = z.object({
   password: z.string(),
@@ -17,6 +19,8 @@ export const getLoginEndpoint = (
     method: "post",
     handler: async (req) => {
       await addDataAndFileToRequest(req);
+      const collection = getRequestCollection(req);
+
       const { t } = req;
 
       try {
@@ -28,6 +32,8 @@ export const getLoginEndpoint = (
             { status: httpStatus.BAD_REQUEST }
           );
         }
+
+        console.log("schema.data", schema.data);
 
         let { email, password, username } = schema.data;
 
@@ -69,20 +75,29 @@ export const getLoginEndpoint = (
             }),
           });
         }
+        // console.log("result", result);
         const ok = result.ok;
-
-        if (!ok) {
-          return Response.json(
-            {
-              message: result.statusText,
-            },
-            {
-              status: httpStatus.UNAUTHORIZED,
-            }
-          );
-        }
-
         const responseData = await result.json();
+        if (!ok) {
+          // check if its
+          if (responseData.code === "EMAIL_NOT_VERIFIED") {
+            return new Response(
+              JSON.stringify({
+                message: t("authentication:verifyYourEmail"),
+                sentEmailVerification: true,
+                requireEmailVerification: true,
+              }),
+              { status: httpStatus.FORBIDDEN }
+            );
+          } else {
+            return new Response(
+              JSON.stringify({
+                message: "Failed to login",
+              }),
+              { status: httpStatus.UNAUTHORIZED }
+            );
+          }
+        }
 
         // Create the response with the appropriate data
         const response = new Response(

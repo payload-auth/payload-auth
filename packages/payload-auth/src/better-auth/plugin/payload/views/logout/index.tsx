@@ -23,15 +23,14 @@ const LogoutView: React.FC<
 
   return (
     <div className={`${baseClass}`}>
-      <LogoutClient
+      CUSTOM LOGOUT
+      {/* <LogoutClient
         adminRoute={adminRoute}
         inactivity={inactivity}
         redirect={searchParams?.redirect as string}
-      />
+      /> */}
     </div>
   );
 };
 
 export default LogoutView;
-
-

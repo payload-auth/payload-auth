@@ -22,6 +22,7 @@ export const getAfterLogoutHook = (
     const sessionDataName = authContext.authCookies.sessionData.name;
     const dontRememberTokenName =
       authContext.authCookies.dontRememberToken.name;
+
     try {
       const sessionCookieValue = cookieStore.get(sessionTokenName)?.value;
       if (sessionCookieValue) {

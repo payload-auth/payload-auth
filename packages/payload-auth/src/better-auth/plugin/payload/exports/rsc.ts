@@ -5,7 +5,6 @@ import Forgot from "../views/forgot-password";
 import AdminInvite from "../views/admin-invite";
 import Inactivity from "../views/inactivity";
 import ResetPassword from "../views/reset-password";
-import VerifyEmail from "../views/verify";
 import RSCRedirect from "../components/rsc-redirect";
 
 export {
@@ -16,6 +15,5 @@ export {
   Inactivity,
   Logout,
   ResetPassword,
-  VerifyEmail,
   RSCRedirect,
 };

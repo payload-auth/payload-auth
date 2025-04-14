@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { formatAdminURL } from "payload/shared";
 import { LogOutIcon, useConfig, useTranslation } from "@payloadcms/ui";
+import { getAdminRoutes } from "../../helpers/get-admin-routes";
 
 const baseClass = "nav";
 
@@ -14,26 +14,24 @@ const LogoutButton: React.FC<{
   const { config } = useConfig();
 
   const {
-    admin: {
-      routes: { logout: logoutRoute },
-    },
     routes: { admin: adminRoute },
   } = config;
 
+  const adminRoutes = getAdminRoutes(config.admin.custom);
+
   return (
-    <Link
+    <a
       aria-label={t("authentication:logOut")}
       className={`${baseClass}__log-out`}
       href={formatAdminURL({
         adminRoute,
-        path: logoutRoute,
+        path: adminRoutes.logout as `/${string}`,
       })}
-      prefetch={false}
       tabIndex={tabIndex}
       title={t("authentication:logOut")}
     >
       <LogOutIcon />
-    </Link>
+    </a>
   );
 };
 

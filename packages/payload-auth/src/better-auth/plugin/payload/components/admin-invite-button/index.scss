@@ -20,25 +20,25 @@
 }
 
 @layer payload-default {
-  .collection-list__sub-header:has(.admin-invite-button) {
-    flex-basis: auto !important;
-  }
-  // .list-header:has(.collection-list__sub-header .admin-invite-button) {
-  //   display: flex;
-  //   align-items: center;
-  // }
-
-  // .list-header:has(.collection-list__sub-header .admin-invite-button)
-  //   .collection-list__sub-header {
-  //   margin-left: auto;
-  //   display: flex;
-  //   justify-content: flex-start;
+  // .collection-list__sub-header:has(.admin-invite-button) {
   //   flex-basis: auto !important;
   // }
-  // .list-header:has(.collection-list__sub-header .admin-invite-button) .btn {
-  //   flex-shrink: 0;
-  //   margin-bottom: 0;
-  // }
+  .list-header:has(.collection-list__sub-header .admin-invite-button) {
+    display: flex;
+    align-items: center;
+  }
+
+  .list-header:has(.collection-list__sub-header .admin-invite-button)
+    .collection-list__sub-header {
+    margin-left: auto;
+    display: flex;
+    justify-content: flex-start;
+    flex-basis: auto !important;
+  }
+  .list-header:has(.collection-list__sub-header .admin-invite-button) .btn {
+    flex-shrink: 0;
+    margin-bottom: 0;
+  }
 }
 
 @layer payload-default {

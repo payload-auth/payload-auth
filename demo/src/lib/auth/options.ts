@@ -99,7 +99,8 @@ export const betterAuthOptions: BetterAuthOptions = {
   trustedOrigins: [process.env.NEXT_PUBLIC_BETTER_AUTH_URL],
   emailAndPassword: {
     enabled: true,
-    // requireEmailVerification: true,
+    requireEmailVerification: true,
+    // autoSignIn: true,
     async sendResetPassword({ user, url }) {
       console.log('Send reset password for user: ', user.id, 'at url', url)
     }
@@ -111,8 +112,10 @@ export const betterAuthOptions: BetterAuthOptions = {
     }
   },
   emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
     async sendVerificationEmail({ user, url }) {
-      console.log('Send verification email for user: ', user, url)
+      console.log('Send verification email for user: ', url)
     }
   },
   plugins: betterAuthPlugins,
@@ -173,7 +176,6 @@ export const betterAuthPluginOptions: BetterAuthPluginOptions = {
     }
   },
   hidePluginCollections: true,
-  adminInvitations: {},
   users: {
     slug: 'users',
     hidden: false,

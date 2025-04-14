@@ -9,6 +9,9 @@ import {
 import { checkUsernamePlugin } from "../../../helpers/check-username-plugin";
 import { getSafeRedirect } from "../../utils/get-safe-redirect";
 import { redirect } from "next/navigation";
+import { Logo } from "../../components/logo";
+
+const baseClass = "create-first-user";
 
 type CreateFirstAdminProps = AdminViewServerProps & {
   defaultAdminRole: string;
@@ -25,8 +28,11 @@ const CreateFirstAdmin: React.FC<CreateFirstAdminProps> = async ({
 }: CreateFirstAdminProps) => {
   const {
     locale,
+    permissions,
     req,
     req: {
+      i18n,
+      user,
       payload: {
         collections,
         config: {
@@ -73,8 +79,17 @@ const CreateFirstAdmin: React.FC<CreateFirstAdminProps> = async ({
   return (
     <section className="create-first-user login template-minimal template-minimal--width-normal">
       <div className="template-minimal__wrap">
-        <h1>{req.t("general:welcome")}</h1>
-        <p>{req.t("authentication:beginCreateFirstUser")}</p>
+        <div className={`${baseClass}__brand`}>
+          <Logo
+            i18n={i18n}
+            locale={locale}
+            params={params}
+            payload={req.payload}
+            permissions={permissions}
+            searchParams={searchParams}
+            user={user ?? undefined}
+          />
+        </div>
         <CreateFirstUserClient
           token={token}
           defaultAdminRole={adminRole}

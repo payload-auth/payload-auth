@@ -15,5 +15,9 @@
     button[type="submit"] {
       margin-bottom: 0;
     }
+
+    &__email-verification-required {
+      text-align: center;
+    }
   }
 }

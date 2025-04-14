@@ -5,6 +5,9 @@ import { SanitizedBetterAuthOptions } from "../../../types";
 import { AcceptInviteClient } from "./client";
 import { z } from "zod";
 import { checkUsernamePlugin } from "../../../helpers/check-username-plugin";
+import { Logo } from "../../components/logo";
+
+const baseClass = "accept-invite-view";
 
 const inviteSchema = z.object({
   token: z.string(),
@@ -24,8 +27,11 @@ const AcceptInviteView: React.FC<AcceptInviteViewProps> = async ({
   betterAuthOptions,
 }) => {
   const {
-    req,
+    locale,
+    permissions,
     req: {
+      i18n,
+      user,
       payload: {
         collections,
         config: {
@@ -78,7 +84,17 @@ const AcceptInviteView: React.FC<AcceptInviteViewProps> = async ({
   return (
     <section className="accept-invite-view login template-minimal template-minimal--width-normal">
       <div className="template-minimal__wrap">
-        <h1>{req.t("general:welcome")}</h1>
+        <div className={`${baseClass}__brand`}>
+          <Logo
+            i18n={i18n}
+            locale={locale}
+            params={params}
+            payload={payload}
+            permissions={permissions}
+            searchParams={searchParams}
+            user={user ?? undefined}
+          />
+        </div>
         <AcceptInviteClient
           token={data.token}
           role={inviteRole}

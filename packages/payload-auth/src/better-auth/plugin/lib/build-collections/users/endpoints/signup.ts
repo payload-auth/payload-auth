@@ -12,6 +12,7 @@ import {
 } from "../../../../types";
 import z from "zod";
 import { getPayloadAuth } from "../../../get-payload-auth";
+import { getRequestCollection } from "../../../../helpers/get-requst-collection";
 
 const routeParamsSchema = z.object({
   token: z.string(),
@@ -33,6 +34,7 @@ export const getSignupEndpoint = (
     method: "post",
     handler: async (req) => {
       await addDataAndFileToRequest(req);
+      const collection = getRequestCollection(req);
       const { t } = req;
       try {
         const shouldCommit = await initTransaction(req);
@@ -93,8 +95,8 @@ export const getSignupEndpoint = (
         if (!ok) {
           throw new Error(result.statusText);
         }
-
         const responseData = await result.json();
+
         await req.payload.update({
           collection: pluginOptions.users?.slug ?? "users",
           id: responseData.user.id,
@@ -112,6 +114,40 @@ export const getSignupEndpoint = (
           },
           req,
         });
+
+        const requireEmailVerification =
+          (betterAuthOptions.emailAndPassword?.requireEmailVerification ||
+            collection.config.auth.verify) &&
+          !responseData.user.emailVerified;
+
+        const sentEmailVerification =
+          betterAuthOptions.emailVerification?.sendVerificationEmail !==
+          undefined;
+
+        if (requireEmailVerification) {
+          if (shouldCommit) {
+            await commitTransaction(req);
+          }
+          if (sentEmailVerification) {
+            return new Response(
+              JSON.stringify({
+                message: t("authentication:verifyYourEmail"),
+                sentEmailVerification,
+                requireEmailVerification,
+              }),
+              { status: httpStatus.UNAUTHORIZED }
+            );
+          } else {
+            return new Response(
+              JSON.stringify({
+                message: t("authentication:verifyYourEmail"),
+                sentEmailVerification,
+                requireEmailVerification,
+              }),
+              { status: httpStatus.UNAUTHORIZED }
+            );
+          }
+        }
         const response = new Response(
           JSON.stringify({
             message: t("authentication:passed"),

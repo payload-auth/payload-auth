@@ -1,30 +1,23 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
-import type { FormProps, UserWithToken } from "@payloadcms/ui";
-import type {
-  DocumentPreferences,
-  FormState,
-  LoginWithUsernameOptions,
-  Params,
-  SanitizedDocumentPermissions,
-} from "payload";
+import type { LoginWithUsernameOptions, Params } from "payload";
 import {
   ConfirmPasswordField,
   EmailAndUsernameFields,
   Form,
   FormSubmit,
   PasswordField,
-  RenderFields,
   useAuth,
   useConfig,
-  useServerFunctions,
   useTranslation,
 } from "@payloadcms/ui";
 import { abortAndIgnore } from "@payloadcms/ui/shared";
-
 import AdminSocialProviderButtons from "../../components/admin-social-provider-buttons";
 import { SocialProviders } from "../../../types";
 import { getSafeRedirect } from "../../utils/get-safe-redirect";
+import { useRouter } from "next/navigation";
+import { toast } from "@payloadcms/ui";
 
 export const AcceptInviteClient: React.FC<{
   role: string;
@@ -46,18 +39,15 @@ export const AcceptInviteClient: React.FC<{
       routes: { admin: adminRoute, api: apiRoute },
       serverURL,
     },
-    getEntityConfig,
   } = useConfig();
-
-  const { getFormState } = useServerFunctions();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
-
+  const [requireEmailVerification, setRequireEmailVerification] =
+    useState<boolean>(false);
   const { t } = useTranslation();
   const { setUser } = useAuth();
 
   const abortOnChangeRef = React.useRef<AbortController>(null);
-
-  const collectionConfig = getEntityConfig({ collectionSlug: userSlug });
 
   const handleSignup = (data: any) => {
     setUser(data);
@@ -71,6 +61,18 @@ export const AcceptInviteClient: React.FC<{
     };
   }, []);
 
+  const handleResponse = (res: Response) => {
+    res.json().then((json: any) => {
+      if (json.requireEmailVerification) {
+        setRequireEmailVerification(true);
+        toast.message(json.message);
+      } else {
+        toast.success(json.message);
+        router.push(redirectUrl);
+      }
+    });
+  };
+
   const redirectUrl = getSafeRedirect(
     searchParams?.redirect as string,
     adminRoute
@@ -79,39 +81,50 @@ export const AcceptInviteClient: React.FC<{
 
   return (
     <div>
-      <Form
-        action={`${serverURL}${apiRoute}/${userSlug}/signup?token=${token}&role=${role}&redirect=${redirectUrl}`}
-        method="POST"
-        onSuccess={handleSignup}
-        redirect={redirectUrl}
-      >
-        <EmailAndUsernameFields
-          className="emailAndUsername"
-          loginWithUsername={loginWithUsername}
-          operation="create"
-          readOnly={false}
-          t={t as any}
-        />
-        <PasswordField
-          autoComplete="off"
-          field={{
-            name: "password",
-            label: t("authentication:newPassword"),
-            required: true,
-          }}
-          path="password"
-        />
-        <ConfirmPasswordField />
-        <FormSubmit size="large">{t("general:create")}</FormSubmit>
-      </Form>
-      <AdminSocialProviderButtons
-        allowSignup={true}
-        hasPasskeySupport={false}
-        socialProviders={socialProviders}
-        setLoading={setLoading}
-        redirectUrl={redirectUrl}
-        newUserCallbackURL={newUserCallbackURL}
-      />
+      {requireEmailVerification ? (
+        <h1 className={`email-verification-required`}>
+          Please verify your email to login. Check your email for a verification
+          link.
+        </h1>
+      ) : (
+        <>
+          <h1>{t("general:welcome")}</h1>
+          <Form
+            action={`${serverURL}${apiRoute}/${userSlug}/signup?token=${token}&role=${role}&redirect=${redirectUrl}`}
+            method="POST"
+            onSuccess={handleSignup}
+            handleResponse={handleResponse}
+            redirect={redirectUrl}
+          >
+            <EmailAndUsernameFields
+              className="emailAndUsername"
+              loginWithUsername={loginWithUsername}
+              operation="create"
+              readOnly={false}
+              t={t as any}
+            />
+            <PasswordField
+              autoComplete="off"
+              field={{
+                name: "password",
+                label: t("authentication:newPassword"),
+                required: true,
+              }}
+              path="password"
+            />
+            <ConfirmPasswordField />
+            <FormSubmit size="large">{t("general:create")}</FormSubmit>
+          </Form>
+          <AdminSocialProviderButtons
+            allowSignup={true}
+            hasPasskeySupport={false}
+            socialProviders={socialProviders}
+            setLoading={setLoading}
+            redirectUrl={redirectUrl}
+            newUserCallbackURL={newUserCallbackURL}
+          />
+        </>
+      )}
     </div>
   );
 };

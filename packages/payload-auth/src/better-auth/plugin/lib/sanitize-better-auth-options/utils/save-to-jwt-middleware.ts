@@ -27,7 +27,7 @@ export function saveToJwtMiddleware({
   if (typeof sanitizedOptions.hooks !== "object") sanitizedOptions.hooks = {};
 
   sanitizedOptions.hooks.after = createAuthMiddleware(async (ctx) => {
-    const newSession = ctx.context?.newSession;
+    const newSession = ctx.context?.session ?? ctx.context?.newSession;
     if (!newSession) return;
 
     const filteredSessionData = await prepareSessionData({
