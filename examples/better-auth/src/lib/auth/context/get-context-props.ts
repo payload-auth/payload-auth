@@ -19,7 +19,7 @@ export const getUserAccounts = async (): Promise<Account[]> => {
 export const getDeviceSessions = async (): Promise<DeviceSession[]> => {
   const payload = await getPayload()
   const headers = await requestHeaders()
-  const sessions = await payload.betterAuth.api.listDeviceSessions({ headers })
+  const sessions = await payload.betterAuth.api.listSessions({ headers })
   return sessions
 }
 

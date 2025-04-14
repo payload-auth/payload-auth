@@ -1,6 +1,6 @@
-import { expo } from '@better-auth/expo'
+// import { expo } from '@better-auth/expo'
 import { generateVerifyEmailUrl } from 'payload-auth/better-auth/plugin'
-import type { BetterAuthReturn, PayloadBetterAuthOptions, PayloadBetterAuthPluginOptions } from 'payload-auth/better-auth'
+import type { BetterAuthReturn, BetterAuthOptions, BetterAuthPluginOptions } from 'payload-auth/better-auth'
 import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
 import { nextCookies } from 'better-auth/next-js'
 import {
@@ -13,12 +13,14 @@ import {
   openAPI,
   organization,
   phoneNumber,
-  twoFactor
+  twoFactor,
+  username
 } from 'better-auth/plugins'
 import { passkey } from 'better-auth/plugins/passkey'
 import type { CollectionConfig } from 'payload'
 
 export const betterAuthPlugins = [
+  username(),
   emailHarmony(),
   phoneHarmony({
     defaultCountry: 'CA'
@@ -85,21 +87,22 @@ export const betterAuthPlugins = [
   }),
   multiSession(),
   openAPI(),
-  expo()
-  nextCookies(),
+  // expo(),
+  nextCookies()
 ]
 
 export type BetterAuthPlugins = typeof betterAuthPlugins
 
-export const betterAuthOptions: PayloadBetterAuthOptions = {
+export const betterAuthOptions: BetterAuthOptions = {
   appName: 'payload-better-auth',
   baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
   trustedOrigins: [process.env.NEXT_PUBLIC_BETTER_AUTH_URL],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    // autoSignIn: true,
     async sendResetPassword({ user, url }) {
-      console.log('Send reset password for user: ', user, url)
+      console.log('Send reset password for user: ', user.id, 'at url', url)
     }
   },
   socialProviders: {
@@ -109,8 +112,10 @@ export const betterAuthOptions: PayloadBetterAuthOptions = {
     }
   },
   emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
     async sendVerificationEmail({ user, url }) {
-      console.log('Send verification email for user: ', user, url)
+      console.log('Send verification email for user: ', url)
     }
   },
   plugins: betterAuthPlugins,
@@ -155,42 +160,57 @@ export const betterAuthOptions: PayloadBetterAuthOptions = {
   }
 }
 
-export const betterAuthPluginOptions: PayloadBetterAuthPluginOptions = {
+export const betterAuthPluginOptions: BetterAuthPluginOptions = {
   disabled: false,
-  logTables: false,
-  enableDebugLogs: false,
+  debug: {
+    logTables: false,
+    enableDebugLogs: false
+  },
+  disableDefaultPayloadAuth: true,
+  adminComponents: {
+    socialProviders: {
+      google: {
+        enabled: true,
+        disableSignUp: true
+      }
+    }
+  },
   hidePluginCollections: true,
   users: {
     slug: 'users',
     hidden: false,
     adminRoles: ['admin'],
     allowedFields: ['name'],
-    blockFirstBetterAuthVerificationEmail: true,
-    collectionOverrides: ({ collection }) => {
-      return {
-        ...collection,
-        auth: {
-          ...(typeof collection?.auth === 'object' ? collection.auth : {}),
-          verify: {
-            generateEmailHTML: async ({ user, req, token }) => {
-              const betterAuth = (req.payload as any).betterAuth as BetterAuthReturn<BetterAuthPlugins>
-              const authContext = await betterAuth.$context
-              const verifyUrl = await generateVerifyEmailUrl({
-                userEmail: user.email,
-                secret: authContext.secret,
-                expiresIn: betterAuth.options?.emailVerification?.expiresIn || 3600,
-                verifyRouteUrl: `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/verify-email`,
-                callbackURL: '/dashboard'
-              })
+    blockFirstBetterAuthVerificationEmail: true
+    // collectionOverrides: ({ collection }) => {
+    //   return {
+    //     ...collection,
+    //     auth: {
+    //       ...(typeof collection?.auth === 'object' ? collection.auth : {}),
+    //       // verify: {
+    //       //   generateEmailHTML: async ({ user, req, token }) => {
+    //       //     const betterAuth = (req.payload as any).betterAuth as BetterAuthReturn<BetterAuthPlugins>
+    //       //     const authContext = await betterAuth.$context
+    //       //     const verifyUrl = await generateVerifyEmailUrl({
+    //       //       userEmail: user.email,
+    //       //       secret: authContext.secret,
+    //       //       expiresIn: betterAuth.options?.emailVerification?.expiresIn || 3600,
+    //       //       verifyRouteUrl: `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/verify-email`,
+    //       //       callbackURL: '/dashboard'
+    //       //     })
 
-              console.log('generateEmailHTML verifyUrl', verifyUrl)
+    //       //     console.log('generateEmailHTML verifyUrl', verifyUrl)
 
-              return `<p>Verify your email by clicking <a href="${verifyUrl}">here</a></p>`
-            }
-          }
-        }
-      } satisfies CollectionConfig
-    }
+    //       //     return `<p>Verify your email by clicking <a href="${verifyUrl}">here</a></p>`
+    //       //   }
+    //       // },
+    //       // loginWithUsername: {
+    //       //   allowEmailLogin: true,
+    //       //   requireEmail: true
+    //       // }
+    //     }
+    //   } satisfies CollectionConfig
+    // }
   },
   accounts: {
     slug: 'accounts'

@@ -1,0 +1,25 @@
+@layer payload-default {
+  .accept-invite-view {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    > form > .field-type {
+      margin-bottom: var(--base);
+
+      & .form-submit {
+        margin: 0;
+      }
+    }
+    &__brand {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-bottom: calc(var(--base) * 2);
+    }
+  }
+
+  .emailAndUsername {
+    margin-bottom: var(--base);
+  }
+}

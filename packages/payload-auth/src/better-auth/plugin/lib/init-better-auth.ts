@@ -1,21 +1,26 @@
-import { betterAuth } from "better-auth"
-import { BetterAuthFunctionOptions, BetterAuthReturn, TPlugins } from "../types"
-import { BasePayload } from "payload"
-import { payloadAdapter } from "../../adapter"
+import { betterAuth } from "better-auth";
+import type { BasePayload } from "payload";
+import { payloadAdapter } from "payload-auth/better-auth/adapter";
+import type {
+  BetterAuthFunctionOptions,
+  BetterAuthReturn,
+  TPlugins,
+} from "../types";
 
 export function initBetterAuth<P extends TPlugins>({
   payload,
-  options,
+  idType,
+  options: { enableDebugLogs = false, ...restOptions },
 }: {
-  payload: BasePayload
-  options: BetterAuthFunctionOptions<P>
+  payload: BasePayload;
+  idType: "number" | "text";
+  options: BetterAuthFunctionOptions<P>;
 }): BetterAuthReturn<P> {
-  const auth = betterAuth({
-    ...options,
+  return betterAuth({
+    ...restOptions,
     database: payloadAdapter(payload, {
-      enableDebugLogs: options.enableDebugLogs ?? false,
+      enableDebugLogs,
+      idType,
     }),
-  })
-
-  return auth as unknown as BetterAuthReturn<P>
+  }) as unknown as BetterAuthReturn<P>;
 }

@@ -6,12 +6,25 @@
   "scripts": {
     "clean-all": "find . -type d -name node_modules -o -name dist -o -name .turbo -o -name .next -o -type f -name tsconfig.tsbuildinfo -o -name pnpm-lock.yaml | xargs rm -rf",
     "build": "turbo run build --filter=./packages/payload-auth",
-    "publish": "cd packages/payload-auth && pnpm publish --access public"
+    "publish": "cd packages/payload-auth && pnpm publish --access public",
+    "dev": "cd demo && pnpm dev"
   },
-  "keywords": [ "payload-cms", "better-auth", "plugin", "adapter", "authentication", "monorepo", "payload-plugin" ],
+  "keywords": [
+    "payload-cms",
+    "better-auth",
+    "plugin",
+    "adapter",
+    "authentication",
+    "monorepo",
+    "payload-plugin"
+  ],
   "author": "forrestdevs <luke.gannon@me.com>",
   "license": "MIT",
-  "onlyBuiltDependencies": [ "@swc/core", "esbuild", "sharp" ],
+  "onlyBuiltDependencies": [
+    "@swc/core",
+    "esbuild",
+    "sharp"
+  ],
   "devDependencies": {
     "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/git": "^10.0.1",

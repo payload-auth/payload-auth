@@ -71,6 +71,7 @@ export interface Config {
     accounts: Account;
     sessions: Session;
     verifications: Verification;
+    'admin-invitations': AdminInvitation;
     twoFactors: TwoFactor;
     passkeys: Passkey;
     apiKeys: ApiKey;
@@ -89,6 +90,7 @@ export interface Config {
     accounts: AccountsSelect<false> | AccountsSelect<true>;
     sessions: SessionsSelect<false> | SessionsSelect<true>;
     verifications: VerificationsSelect<false> | VerificationsSelect<true>;
+    'admin-invitations': AdminInvitationsSelect<false> | AdminInvitationsSelect<true>;
     twoFactors: TwoFactorsSelect<false> | TwoFactorsSelect<true>;
     passkeys: PasskeysSelect<false> | PasskeysSelect<true>;
     apiKeys: ApiKeysSelect<false> | ApiKeysSelect<true>;
@@ -116,22 +118,34 @@ export interface Config {
   };
 }
 export interface UserAuthOperations {
-  forgotPassword: {
-    email: string;
-    password: string;
-  };
-  login: {
-    email: string;
-    password: string;
-  };
+  forgotPassword:
+    | {
+        email: string;
+      }
+    | {
+        username: string;
+      };
+  login:
+    | {
+        email: string;
+        password: string;
+      }
+    | {
+        password: string;
+        username: string;
+      };
   registerFirstUser: {
-    email: string;
     password: string;
-  };
-  unlock: {
+    username?: string;
     email: string;
-    password: string;
   };
+  unlock:
+    | {
+        email: string;
+      }
+    | {
+        username: string;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -143,6 +157,10 @@ export interface User {
    * Users chosen display name
    */
   name?: string | null;
+  /**
+   * The email of the user
+   */
+  email: string;
   /**
    * Whether the email of the user has been verified
    */
@@ -157,6 +175,14 @@ export interface User {
   role: 'admin' | 'user';
   updatedAt: string;
   createdAt: string;
+  /**
+   * The username of the user
+   */
+  username?: string | null;
+  /**
+   * The display username of the user
+   */
+  displayUsername?: string | null;
   /**
    * The normalized email of the user
    */
@@ -189,19 +215,6 @@ export interface User {
    * The date and time when the ban will expire
    */
   banExpires?: string | null;
-  /**
-   * The email of the user
-   */
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  _verified?: boolean | null;
-  _verificationToken?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
 }
 /**
  * Accounts are used to store user accounts for authentication providers
@@ -348,6 +361,18 @@ export interface Verification {
    * The date and time when the verification request will expire
    */
   expiresAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admin-invitations".
+ */
+export interface AdminInvitation {
+  id: number;
+  role: 'admin' | 'user';
+  token: string;
+  url?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -625,6 +650,10 @@ export interface PayloadLockedDocument {
         value: number | Verification;
       } | null)
     | ({
+        relationTo: 'admin-invitations';
+        value: number | AdminInvitation;
+      } | null)
+    | ({
         relationTo: 'twoFactors';
         value: number | TwoFactor;
       } | null)
@@ -704,11 +733,14 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  email?: T;
   emailVerified?: T;
   image?: T;
   role?: T;
   updatedAt?: T;
   createdAt?: T;
+  username?: T;
+  displayUsername?: T;
   normalizedEmail?: T;
   twoFactorEnabled?: T;
   isAnonymous?: T;
@@ -717,15 +749,6 @@ export interface UsersSelect<T extends boolean = true> {
   banned?: T;
   banReason?: T;
   banExpires?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  _verified?: T;
-  _verificationToken?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -768,6 +791,17 @@ export interface VerificationsSelect<T extends boolean = true> {
   identifier?: T;
   value?: T;
   expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admin-invitations_select".
+ */
+export interface AdminInvitationsSelect<T extends boolean = true> {
+  role?: T;
+  token?: T;
+  url?: T;
   updatedAt?: T;
   createdAt?: T;
 }
