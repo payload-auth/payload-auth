@@ -37,11 +37,17 @@ export const getAfterLogoutHook = (
         });
         const session = sessions.at(0);
         if (session) {
-          await payload.delete({
-            collection: options.sessionsCollectionSlug,
-            id: session.id,
-            req,
-          });
+          try {
+            await payload.delete({
+              collection: options.sessionsCollectionSlug,
+              where: {
+                id: { equals: session.id },
+              },
+              req,
+            });
+          } catch (error) {
+            console.error("Error deleting session:", error);
+          }
         }
       }
 
