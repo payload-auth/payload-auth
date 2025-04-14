@@ -42,6 +42,8 @@ export function buildUsersCollection({
     pluginOptions.accounts?.slug ?? baseCollectionSlugs.accounts;
   const sessionSlug =
     pluginOptions.sessions?.slug ?? baseCollectionSlugs.sessions;
+  const verificationsSlug =
+    pluginOptions.verifications?.slug ?? baseCollectionSlugs.verifications;
   const baPlugins = betterAuthOptions.plugins ?? null;
   const adminRoles = pluginOptions.users?.adminRoles ?? ["admin"];
   const allRoleOptions = getAllRoleOptions(pluginOptions);
@@ -171,7 +173,11 @@ export function buildUsersCollection({
       ],
       afterDelete: [
         ...(existingUserCollection?.hooks?.afterDelete ?? []),
-        // getAfterDeleteHook,
+        getAfterDeleteHook({
+          accountsSlug: accountSlug,
+          sessionsSlug: sessionSlug,
+          verificationsSlug: verificationsSlug,
+        }),
       ],
     },
     auth: {
