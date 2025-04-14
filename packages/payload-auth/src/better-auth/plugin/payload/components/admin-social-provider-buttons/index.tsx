@@ -1,42 +1,36 @@
-import { Button, toast, useConfig } from "@payloadcms/ui";
-import { createAuthClient } from "better-auth/react";
+"use client";
+
 import React, { useMemo } from "react";
-import type { SocialProviders } from "../../../../types";
 import { Icons } from "../icons";
 import { Key } from "lucide-react";
-import { getSafeRedirect } from "../../utils/get-safe-redirect";
 import { useRouter } from "next/navigation";
+import { Button, toast } from "@payloadcms/ui";
+import { createAuthClient } from "better-auth/react";
+import type { SocialProviders } from "../../../../types";
 import { passkeyClient } from "better-auth/client/plugins";
-import type { Params } from "payload";
 
-import "./style.scss";
+import "./index.scss";
 
 type AdminSocialProviderButtonsProps = {
   allowSignup: boolean;
   socialProviders: SocialProviders;
   setLoading: (loading: boolean) => void;
-  searchParams?: Params | undefined;
-  adminRole?: string;
-  token?: string;
   hasPasskeySupport?: boolean;
+  redirectUrl?: string;
+  newUserCallbackURL?: string;
 };
 
 const baseClass = "admin-social-provider-buttons";
 
-export const AdminSocialProviderButtons: React.FC<
-  AdminSocialProviderButtonsProps
-> = ({
-  token,
+const AdminSocialProviderButtons: React.FC<AdminSocialProviderButtonsProps> = ({
   allowSignup,
   socialProviders,
   setLoading,
-  searchParams,
-  adminRole,
   hasPasskeySupport,
+  redirectUrl,
+  newUserCallbackURL,
 }) => {
-  const { config } = useConfig();
   const router = useRouter();
-  const adminRoute = config?.routes?.admin;
   const authClient = useMemo(
     () => createAuthClient({ plugins: [passkeyClient()] }),
     []
@@ -45,8 +39,8 @@ export const AdminSocialProviderButtons: React.FC<
     keyof SocialProviders
   >;
   const providerCount = providers.length;
-  const redirectUrl = getSafeRedirect(searchParams?.redirect ?? "", adminRoute);
-  const newUserCallbackURL = `${config.serverURL}${config.routes.api}/set-admin-role?role=${adminRole}&token=${token}&redirect=${redirectUrl}`;
+  // const redirectUrl = getSafeRedirect(searchParams?.redirect ?? "", adminRoute);
+  // const newUserCallbackURL = `${config.serverURL}${config.routes.api}/${config.admin.user}/set-admin-role?role=${adminRole}&token=${token}&redirect=${redirectUrl}`;
 
   const renderProviderButton = (
     provider: keyof SocialProviders,
@@ -121,8 +115,7 @@ export const AdminSocialProviderButtons: React.FC<
               await authClient.signIn.passkey({
                 fetchOptions: {
                   onSuccess() {
-                    // Only redirect if router is available
-                    if (router && searchParams) {
+                    if (router && redirectUrl) {
                       router.push(redirectUrl);
                     }
                   },
@@ -147,3 +140,5 @@ export const AdminSocialProviderButtons: React.FC<
     </div>
   );
 };
+
+export default AdminSocialProviderButtons;

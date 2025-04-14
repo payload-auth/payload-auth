@@ -33,12 +33,14 @@ export const getAfterLogoutHook = (
             token: { equals: token },
           },
           limit: 1,
+          req,
         });
         const session = sessions.at(0);
         if (session) {
           await payload.delete({
             collection: options.sessionsCollectionSlug,
             id: session.id,
+            req,
           });
         }
       }

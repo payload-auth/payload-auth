@@ -1,13 +1,12 @@
 import { addDataAndFileToRequest, type Endpoint } from "payload";
 import { status as httpStatus } from "http-status";
-import { SanitizedBetterAuthOptions } from "../../types";
+import { SanitizedBetterAuthOptions } from "../../../../types";
 import z from "zod";
 
 const loginSchema = z.object({
   password: z.string(),
   email: z.string().email().optional(),
   username: z.string().optional(),
-  isUsingUsername: z.boolean().default(false),
 });
 
 export const getLoginEndpoint = (
@@ -30,38 +29,22 @@ export const getLoginEndpoint = (
           );
         }
 
-        let { email, password, username, isUsingUsername } = schema.data;
-
-        if (isUsingUsername && !username) {
-          return Response.json(
-            { message: "Username is required" },
-            { status: httpStatus.BAD_REQUEST }
-          );
-        }
+        let { email, password, username } = schema.data;
 
         // If the username looks like an email, it might be using
         // the emailOrUsername field type, so we should set email accordingly
+        //TODO: CHECK IF THIS IS CORRECT, username could have an @??
         if (username && !email && username.includes("@")) {
           email = username;
-          isUsingUsername = false;
+          username = undefined;
         }
-
-        const authData = isUsingUsername
-          ? {
-              username,
-              password,
-            }
-          : {
-              email,
-              password,
-            };
 
         let result;
         const baseURL = betterAuthOptions.baseURL;
         const basePath = betterAuthOptions.basePath ?? "/api/auth";
         const authApiURL = `${baseURL}${basePath}`;
 
-        if (isUsingUsername) {
+        if (username) {
           const url = authApiURL + "/sign-in/username";
           result = await fetch(url, {
             method: "POST",
@@ -69,8 +52,8 @@ export const getLoginEndpoint = (
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              username: authData.username,
-              password: authData.password,
+              username,
+              password,
             }),
           });
         } else {
@@ -81,8 +64,8 @@ export const getLoginEndpoint = (
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              email: authData.email,
-              password: authData.password,
+              email,
+              password,
             }),
           });
         }

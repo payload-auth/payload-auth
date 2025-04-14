@@ -136,8 +136,8 @@ export interface UserAuthOperations {
       };
   registerFirstUser: {
     password: string;
-    username: string;
-    email?: string;
+    username?: string;
+    email: string;
   };
   unlock:
     | {

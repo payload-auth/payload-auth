@@ -1,6 +1,6 @@
 import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../types";
-import { betterAuthPluginSlugs } from "../config";
+import { betterAuthPluginSlugs } from "../constants";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
 import { getAdminAccess } from "../../helpers/get-admin-access";
 

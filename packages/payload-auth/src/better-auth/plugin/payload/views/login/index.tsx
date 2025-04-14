@@ -24,7 +24,7 @@ const LoginView: React.FC<LoginViewProps> = async ({
   params,
   searchParams,
   pluginOptions,
-  betterAuthOptions
+  betterAuthOptions,
 }: LoginViewProps) => {
   const { locale, permissions, req } = initPageResult;
   const {

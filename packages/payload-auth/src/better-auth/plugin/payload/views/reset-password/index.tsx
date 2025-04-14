@@ -1,50 +1,98 @@
-import { MinimalTemplate } from "@payloadcms/next/templates";
-import { Link } from "@payloadcms/ui";
+import React from "react";
+import { Button, Link, Translation } from "@payloadcms/ui";
 import type { AdminViewServerProps } from "payload";
 import { formatAdminURL } from "payload/shared";
-import React from "react";
-import { PasswordResetForm } from "./form";
+import { PasswordResetClient } from "./client";
+import { getAdminRoutes } from "../../../helpers/get-admin-routes";
+import { z } from "zod";
+import { FormHeader } from "../../components/form-header";
 
-export const resetPasswordBaseClass = "reset-password";
+const resetPasswordParamsSchema = z.object({
+  token: z.string(),
+});
 
 const ResetPassword: React.FC<AdminViewServerProps> = ({
   initPageResult,
-  params,
+  searchParams,
 }) => {
-  const { req } = initPageResult;
-
-  if (!params) {
-    return <div>No params</div>;
-  }
-  const segments = Array.isArray(params.segments)
-    ? params.segments
-    : [params.segments];
-  const [_, token] = segments;
-
   const {
-    i18n: { t },
-    payload: { config },
-  } = req;
+    req: {
+      user,
+      t,
+      payload: {
+        config: {
+          routes: { admin: adminRoute },
+          admin: {
+            custom,
+            routes: { account: accountRoute },
+          },
+        },
+      },
+    },
+  } = initPageResult;
 
-  const { routes: { admin: adminRoute } } = config;
-  const loginRoute = config.admin?.custom?.betterAuth?.adminRoutes?.login ?? config.admin?.routes?.login;
+  if (user) {
+    return (
+      <section className="reset-password template-minimal template-minimal--width-normal">
+        <div className="template-minimal__wrap">
+          <FormHeader
+            description={
+              <Translation
+                elements={{
+                  "0": ({ children }) => (
+                    <Link
+                      href={formatAdminURL({
+                        adminRoute,
+                        path: accountRoute,
+                      })}
+                      prefetch={false}
+                    >
+                      {children}
+                    </Link>
+                  ),
+                }}
+                i18nKey="authentication:loggedInChangePassword"
+                t={t}
+              />
+            }
+            heading={t("authentication:alreadyLoggedIn")}
+          />
+          <Button
+            buttonStyle="secondary"
+            el="link"
+            size="large"
+            to={adminRoute}
+          >
+            {t("general:backToDashboard")}
+          </Button>
+        </div>
+      </section>
+    );
+  }
+
+  const resetPasswordParams = resetPasswordParamsSchema.safeParse(searchParams);
+  if (!resetPasswordParams.success) {
+    return <div>Invalid reset password params</div>;
+  }
+  const { token } = resetPasswordParams.data;
+  const adminRoutes = getAdminRoutes(custom);
 
   return (
-    <MinimalTemplate className={`${resetPasswordBaseClass}`}>
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <h1>{t("authentication:resetPassword")}</h1>
-        <PasswordResetForm token={token ?? ""} />
+    <section className="reset-password__wrap template-minimal template-minimal--width-normal">
+      <div className="template-minimal__wrap">
+        <FormHeader heading={t("authentication:resetPassword")} />
+        <PasswordResetClient token={token} />
         <Link
           href={formatAdminURL({
             adminRoute,
-            path: loginRoute,
+            path: adminRoutes.login as `/${string}`,
           })}
           prefetch={false}
         >
           {t("authentication:backToLogin")}
         </Link>
       </div>
-    </MinimalTemplate>
+    </section>
   );
 };
 

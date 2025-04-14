@@ -1,8 +1,9 @@
 import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../../types";
-import { isAdminWithRoles } from "./utils/payload-access";
-import { getTimestampFields } from "./utils/get-timestamp-fields";
-import { generateAdminInviteUrl } from "../../payload/utils/generate-admin-invite-url";
+import { isAdminWithRoles } from "../utils/payload-access";
+import { generateAdminInviteUrl } from "../../../payload/utils/generate-admin-invite-url";
+import { getUrlBeforeChangeHook } from "./hooks/get-url-before-change";
+import { getAdminInviteUrlAfterReadHook } from "./hooks/get-url-after-read";
 
 export function buildAdminInvitationsCollection({
   incomingCollections,
@@ -11,7 +12,8 @@ export function buildAdminInvitationsCollection({
   incomingCollections: CollectionConfig[];
   pluginOptions: BetterAuthPluginOptions;
 }) {
-  const generateAdminInviteUrlFn = pluginOptions.adminInvitations?.generateInviteUrl ?? generateAdminInviteUrl;
+  const generateAdminInviteUrlFn =
+    pluginOptions.adminInvitations?.generateInviteUrl ?? generateAdminInviteUrl;
   const adminInvitationSlug =
     pluginOptions.adminInvitations?.slug ?? "admin-invitations";
   const adminRoles = pluginOptions.users?.adminRoles ?? ["admin"];
@@ -63,6 +65,11 @@ export function buildAdminInvitationsCollection({
         type: "text",
         admin: {
           readOnly: true,
+          components: {
+            Field: {
+              path: "payload-auth/better-auth/plugin/client#AdminInviteTokenField",
+            },
+          },
         },
         required: true,
       },
@@ -71,25 +78,18 @@ export function buildAdminInvitationsCollection({
         label: "URL",
         type: "text",
         hooks: {
-          beforeChange: [
-            ({ siblingData }) => {
-              delete siblingData['url']
-            }
-          ],
+          beforeChange: [getUrlBeforeChangeHook()],
           afterRead: [
-            ({ data, req }) => { 
-              return generateAdminInviteUrlFn({
-                payload: req.payload,
-                token: data?.token,
-              });
-            }
+            getAdminInviteUrlAfterReadHook({
+              generateAdminInviteUrlFn,
+            }),
           ],
         },
         admin: {
           readOnly: true,
         },
         virtual: true,
-      }
+      },
     ],
   };
 

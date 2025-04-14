@@ -3,7 +3,7 @@ import type {
   BetterAuthPluginOptions,
   SanitizedBetterAuthOptions,
 } from "../../../types";
-import { baseCollectionSlugs } from "../../config";
+import { baseCollectionSlugs } from "../../constants";
 import {
   isAdminOrCurrentUserUpdateWithAllowedFields,
   isAdminOrCurrentUserWithRoles,
@@ -18,32 +18,44 @@ import { getAfterLogoutHook } from "./hooks/after-logout";
 import { getAfterDeleteHook } from "./hooks/after-delete";
 import { betterAuthStrategy } from "./better-auth-strategy";
 import { getTimestampFields } from "../utils/get-timestamp-fields";
-import { getLoginEndpoint } from "../../../payload/endpoints/login";
+import { getLoginEndpoint } from "./endpoints/login";
 import { getAllRoleOptions } from "../../../helpers/get-all-roles";
+import { getForgotPasswordEndpoint } from "./endpoints/forgot-password";
+import { getSignupEndpoint } from "./endpoints/signup";
+import { getSetAdminRoleEndpoint } from "./endpoints/set-admin-role";
+import { getResetPasswordEndpoint } from "./endpoints/reset-password";
+import { getGenerateInviteUrlEndpoint } from "./endpoints/generate-invite-url";
+import { getSendInviteUrlEndpoint } from "./endpoints/send-invite-url";
+import { checkUsernamePlugin } from "../../../helpers/check-username-plugin";
 
 export function buildUsersCollection({
   incomingCollections,
   pluginOptions,
-  sanitizedBAOptions,
+  betterAuthOptions,
 }: {
   incomingCollections: CollectionConfig[];
   pluginOptions: BetterAuthPluginOptions;
-  sanitizedBAOptions: SanitizedBetterAuthOptions;
+  betterAuthOptions: SanitizedBetterAuthOptions;
 }) {
   const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users;
   const accountSlug =
     pluginOptions.accounts?.slug ?? baseCollectionSlugs.accounts;
   const sessionSlug =
     pluginOptions.sessions?.slug ?? baseCollectionSlugs.sessions;
-  const baPlugins = sanitizedBAOptions.plugins ?? null;
+  const baPlugins = betterAuthOptions.plugins ?? null;
   const adminRoles = pluginOptions.users?.adminRoles ?? ["admin"];
   const allRoleOptions = getAllRoleOptions(pluginOptions);
-
+  const hasUsernamePlugin = checkUsernamePlugin(betterAuthOptions);
   const existingUserCollection = incomingCollections.find(
     (collection) => collection.slug === userSlug
   ) as CollectionConfig | undefined;
 
   const allowedFields = pluginOptions.users?.allowedFields ?? ["name"];
+
+  const baseUrl =
+    betterAuthOptions.baseURL ??
+    process.env.NEXT_PUBLIC_URL ??
+    "http://localhost:3000";
 
   let usersCollection: CollectionConfig = {
     ...existingUserCollection,
@@ -103,9 +115,22 @@ export function buildUsersCollection({
         ? existingUserCollection.endpoints
         : []),
       ...(pluginOptions.disableDefaultPayloadAuth
-        ? [getLoginEndpoint(sanitizedBAOptions)]
+        ? [getLoginEndpoint(betterAuthOptions)]
         : []),
+      getSetAdminRoleEndpoint(
+        pluginOptions,
+        pluginOptions.users?.slug ?? "users"
+      ),
+      getGenerateInviteUrlEndpoint({
+        roles: allRoleOptions,
+        baseUrl,
+        pluginOptions,
+      }),
+      getSendInviteUrlEndpoint(),
+      getSignupEndpoint(pluginOptions, betterAuthOptions),
       getRefreshTokenEndpoint(userSlug),
+      getForgotPasswordEndpoint(),
+      getResetPasswordEndpoint(),
     ],
     hooks: {
       beforeChange: [
@@ -146,7 +171,7 @@ export function buildUsersCollection({
       ],
       afterDelete: [
         ...(existingUserCollection?.hooks?.afterDelete ?? []),
-        getAfterDeleteHook,
+        // getAfterDeleteHook,
       ],
     },
     auth: {
@@ -157,6 +182,13 @@ export function buildUsersCollection({
       disableLocalStrategy: pluginOptions.disableDefaultPayloadAuth
         ? true
         : undefined,
+      ...(hasUsernamePlugin && {
+        loginWithUsername: {
+          allowEmailLogin: true,
+          requireEmail: true,
+          requireUsername: false,
+        },
+      }),
       strategies: [betterAuthStrategy(userSlug)],
     },
     fields: [

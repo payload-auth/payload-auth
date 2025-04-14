@@ -8,7 +8,7 @@ import type {
   BetterAuthPluginOptions,
   SanitizedBetterAuthOptions,
 } from "../../types";
-import { supportedBetterAuthPluginIds } from "../config";
+import { supportedBetterAuthPluginIds } from "../constants";
 import { ensurePasswordSetBeforeUserCreate } from "./utils/ensure-password-set-before-create";
 import { verifyPassword, hashPassword } from "./utils/password";
 import type { Config, Payload } from "payload";

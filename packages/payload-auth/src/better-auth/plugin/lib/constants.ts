@@ -43,3 +43,15 @@ export const betterAuthPluginSlugs = {
   members: "members",
   teams: "teams",
 } as const;
+
+export const adminRoutes = {
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
+  login: "/login",
+  loginRedirect: "/login-redirect",
+  logout: "/logout",
+  createFirstAdmin: "/create-first-admin",
+  adminInvite: "/admin-invite",
+  verifyEmail: "/verify-email",
+  inactivity: "/inactivity",
+} as const;

@@ -1,6 +1,6 @@
 import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../types";
-import { baseCollectionSlugs } from "../config";
+import { baseCollectionSlugs } from "../constants";
 import { getAdminAccess } from "../../helpers/get-admin-access";
 
 export function buildVerificationsCollection({

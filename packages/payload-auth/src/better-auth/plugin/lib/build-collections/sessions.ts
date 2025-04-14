@@ -3,23 +3,23 @@ import {
   BetterAuthPluginOptions,
   SanitizedBetterAuthOptions,
 } from "../../types";
-import { baseCollectionSlugs, betterAuthPluginSlugs } from "../config";
+import { baseCollectionSlugs, betterAuthPluginSlugs } from "../constants";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
 import { getAdminAccess } from "../../helpers/get-admin-access";
 
 export function buildSessionsCollection({
   incomingCollections,
   pluginOptions,
-  sanitizedBAOptions,
+  betterAuthOptions,
 }: {
   incomingCollections: CollectionConfig[];
   pluginOptions: BetterAuthPluginOptions;
-  sanitizedBAOptions: SanitizedBetterAuthOptions;
+  betterAuthOptions: SanitizedBetterAuthOptions;
 }) {
   const sessionSlug =
     pluginOptions.sessions?.slug ?? baseCollectionSlugs.sessions;
   const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users;
-  const baPlugins = sanitizedBAOptions.plugins ?? null;
+  const baPlugins = betterAuthOptions.plugins ?? null;
 
   const existingSessionCollection = incomingCollections.find(
     (collection) => collection.slug === sessionSlug

@@ -1,5 +1,13 @@
 "use client";
-import { Button, Modal, Select, TextInput, toast, useConfig, useModal } from "@payloadcms/ui";
+import {
+  Button,
+  Modal,
+  Select,
+  TextInput,
+  toast,
+  useConfig,
+  useModal,
+} from "@payloadcms/ui";
 import type { Option } from "@payloadcms/ui/elements/ReactSelect";
 import { Copy, Loader2, XIcon } from "lucide-react";
 import React, { useState } from "react";
@@ -31,11 +39,11 @@ const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
 
   // Only render invite button in list view.
   const pathname = usePathname();
-  if(pathname !== `${adminRoute}/collections/${userSlug}`) return null;
+  if (pathname !== `${adminRoute}/collections/${userSlug}`) return null;
 
   const handleGenerateInvite = async () => {
     try {
-      const url = `${serverURL}${apiRoute}/generate-invite-url`;
+      const url = `${serverURL}${apiRoute}/${userSlug}/generate-invite-url`;
       const response = await fetch(url, {
         method: "POST",
         headers: {

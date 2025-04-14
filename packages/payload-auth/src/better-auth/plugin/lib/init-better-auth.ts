@@ -9,13 +9,18 @@ import type {
 
 export function initBetterAuth<P extends TPlugins>({
   payload,
+  idType,
   options: { enableDebugLogs = false, ...restOptions },
 }: {
   payload: BasePayload;
+  idType: "number" | "text";
   options: BetterAuthFunctionOptions<P>;
 }): BetterAuthReturn<P> {
   return betterAuth({
     ...restOptions,
-    database: payloadAdapter(payload, { enableDebugLogs }),
+    database: payloadAdapter(payload, {
+      enableDebugLogs,
+      idType,
+    }),
   }) as unknown as BetterAuthReturn<P>;
 }

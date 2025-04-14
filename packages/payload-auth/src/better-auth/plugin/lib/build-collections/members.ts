@@ -1,6 +1,6 @@
 import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../types";
-import { betterAuthPluginSlugs, baseCollectionSlugs } from "../config";
+import { betterAuthPluginSlugs, baseCollectionSlugs } from "../constants";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
 import { getAdminAccess } from "../../helpers/get-admin-access";
 export function buildMembersCollection({

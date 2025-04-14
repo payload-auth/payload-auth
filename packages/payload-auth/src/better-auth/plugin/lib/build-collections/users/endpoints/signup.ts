@@ -1,10 +1,17 @@
-import { addDataAndFileToRequest, type Endpoint } from "payload";
+import {
+  addDataAndFileToRequest,
+  commitTransaction,
+  initTransaction,
+  killTransaction,
+  type Endpoint,
+} from "payload";
 import { status as httpStatus } from "http-status";
 import {
   BetterAuthPluginOptions,
   SanitizedBetterAuthOptions,
-} from "../../types";
+} from "../../../../types";
 import z from "zod";
+import { getPayloadAuth } from "../../../get-payload-auth";
 
 const routeParamsSchema = z.object({
   token: z.string(),
@@ -13,9 +20,8 @@ const routeParamsSchema = z.object({
 
 const signupSchema = z.object({
   password: z.string(),
-  email: z.string().email().optional(),
+  email: z.string().email(),
   username: z.string().optional(),
-  isUsingUsername: z.boolean().default(false),
 });
 
 export const getSignupEndpoint = (
@@ -28,21 +34,19 @@ export const getSignupEndpoint = (
     handler: async (req) => {
       await addDataAndFileToRequest(req);
       const { t } = req;
-
       try {
+        const shouldCommit = await initTransaction(req);
         const {
           success: routeParamsSuccess,
           data: routeParamsData,
           error: routeParamsError,
         } = routeParamsSchema.safeParse(req.query);
-
         if (!routeParamsSuccess) {
           return Response.json(
             { message: routeParamsError.message },
             { status: httpStatus.BAD_REQUEST }
           );
         }
-
         const invite = await req.payload.find({
           collection:
             pluginOptions.adminInvitations?.slug ?? "admin-invitations",
@@ -52,97 +56,45 @@ export const getSignupEndpoint = (
             },
           },
           limit: 1,
+          req,
         });
-
         if (invite.docs.length === 0) {
           return Response.json(
             { message: "Invalid token" },
             { status: httpStatus.UNAUTHORIZED }
           );
         }
-
         const inviteRole = invite.docs[0].role as string;
         const schema = signupSchema.safeParse(req.data);
-
         if (!schema.success) {
           return Response.json(
             { message: schema.error.message },
             { status: httpStatus.BAD_REQUEST }
           );
         }
-
-        let { email, password, username, isUsingUsername } = schema.data;
-
-        if (isUsingUsername && !username) {
-          return Response.json(
-            { message: "Username is required" },
-            { status: httpStatus.BAD_REQUEST }
-          );
-        }
-
-        // If the username looks like an email, it might be using
-        // the emailOrUsername field type, so we should set email accordingly
-        if (username && !email && username.includes("@")) {
-          email = username;
-          isUsingUsername = false;
-        }
-
-        const authData = isUsingUsername
-          ? {
-              username,
-              password,
-            }
-          : {
-              email,
-              password,
-            };
-
-        let result;
+        const { email, password, username } = schema.data;
         const baseURL = betterAuthOptions.baseURL;
         const basePath = betterAuthOptions.basePath ?? "/api/auth";
         const authApiURL = `${baseURL}${basePath}`;
-
-        if (isUsingUsername) {
-          const url = authApiURL + "/sign-up/username";
-          result = await fetch(url, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              username: authData.username,
-              password: authData.password,
-            }),
-          });
-        } else {
-          const url = authApiURL + "/sign-up/email";
-          result = await fetch(url, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: authData.email,
-              password: authData.password,
-            }),
-          });
-        }
+        const url = authApiURL + "/sign-up/email";
+        const result = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+            username: username,
+          }),
+        });
         const ok = result.ok;
 
         if (!ok) {
-          return Response.json(
-            {
-              message: result.statusText,
-            },
-            {
-              status: httpStatus.INTERNAL_SERVER_ERROR,
-            }
-          );
+          throw new Error(result.statusText);
         }
 
         const responseData = await result.json();
-        console.log(responseData);
-
         await req.payload.update({
           collection: pluginOptions.users?.slug ?? "users",
           id: responseData.user.id,
@@ -150,17 +102,16 @@ export const getSignupEndpoint = (
             role: inviteRole,
           },
           overrideAccess: true,
+          req,
         });
-
         await req.payload.delete({
           collection:
             pluginOptions.adminInvitations?.slug ?? "admin-invitations",
           where: {
             token: { equals: routeParamsData.token },
           },
+          req,
         });
-
-        // Create the response with the appropriate data
         const response = new Response(
           JSON.stringify({
             message: t("authentication:passed"),
@@ -179,10 +130,14 @@ export const getSignupEndpoint = (
             response.headers.append("Set-Cookie", cookie.trim());
           });
         }
+        if (shouldCommit) {
+          await commitTransaction(req);
+        }
         return response;
-      } catch (error) {
+      } catch (error: any) {
+        await killTransaction(req);
         return Response.json(
-          { message: "Failed to login" },
+          { message: error.message },
           { status: httpStatus.INTERNAL_SERVER_ERROR }
         );
       }

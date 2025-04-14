@@ -1,4 +1,4 @@
-import { betterAuthPluginSlugs } from "../config";
+import { betterAuthPluginSlugs } from "../constants";
 
 export function configurePasskeyPlugin(plugin: any) {
   plugin.schema = plugin?.schema ?? {};

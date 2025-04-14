@@ -1,6 +1,6 @@
 import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../../types";
-import { baseCollectionSlugs } from "../../config";
+import { baseCollectionSlugs } from "../../constants";
 import { getSyncPasswordToUserHook } from "./hooks/sync-password-to-user";
 import {
   isAdminOrCurrentUserWithRoles,

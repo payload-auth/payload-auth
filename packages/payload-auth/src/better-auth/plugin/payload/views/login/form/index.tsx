@@ -13,13 +13,14 @@ import type { FormState } from "payload";
 import React, { useState } from "react";
 import type { SocialProviders } from "../../../../types";
 
-import { AdminSocialProviderButtons } from "../../../components/admin-social-provider-buttons";
+import AdminSocialProviderButtons from "../../../components/admin-social-provider-buttons";
 import { getSafeRedirect } from "../../../utils/get-safe-redirect";
 
 import "./index.scss";
 
 import { formatAdminURL, getLoginOptions } from "payload/shared";
 import { LoginField, LoginFieldProps } from "./fields/login-field";
+import { getAdminRoutes } from "../../../../helpers/get-admin-routes";
 const baseClass = "login__form";
 
 type LoginFormProps = {
@@ -39,7 +40,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   prefillEmail,
   prefillPassword,
   prefillUsername,
-  searchParams
+  searchParams,
 }) => {
   const { t } = useTranslation();
   const { setUser } = useAuth();
@@ -47,12 +48,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
 
   const {
-    admin: {
-      user: userSlug,
-    },
+    admin: { user: userSlug },
     routes: { admin: adminRoute, api: apiRoute },
   } = config;
-  const forgotRoute = config.admin?.custom?.betterAuth?.adminRoutes?.forgot ?? config.admin?.routes?.forgot;
+  const adminRoutes = getAdminRoutes(config.admin.custom);
 
   const collectionConfig = getEntityConfig({ collectionSlug: userSlug });
   const { auth: authOptions } = collectionConfig;
@@ -93,6 +92,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     };
   }
 
+  const redirectUrl = getSafeRedirect(
+    searchParams?.redirect as string,
+    adminRoute
+  );
+
   const handleLogin = (data: any) => {
     setUser(data);
   };
@@ -106,7 +110,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         initialState={initialState}
         method="POST"
         onSuccess={handleLogin}
-        redirect={getSafeRedirect(searchParams?.redirect as string, adminRoute)}
+        redirect={redirectUrl}
         waitForAutocomplete
       >
         <div className={`${baseClass}__input-wrap`}>
@@ -124,7 +128,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           <Link
             href={formatAdminURL({
               adminRoute: adminRoute,
-              path: forgotRoute,
+              path: adminRoutes.forgotPassword as `/${string}`,
             })}
             prefetch={false}
           >
@@ -139,8 +143,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         allowSignup={false}
         socialProviders={socialProviders}
         setLoading={setLoading}
-        searchParams={searchParams}
         hasPasskeySupport={hasPasskeySupport}
+        redirectUrl={redirectUrl}
       />
     </div>
   );

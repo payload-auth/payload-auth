@@ -13,7 +13,7 @@ import {
   useTranslation,
 } from "@payloadcms/ui";
 import { abortAndIgnore } from "@payloadcms/ui/shared";
-import { AdminSocialProviderButtons } from "../../components/admin-social-provider-buttons";
+import AdminSocialProviderButtons from "../../components/admin-social-provider-buttons";
 import { SocialProviders } from "../../../types";
 import { getSafeRedirect } from "../../utils/get-safe-redirect";
 
@@ -59,11 +59,12 @@ export const CreateFirstUserClient: React.FC<{
     searchParams?.redirect as string,
     adminRoute
   );
+  const newUserCallbackURL = `${serverURL}${apiRoute}/${userSlug}/set-admin-role?role=${defaultAdminRole}&token=${token}&redirect=${redirectUrl}`;
 
   return (
     <div>
       <Form
-        action={`${serverURL}${apiRoute}/signup?token=${token}&role=${defaultAdminRole}&redirect=${redirectUrl}`}
+        action={`${serverURL}${apiRoute}/${userSlug}/signup?token=${token}&role=${defaultAdminRole}&redirect=${redirectUrl}`}
         method="POST"
         onSuccess={handleSignup}
         redirect={redirectUrl}
@@ -89,12 +90,11 @@ export const CreateFirstUserClient: React.FC<{
         <FormSubmit size="large">{t("general:create")}</FormSubmit>
       </Form>
       <AdminSocialProviderButtons
-        token={token}
         allowSignup={true}
-        adminRole={defaultAdminRole}
         socialProviders={socialProviders}
         setLoading={setLoading}
-        searchParams={searchParams}
+        redirectUrl={redirectUrl}
+        newUserCallbackURL={newUserCallbackURL}
       />
     </div>
   );

@@ -16,7 +16,7 @@ importers:
     dependencies:
       '@daveyplate/better-auth-ui':
         specifier: 1.2.31
-        version: 1.2.31(2ccnxxo3i5fssigix75yktxj7e)
+        version: 1.2.31(svwxfrkdkkrbuwijn76nust4p4)
       '@hookform/resolvers':
         specifier: ^4.1.3
         version: 4.1.3(react-hook-form@7.55.0(react@19.1.0))
@@ -133,7 +133,7 @@ importers:
         version: 4.0.17
       '@tanstack/react-query':
         specifier: ^5.70.0
-        version: 5.73.3(react@19.1.0)
+        version: 5.74.0(react@19.1.0)
       better-auth:
         specifier: 1.2.6
         version: 1.2.6
@@ -487,7 +487,7 @@ importers:
     dependencies:
       '@daveyplate/better-auth-ui':
         specifier: 1.2.31
-        version: 1.2.31(kza2oz35r525vcklkvby3yjbx4)
+        version: 1.2.31(bzhla2jkvcymgkmlutngl5eyci)
       '@eslint/eslintrc':
         specifier: ^3.2.0
         version: 3.3.1
@@ -604,7 +604,7 @@ importers:
         version: 4.0.17
       '@tanstack/react-query':
         specifier: ^5.70.0
-        version: 5.73.3(react@19.1.0)
+        version: 5.74.0(react@19.1.0)
       better-auth:
         specifier: 1.2.6
         version: 1.2.6
@@ -972,7 +972,7 @@ importers:
         specifier: 0.482.0
         version: 0.482.0(react@19.1.0)
       next:
-        specifier: ^15.2.4
+        specifier: ^15.3.0
         version: 15.3.0(babel-plugin-react-compiler@19.0.0-beta-e993439-20250328)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.77.4)
       payload:
         specifier: ^3.34.0
@@ -4253,11 +4253,11 @@ packages:
   '@tailwindcss/postcss@4.1.3':
     resolution: {integrity: sha512-6s5nJODm98F++QT49qn8xJKHQRamhYHfMi3X7/ltxiSQ9dyRsaFSfFkfaMsanWzf+TMYQtbk8mt5f6cCVXJwfg==}
 
-  '@tanstack/query-core@5.73.3':
-    resolution: {integrity: sha512-LUpsgVT3IkvOECdkQ3QD6esczSH71mAzH/LDZ2cu8j6w430v5W0JB1ulzsG8FFwFBd5fm/ePM2DFpg9TucRMgQ==}
+  '@tanstack/query-core@5.74.0':
+    resolution: {integrity: sha512-kMqBfXA06INskI06rm+abAY3/Vi/Kq1nRNfLbpwuhuMJ5lMAI5qASretlvjEO5OJoze6w7OB3pNvsbztirIWWQ==}
 
-  '@tanstack/react-query@5.73.3':
-    resolution: {integrity: sha512-umsAEsVsSSnrOZrstX/OlctdqkRZm6vPsetmbl241tdNo0jT3s+0bUoof9kCaTsPr/GopPlbJ1OYlrZj4toKzg==}
+  '@tanstack/react-query@5.74.0':
+    resolution: {integrity: sha512-tT/XQ8FmG5nlN7O8xnYaOM1c1ckJi9+SPKRq+Ay8rV118lefWCoFDQIsF/BarRsLTHijBmSQ6xE9PRugaOqrCQ==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -4841,8 +4841,8 @@ packages:
   better-auth@1.2.6:
     resolution: {integrity: sha512-RVy6nfNCXpohx49zP2ChUO3zN0nvz5UXuETJIhWU+dshBKpFMk4P4hAQauM3xqTJdd9hfeB5y+segmG1oYGTJQ==}
 
-  better-call@1.0.7:
-    resolution: {integrity: sha512-p5kEthErx3HsW9dCCvvEx+uuEdncn0ZrlqrOG3TkR1aVYgynpwYbTVU90nY8/UwfMhROzqZWs8vryainSQxrNg==}
+  better-call@1.0.8:
+    resolution: {integrity: sha512-/PV8JLqDRUN7JyBPbklVsS/8E4SO3pnf8hbpa8B7xrBrr+BBYpeOAxoqtnsyk/pRs35vNB4MZx8cn9dBuNlLDA==}
 
   bin-version-check@5.1.0:
     resolution: {integrity: sha512-bYsvMqJ8yNGILLz1KP9zKLzQ6YpljV3ln1gqhuLkUtyfGi3qXKGuK2p+U4NAvjVFzDFiBBtOpCOSFNuYYEGZ5g==}
@@ -7445,11 +7445,11 @@ packages:
     resolution: {integrity: sha512-1FlR+gjXK7X+AsAHso35MnyN5KqGwJRi/31ft6x0M194ht7S+rWAvd7PHss9xSKMzE0asv1pyIHaJYq+BbacAQ==}
     engines: {node: '>=12'}
 
-  oniguruma-parser@0.5.4:
-    resolution: {integrity: sha512-yNxcQ8sKvURiTwP0mV6bLQCYE7NKfKRRWunhbZnXgxSmB1OXa1lHrN3o4DZd+0Si0kU5blidK7BcROO8qv5TZA==}
+  oniguruma-parser@0.11.0:
+    resolution: {integrity: sha512-9M+tFRnJWtRxsgh4XFlkw+AVFtzEtI8UfTifx6sDbtt47SpEl/K65PunQyp/jvfp0xwLGjtbE5aKQcL8j6AXYw==}
 
-  oniguruma-to-es@4.1.0:
-    resolution: {integrity: sha512-SNwG909cSLo4vPyyPbU/VJkEc9WOXqu2ycBlfd1UCXLqk1IijcQktSBb2yRQ2UFPsDhpkaf+C1dtT3PkLK/yWA==}
+  oniguruma-to-es@4.2.0:
+    resolution: {integrity: sha512-MDPs6KSOLS0tKQ7joqg44dRIRZUyotfTy0r+7oEEs6VwWWP0+E2PPDYWMFN0aqOjRyWHBYq7RfKw9GQk2S2z5g==}
 
   open@10.1.0:
     resolution: {integrity: sha512-mnkeQ1qP5Ue2wd+aivTD3NHd/lZ96Lu0jgf0pwktLPtx6cTZiH7tyeGRRHs0zX0rbrahXPnXlUnbeXyaBBuIaw==}
@@ -9459,40 +9459,17 @@ snapshots:
 
   '@date-fns/tz@1.2.0': {}
 
-  '@daveyplate/better-auth-tanstack@1.3.3(@tanstack/query-core@5.73.3)(@tanstack/react-query@5.73.3(react@19.1.0))(better-auth@1.2.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@daveyplate/better-auth-tanstack@1.3.3(@tanstack/query-core@5.74.0)(@tanstack/react-query@5.74.0(react@19.1.0))(better-auth@1.2.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
-      '@tanstack/query-core': 5.73.3
-      '@tanstack/react-query': 5.73.3(react@19.1.0)
+      '@tanstack/query-core': 5.74.0
+      '@tanstack/react-query': 5.74.0(react@19.1.0)
       better-auth: 1.2.6
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  '@daveyplate/better-auth-ui@1.2.31(2ccnxxo3i5fssigix75yktxj7e)':
+  '@daveyplate/better-auth-ui@1.2.31(bzhla2jkvcymgkmlutngl5eyci)':
     dependencies:
-      '@daveyplate/better-auth-tanstack': 1.3.3(@tanstack/query-core@5.73.3)(@tanstack/react-query@5.73.3(react@19.1.0))(better-auth@1.2.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@radix-ui/react-avatar': 1.1.4(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@radix-ui/react-checkbox': 1.1.4(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@radix-ui/react-dialog': 1.1.7(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@radix-ui/react-dropdown-menu': 2.1.7(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@radix-ui/react-label': 2.1.2(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@radix-ui/react-slot': 1.1.2(@types/react@19.1.0)(react@19.1.0)
-      '@radix-ui/react-tabs': 1.1.4(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@react-email/components': 0.0.36(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@tanstack/react-query': 5.73.3(react@19.1.0)
-      better-auth: 1.2.6
-      class-variance-authority: 0.7.1
-      clsx: 2.1.1
-      lucide-react: 0.479.0(react@19.1.0)
-      react: 19.1.0
-      react-dom: 19.1.0(react@19.1.0)
-      sonner: 2.0.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      tailwind-merge: 3.0.2
-      tailwindcss: 4.1.3
-      ua-parser-js: 2.0.2
-
-  '@daveyplate/better-auth-ui@1.2.31(kza2oz35r525vcklkvby3yjbx4)':
-    dependencies:
-      '@daveyplate/better-auth-tanstack': 1.3.3(@tanstack/query-core@5.73.3)(@tanstack/react-query@5.73.3(react@19.1.0))(better-auth@1.2.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@daveyplate/better-auth-tanstack': 1.3.3(@tanstack/query-core@5.74.0)(@tanstack/react-query@5.74.0(react@19.1.0))(better-auth@1.2.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-avatar': 1.1.4(@types/react-dom@19.0.4(@types/react@19.0.12))(@types/react@19.0.12)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-checkbox': 1.1.4(@types/react-dom@19.0.4(@types/react@19.0.12))(@types/react@19.0.12)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-dialog': 1.1.7(@types/react-dom@19.0.4(@types/react@19.0.12))(@types/react@19.0.12)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -9501,7 +9478,7 @@ snapshots:
       '@radix-ui/react-slot': 1.1.2(@types/react@19.0.12)(react@19.1.0)
       '@radix-ui/react-tabs': 1.1.4(@types/react-dom@19.0.4(@types/react@19.0.12))(@types/react@19.0.12)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-email/components': 0.0.36(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@tanstack/react-query': 5.73.3(react@19.1.0)
+      '@tanstack/react-query': 5.74.0(react@19.1.0)
       better-auth: 1.2.6
       class-variance-authority: 0.7.1
       clsx: 2.1.1
@@ -9511,6 +9488,29 @@ snapshots:
       sonner: 2.0.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       tailwind-merge: 3.0.2
       tailwindcss: 4.0.14
+      ua-parser-js: 2.0.2
+
+  '@daveyplate/better-auth-ui@1.2.31(svwxfrkdkkrbuwijn76nust4p4)':
+    dependencies:
+      '@daveyplate/better-auth-tanstack': 1.3.3(@tanstack/query-core@5.74.0)(@tanstack/react-query@5.74.0(react@19.1.0))(better-auth@1.2.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@radix-ui/react-avatar': 1.1.4(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@radix-ui/react-checkbox': 1.1.4(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@radix-ui/react-dialog': 1.1.7(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@radix-ui/react-dropdown-menu': 2.1.7(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@radix-ui/react-label': 2.1.2(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@radix-ui/react-slot': 1.1.2(@types/react@19.1.0)(react@19.1.0)
+      '@radix-ui/react-tabs': 1.1.4(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@react-email/components': 0.0.36(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@tanstack/react-query': 5.74.0(react@19.1.0)
+      better-auth: 1.2.6
+      class-variance-authority: 0.7.1
+      clsx: 2.1.1
+      lucide-react: 0.479.0(react@19.1.0)
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+      sonner: 2.0.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      tailwind-merge: 3.0.2
+      tailwindcss: 4.1.3
       ua-parser-js: 2.0.2
 
   '@dnd-kit/accessibility@3.1.1(react@19.1.0)':
@@ -13524,7 +13524,7 @@ snapshots:
     dependencies:
       '@shikijs/types': 3.2.2
       '@shikijs/vscode-textmate': 10.0.2
-      oniguruma-to-es: 4.1.0
+      oniguruma-to-es: 4.2.0
 
   '@shikijs/engine-oniguruma@3.2.2':
     dependencies:
@@ -13808,11 +13808,11 @@ snapshots:
       postcss: 8.5.3
       tailwindcss: 4.1.3
 
-  '@tanstack/query-core@5.73.3': {}
+  '@tanstack/query-core@5.74.0': {}
 
-  '@tanstack/react-query@5.73.3(react@19.1.0)':
+  '@tanstack/react-query@5.74.0(react@19.1.0)':
     dependencies:
-      '@tanstack/query-core': 5.73.3
+      '@tanstack/query-core': 5.74.0
       react: 19.1.0
 
   '@tokenizer/token@0.3.0': {}
@@ -14631,14 +14631,14 @@ snapshots:
       '@noble/hashes': 1.7.1
       '@simplewebauthn/browser': 13.1.0
       '@simplewebauthn/server': 13.1.1
-      better-call: 1.0.7
+      better-call: 1.0.8
       defu: 6.1.4
       jose: 5.10.0
       kysely: 0.27.6
       nanostores: 0.11.4
       zod: 3.24.2
 
-  better-call@1.0.7:
+  better-call@1.0.8:
     dependencies:
       '@better-fetch/fetch': 1.1.18
       rou3: 0.5.1
@@ -15675,7 +15675,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.29.1(eslint@9.21.0(jiti@2.4.2))(typescript@5.8.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.0)(eslint@9.21.0(jiti@2.4.2)):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.29.1(eslint@9.21.0(jiti@2.4.2))(typescript@5.8.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.29.1(eslint@9.21.0(jiti@2.4.2))(typescript@5.8.2))(eslint@9.21.0(jiti@2.4.2)))(eslint@9.21.0(jiti@2.4.2)))(eslint@9.21.0(jiti@2.4.2)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -15737,7 +15737,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.21.0(jiti@2.4.2)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.29.1(eslint@9.21.0(jiti@2.4.2))(typescript@5.8.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.0)(eslint@9.21.0(jiti@2.4.2))
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.29.1(eslint@9.21.0(jiti@2.4.2))(typescript@5.8.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.29.1(eslint@9.21.0(jiti@2.4.2))(typescript@5.8.2))(eslint@9.21.0(jiti@2.4.2)))(eslint@9.21.0(jiti@2.4.2)))(eslint@9.21.0(jiti@2.4.2))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -18251,12 +18251,12 @@ snapshots:
     dependencies:
       mimic-fn: 4.0.0
 
-  oniguruma-parser@0.5.4: {}
+  oniguruma-parser@0.11.0: {}
 
-  oniguruma-to-es@4.1.0:
+  oniguruma-to-es@4.2.0:
     dependencies:
       emoji-regex-xs: 1.0.0
-      oniguruma-parser: 0.5.4
+      oniguruma-parser: 0.11.0
       regex: 6.0.1
       regex-recursion: 6.0.2
 

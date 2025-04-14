@@ -14,7 +14,6 @@ export function betterAuthStrategy(userSlug?: string): AuthStrategy {
         const payloadAuth = await getPayloadAuth(payload.config);
         const res = await payloadAuth.betterAuth.api.getSession({
           headers,
-          query: { disableCookieCache: true },
         });
         if (!res) {
           return { user: null };
@@ -42,7 +41,8 @@ export function betterAuthStrategy(userSlug?: string): AuthStrategy {
             _strategy: "better-auth",
           },
         };
-      } catch {
+      } catch (error) {
+        console.error(error);
         return { user: null };
       }
     },

@@ -13,6 +13,7 @@ import type {
   Payload,
   PayloadRequest,
 } from "payload";
+import { adminRoutes } from "./lib/constants";
 
 /**
  * BetterAuth options with the following caveats:
@@ -327,13 +328,10 @@ export interface BetterAuthPluginOptions {
     /**
      * This will be used to generate the admin invite url
      *
-     * @param options Object containing the payload and token
+     * @param options Object containing payload and the token
      * @returns The admin invite url
      */
-    generateInviteUrl?: (options: {
-      payload: Payload;
-      token: string;
-    }) => string;
+    generateInviteUrl?: GenerateAdminInviteUrlFn;
     /**
      * Function to override the collection configuration
      *
@@ -358,6 +356,19 @@ export interface BetterAuthPluginOptions {
    */
   betterAuthOptions?: BetterAuthOptions;
 }
+
+export type GenerateAdminInviteUrlFn = (options: {
+  payload: Payload;
+  token: string;
+}) => string;
+
+export type ConfigAdminCustom = {
+  betterAuth: {
+    adminRoutes: {
+      [key in keyof typeof adminRoutes]: string;
+    };
+  };
+};
 
 export interface BetterAuthPlugin {
   (config: Config): Config;

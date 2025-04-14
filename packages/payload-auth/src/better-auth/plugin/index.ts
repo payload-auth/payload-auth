@@ -4,10 +4,7 @@ import { sanitizeBetterAuthOptions } from "./lib/sanitize-better-auth-options/in
 import { getRequiredCollectionSlugs } from "./lib/get-required-collection-slugs.js";
 import { buildCollections } from "./lib/build-collections/index.js";
 import { initBetterAuth } from "./lib/init-better-auth.js";
-import { getSetAdminRoleEndpoint } from "./payload/endpoints/set-admin-role";
-import { getAllRoleOptions } from "./helpers/get-all-roles";
-import { getGenerateInviteUrlEndpoint } from "./payload/endpoints/generate-invite-url";
-import { getSignupEndpoint } from "./payload/endpoints/signup.js";
+import { adminRoutes } from "./lib/constants.js";
 export * from "./types.js";
 export * from "./helpers/index.js";
 export { sanitizeBetterAuthOptions } from "./lib/sanitize-better-auth-options/index.js";
@@ -29,35 +26,8 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
       hasBetterAuthPlugin: true,
     };
 
-    const allRoleOptions = getAllRoleOptions(pluginOptions);
-    const baseUrl =
-      betterAuthOptions.baseURL ??
-      process.env.NEXT_PUBLIC_URL ??
-      "http://localhost:3000";
-
-    config.endpoints = [
-      ...(config.endpoints ?? []),
-      getSetAdminRoleEndpoint(
-        pluginOptions,
-        pluginOptions.users?.slug ?? "users"
-      ),
-      getGenerateInviteUrlEndpoint({
-        roles: allRoleOptions,
-        baseUrl,
-        pluginOptions,
-      }),
-      getSignupEndpoint(pluginOptions, betterAuthOptions),
-    ];
-
     // Set custom admin components if disableDefaultPayloadAuth is true
     if (pluginOptions.disableDefaultPayloadAuth) {
-
-      const routes = {
-        forgot: "/forgot",
-        reset: "/reset",
-        login: "/login",
-      }
-
       config.admin = {
         ...config.admin,
         components: {
@@ -66,8 +36,8 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
             {
               path: "payload-auth/better-auth/plugin/rsc#RSCRedirect",
               serverProps: {
-                redirectTo: `${config.routes?.admin || "/admin"}${routes.login}`,
-              }
+                redirectTo: `${config.routes?.admin || "/admin"}${adminRoutes.login}`,
+              },
             },
             ...(config.admin?.components?.afterLogin || []),
           ],
@@ -79,23 +49,23 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
           views: {
             ...config.admin?.components?.views,
             login: {
-              path: routes.login,
+              path: adminRoutes.login,
               Component: {
                 path: "payload-auth/better-auth/plugin/rsc#Login",
                 serverProps: {
                   pluginOptions: pluginOptions,
-                  betterAuthOptions: betterAuthOptions
+                  betterAuthOptions: betterAuthOptions,
                 },
               },
             },
             logout: {
-              path: "/logout",
+              path: adminRoutes.logout,
               Component: {
                 path: "payload-auth/better-auth/plugin/rsc#Logout",
               },
             },
             createFirstAdmin: {
-              path: "/create-first-admin",
+              path: adminRoutes.createFirstAdmin,
               Component: {
                 path: "payload-auth/better-auth/plugin/rsc#CreateFirstAdmin",
                 serverProps: {
@@ -104,14 +74,23 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
                 },
               },
             },
-            forgot: {
-              path: routes.forgot,
+            forgotPassword: {
+              path: adminRoutes.forgotPassword,
               Component: {
                 path: "payload-auth/better-auth/plugin/rsc#Forgot",
+                serverProps: {
+                  betterAuthOptions: betterAuthOptions,
+                },
               },
             },
-            signup: {
-              path: "/admin-invite",
+            resetPassword: {
+              path: adminRoutes.resetPassword,
+              Component: {
+                path: "payload-auth/better-auth/plugin/rsc#ResetPassword",
+              },
+            },
+            adminInvite: {
+              path: adminRoutes.adminInvite,
               Component: {
                 path: "payload-auth/better-auth/plugin/rsc#AdminInvite",
                 serverProps: {
@@ -121,19 +100,13 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
               },
             },
             inactivity: {
-              path: "/inactivity",
+              path: adminRoutes.inactivity,
               Component: {
                 path: "payload-auth/better-auth/plugin/rsc#Inactivity",
               },
             },
-            resetPassword: {
-              path: routes.reset,
-              Component: {
-                path: "payload-auth/better-auth/plugin/rsc#ResetPassword",
-              },
-            },
             verifyEmail: {
-              path: "/verify-email",
+              path: adminRoutes.verifyEmail,
               Component: {
                 path: "payload-auth/better-auth/plugin/rsc#VerifyEmail",
               },
@@ -142,11 +115,9 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
         },
         routes: {
           ...config.admin?.routes,
-          login: "/login-redirect",
+          login: adminRoutes.loginRedirect,
           forgot: undefined, // Deactivate default forgot route
           reset: undefined, // Deactivate default reset route
-          logout: "/logout",
-          inactivity: "/inactivity",
         },
         // Add admin routes to the custom object
         // We need this to create links in the admin views.
@@ -155,19 +126,19 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
           betterAuth: {
             ...config.admin?.custom?.betterAuth,
             adminRoutes: {
-              ...routes,
+              ...adminRoutes,
               ...(config.admin?.custom?.betterAuth?.adminRoutes || {}),
-            }
-          }
-        }
-      }
+            },
+          },
+        },
+      };
     }
 
     // Determine which collections to add based on the options and plugins
     const requiredCollectionSlugs = getRequiredCollectionSlugs({
       logTables: pluginOptions.debug?.logTables ?? false,
       pluginOptions,
-      sanitizedBAOptions: betterAuthOptions,
+      betterAuthOptions,
     });
 
     if (!config.collections) {
@@ -179,7 +150,7 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
       incomingCollections: config.collections ?? [],
       requiredCollectionSlugs,
       pluginOptions,
-      sanitizedBAOptions: betterAuthOptions,
+      betterAuthOptions,
     });
 
     const incomingOnInit = config.onInit;
@@ -196,6 +167,7 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
           NonNullable<typeof betterAuthOptions.plugins>
         >({
           payload,
+          idType: payload.db.defaultIDType,
           options: {
             ...betterAuthOptions,
             enableDebugLogs: pluginOptions.debug?.enableDebugLogs ?? false,

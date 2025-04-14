@@ -1,5 +1,5 @@
 import { CollectionConfig } from "payload";
-import { baseCollectionSlugs, betterAuthPluginSlugs } from "../config";
+import { baseCollectionSlugs, betterAuthPluginSlugs } from "../constants";
 import type {
   BetterAuthPluginOptions,
   SanitizedBetterAuthOptions,
@@ -29,18 +29,18 @@ export function buildCollections({
   incomingCollections,
   requiredCollectionSlugs,
   pluginOptions,
-  sanitizedBAOptions,
+  betterAuthOptions,
 }: {
   incomingCollections: CollectionConfig[];
   requiredCollectionSlugs: Set<string>;
   pluginOptions: BetterAuthPluginOptions;
-  sanitizedBAOptions: SanitizedBetterAuthOptions;
+  betterAuthOptions: SanitizedBetterAuthOptions;
 }): CollectionConfig[] {
   const buildCollectionMap = {
     [baseCollectionSlugs.users]: () =>
       buildUsersCollection({
         incomingCollections,
-        sanitizedBAOptions,
+        betterAuthOptions,
         pluginOptions,
       }),
     [baseCollectionSlugs.accounts]: () =>
@@ -48,7 +48,7 @@ export function buildCollections({
     [baseCollectionSlugs.sessions]: () =>
       buildSessionsCollection({
         incomingCollections,
-        sanitizedBAOptions,
+        betterAuthOptions,
         pluginOptions,
       }),
     [baseCollectionSlugs.verifications]: () =>

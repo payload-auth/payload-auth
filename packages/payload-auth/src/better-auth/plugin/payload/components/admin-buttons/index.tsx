@@ -4,11 +4,9 @@ import { Button, toast, useDocumentInfo, useField } from "@payloadcms/ui";
 import { adminClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { Fragment, useMemo } from "react";
 
-import "./styles.css";
-
-import "@payloadcms/ui/styles.css";
+import "./index.scss";
 
 type AdminButtonsProps = {
   userSlug: string;
@@ -23,9 +21,13 @@ const AdminButtons: React.FC<AdminButtonsProps> = () => {
     return null;
   }
 
-  const authClient = createAuthClient({
-    plugins: [adminClient()],
-  });
+  const authClient = useMemo(
+    () =>
+      createAuthClient({
+        plugins: [adminClient()],
+      }),
+    []
+  );
 
   const handleImpersonate = async () => {
     await authClient.admin.impersonateUser({
@@ -91,37 +93,7 @@ const AdminButtons: React.FC<AdminButtonsProps> = () => {
   };
 
   return (
-    <>
-      <style>{`
-        .doc-tabs__tabs:has(.impersonate-button) .doc-tab {
-          order: 10;
-        }
-        .impersonate-button, .revoke-sessions-button, .ban-button, .unban-button {
-          display: inline-flex;
-          align-items: center;
-          margin-block: 0;
-          padding-block: 0.23rem;
-          text-wrap: nowrap;
-        }
-        .ban-button {
-          background-color: oklch(0.258 0.092 26.042);
-          color: oklch(0.577 0.245 27.325);
-          border: 1px solid oklch(0.396 0.141 25.723);
-          &:hover {
-            color: #fff;
-            background-color: oklch(0.505 0.213 27.518);
-          }
-        }
-        .revoke-sessions-button {
-          --theme-elevation-800: oklch(0.396 0.141 25.723);
-          color: oklch(0.637 0.237 25.331);
-          &:hover {
-            --theme-elevation-400: oklch(0.396 0.141 25.723);
-            color: #fff;
-            background-color: oklch(0.396 0.141 25.723);
-          }
-        }
-      `}</style>
+    <Fragment>
       <Button
         onClick={handleImpersonate}
         buttonStyle="pill"
@@ -149,11 +121,16 @@ const AdminButtons: React.FC<AdminButtonsProps> = () => {
         </Button>
       ) : null}
       {isBanned ? (
-        <Button onClick={handleUnban} buttonStyle="primary" className="unban-button" size="medium">
+        <Button
+          onClick={handleUnban}
+          buttonStyle="primary"
+          className="unban-button"
+          size="medium"
+        >
           Unban
         </Button>
       ) : null}
-    </>
+    </Fragment>
   );
 };
 

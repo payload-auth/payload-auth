@@ -4,6 +4,9 @@ import { withPayload } from '@payloadcms/next/withPayload'
 const nextConfig: NextConfig = {
   experimental: {
     reactCompiler: true
+  },
+  devIndicators: {
+    position: 'bottom-right'
   }
 }
 

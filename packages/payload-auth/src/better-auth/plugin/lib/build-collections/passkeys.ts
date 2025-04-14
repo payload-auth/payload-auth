@@ -1,6 +1,6 @@
 import { CollectionConfig } from "payload";
 import { BetterAuthPluginOptions } from "../../types";
-import { baseCollectionSlugs, betterAuthPluginSlugs } from "../config";
+import { baseCollectionSlugs, betterAuthPluginSlugs } from "../constants";
 import { getTimestampFields } from "./utils/get-timestamp-fields";
 import { getAdminAccess } from "../../helpers/get-admin-access";
 export function buildPasskeysCollection({

@@ -1,4 +1,4 @@
-import { baseCollectionSlugs, betterAuthPluginSlugs } from "../config";
+import { baseCollectionSlugs, betterAuthPluginSlugs } from "../constants";
 
 export function configureOrganizationPlugin(plugin: any) {
   plugin.schema = plugin?.schema ?? {};

@@ -1,4 +1,5 @@
 //@ts-nocheck
+import { Metadata } from "next";
 import {
   generateMetadata,
   type GenerateViewMetadata,
@@ -7,7 +8,7 @@ import {
 export const generateVerifyViewMetadata: GenerateViewMetadata = async ({
   config,
   i18n: { t },
-}) =>
+}): Promise<Metadata> =>
   generateMetadata({
     serverURL: config.serverURL,
     description: t("authentication:verifyUser"),

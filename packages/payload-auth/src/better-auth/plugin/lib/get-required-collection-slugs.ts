@@ -1,5 +1,5 @@
 import { getAuthTables } from "better-auth/db";
-import { baseCollectionSlugs } from "./config";
+import { baseCollectionSlugs } from "./constants";
 import type {
   BetterAuthPluginOptions,
   SanitizedBetterAuthOptions,
@@ -11,11 +11,11 @@ import type {
 export function getRequiredCollectionSlugs({
   logTables,
   pluginOptions,
-  sanitizedBAOptions,
+  betterAuthOptions,
 }: {
   logTables: boolean;
   pluginOptions: BetterAuthPluginOptions;
-  sanitizedBAOptions: SanitizedBetterAuthOptions;
+  betterAuthOptions: SanitizedBetterAuthOptions;
 }): Set<string> {
   // Start with base collections
   const requiredCollectionSlugs = new Set([
@@ -29,12 +29,12 @@ export function getRequiredCollectionSlugs({
 
   // Add additional collections from auth tables if available
   try {
-    const tables = getAuthTables(sanitizedBAOptions);
+    const tables = getAuthTables(betterAuthOptions);
 
     if (logTables) {
       console.log(
         "Better Auth plugins:",
-        sanitizedBAOptions.plugins?.map((plugin) => plugin.id) || []
+        betterAuthOptions.plugins?.map((plugin) => plugin.id) || []
       );
       console.log(
         "Better Auth tables required:",
@@ -51,7 +51,7 @@ export function getRequiredCollectionSlugs({
     console.warn("Falling back to base collections only");
 
     // Log problematic plugins if any exist
-    const plugins = sanitizedBAOptions.plugins || [];
+    const plugins = betterAuthOptions.plugins || [];
     if (plugins.length > 0) {
       console.warn(
         "Plugins that may have caused the error:",

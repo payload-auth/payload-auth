@@ -22,7 +22,7 @@ import {
 } from "@payloadcms/ui";
 import { abortAndIgnore } from "@payloadcms/ui/shared";
 
-import { AdminSocialProviderButtons } from "../../components/admin-social-provider-buttons";
+import AdminSocialProviderButtons from "../../components/admin-social-provider-buttons";
 import { SocialProviders } from "../../../types";
 import { getSafeRedirect } from "../../utils/get-safe-redirect";
 
@@ -70,15 +70,17 @@ export const AcceptInviteClient: React.FC<{
       abortAndIgnore(abortOnChange ?? new AbortController());
     };
   }, []);
+
   const redirectUrl = getSafeRedirect(
     searchParams?.redirect as string,
     adminRoute
   );
+  const newUserCallbackURL = `${serverURL}${apiRoute}/${userSlug}/set-admin-role?role=${role}&token=${token}&redirect=${redirectUrl}`;
 
   return (
     <div>
       <Form
-        action={`${serverURL}${apiRoute}/signup?token=${token}&role=${role}&redirect=${redirectUrl}`}
+        action={`${serverURL}${apiRoute}/${userSlug}/signup?token=${token}&role=${role}&redirect=${redirectUrl}`}
         method="POST"
         onSuccess={handleSignup}
         redirect={redirectUrl}
@@ -103,13 +105,12 @@ export const AcceptInviteClient: React.FC<{
         <FormSubmit size="large">{t("general:create")}</FormSubmit>
       </Form>
       <AdminSocialProviderButtons
-        token={token}
-        hasPasskeySupport={false}
-        adminRole={role}
         allowSignup={true}
+        hasPasskeySupport={false}
         socialProviders={socialProviders}
         setLoading={setLoading}
-        searchParams={searchParams}
+        redirectUrl={redirectUrl}
+        newUserCallbackURL={newUserCallbackURL}
       />
     </div>
   );

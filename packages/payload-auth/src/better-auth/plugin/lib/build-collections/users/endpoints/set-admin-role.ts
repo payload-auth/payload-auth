@@ -1,11 +1,8 @@
 import { type Endpoint } from "payload";
 import { status as httpStatus } from "http-status";
-import {
-  BetterAuthPluginOptions,
-  SanitizedBetterAuthOptions,
-} from "../../types";
-import z from "zod";
-import { getPayloadAuth } from "../../lib/get-payload-auth";
+import { BetterAuthPluginOptions } from "../../../../types";
+import { getPayloadAuth } from "../../../get-payload-auth";
+import { z } from "zod";
 
 const setAdminRoleSchema = z.object({
   token: z.string().optional(),
@@ -38,7 +35,6 @@ export const getSetAdminRoleEndpoint = (
           { status: httpStatus.UNAUTHORIZED }
         );
       }
-      console.log("session", session);
       const { token, redirect } = schema.data;
       const invite = await req.payload.find({
         collection: pluginOptions.adminInvitations?.slug ?? "admin-invitations",
@@ -54,7 +50,6 @@ export const getSetAdminRoleEndpoint = (
         );
       }
       const role = invite.docs[0].role as string;
-      console.log("role", role);
       const updatedUser = await req.payload.update({
         collection: userSlug,
         id: session.user.id,
@@ -63,8 +58,6 @@ export const getSetAdminRoleEndpoint = (
         },
         overrideAccess: true,
       });
-      console.log("updated user", updatedUser.docs);
-
       await req.payload.delete({
         collection: pluginOptions.adminInvitations?.slug ?? "admin-invitations",
         where: {
@@ -73,14 +66,12 @@ export const getSetAdminRoleEndpoint = (
           },
         },
       });
-      // Create a 307 redirect response to the admin route
       const response = new Response(null, {
         status: 307,
         headers: {
           Location: redirect ?? config.routes.admin,
         },
       });
-
       return response;
     },
   };

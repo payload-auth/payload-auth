@@ -1,4 +1,4 @@
-import { betterAuthPluginSlugs } from "../config";
+import { betterAuthPluginSlugs } from "../constants";
 
 export function configureOidcPlugin(plugin: any) {
   plugin.schema = plugin?.schema ?? {};
