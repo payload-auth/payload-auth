@@ -1,0 +1,61 @@
+name: Publish Release
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushes to the main branch
+
+jobs:
+  commitlint:
+    name: Lint Commit Messages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: wagoid/commitlint-github-action@v6
+
+  publish:
+    name: Publish Release
+    needs: commitlint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed by semantic-release to create releases, push tags/commits
+      issues: write  # Needed by semantic-release to comment on issues/PRs (optional but recommended)
+      pull-requests: write 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Required for semantic-release to analyze the full commit history
+          fetch-depth: 0 
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20  # Use the Node.js version required by your project
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Build the specific package required for release
+      - name: Build payload-auth package
+        run: pnpm run build 
+
+      # Create an archive of the distribution files
+      - name: Archive distribution files
+        run: (cd packages/payload-auth/dist && zip -r ../../../payload-auth-distribution.zip .)
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Token for GitHub authentication (provided by Actions)
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }} # Token for npm authentication (needs to be created in GitHub secrets)
+        run: pnpm exec semantic-release 
