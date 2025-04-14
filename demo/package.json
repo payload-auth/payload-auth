@@ -69,7 +69,7 @@
     "open": "^10.1.0",
     "monaco-editor": "0.52.2",
     "payload": "3.34.0",
-    "payload-auth": "workspace:*",
+    "payload-auth": "latest",
     "qs-esm": "7.0.2",
     "react": "^19",
     "react-day-picker": "9.6.3",
