@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, toast, useDocumentInfo, useField } from "@payloadcms/ui";
+import { Button, toast, useDocumentInfo, useFormFields } from "@payloadcms/ui";
 import { adminClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,7 @@ type AdminButtonsProps = {
 const AdminButtons: React.FC<AdminButtonsProps> = () => {
   const router = useRouter();
   const { id } = useDocumentInfo();
-  const { value: isBanned } = useField({ path: "banned" });
+  const isBanned = useFormFields(([fields]) => fields.banned)
 
   if (!id) {
     return null;
