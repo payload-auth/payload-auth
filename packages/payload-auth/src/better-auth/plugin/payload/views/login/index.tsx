@@ -8,7 +8,7 @@ import type {
   SanitizedBetterAuthOptions,
 } from "../../../types";
 import { getSafeRedirect } from "../../utils/get-safe-redirect";
-import { LoginForm } from "./form/index";
+import { LoginForm } from "./client";
 import { Logo } from "../../components/logo";
 import { checkPasskeyPlugin } from "../../../helpers/check-passkey-plugin";
 

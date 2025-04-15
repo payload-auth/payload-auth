@@ -17,7 +17,7 @@ const LogoutButton: React.FC<{
     routes: { admin: adminRoute },
   } = config;
 
-  const adminRoutes = getAdminRoutes(config.admin.custom);
+  const adminRoutes = getAdminRoutes(config);
 
   return (
     <a
@@ -25,7 +25,7 @@ const LogoutButton: React.FC<{
       className={`${baseClass}__log-out`}
       href={formatAdminURL({
         adminRoute,
-        path: adminRoutes.logout as `/${string}`,
+        path: adminRoutes?.logout as `/${string}`,
       })}
       tabIndex={tabIndex}
       title={t("authentication:logOut")}

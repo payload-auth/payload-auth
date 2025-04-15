@@ -12,8 +12,7 @@ export const generateAdminInviteUrl: GenerateAdminInviteUrlFn = ({
   const {
     routes: { admin: adminRoute },
     serverURL,
-    admin: { custom },
   } = payload.config;
-  const adminRoutes = getAdminRoutes(custom);
-  return `${serverURL}${adminRoute}${adminRoutes.adminInvite}?token=${token}`;
+  const adminRoutes = getAdminRoutes(payload.config);
+  return `${serverURL}${adminRoute}${adminRoutes?.adminInvite ?? "/admin-invite"}?token=${token}`;
 };

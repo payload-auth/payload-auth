@@ -1,6 +1,7 @@
 .admin-social-provider-buttons {
   display: flex;
 
+  &--count-0,
   &--count-1,
   &--count-2 {
     flex-direction: column;
@@ -33,6 +34,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    margin-block: 0;
 
     &--icon-only {
       .admin-social-provider-buttons__icon {
