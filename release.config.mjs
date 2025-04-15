@@ -87,9 +87,9 @@ function updateCommitGroupTitles(context, typeMapping) {
   context.commitGroups.forEach(group => {
     if (group.commits && group.commits.length > 0) {
       const rawType =
-        group.commits[0].raw && group.commits[0].raw.type
-          ? group.commits[0].raw.type.toLowerCase()
-          : group.commits[0].type.toLowerCase();
+        group.commits.at(0)?.raw && group.commits.at(0)?.raw?.type
+          ? group.commits.at(0)?.raw?.type?.toLowerCase()
+          : group.commits.at(0)?.type?.toLowerCase();
       if (typeMapping[rawType]) {
         group.title = typeMapping[rawType];
       }
