@@ -19,19 +19,21 @@ export async function prepareSessionData({
     user: any;
     session: any;
   };
-  payloadConfig: Payload["config"] | Config;
+  payloadConfig: Payload["config"] | Config | Promise<Payload["config"] | Config>;
   collectionSlugs: CollectionSlugs;
 }) {
   if (!newSession || !newSession.user) {
     return null;
   }
 
+  const awaitedPayloadConfig = await payloadConfig;
+
   const { userCollectionSlug, sessionCollectionSlug } = collectionSlugs;
 
-  const userCollection = payloadConfig?.collections?.find(
+  const userCollection = awaitedPayloadConfig?.collections?.find(
     (c) => c.slug === userCollectionSlug
   );
-  const sessionCollection = payloadConfig?.collections?.find(
+  const sessionCollection = awaitedPayloadConfig?.collections?.find(
     (c) => c.slug === sessionCollectionSlug
   );
 

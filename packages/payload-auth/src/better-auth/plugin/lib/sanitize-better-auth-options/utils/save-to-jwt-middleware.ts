@@ -21,7 +21,7 @@ export function saveToJwtMiddleware({
   pluginOptions,
 }: {
   sanitizedOptions: SanitizedBetterAuthOptions;
-  payloadConfig: Payload["config"] | Config;
+  payloadConfig: Payload["config"] | Config | Promise<Payload["config"] | Config>;
   pluginOptions: BetterAuthPluginOptions;
 }) {
   if (typeof sanitizedOptions.hooks !== "object") sanitizedOptions.hooks = {};

@@ -20,7 +20,7 @@ export function sanitizeBetterAuthOptions({
   config,
   options,
 }: {
-  config: Payload["config"] | Config;
+  config: Payload["config"] | Config | Promise<Payload["config"] | Config>;
   options: BetterAuthPluginOptions;
 }): SanitizedBetterAuthOptions {
   const baOptions = options.betterAuthOptions || {};
