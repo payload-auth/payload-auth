@@ -6,7 +6,12 @@ on:
       - main # Trigger on pushes to the main branch
     paths:
       - 'packages/**' # Only trigger when files in packages directory change
-
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Package to release'
+        required: false
+        default: 'payload-auth'
 jobs:
   commitlint:
     name: Lint Commit Messages
