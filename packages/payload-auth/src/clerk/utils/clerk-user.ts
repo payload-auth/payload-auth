@@ -1,7 +1,3 @@
-/**
- * Helper functions for processing Clerk user data
- */
-
 import { ClerkToPayloadMappingFunction } from '../types'
 import type { User, UserJSON } from '@clerk/backend'
 
