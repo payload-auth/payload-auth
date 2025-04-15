@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main # Trigger on pushes to the main branch
+    paths:
+      - 'packages/**' # Only trigger when files in packages directory change
 
 jobs:
   commitlint:
