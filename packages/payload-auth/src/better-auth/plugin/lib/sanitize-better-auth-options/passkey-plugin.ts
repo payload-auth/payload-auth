@@ -1,7 +1,7 @@
-import { betterAuthPluginSlugs } from "../constants";
+import { betterAuthPluginSlugs } from '@/better-auth/plugin/constants'
 
 export function configurePasskeyPlugin(plugin: any) {
-  plugin.schema = plugin?.schema ?? {};
+  plugin.schema = plugin?.schema ?? {}
   plugin.schema.passkey = {
     ...(plugin?.schema?.passkey ?? {}),
     modelName: betterAuthPluginSlugs.passkeys,
@@ -9,8 +9,8 @@ export function configurePasskeyPlugin(plugin: any) {
       ...(plugin?.schema?.passkey?.fields ?? {}),
       userId: {
         ...(plugin?.schema?.passkey?.fields?.userId ?? {}),
-        fieldName: "user",
-      },
-    },
-  };
+        fieldName: 'user'
+      }
+    }
+  }
 }

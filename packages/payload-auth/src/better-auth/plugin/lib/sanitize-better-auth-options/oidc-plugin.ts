@@ -1,12 +1,12 @@
-import { betterAuthPluginSlugs } from "../constants";
+import { betterAuthPluginSlugs } from '@/better-auth/plugin/constants'
 
 export function configureOidcPlugin(plugin: any) {
-  plugin.schema = plugin?.schema ?? {};
+  plugin.schema = plugin?.schema ?? {}
 
   // Initialize missing schema objects
-  ["oauthApplication", "oauthAccessToken", "oauthConsent"].forEach((key) => {
-    if (!plugin.schema[key]) plugin.schema[key] = {};
-  });
+  ;['oauthApplication', 'oauthAccessToken', 'oauthConsent'].forEach((key) => {
+    if (!plugin.schema[key]) plugin.schema[key] = {}
+  })
 
   plugin.schema = {
     ...plugin?.schema,
@@ -17,9 +17,9 @@ export function configureOidcPlugin(plugin: any) {
         ...(plugin?.schema?.oauthApplication?.fields ?? {}),
         userId: {
           ...(plugin?.schema?.oauthApplication?.fields?.userId ?? {}),
-          fieldName: "user",
-        },
-      },
+          fieldName: 'user'
+        }
+      }
     },
     oauthAccessToken: {
       ...plugin?.schema?.oauthAccessToken,
@@ -28,13 +28,13 @@ export function configureOidcPlugin(plugin: any) {
         ...(plugin?.schema?.oauthAccessToken?.fields ?? {}),
         userId: {
           ...(plugin?.schema?.oauthAccessToken?.fields?.userId ?? {}),
-          fieldName: "user",
+          fieldName: 'user'
         },
         clientId: {
           ...(plugin?.schema?.oauthAccessToken?.fields?.clientId ?? {}),
-          fieldName: "client",
-        },
-      },
+          fieldName: 'client'
+        }
+      }
     },
     oauthConsent: {
       ...plugin?.schema?.oauthConsent,
@@ -43,13 +43,13 @@ export function configureOidcPlugin(plugin: any) {
         ...(plugin?.schema?.oauthConsent?.fields ?? {}),
         userId: {
           ...(plugin?.schema?.oauthConsent?.fields?.userId ?? {}),
-          fieldName: "user",
+          fieldName: 'user'
         },
         clientId: {
           ...(plugin?.schema?.oauthConsent?.fields?.clientId ?? {}),
-          fieldName: "client",
-        },
-      },
-    },
-  };
+          fieldName: 'client'
+        }
+      }
+    }
+  }
 }

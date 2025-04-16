@@ -5,6 +5,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "prepare": "node scripts/prepare.js",
     "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
@@ -69,7 +70,7 @@
     "open": "^10.1.0",
     "monaco-editor": "0.52.2",
     "payload": "^3.34.0",
-    "payload-auth": "latest",
+    "payload-auth": "workspace:*",
     "qs-esm": "7.0.2",
     "react": "^19",
     "react-day-picker": "9.6.3",

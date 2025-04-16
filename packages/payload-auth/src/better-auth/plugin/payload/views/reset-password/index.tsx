@@ -1,12 +1,14 @@
+import React from 'react'
 import { MinimalTemplate } from '@payloadcms/next/templates'
 import { Button, Link, Translation } from '@payloadcms/ui'
 import type { AdminViewServerProps } from 'payload'
 import { formatAdminURL } from 'payload/shared'
-import React from 'react'
+
 import { z } from 'zod'
-import { getAdminRoutes } from '../../../helpers/get-admin-routes'
-import { FormHeader } from '../../components/form/header'
+
+import { FormHeader } from '@/shared/form/ui/header'
 import { PasswordResetForm } from './client'
+import { adminRoutes } from '@/better-auth/plugin/constants'
 
 const resetPasswordParamsSchema = z.object({
   token: z.string()
@@ -20,7 +22,6 @@ const ResetPassword: React.FC<AdminViewServerProps> = ({ initPageResult, searchP
       user,
       t,
       payload: {
-        config,
         config: {
           routes: { admin: adminRoute },
           admin: {
@@ -30,7 +31,6 @@ const ResetPassword: React.FC<AdminViewServerProps> = ({ initPageResult, searchP
       }
     }
   } = initPageResult
-  const adminRoutes = getAdminRoutes(config)
 
   if (user) {
     return (
@@ -76,7 +76,7 @@ const ResetPassword: React.FC<AdminViewServerProps> = ({ initPageResult, searchP
       <Link
         href={formatAdminURL({
           adminRoute,
-          path: adminRoutes?.login as `/${string}`
+          path: adminRoutes.adminLogin as `/${string}`
         })}
         prefetch={false}>
         {t('authentication:backToLogin')}

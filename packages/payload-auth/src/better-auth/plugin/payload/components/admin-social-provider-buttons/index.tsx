@@ -1,12 +1,12 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import { Icons } from '../icons'
+import { Icons } from '@/shared/components/icons'
 import { Key } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Button, toast } from '@payloadcms/ui'
 import { createAuthClient } from 'better-auth/react'
-import type { SocialProviders } from '../../../../types'
+import type { SocialProviders } from '@/better-auth/plugin/types'
 import { passkeyClient } from 'better-auth/client/plugins'
 
 import './index.scss'
@@ -34,8 +34,6 @@ const AdminSocialProviderButtons: React.FC<AdminSocialProviderButtonsProps> = ({
   const authClient = useMemo(() => createAuthClient({ plugins: [passkeyClient()] }), [])
   const providers = Object.keys(socialProviders ?? {}) as Array<keyof SocialProviders>
   const providerCount = providers.length
-  // const redirectUrl = getSafeRedirect(searchParams?.redirect ?? "", adminRoute);
-  // const newUserCallbackURL = `${config.serverURL}${config.routes.api}/${config.admin.user}/set-admin-role?role=${adminRole}&token=${token}&redirect=${redirectUrl}`;
 
   const renderProviderButton = (provider: keyof SocialProviders, showIconOnly: boolean) => {
     const providerConfig = socialProviders?.[provider]

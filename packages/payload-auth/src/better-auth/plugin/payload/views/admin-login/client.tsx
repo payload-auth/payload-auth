@@ -1,18 +1,20 @@
 'use client'
 
-import { FormSubmit, Link, toast, useConfig, useTranslation } from '@payloadcms/ui'
+import React from 'react'
+import { Form } from '@/shared/form/ui'
+import { FormHeader } from '@/shared/form/ui/header'
+import { PasswordField } from '@/shared/form/components/password'
+import { EmailOrUsernameField } from '@/shared/form/components/email-or-username'
 import { createAuthClient } from 'better-auth/client'
 import { usernameClient } from 'better-auth/client/plugins'
 import { formatAdminURL, getLoginOptions } from 'payload/shared'
-import React, { useCallback, useMemo, useState, useTransition, type ChangeEvent, type FocusEvent, type FormEvent } from 'react'
-import { getAdminRoutes } from '../../../helpers/get-admin-routes'
-import type { SocialProviders } from '../../../types'
-import AdminSocialProviderButtons from '../../components/admin-social-provider-buttons'
-import { Form } from '../../components/form'
-import { EmailOrUsernameField } from '../../components/form/fields/email-or-username'
-import { PasswordField } from '../../components/form/fields/password'
-import { FormHeader } from '../../components/form/header'
-import { getSafeRedirect } from '../../utils/get-safe-redirect'
+import { getSafeRedirect } from '@/better-auth/plugin/payload/utils/get-safe-redirect'
+import { FormSubmit, Link, toast, useConfig, useTranslation } from '@payloadcms/ui'
+import AdminSocialProviderButtons from '@/better-auth/plugin/payload/components/admin-social-provider-buttons'
+import { useCallback, useMemo, useState, useTransition, type ChangeEvent, type FocusEvent, type FormEvent } from 'react'
+import type { SocialProviders } from '@/better-auth/plugin/types'
+import { adminRoutes } from '@/better-auth/plugin/constants'
+import type { LoginWithUsernameOptions } from 'payload'
 
 const baseClass = 'login__form'
 const emailRegex = /^(?!\.)(?!.*\.\.)([a-z0-9_'+\-\.]*)[a-z0-9_'+\-]@([a-z0-9][a-z0-9\-]*\.)+[a-z]{2,}$/i
@@ -22,7 +24,7 @@ type LoginFormState = {
   [key: string]: { value: string; error?: string }
 }
 
-type LoginFormProps = {
+type AdminLoginClientProps = {
   socialProviders: SocialProviders
   hasUsernamePlugin: boolean
   hasPasskeySupport: boolean
@@ -30,32 +32,33 @@ type LoginFormProps = {
   prefillPassword?: string
   prefillUsername?: string
   searchParams: { [key: string]: string | string[] | undefined }
+  loginWithUsername: false | LoginWithUsernameOptions
 }
 
-export const LoginForm: React.FC<LoginFormProps> = ({
+export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
   socialProviders,
   hasUsernamePlugin,
   hasPasskeySupport,
   prefillEmail,
   prefillPassword,
   prefillUsername,
-  searchParams
+  searchParams,
+  loginWithUsername
 }) => {
   const authClient = useMemo(() => createAuthClient({ plugins: [usernameClient()] }), [])
+
   const [login, setLogin] = useState(prefillEmail ?? prefillUsername ?? '')
   const [loginError, setLoginError] = useState<string | undefined>(undefined)
   const [password, setPassword] = useState(prefillPassword ?? '')
   const [passwordError, setPasswordError] = useState<string | undefined>(undefined)
   const [isPending, startTransition] = useTransition()
+
   const [requireEmailVerification, setRequireEmailVerification] = useState<boolean>(false)
   const { t } = useTranslation()
-  const { config, getEntityConfig } = useConfig()
-  const adminRoutes = getAdminRoutes(config)
-  const adminRoute = config?.routes?.admin || '/admin'
-  const userSlug = config?.admin?.user
-  const collectionConfig = getEntityConfig({ collectionSlug: userSlug })
-  const { auth: authOptions } = collectionConfig
-  const loginWithUsername = authOptions?.loginWithUsername ?? false
+  const { config } = useConfig()
+
+  const adminRoute = config.routes.admin
+
   const { canLoginWithEmail, canLoginWithUsername } = getLoginOptions(loginWithUsername)
   const redirectUrl = getSafeRedirect(searchParams?.redirect as string, adminRoute)
 
@@ -187,7 +190,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   }
 
   if (requireEmailVerification) {
-    return <FormHeader heading={'Verify your email'} description={'Check your email for a verification link.'} style={{ textAlign: 'center' }} />
+    return (
+      <FormHeader heading={'Verify your email'} description={'Check your email for a verification link.'} style={{ textAlign: 'center' }} />
+    )
   }
 
   return (
@@ -221,13 +226,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           />
         </div>
         <Link
-            href={formatAdminURL({
-              adminRoute: adminRoute,
-              path: adminRoutes?.forgotPassword as `/${string}`
-            })}
-            prefetch={false}>
-            {t('authentication:forgotPasswordQuestion')}
-          </Link>
+          href={formatAdminURL({
+            adminRoute: adminRoute,
+            path: adminRoutes?.forgotPassword as `/${string}`
+          })}
+          prefetch={false}>
+          {t('authentication:forgotPasswordQuestion')}
+        </Link>
         <FormSubmit disabled={isPending} size="large">
           {isPending ? t('general:loading') : t('authentication:login')}
         </FormSubmit>

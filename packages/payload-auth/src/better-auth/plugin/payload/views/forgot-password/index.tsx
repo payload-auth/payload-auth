@@ -1,27 +1,25 @@
+import React, { Fragment } from 'react'
 import { MinimalTemplate } from '@payloadcms/next/templates'
 import { Button, Translation } from '@payloadcms/ui'
 import Link from 'next/link'
 import type { AdminViewServerProps } from 'payload'
 import { formatAdminURL } from 'payload/shared'
-import React, { Fragment } from 'react'
-import type { SanitizedBetterAuthOptions } from '../../../types'
-import { FormHeader } from '../../components/form/header'
+import type { SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
+import { FormHeader } from '@/shared/form/ui/header'
 import { ForgotPasswordForm } from './client'
+import { adminRoutes } from '@/better-auth/plugin/constants'
 
-type ForgotViewProps = AdminViewServerProps & {
+type ForgotPasswordProps = AdminViewServerProps & {
   betterAuthOptions: SanitizedBetterAuthOptions
 }
 
-const ForgotView: React.FC<ForgotViewProps> = ({ initPageResult, betterAuthOptions }) => {
+const ForgotPassword: React.FC<ForgotPasswordProps> = ({ initPageResult }) => {
   const {
     req: {
       payload: {
-        collections,
         config: {
           admin: {
-            user: userSlug,
-            custom,
-            routes: { login, account: accountRoute }
+            routes: { account: accountRoute }
           },
           routes: { admin: adminRoute }
         }
@@ -30,8 +28,6 @@ const ForgotView: React.FC<ForgotViewProps> = ({ initPageResult, betterAuthOptio
       i18n
     }
   } = initPageResult
-
-  const loginRoute = custom?.betterAuth?.adminRoutes?.login ?? login
 
   if (user) {
     return (
@@ -70,7 +66,7 @@ const ForgotView: React.FC<ForgotViewProps> = ({ initPageResult, betterAuthOptio
       <Link
         href={formatAdminURL({
           adminRoute,
-          path: loginRoute
+          path: adminRoutes.adminLogin as `/${string}`
         })}
         prefetch={false}>
         {i18n.t('authentication:backToLogin')}
@@ -79,4 +75,4 @@ const ForgotView: React.FC<ForgotViewProps> = ({ initPageResult, betterAuthOptio
   )
 }
 
-export default ForgotView
+export default ForgotPassword

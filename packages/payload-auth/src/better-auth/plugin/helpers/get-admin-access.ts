@@ -1,20 +1,20 @@
-import { BetterAuthPluginOptions } from "..";
-import { isAdminWithRoles } from "../lib/build-collections/utils/payload-access";
+import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+import { isAdminWithRoles } from '../lib/build-collections/utils/payload-access'
 
 export function getAdminAccess(pluginOptions: BetterAuthPluginOptions) {
-  const adminRoles = pluginOptions.users?.adminRoles ?? ["admin"];
+  const adminRoles = pluginOptions.users?.adminRoles ?? ['admin']
   return {
     create: isAdminWithRoles({
-      adminRoles,
+      adminRoles
     }),
     read: isAdminWithRoles({
-      adminRoles,
+      adminRoles
     }),
     update: isAdminWithRoles({
-      adminRoles,
+      adminRoles
     }),
     delete: isAdminWithRoles({
-      adminRoles,
-    }),
-  };
+      adminRoles
+    })
+  }
 }

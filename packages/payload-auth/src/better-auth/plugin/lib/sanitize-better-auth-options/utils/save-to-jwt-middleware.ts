@@ -1,11 +1,9 @@
-import { setCookieCache } from "better-auth/cookies";
-import { createAuthMiddleware } from "better-auth/api";
-import type {
-  SanitizedBetterAuthOptions,
-  BetterAuthPluginOptions,
-} from "../../../types";
-import type { Config, Payload } from "payload";
-import { prepareSessionData } from "../../../helpers/prepare-session-data";
+import { setCookieCache } from 'better-auth/cookies'
+import { createAuthMiddleware } from 'better-auth/api'
+import { prepareSessionData } from '@/better-auth/plugin/helpers/prepare-session-data'
+
+import type { Config, Payload } from 'payload'
+import type { SanitizedBetterAuthOptions, BetterAuthPluginOptions } from '@/better-auth/plugin/types'
 
 /**
  * Sets up a middleware that enforces the saveToJwt configuration when setting session data.
@@ -18,29 +16,29 @@ import { prepareSessionData } from "../../../helpers/prepare-session-data";
 export function saveToJwtMiddleware({
   sanitizedOptions,
   payloadConfig,
-  pluginOptions,
+  pluginOptions
 }: {
-  sanitizedOptions: SanitizedBetterAuthOptions;
-  payloadConfig: Payload["config"] | Config | Promise<Payload["config"] | Config>;
-  pluginOptions: BetterAuthPluginOptions;
+  sanitizedOptions: SanitizedBetterAuthOptions
+  payloadConfig: Payload['config'] | Config | Promise<Payload['config'] | Config>
+  pluginOptions: BetterAuthPluginOptions
 }) {
-  if (typeof sanitizedOptions.hooks !== "object") sanitizedOptions.hooks = {};
+  if (typeof sanitizedOptions.hooks !== 'object') sanitizedOptions.hooks = {}
 
   sanitizedOptions.hooks.after = createAuthMiddleware(async (ctx) => {
-    const newSession = ctx.context?.session ?? ctx.context?.newSession;
-    if (!newSession) return;
+    const newSession = ctx.context?.session ?? ctx.context?.newSession
+    if (!newSession) return
 
     const filteredSessionData = await prepareSessionData({
       newSession,
       payloadConfig,
       collectionSlugs: {
-        userCollectionSlug: pluginOptions.users?.slug ?? "users",
-        sessionCollectionSlug: pluginOptions.sessions?.slug ?? "sessions",
-      },
-    });
+        userCollectionSlug: pluginOptions.users?.slug ?? 'users',
+        sessionCollectionSlug: pluginOptions.sessions?.slug ?? 'sessions'
+      }
+    })
 
     if (filteredSessionData) {
-      await setCookieCache(ctx, filteredSessionData as any);
+      await setCookieCache(ctx, filteredSessionData as any)
     }
-  });
+  })
 }

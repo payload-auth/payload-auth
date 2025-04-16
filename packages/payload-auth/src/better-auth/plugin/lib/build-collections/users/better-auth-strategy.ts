@@ -1,5 +1,6 @@
-import type { AuthStrategy } from "payload";
-import { getPayloadAuth } from "../../../lib/get-payload-auth";
+import type { AuthStrategy } from 'payload'
+import { getPayloadAuth } from '@/better-auth/plugin/lib/get-payload-auth'
+import { baseCollectionSlugs } from '@/better-auth/plugin/constants'
 
 /**
  * Auth strategy for BetterAuth
@@ -8,43 +9,39 @@ import { getPayloadAuth } from "../../../lib/get-payload-auth";
  */
 export function betterAuthStrategy(userSlug?: string): AuthStrategy {
   return {
-    name: "better-auth",
+    name: 'better-auth',
     authenticate: async ({ payload, headers }) => {
       try {
-        const payloadAuth = await getPayloadAuth(payload.config);
+        const payloadAuth = await getPayloadAuth(payload.config)
         const res = await payloadAuth.betterAuth.api.getSession({
-          headers,
-        });
+          headers
+        })
         if (!res) {
-          return { user: null };
+          return { user: null }
         }
         const userId =
-          res.user.id ??
-          res.session.userId ??
-          ("user" in res.session && typeof res.session.user === "string"
-            ? res.session.user
-            : null);
+          res.user.id ?? res.session.userId ?? ('user' in res.session && typeof res.session.user === 'string' ? res.session.user : null)
         if (!userId) {
-          return { user: null };
+          return { user: null }
         }
         const user = await payloadAuth.findByID({
-          collection: userSlug ?? "users",
-          id: userId,
-        });
+          collection: userSlug ?? baseCollectionSlugs.users,
+          id: userId
+        })
         if (!user) {
-          return { user: null };
+          return { user: null }
         }
         return {
           user: {
             ...user,
-            collection: userSlug ?? "users",
-            _strategy: "better-auth",
-          },
-        };
+            collection: userSlug ?? baseCollectionSlugs.users,
+            _strategy: 'better-auth'
+          }
+        }
       } catch (error) {
-        console.error(error);
-        return { user: null };
+        console.error(error)
+        return { user: null }
       }
-    },
-  };
+    }
+  }
 }

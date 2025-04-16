@@ -1,6 +1,6 @@
 import { CollectionConfig } from 'payload'
 import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../../../types'
-import { baseCollectionSlugs } from '../../constants'
+import { baseCollectionSlugs } from '../../../constants'
 import { isAdminOrCurrentUserUpdateWithAllowedFields, isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
 import { getRefreshTokenEndpoint } from './endpoints/refresh-token'
 import { onVerifiedChange } from './hooks/on-verified-change'
@@ -38,8 +38,6 @@ export function buildUsersCollection({
   const existingUserCollection = incomingCollections.find((collection) => collection.slug === userSlug) as CollectionConfig | undefined
 
   const allowedFields = pluginOptions.users?.allowedFields ?? ['name']
-
-  const baseUrl = betterAuthOptions.baseURL ?? process.env.NEXT_PUBLIC_URL ?? 'http://localhost:3000'
 
   let usersCollection: CollectionConfig = {
     ...existingUserCollection,
@@ -91,15 +89,14 @@ export function buildUsersCollection({
     },
     endpoints: [
       ...(existingUserCollection?.endpoints ? existingUserCollection.endpoints : []),
-      getSetAdminRoleEndpoint(pluginOptions, pluginOptions.users?.slug ?? 'users'),
+      getRefreshTokenEndpoint(userSlug),
+      getSetAdminRoleEndpoint(pluginOptions, userSlug),
       getGenerateInviteUrlEndpoint({
         roles: allRoleOptions,
-        baseUrl,
         pluginOptions
       }),
       getSendInviteUrlEndpoint(),
-      getSignupEndpoint(pluginOptions, betterAuthOptions),
-      getRefreshTokenEndpoint(userSlug)
+      getSignupEndpoint(pluginOptions, betterAuthOptions)
     ],
     hooks: {
       beforeChange: [
