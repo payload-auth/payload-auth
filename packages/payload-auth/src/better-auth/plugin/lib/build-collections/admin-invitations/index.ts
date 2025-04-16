@@ -62,9 +62,11 @@ export function buildAdminInvitationsCollection({
         admin: {
           readOnly: true,
           components: {
-            Field: {
-              path: 'payload-auth/better-auth/plugin/client#AdminInviteTokenField'
-            }
+            afterInput: [
+              {
+                path: 'payload-auth/shared/payload/fields#GenerateUuidButton'
+              }
+            ]
           }
         },
         required: true
@@ -82,7 +84,14 @@ export function buildAdminInvitationsCollection({
           ]
         },
         admin: {
-          readOnly: true
+          readOnly: true,
+          components: {
+            afterInput: [
+              {
+                path: 'payload-auth/shared/payload/fields#FieldCopyButton'
+              }
+            ]
+          }
         },
         virtual: true
       }

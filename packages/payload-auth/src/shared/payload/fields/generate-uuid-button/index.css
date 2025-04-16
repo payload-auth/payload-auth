@@ -1,0 +1,14 @@
+.generate-uuid-button-wrapper {
+  height: 100%;
+  position: absolute;
+  top: 0;
+  right: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.generate-uuid-button {
+  margin-block: 0;
+  height: 75%;
+  padding: 2px 12px;
+}

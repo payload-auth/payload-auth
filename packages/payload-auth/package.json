@@ -61,6 +61,11 @@
       "import": "./dist/authjs/index.js",
       "types": "./dist/authjs/index.d.ts",
       "default": "./dist/authjs/index.js"
+    },
+    "./shared/payload/fields": {
+      "import": "./dist/shared/payload/fields/index.js",
+      "types": "./dist/shared/payload/fields/index.d.ts",
+      "default": "./dist/shared/payload/fields/index.js"
     }
   },
   "sideEffects": false,

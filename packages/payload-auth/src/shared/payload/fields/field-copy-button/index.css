@@ -1,0 +1,48 @@
+.field-copy-text__button-wrapper {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+}
+
+.field-copy-text__button {
+  margin-block: 0;
+  height: 100%;
+  
+}
+
+.field-copy-text__button:focus {
+  background-color: transparent;
+}
+
+.field-copy-text__tooltip {
+  position: absolute;
+  bottom: 100%;
+  right: 50%;
+  transform: translateX(50%) translateY(5px);
+  background-color: var(--theme-elevation-800);
+  color: var(--theme-elevation-0);
+  padding: 2px 8px;;
+  border-radius: var(--style-radius-m);
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  z-index: 3;
+}
+
+.field-copy-text__tooltip[data-visible="true"] {
+  opacity: 1;
+  transform: translateX(50%) translateY(0);
+}
+
+.field-copy-text__tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--theme-elevation-800);
+}
