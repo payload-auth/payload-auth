@@ -57,7 +57,7 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
     }
   }
 
-  const loginSchema = z
+  const signupSchema = z
     .object({
       email: z.string().refine(
         (val) => validationMap.email.isValid(val),
@@ -121,7 +121,7 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
       }
     },
     validators: {
-      onChange: loginSchema
+      onBlur: signupSchema
     }
   })
 

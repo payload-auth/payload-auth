@@ -2,56 +2,39 @@
 
 import React, { useMemo, useState, useTransition } from 'react'
 import { createAuthClient } from 'better-auth/react'
-import { Form } from '@/shared/form/ui'
-import { EmailField } from '@/shared/form/components/email'
-import { FormSubmit, toast, useConfig, useTranslation } from '@payloadcms/ui'
+// import { Form } from '@/shared/form/ui'
+// import { EmailField } from '@/shared/form/components/email'
+import { FormSubmit, Link, toast, useConfig, useTranslation } from '@payloadcms/ui'
 import { FormHeader } from '@/shared/form/ui/header'
 import type { FC, FormEvent, ChangeEvent, FocusEvent } from 'react'
 import { adminRoutes } from '@/better-auth/plugin/constants'
+import { Form, FormInputWrap } from '@/shared/form/ui'
+import { useAppForm } from '@/shared/form'
+import { emailRegex } from '@/shared/utils/regex'
+import { z } from 'zod'
 
 type ForgotPasswordFormProps = {}
 
 export const ForgotPasswordForm: FC<ForgotPasswordFormProps> = () => {
-  const authClient = useMemo(() => createAuthClient(), [])
-  const [email, setEmail] = useState<string>('')
-  const [emailError, setEmailError] = useState<string | undefined>(undefined)
-  const [isPending, startTransition] = useTransition()
-  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
   const { t } = useTranslation()
   const { config } = useConfig()
   const adminRoute = config.routes.admin
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
+  const authClient = useMemo(() => createAuthClient(), [])
 
-  const handleFieldChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value)
-    setEmailError(undefined)
-  }
+  const forgotSchema = z.object({
+    email: z.string().refine(
+      (val) => emailRegex.test(val),
+      (val) => ({ message: val ? t('authentication:emailNotValid') || 'Invalid email' : t('validation:required') })
+    )
+  })
 
-  const validateEmail = (value: string): boolean => {
-    if (!value) {
-      setEmailError(t('authentication:emailNotValid') || 'Email is required')
-      return false
-    }
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)) {
-      setEmailError(t('authentication:emailNotValid') || 'Invalid email')
-      return false
-    }
-    setEmailError(undefined)
-    return true
-  }
-
-  const handleBlur = (e: FocusEvent<HTMLInputElement>) => {
-    if (e.target.value) {
-      validateEmail(e.target.value)
-    } else {
-      setEmailError(undefined)
-    }
-  }
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const valid = validateEmail(email)
-    if (!valid) return
-    startTransition(async () => {
+  const form = useAppForm({
+    defaultValues: {
+      email: ''
+    },
+    onSubmit: async ({ value }) => {
+      const { email } = value
       try {
         const { data, error } = await authClient.forgetPassword({
           email,
@@ -70,28 +53,30 @@ export const ForgotPasswordForm: FC<ForgotPasswordFormProps> = () => {
       } catch (e) {
         toast.error(t('general:error') || 'An unexpected error occurred')
       }
-    })
-  }
+    },
+    validators: {
+      onSubmit: forgotSchema
+    }
+  })
 
   if (hasSubmitted) {
     return <FormHeader description={t('authentication:checkYourEmailForPasswordReset')} heading={t('authentication:emailSent')} />
   }
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form
+      onSubmit={(e) => {
+        e.preventDefault()
+        void form.handleSubmit()
+      }}>
       <FormHeader heading={t('authentication:forgotPassword')} description={t('authentication:forgotPasswordEmailInstructions')} />
-      <EmailField
-        id="email"
-        label={t('general:email')}
-        value={email}
-        errors={emailError ? [emailError] : undefined}
-        onChange={handleFieldChange}
-        onBlur={handleBlur}
-        required
-      />
-      <FormSubmit disabled={isPending} size="large">
-        {isPending ? t('general:loading') : t('general:submit')}
-      </FormSubmit>
+      <FormInputWrap>
+        <form.AppField
+          name="email"
+          children={(field) => <field.TextField type="text" className="email" autoComplete="email" label={t('general:email')} />}
+        />
+      </FormInputWrap>
+      <form.AppForm children={<form.Submit label={t('general:submit')} loadingLabel={t('general:loading')} />} />
     </Form>
   )
 }

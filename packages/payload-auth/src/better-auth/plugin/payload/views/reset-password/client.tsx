@@ -1,13 +1,14 @@
 'use client'
 
-import React, { useMemo, useState, useTransition } from 'react'
-
-import { Form } from '@/shared/form/ui'
+import React, { useMemo } from 'react'
+import { z } from 'zod'
+import { Form, FormInputWrap } from '@/shared/form/ui'
+import { FormHeader } from '@/shared/form/ui/header'
 import { useRouter } from 'next/navigation.js'
 import { formatAdminURL } from 'payload/shared'
 import { createAuthClient } from 'better-auth/react'
-// import { PasswordField } from '@/shared/form/components/password'
-import { useAuth, useConfig, useTranslation, toast, FormSubmit } from '@payloadcms/ui'
+import { useAuth, useConfig, useTranslation, toast } from '@payloadcms/ui'
+import { useAppForm } from '@/shared/form'
 
 type PasswordResetFormArgs = {
   readonly token: string
@@ -15,29 +16,11 @@ type PasswordResetFormArgs = {
   readonly maxPasswordLength?: number
 }
 
-function isValidPassword(input: string, minLength: number = 8, maxLength: number = 128): true | string {
-  if (!input) {
-    return 'Password cannot be empty'
-  }
-  if (input.length < minLength) {
-    return `Password must be at least ${minLength} characters long`
-  }
-  if (input.length > maxLength) {
-    return `Password cannot be longer than ${maxLength} characters`
-  }
-  return true
-}
-
-export const PasswordResetForm: React.FC<PasswordResetFormArgs> = ({ token, minPasswordLength = 8, maxPasswordLength = 128 }) => {
-  const authClient = useMemo(() => createAuthClient(), [])
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [passwordError, setPasswordError] = useState('')
-  const [confirmPasswordError, setConfirmPasswordError] = useState('')
-  const [isPending, startTransition] = useTransition()
+export const PasswordResetForm: React.FC<PasswordResetFormArgs> = ({ token }) => {
   const { t } = useTranslation()
   const history = useRouter()
   const { fetchFullUser } = useAuth()
+  const authClient = useMemo(() => createAuthClient(), [])
   const {
     config: {
       admin: {
@@ -47,50 +30,33 @@ export const PasswordResetForm: React.FC<PasswordResetFormArgs> = ({ token, minP
     }
   } = useConfig()
 
-  const validatePassword = (value: string, isOnBlur: boolean = false) => {
-    if (isOnBlur && !value) {
-      setPasswordError('')
-      return true
-    }
-    const result = isValidPassword(value, minPasswordLength, maxPasswordLength)
-    setPasswordError(result === true ? '' : result)
-    return result === true
-  }
+  const resetPasswordSchema = z
+    .object({
+      password: z.string().min(1, t('validation:required') || 'Password is required'),
+      confirmPassword: z.string().min(1, t('validation:required') || 'Confirm password is required')
+    })
+    .refine(
+      (data) => {
+        // Only validate matching passwords if both fields have values
+        if (data.password && data.confirmPassword) {
+          return data.password === data.confirmPassword
+        }
+        // If one or both fields are empty, validation will be handled by the min(1) validators
+        return true
+      },
+      {
+        message: t('fields:passwordsDoNotMatch') || 'Passwords do not match',
+        path: ['confirmPassword']
+      }
+    )
 
-  const validateConfirmPassword = (value: string, isOnBlur: boolean = false) => {
-    if (isOnBlur && !value) {
-      setConfirmPasswordError('')
-      return true
-    }
-    if (!value) {
-      setConfirmPasswordError('Confirm password cannot be empty')
-      return false
-    }
-    if (value !== password) {
-      setConfirmPasswordError('Passwords do not match')
-      return false
-    }
-    setConfirmPasswordError('')
-    return true
-  }
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value)
-    setPasswordError('')
-    setConfirmPasswordError('')
-  }
-
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setConfirmPassword(e.target.value)
-    setConfirmPasswordError('')
-  }
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const isPasswordValid = validatePassword(password, false)
-    const isConfirmValid = validateConfirmPassword(confirmPassword, false)
-    if (!isPasswordValid || !isConfirmValid) return
-    startTransition(async () => {
+  const form = useAppForm({
+    defaultValues: {
+      password: '',
+      confirmPassword: ''
+    },
+    onSubmit: async ({ value }) => {
+      const { password } = value
       try {
         const { data, error } = await authClient.resetPassword({
           newPassword: password,
@@ -117,32 +83,32 @@ export const PasswordResetForm: React.FC<PasswordResetFormArgs> = ({ token, minP
       } catch (e) {
         toast.error('An unexpected error occurred')
       }
-    })
-  }
+    },
+    validators: {
+      onBlur: resetPasswordSchema
+    }
+  })
 
   return (
-    <Form onSubmit={handleSubmit}>
-      {/* <PasswordField
-        id="password"
-        label={t('authentication:newPassword')}
-        value={password}
-        error={passwordError}
-        onChange={handlePasswordChange}
-        onBlur={(e: React.FocusEvent<HTMLInputElement>) => validatePassword(e.target.value, true)}
-        style={{ marginBottom: '1rem' }}
-        required
-      />
-      <PasswordField
-        id="confirm-password"
-        label={t('authentication:confirmPassword')}
-        value={confirmPassword}
-        error={confirmPasswordError}
-        onChange={handleConfirmPasswordChange}
-        onBlur={(e: React.FocusEvent<HTMLInputElement>) => validateConfirmPassword(e.target.value, true)}
-        required
-      /> */}
-      <input type="hidden" name="token" value={token} />
-      <FormSubmit disabled={isPending}>{isPending ? t('general:loading') : t('authentication:resetPassword')}</FormSubmit>
+    <Form
+      onSubmit={(e) => {
+        e.preventDefault()
+        void form.handleSubmit()
+      }}>
+      <FormHeader heading={t('authentication:forgotPassword')} description={t('authentication:forgotPasswordEmailInstructions')} />
+      <FormInputWrap>
+        <form.AppField
+          name="password"
+          children={(field) => <field.TextField type="password" className="password" label={t('authentication:newPassword')} required />}
+        />
+        <form.AppField
+          name="confirmPassword"
+          children={(field) => (
+            <field.TextField type="password" className="password" label={t('authentication:confirmPassword')} required />
+          )}
+        />
+      </FormInputWrap>
+      <form.AppForm children={<form.Submit label={t('authentication:resetPassword')} loadingLabel={t('general:loading')} />} />
     </Form>
   )
 }

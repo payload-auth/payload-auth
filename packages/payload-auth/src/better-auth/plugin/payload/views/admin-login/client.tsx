@@ -68,18 +68,14 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
     },
     username: {
       isValid: (val: string) =>
-        usernameRegex.test(val) &&
-        val.length >= usernameSettings.minLength &&
-        val.length <= usernameSettings.maxLength,
+        usernameRegex.test(val) && val.length >= usernameSettings.minLength && val.length <= usernameSettings.maxLength,
       getErrorMessage: () => t('authentication:usernameNotValid') || 'Username is not valid'
     },
     emailOrUsername: {
       isValid: (val: string) =>
         val.includes('@')
           ? emailRegex.test(val)
-          : usernameRegex.test(val) &&
-            val.length >= usernameSettings.minLength &&
-            val.length <= usernameSettings.maxLength,
+          : usernameRegex.test(val) && val.length >= usernameSettings.minLength && val.length <= usernameSettings.maxLength,
       getErrorMessage: (val: string) => {
         const isProbablyEmail = val.includes('@') || !canLoginWithUsername
         return isProbablyEmail
@@ -153,9 +149,7 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
         <FormInputWrap className={baseClass}>
           <form.AppField
             name="login"
-            children={(field) => (
-              <field.TextField type="text" className="email" autoComplete="email" label={getLoginTypeLabel()} />
-            )}
+            children={(field) => <field.TextField type="text" className="email" autoComplete="email" label={getLoginTypeLabel()} />}
           />
           <form.AppField
             name="password"
