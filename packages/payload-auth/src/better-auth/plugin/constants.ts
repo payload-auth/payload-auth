@@ -47,8 +47,8 @@ export const betterAuthPluginSlugs = {
 export const adminRoutes = {
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password',
-  adminSignup: '/admin-signup',
-  adminLogin: '/admin-login',
+  adminSignup: '/signup',
+  adminLogin: '/login',
   loginRedirect: '/login-redirect'
 } as const
 
