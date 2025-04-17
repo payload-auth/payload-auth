@@ -1,10 +1,10 @@
-import { Tooltip } from '@payloadcms/ui/elements/Tooltip'
 import React, { type ComponentPropsWithoutRef, type ReactNode } from 'react'
 import clsx from 'clsx'
-import { AnyFieldMeta } from '@tanstack/react-form'
-import { ZodError } from 'zod'
+import type { AnyFieldMeta } from '@tanstack/react-form'
+import { Tooltip } from '@payloadcms/ui/elements/Tooltip'
 
 import './index.scss'
+
 type FormFieldProps = ComponentPropsWithoutRef<'div'> & {
   hasError?: boolean
 }
@@ -50,7 +50,7 @@ type FormErrorProps = {
 
 const FormErrors: React.FC<FormErrorProps> = ({ errors, className }) =>
   errors ? (
-    <Tooltip alignCaret="right" className={clsx('field-error', className)} delay={0}  staticPositioning>
+    <Tooltip alignCaret="right" className={clsx('field-error', className)} delay={0} staticPositioning>
       {errors.join(', ')}
     </Tooltip>
   ) : null

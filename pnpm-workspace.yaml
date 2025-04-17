@@ -4,8 +4,8 @@ packages:
   - packages/payload-auth
   - examples/*
 onlyBuiltDependencies:
-  - "@clerk/shared"
-  - "@swc/core"
+  - '@clerk/shared'
+  - '@swc/core'
   - browser-tabs-lock
   - bufferutil
   - core-js

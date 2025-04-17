@@ -14,12 +14,7 @@ export const GenerateUuidButton: typeof TextField = ({ path }) => {
 
   return (
     <div className="generate-uuid-button-wrapper">
-      <Button
-        ref={buttonRef}
-        buttonStyle="primary"
-        onClick={handleGenerate}
-        className="generate-uuid-button"
-      >
+      <Button ref={buttonRef} buttonStyle="primary" onClick={handleGenerate} className="generate-uuid-button">
         Generate UUID
       </Button>
     </div>

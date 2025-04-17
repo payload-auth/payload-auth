@@ -42,7 +42,8 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ initPageResult }) => {
                       adminRoute,
                       path: accountRoute
                     })}
-                    prefetch={false}>
+                    prefetch={false}
+                  >
                     {children}
                   </Link>
                 )
@@ -68,7 +69,8 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ initPageResult }) => {
           adminRoute,
           path: adminRoutes.adminLogin as `/${string}`
         })}
-        prefetch={false}>
+        prefetch={false}
+      >
         {i18n.t('authentication:backToLogin')}
       </Link>
     </MinimalTemplate>

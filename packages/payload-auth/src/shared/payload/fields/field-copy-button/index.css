@@ -8,7 +8,6 @@
 .field-copy-text__button {
   margin-block: 0;
   height: 100%;
-  
 }
 
 .field-copy-text__button:focus {
@@ -22,7 +21,7 @@
   transform: translateX(50%) translateY(5px);
   background-color: var(--theme-elevation-800);
   color: var(--theme-elevation-0);
-  padding: 2px 8px;;
+  padding: 2px 8px;
   border-radius: var(--style-radius-m);
   font-size: 13px;
   opacity: 0;
@@ -31,7 +30,7 @@
   z-index: 3;
 }
 
-.field-copy-text__tooltip[data-visible="true"] {
+.field-copy-text__tooltip[data-visible='true'] {
   opacity: 1;
   transform: translateX(50%) translateY(0);
 }

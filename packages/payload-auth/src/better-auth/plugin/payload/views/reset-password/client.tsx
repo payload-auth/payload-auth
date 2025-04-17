@@ -94,7 +94,8 @@ export const PasswordResetForm: React.FC<PasswordResetFormArgs> = ({ token }) =>
       onSubmit={(e) => {
         e.preventDefault()
         void form.handleSubmit()
-      }}>
+      }}
+    >
       <FormHeader heading={t('authentication:forgotPassword')} description={t('authentication:forgotPasswordEmailInstructions')} />
       <FormInputWrap>
         <form.AppField

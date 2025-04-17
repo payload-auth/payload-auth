@@ -20,13 +20,7 @@ export const FieldCopyButton: typeof TextField = ({ path }) => {
       <div className="field-copy-text__tooltip" data-visible={copied}>
         Copied
       </div>
-      <Button 
-        ref={buttonRef} 
-        icon={<CopyIcon />} 
-        buttonStyle="transparent" 
-        onClick={handleCopy} 
-        className="field-copy-text__button" 
-      />
+      <Button ref={buttonRef} icon={<CopyIcon />} buttonStyle="transparent" onClick={handleCopy} className="field-copy-text__button" />
     </div>
   )
 }

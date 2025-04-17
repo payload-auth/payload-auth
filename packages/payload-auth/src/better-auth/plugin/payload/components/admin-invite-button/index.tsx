@@ -145,7 +145,8 @@ const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
                   className={`${baseClass}__copy-button`}
                   type="button"
                   onClick={handleCopyLink}
-                  disabled={isCopyLoading}>
+                  disabled={isCopyLoading}
+                >
                   {isCopyLoading ? <Loader2 size={20} strokeWidth={1.5} className="animate-spin" /> : <Copy size={20} strokeWidth={1.5} />}
                   Generate Link
                 </Button>

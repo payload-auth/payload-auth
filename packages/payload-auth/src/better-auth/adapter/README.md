@@ -7,6 +7,7 @@ Introducing a database adapter designed for [Payload CMS](https://www.payloadcms
 > If you encounter any issues, please report them in the [Issues](https://github.com/forrestdevs/payload-better-auth/issues) section.
 
 ## Important Usage Notes
+
 > [!NOTE]
 > If you are using the `@payload-auth/better-auth-plugin`, you do not need to worry about these steps. The plugin handles the adapter setup internally. However, if you are implementing the Payload authentication integration manually, follow these instructions.
 
@@ -27,16 +28,16 @@ Head over to your Better Auth server instance, and under `database`, add the `pa
 
 ```ts
 import type { BasePayload } from 'payload'
-import { betterAuth as betterAuthBase } from "better-auth";
-import { payloadAdapter } from "@payload-auth/better-auth-db-adapter";
+import { betterAuth as betterAuthBase } from 'better-auth'
+import { payloadAdapter } from '@payload-auth/better-auth-db-adapter'
 
 export function betterAuth(payload: BasePayload) {
   return betterAuthBase({
     database: payloadAdapter(payload),
-    plugins: [],
+    plugins: []
     //... other options
   })
-};
+}
 ```
 
 ### 2. Enable Debug Logging
@@ -45,16 +46,16 @@ You can enable debug logging to help troubleshoot database operations by passing
 
 ```ts
 import type { BasePayload } from 'payload'
-import { betterAuth as betterAuthBase } from "better-auth";
-import { payloadAdapter } from "@payload-auth/better-auth-db-adapter";
+import { betterAuth as betterAuthBase } from 'better-auth'
+import { payloadAdapter } from '@payload-auth/better-auth-db-adapter'
 
 export function betterAuth(payload: BasePayload) {
   return betterAuthBase({
     database: payloadAdapter(payload, { enable_debug_logs: true }),
-    plugins: [],
+    plugins: []
     //... other options
   })
-};
+}
 ```
 
 ### Important considerations
@@ -71,9 +72,9 @@ const betterAuthOptions = {
   session: {
     modelName: 'sessions',
     fields: {
-      userId: 'user', // Maps BetterAuth's 'userId' to Payload's 'user' relationship field
-    },
-  },
+      userId: 'user' // Maps BetterAuth's 'userId' to Payload's 'user' relationship field
+    }
+  }
   // Other collections...
 }
 ```
@@ -85,11 +86,11 @@ Payload typically uses plural collection slugs (e.g., 'users', 'sessions'), whil
 ```ts
 const betterAuthOptions = {
   user: {
-    modelName: 'users', // Maps to Payload's 'users' collection
+    modelName: 'users' // Maps to Payload's 'users' collection
   },
   session: {
-    modelName: 'sessions', // Maps to Payload's 'sessions' collection
-  },
+    modelName: 'sessions' // Maps to Payload's 'sessions' collection
+  }
 }
 ```
 
@@ -98,22 +99,22 @@ const betterAuthOptions = {
 The adapter provides a schema generation utility that can automatically create Payload collection configurations based on your BetterAuth options:
 
 ```ts
-import { generateSchema } from "@payload-auth/better-auth-db-adapter";
-import { betterAuthOptions } from "./your-better-auth-config";
+import { generateSchema } from '@payload-auth/better-auth-db-adapter'
+import { betterAuthOptions } from './your-better-auth-config'
 
 // Generate collection configs
 const collections = generateSchema(betterAuthOptions, {
-  output_dir: "./src/collections/generated",
-});
+  output_dir: './src/collections/generated'
+})
 
 // Use in your Payload config
 export default buildConfig({
   collections: [
-    ...collections,
+    ...collections
     // Your other collections
-  ],
+  ]
   // other Payload config options
-});
+})
 ```
 
 > [!IMPORTANT]

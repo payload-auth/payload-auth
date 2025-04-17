@@ -135,7 +135,8 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
       onSubmit={(e) => {
         e.preventDefault()
         void form.handleSubmit()
-      }}>
+      }}
+    >
       <FormHeader heading={t('general:welcome')} style={{ textAlign: 'center' }} />
       <FormInputWrap className={baseClass}>
         <form.AppField

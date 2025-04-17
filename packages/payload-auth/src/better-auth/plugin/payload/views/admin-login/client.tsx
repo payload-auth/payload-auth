@@ -145,7 +145,8 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
         onSubmit={(e) => {
           e.preventDefault()
           void form.handleSubmit()
-        }}>
+        }}
+      >
         <FormInputWrap className={baseClass}>
           <form.AppField
             name="login"
@@ -164,7 +165,16 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
         <form.AppForm children={<form.Submit label={t('authentication:login')} loadingLabel={t('general:loading')} />} />
       </Form>
       {(Object.keys(socialProviders || {}).length > 0 || hasPasskeySupport) && (
-        <div style={{ textAlign: 'center', fontSize: '0.875rem', textTransform: 'uppercase', marginTop: '-.5rem', color: 'var(--theme-elevation-450)', marginBottom: '1.5rem' }}>
+        <div
+          style={{
+            textAlign: 'center',
+            fontSize: '0.875rem',
+            textTransform: 'uppercase',
+            marginTop: '-.5rem',
+            color: 'var(--theme-elevation-450)',
+            marginBottom: '1.5rem'
+          }}
+        >
           <span>Or login with</span>
         </div>
       )}

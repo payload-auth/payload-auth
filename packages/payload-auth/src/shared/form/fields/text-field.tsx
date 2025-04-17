@@ -26,7 +26,7 @@ export function TextField({
       <FieldInputWrap>
         <input
           autoComplete={autoComplete}
-          type={type} 
+          type={type}
           id={field.name}
           name={field.name}
           value={field.state.value}

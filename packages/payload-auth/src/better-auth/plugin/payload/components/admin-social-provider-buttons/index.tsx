@@ -62,7 +62,8 @@ const AdminSocialProviderButtons: React.FC<AdminSocialProviderButtonsProps> = ({
           }
         }}
         icon={showIconOnly ? <Icon className={`${baseClass}__icon`} /> : undefined}
-        tooltip={showIconOnly ? `Sign in with ${providerName}` : undefined}>
+        tooltip={showIconOnly ? `Sign in with ${providerName}` : undefined}
+      >
         {!showIconOnly && (
           <>
             <Icon className={`${baseClass}__icon`} /> <span>{providerName}</span>
@@ -107,7 +108,8 @@ const AdminSocialProviderButtons: React.FC<AdminSocialProviderButtonsProps> = ({
             } finally {
               setLoading(false)
             }
-          }}>
+          }}
+        >
           <Key size={16} className={`${baseClass}__icon`} />
           <span>Passkey</span>
         </Button>

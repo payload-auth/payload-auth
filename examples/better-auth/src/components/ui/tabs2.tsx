@@ -1,46 +1,46 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { motion } from "motion/react";
-import { cn } from "@/lib/utils";
+import { useState } from 'react'
+import { motion } from 'motion/react'
+import { cn } from '@/lib/utils'
 
 type Tab = {
-  title: string;
-  value: string;
-  content?: string | React.ReactNode | any;
-};
+  title: string
+  value: string
+  content?: string | React.ReactNode | any
+}
 
 export const Tabs = ({
   tabs: propTabs,
   containerClassName,
   activeTabClassName,
   tabClassName,
-  contentClassName,
+  contentClassName
 }: {
-  tabs: Tab[];
-  containerClassName?: string;
-  activeTabClassName?: string;
-  tabClassName?: string;
-  contentClassName?: string;
+  tabs: Tab[]
+  containerClassName?: string
+  activeTabClassName?: string
+  tabClassName?: string
+  contentClassName?: string
 }) => {
-  const [active, setActive] = useState<Tab>(propTabs[0]);
-  const [tabs, setTabs] = useState<Tab[]>(propTabs);
+  const [active, setActive] = useState<Tab>(propTabs[0])
+  const [tabs, setTabs] = useState<Tab[]>(propTabs)
 
   const moveSelectedTabToTop = (idx: number) => {
-    const newTabs = [...propTabs];
-    const selectedTab = newTabs.splice(idx, 1);
-    newTabs.unshift(selectedTab[0]);
-    setTabs(newTabs);
-    setActive(newTabs[0]);
-  };
+    const newTabs = [...propTabs]
+    const selectedTab = newTabs.splice(idx, 1)
+    newTabs.unshift(selectedTab[0])
+    setTabs(newTabs)
+    setActive(newTabs[0])
+  }
 
-  const [hovering, setHovering] = useState(false);
+  const [hovering, setHovering] = useState(false)
 
   return (
     <>
       <div
         className={cn(
-          "flex flex-row items-center justify-start mt-0 relative overflow-auto sm:overflow-visible no-visible-scrollbar border-x w-full border-t max-w-max bg-opacity-0",
+          `no-visible-scrollbar bg-opacity-0 relative mt-0 flex w-full max-w-max flex-row items-center justify-start overflow-auto border-x border-t sm:overflow-visible`,
           containerClassName
         )}
       >
@@ -48,16 +48,13 @@ export const Tabs = ({
           <button
             key={tab.title}
             onClick={() => {
-              moveSelectedTabToTop(idx);
+              moveSelectedTabToTop(idx)
             }}
             onMouseEnter={() => setHovering(true)}
             onMouseLeave={() => setHovering(false)}
-            className={cn(
-              "relative px-4 py-2 rounded-full opacity-80 hover:opacity-100",
-              tabClassName
-            )}
+            className={cn('relative rounded-full px-4 py-2 opacity-80 hover:opacity-100', tabClassName)}
             style={{
-              transformStyle: "preserve-3d",
+              transformStyle: 'preserve-3d'
             }}
           >
             {active.value === tab.value && (
@@ -66,24 +63,19 @@ export const Tabs = ({
                   duration: 0.2,
                   delay: 0.1,
 
-                  type: "keyframes",
+                  type: 'keyframes'
                 }}
                 animate={{
-                  x: tabs.indexOf(tab) === 0 ? [0, 0, 0] : [0, 0, 0],
+                  x: tabs.indexOf(tab) === 0 ? [0, 0, 0] : [0, 0, 0]
                 }}
-                className={cn(
-                  "absolute inset-0 bg-gray-200 dark:bg-zinc-900/90 opacity-100",
-                  activeTabClassName
-                )}
+                className={cn('absolute inset-0 bg-gray-200 opacity-100 dark:bg-zinc-900/90', activeTabClassName)}
               />
             )}
 
             <span
               className={cn(
-                "relative block text-black dark:text-white",
-                active.value === tab.value
-                  ? "text-opacity-100 font-medium"
-                  : "opacity-40 "
+                'relative block text-black dark:text-white',
+                active.value === tab.value ? 'text-opacity-100 font-medium' : 'opacity-40'
               )}
             >
               {tab.title}
@@ -91,56 +83,37 @@ export const Tabs = ({
           </button>
         ))}
       </div>
-      <FadeInDiv
-        tabs={tabs}
-        active={active}
-        key={active.value}
-        hovering={hovering}
-        className={cn("", contentClassName)}
-      />
+      <FadeInDiv tabs={tabs} active={active} key={active.value} hovering={hovering} className={cn('', contentClassName)} />
     </>
-  );
-};
+  )
+}
 
-export const FadeInDiv = ({
-  className,
-  tabs,
-}: {
-  className?: string;
-  key?: string;
-  tabs: Tab[];
-  active: Tab;
-  hovering?: boolean;
-}) => {
+export const FadeInDiv = ({ className, tabs }: { className?: string; key?: string; tabs: Tab[]; active: Tab; hovering?: boolean }) => {
   const isActive = (tab: Tab) => {
-    return tab.value === tabs[0].value;
-  };
+    return tab.value === tabs[0].value
+  }
   return (
-    <div className="relative w-full h-full">
+    <div className="relative h-full w-full">
       {tabs.map((tab, idx) => (
         <motion.div
           key={tab.value}
           style={{
             scale: 1 - idx * 0.1,
             zIndex: -idx,
-            opacity: idx < 3 ? 1 - idx * 0.1 : 0,
+            opacity: idx < 3 ? 1 - idx * 0.1 : 0
           }}
           animate={{
             transition: {
               duration: 0.2,
               delay: 0.1,
-              type: "keyframes",
-            },
+              type: 'keyframes'
+            }
           }}
-          className={cn(
-            "w-50 h-full",
-            isActive(tab) ? "" : "hidden",
-            className
-          )}
+          className={cn('h-full w-50', isActive(tab) ? '' : 'hidden', className)}
         >
           {tab.content}
         </motion.div>
       ))}
     </div>
-  );
-};
+  )
+}

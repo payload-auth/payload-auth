@@ -1,17 +1,17 @@
-import React, { ComponentType } from "react";
-import { SVGProps } from "react";
+import React, { ComponentType } from 'react'
+import { SVGProps } from 'react'
 
 export interface ProviderIconProps extends SVGProps<SVGSVGElement> {
-  className?: string;
-  variant?: "default" | "color";
+  className?: string
+  variant?: 'default' | 'color'
 }
 
-export type ProviderIcon = ComponentType<ProviderIconProps>;
+export type ProviderIcon = ComponentType<ProviderIconProps>
 
 export const Icons: Record<string, ProviderIcon> = {
   apple: ({ className, ...props }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
-      <title>{"Apple"}</title>
+      <title>{'Apple'}</title>
       <path
         fill="currentColor"
         d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"
@@ -19,9 +19,9 @@ export const Icons: Record<string, ProviderIcon> = {
     </svg>
   ),
   discord: ({ className, variant, ...props }) =>
-    variant === "color" ? (
+    variant === 'color' ? (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
-        <title>{"Discord"}</title>
+        <title>{'Discord'}</title>
         <path
           fill="#5865F2"
           d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"
@@ -29,7 +29,7 @@ export const Icons: Record<string, ProviderIcon> = {
       </svg>
     ) : (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
-        <title>{"Discord"}</title>
+        <title>{'Discord'}</title>
         <path
           fill="currentColor"
           d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"
@@ -37,13 +37,8 @@ export const Icons: Record<string, ProviderIcon> = {
       </svg>
     ),
   facebook: ({ className, variant, ...props }) =>
-    variant === "color" ? (
-      <svg
-        className={className}
-        viewBox="0 0 256 256"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+    variant === 'color' ? (
+      <svg className={className} viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="M256 128C256 57.308 198.692 0 128 0S0 57.308 0 128c0 63.888 46.808 116.843 108 126.445V165H75.5v-37H108V99.8c0-32.08 19.11-49.8 48.348-49.8C170.352 50 185 52.5 185 52.5V84h-16.14C152.959 84 148 93.867 148 103.99V128h35.5l-5.675 37H148v89.445c61.192-9.602 108-62.556 108-126.445"
           fill="#1877f2"
@@ -56,13 +51,16 @@ export const Icons: Record<string, ProviderIcon> = {
       </svg>
     ) : (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
-        <title>{"Facebook"}</title>
-        <path fill="currentColor" d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z" />
+        <title>{'Facebook'}</title>
+        <path
+          fill="currentColor"
+          d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"
+        />
       </svg>
     ),
   github: ({ className, ...props }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
-      <title>{"GitHub"}</title>
+      <title>{'GitHub'}</title>
       <path
         fill="currentColor"
         d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
@@ -70,13 +68,8 @@ export const Icons: Record<string, ProviderIcon> = {
     </svg>
   ),
   google: ({ className, variant, ...props }) =>
-    variant === "color" ? (
-      <svg
-        className={className}
-        viewBox="0 0 256 262"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+    variant === 'color' ? (
+      <svg className={className} viewBox="0 0 256 262" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622l38.755 30.023l2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
           fill="#4285f4"
@@ -98,12 +91,7 @@ export const Icons: Record<string, ProviderIcon> = {
         />
       </svg>
     ) : (
-      <svg
-        className={className}
-        viewBox="0 0 488 512"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+      <svg className={className} viewBox="0 0 488 512" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="M488 261.8C488 403.3 391.1 504 248 504C110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6c98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4"
           fill="currentColor"
@@ -111,14 +99,7 @@ export const Icons: Record<string, ProviderIcon> = {
       </svg>
     ),
   kick: ({ className, ...props }) => (
-    <svg
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      {...props}
-    >
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24" {...props}>
       <path
         fill="#888888"
         d="M9 3a1 1 0 0 1 1 1v3h1V6a1 1 0 0 1 .883-.993L12 5h1V4a1 1 0 0 1 .883-.993L14 3h6a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-1v1a1 1 0 0 1-.883.993L18 11h-1v2h1a1 1 0 0 1 .993.883L19 14v1h1a1 1 0 0 1 .993.883L21 16v4a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-1h-1a1 1 0 0 1-.993-.883L11 18v-1h-1v3a1 1 0 0 1-.883.993L9 21H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"
@@ -126,39 +107,21 @@ export const Icons: Record<string, ProviderIcon> = {
     </svg>
   ),
   microsoft: ({ className, variant, ...props }) =>
-    variant === "color" ? (
-      <svg
-        className={className}
-        viewBox="0 0 256 256"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+    variant === 'color' ? (
+      <svg className={className} viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path d="M121.666 121.666H0V0h121.666z" fill="#f1511b" />
         <path d="M256 121.666H134.335V0H256z" fill="#80cc28" />
         <path d="M121.663 256.002H0V134.336h121.663z" fill="#00adef" />
         <path d="M256 256.002H134.335V134.336H256z" fill="#fbbc09" />
       </svg>
     ) : (
-      <svg
-        className={className}
-        viewBox="0 0 32 32"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
-        <path
-          d="M15.198 32H0V16.802h15.198zM32 32H16.802V16.802H32zM15.198 15.198H0V0h15.198zm16.802 0H16.802V0H32z"
-          fill="currentColor"
-        />
+      <svg className={className} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <path d="M15.198 32H0V16.802h15.198zM32 32H16.802V16.802H32zM15.198 15.198H0V0h15.198zm16.802 0H16.802V0H32z" fill="currentColor" />
       </svg>
     ),
   tiktok: ({ className, variant, ...props }) =>
-    variant === "color" ? (
-      <svg
-        className={className}
-        viewBox="0 0 256 290"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+    variant === 'color' ? (
+      <svg className={className} viewBox="0 0 256 290" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="M189.72 104.421c18.678 13.345 41.56 21.197 66.273 21.197v-47.53a67 67 0 0 1-13.918-1.456v37.413c-24.711 0-47.59-7.851-66.272-21.195v96.996c0 48.523-39.356 87.855-87.9 87.855c-18.113 0-34.949-5.473-48.934-14.86c15.962 16.313 38.222 26.432 62.848 26.432c48.548 0 87.905-39.332 87.905-87.857v-96.995zm17.17-47.952c-9.546-10.423-15.814-23.893-17.17-38.785v-6.113h-13.189c3.32 18.927 14.644 35.097 30.358 44.898M69.673 225.607a40 40 0 0 1-8.203-24.33c0-22.192 18.001-40.186 40.21-40.186a40.3 40.3 0 0 1 12.197 1.883v-48.593c-4.61-.631-9.262-.9-13.912-.801v37.822a40.3 40.3 0 0 0-12.203-1.882c-22.208 0-40.208 17.992-40.208 40.187c0 15.694 8.997 29.281 22.119 35.9"
           fill="#ff004f"
@@ -172,12 +135,7 @@ export const Icons: Record<string, ProviderIcon> = {
         />
       </svg>
     ) : (
-      <svg
-        className={className}
-        viewBox="0 0 448 512"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+      <svg className={className} viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="M448 209.91a210.06 210.06 0 0 1-122.77-39.25v178.72A162.55 162.55 0 1 1 185 188.31v89.89a74.62 74.62 0 1 0 52.23 71.18V0h88a121 121 0 0 0 1.86 22.17A122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14Z"
           fill="currentColor"
@@ -185,7 +143,7 @@ export const Icons: Record<string, ProviderIcon> = {
       </svg>
     ),
   twitch: ({ className, variant, ...props }) =>
-    variant === "color" ? (
+    variant === 'color' ? (
       <svg
         className={className}
         id="Layer_1"
@@ -206,10 +164,7 @@ export const Icons: Record<string, ProviderIcon> = {
         </style>
         <title>Asset 2</title>
         <g>
-          <polygon
-            className="st0"
-            points="2200,1300 1800,1700 1400,1700 1050,2050 1050,1700 600,1700 600,200 2200,200"
-          />
+          <polygon className="st0" points="2200,1300 1800,1700 1400,1700 1050,2050 1050,1700 600,1700 600,200 2200,200" />
           <g>
             <g id="Layer_1-2">
               <path
@@ -223,12 +178,7 @@ export const Icons: Record<string, ProviderIcon> = {
         </g>
       </svg>
     ) : (
-      <svg
-        className={className}
-        viewBox="0 0 32 32"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+      <svg className={className} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="m31.937 18.115l-1.787-5.511l-3.552-10.921a.607.607 0 0 0-1.156 0L21.89 12.599H10.109L6.557 1.683c-.183-.563-.979-.563-1.156 0L1.849 12.599L.057 18.115c-.161.5.021 1.052.443 1.364L16 30.74l15.5-11.261c.421-.312.604-.859.437-1.364"
           fill="currentColor"
@@ -236,12 +186,7 @@ export const Icons: Record<string, ProviderIcon> = {
       </svg>
     ),
   twitter: ({ className, ...props }) => (
-    <svg
-      className={className}
-      viewBox="0 0 512 512"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
+    <svg className={className} viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
         d="M64 32C28.7 32 0 60.7 0 96v320c0 35.3 28.7 64 64 64h320c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64zm297.1 84L257.3 224.2L487 464H345L233.7 318.6L106.5 464H35.8l164.9-188.5L26.8 48h145.6l100.5 132.9zm-24.8 373.8h39.1L151.1 88h-42z"
         fill="currentColor"
@@ -249,25 +194,15 @@ export const Icons: Record<string, ProviderIcon> = {
     </svg>
   ),
   dropbox: ({ className, variant, ...props }) =>
-    variant === "color" ? (
-      <svg
-        className={className}
-        viewBox="0 0 256 218"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+    variant === 'color' ? (
+      <svg className={className} viewBox="0 0 256 218" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="M63.995 0L0 40.771l63.995 40.772L128 40.771zM192 0l-64 40.775l64 40.775l64.001-40.775zM0 122.321l63.995 40.772L128 122.321L63.995 81.55zM192 81.55l-64 40.775l64 40.774l64-40.774zM64 176.771l64.005 40.772L192 176.771L128.005 136z"
           fill="#0061ff"
         />
       </svg>
     ) : (
-      <svg
-        className={className}
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+      <svg className={className} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="M6 1.807L0 5.629l6 3.822l6.001-3.822zm12 0l-6 3.822l6 3.822l6-3.822zM0 13.274l6 3.822l6.001-3.822L6 9.452zm18-3.822l-6 3.822l6 3.822l6-3.822zM6 18.371l6.001 3.822l6-3.822l-6-3.822z"
           fill="currentColor"
@@ -275,13 +210,8 @@ export const Icons: Record<string, ProviderIcon> = {
       </svg>
     ),
   linkedin: ({ className, variant, ...props }) =>
-    variant === "color" ? (
-      <svg
-        className={className}
-        viewBox="0 0 128 128"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+    variant === 'color' ? (
+      <svg className={className} viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="M116 3H12a8.91 8.91 0 0 0-9 8.8v104.42a8.91 8.91 0 0 0 9 8.78h104a8.93 8.93 0 0 0 9-8.81V11.77A8.93 8.93 0 0 0 116 3"
           fill="#0076b2"
@@ -292,12 +222,7 @@ export const Icons: Record<string, ProviderIcon> = {
         />
       </svg>
     ) : (
-      <svg
-        className={className}
-        viewBox="0 0 16 16"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+      <svg className={className} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="M14.815 0a1.17 1.17 0 0 1 1.176 1.026l.009.127v13.692a1.17 1.17 0 0 1-1.058 1.15l-.127.005H1.18a1.17 1.17 0 0 1-1.173-1.028L0 14.845V1.155A1.17 1.17 0 0 1 1.053.006L1.181 0zM11 5.812l-.213-.004A2.5 2.5 0 0 0 8.64 6.887l-.098.154h-.031V5.998H6.235v7.635h2.37V9.856c0-.996.19-1.96 1.424-1.96c1.006 0 1.191.777 1.225 1.547l.008.477v3.713h2.37l.002-4.188c0-1.994-.417-3.54-2.633-3.633zm-6.256.186H2.372v7.635h2.373V5.998zM3.56 2.203a1.376 1.376 0 1 0 0 2.751a1.376 1.376 0 0 0 0-2.751"
           fill="currentColor"
@@ -305,40 +230,18 @@ export const Icons: Record<string, ProviderIcon> = {
       </svg>
     ),
   gitlab: ({ className, variant, ...props }) =>
-    variant === "color" ? (
-      <svg
-        className={className}
-        viewBox="0 0 256 236"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+    variant === 'color' ? (
+      <svg className={className} viewBox="0 0 256 236" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path d="m128.075 236.075l47.104-144.97H80.97z" fill="#e24329" />
         <path d="M128.075 236.074L80.97 91.104H14.956z" fill="#fc6d26" />
-        <path
-          d="M14.956 91.104L.642 135.16a9.75 9.75 0 0 0 3.542 10.903l123.891 90.012z"
-          fill="#fca326"
-        />
-        <path
-          d="M14.956 91.105H80.97L52.601 3.79c-1.46-4.493-7.816-4.492-9.275 0z"
-          fill="#e24329"
-        />
+        <path d="M14.956 91.104L.642 135.16a9.75 9.75 0 0 0 3.542 10.903l123.891 90.012z" fill="#fca326" />
+        <path d="M14.956 91.105H80.97L52.601 3.79c-1.46-4.493-7.816-4.492-9.275 0z" fill="#e24329" />
         <path d="m128.075 236.074l47.104-144.97h66.015z" fill="#fc6d26" />
-        <path
-          d="m241.194 91.104l14.314 44.056a9.75 9.75 0 0 1-3.543 10.903l-123.89 90.012z"
-          fill="#fca326"
-        />
-        <path
-          d="M241.194 91.105h-66.015l28.37-87.315c1.46-4.493 7.816-4.492 9.275 0z"
-          fill="#e24329"
-        />
+        <path d="m241.194 91.104l14.314 44.056a9.75 9.75 0 0 1-3.543 10.903l-123.89 90.012z" fill="#fca326" />
+        <path d="M241.194 91.105h-66.015l28.37-87.315c1.46-4.493 7.816-4.492 9.275 0z" fill="#e24329" />
       </svg>
     ) : (
-      <svg
-        className={className}
-        viewBox="0 0 32 32"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+      <svg className={className} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="m31.937 18.115l-1.787-5.511l-3.552-10.921a.607.607 0 0 0-1.156 0L21.89 12.599H10.109L6.557 1.683c-.183-.563-.979-.563-1.156 0L1.849 12.599L.057 18.115c-.161.5.021 1.052.443 1.364L16 30.74l15.5-11.261c.421-.312.604-.859.437-1.364"
           fill="currentColor"
@@ -346,13 +249,8 @@ export const Icons: Record<string, ProviderIcon> = {
       </svg>
     ),
   reddit: ({ className, variant, ...props }) =>
-    variant === "color" ? (
-      <svg
-        className={className}
-        viewBox="0 0 256 256"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+    variant === 'color' ? (
+      <svg className={className} viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" {...props}>
         <circle cx="128" cy="128" fill="#ff4500" r="128" />
 
         <path
@@ -361,12 +259,7 @@ export const Icons: Record<string, ProviderIcon> = {
         />
       </svg>
     ) : (
-      <svg
-        className={className}
-        viewBox="0 0 16 16"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+      <svg className={className} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="M14.815 0a1.17 1.17 0 0 1 1.176 1.026l.009.127v13.692a1.17 1.17 0 0 1-1.058 1.15l-.127.005H1.18a1.17 1.17 0 0 1-1.173-1.028L0 14.845V1.155A1.17 1.17 0 0 1 1.053.006L1.181 0zM11 5.812l-.213-.004A2.5 2.5 0 0 0 8.64 6.887l-.098.154h-.031V5.998H6.235v7.635h2.37V9.856c0-.996.19-1.96 1.424-1.96c1.006 0 1.191.777 1.225 1.547l.008.477v3.713h2.37l.002-4.188c0-1.994-.417-3.54-2.633-3.633zm-6.256.186H2.372v7.635h2.373V5.998zM3.56 2.203a1.376 1.376 0 1 0 0 2.751a1.376 1.376 0 0 0 0-2.751"
           fill="currentColor"
@@ -374,38 +267,20 @@ export const Icons: Record<string, ProviderIcon> = {
       </svg>
     ),
   roblox: ({ className, ...props }) => (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
-      <path
-        d="M18.926 23.998L0 18.892L5.075.002L24 5.108ZM15.348 10.09l-5.282-1.453l-1.414 5.273l5.282 1.453z"
-        fill="currentColor"
-      />
+    <svg className={className} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path d="M18.926 23.998L0 18.892L5.075.002L24 5.108ZM15.348 10.09l-5.282-1.453l-1.414 5.273l5.282 1.453z" fill="currentColor" />
     </svg>
   ),
   spotify: ({ className, variant, ...props }) =>
-    variant === "color" ? (
-      <svg
-        className={className}
-        viewBox="0 0 256 256"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+    variant === 'color' ? (
+      <svg className={className} viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="M128 0C57.308 0 0 57.309 0 128c0 70.696 57.309 128 128 128c70.697 0 128-57.304 128-128C256 57.314 198.697.007 127.998.007zm58.699 184.614c-2.293 3.76-7.215 4.952-10.975 2.644c-30.053-18.357-67.885-22.515-112.44-12.335a7.98 7.98 0 0 1-9.552-6.007a7.97 7.97 0 0 1 6-9.553c48.76-11.14 90.583-6.344 124.323 14.276c3.76 2.308 4.952 7.215 2.644 10.975m15.667-34.853c-2.89 4.695-9.034 6.178-13.726 3.289c-34.406-21.148-86.853-27.273-127.548-14.92c-5.278 1.594-10.852-1.38-12.454-6.649c-1.59-5.278 1.386-10.842 6.655-12.446c46.485-14.106 104.275-7.273 143.787 17.007c4.692 2.89 6.175 9.034 3.286 13.72zm1.345-36.293C162.457 88.964 94.394 86.71 55.007 98.666c-6.325 1.918-13.014-1.653-14.93-7.978c-1.917-6.328 1.65-13.012 7.98-14.935C93.27 62.027 168.434 64.68 215.929 92.876c5.702 3.376 7.566 10.724 4.188 16.405c-3.362 5.69-10.73 7.565-16.4 4.187z"
           fill="#1ed760"
         />
       </svg>
     ) : (
-      <svg
-        className={className}
-        viewBox="0 0 32 32"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+      <svg className={className} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="M16 0C7.197 0 0 7.197 0 16s7.197 16 16 16s16-7.197 16-16S24.88 0 16 0m7.36 23.12c-.319.479-.881.64-1.36.317c-3.76-2.317-8.479-2.797-14.083-1.52c-.557.165-1.037-.235-1.199-.72c-.156-.557.24-1.036.719-1.197c1.374-1.371 3.51-1.371 4.884 0c5.8 5.8 18.008 7.782 26.706 7.782s21.058-1.983 26.704-7.782c1.374-1.371 3.51-1.371 4.884 0c1.22 1.373 1.22 3.51 0 4.883m-2.443-21.822c-7.325 0-13.275-5.95-13.275-13.275s5.95-13.275 13.275-13.275c7.327 0 13.277 5.95 13.277 13.275c0 7.17-5.95 13.275-13.277 13.275"
           fill="currentColor"
@@ -413,12 +288,7 @@ export const Icons: Record<string, ProviderIcon> = {
       </svg>
     ),
   vk: ({ className, ...props }) => (
-    <svg
-      className={className}
-      viewBox="0 0 576 512"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
+    <svg className={className} viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
         d="M545 117.7c3.7-12.5 0-21.7-17.8-21.7h-58.9c-15 0-21.9 7.9-25.6 16.7c0 0-30 73.1-72.4 120.5c-13.7 13.7-20 18.1-27.5 18.1c-3.7 0-9.4-4.4-9.4-16.9V117.7c0-15-4.2-21.7-16.6-21.7h-92.6c-9.4 0-15 7-15 13.5c0 14.2 21.2 17.5 23.4 57.5v86.8c0 19-3.4 22.5-10.9 22.5c-20 0-68.6-73.4-97.4-157.4c-5.8-16.3-11.5-22.9-26.6-22.9H38.8c-16.8 0-20.2 7.9-20.2 16.7c0 15.6 20 93.1 93.1 195.5C160.4 378.1 229 416 291.4 416c37.5 0 42.1-8.4 42.1-22.9c0-66.8-3.4-73.1 15.4-73.1c8.7 0 23.7 4.4 58.7 38.1c40 40 46.6 57.9 69 57.9h58.9c16.8 0 25.3-8.4 20.4-25c-11.2-34.9-86.9-106.7-90.3-111.5c-8.7-11.2-6.2-16.2 0-26.2c.1-.1 72-101.3 79.4-135.6"
         fill="currentColor"
@@ -426,16 +296,11 @@ export const Icons: Record<string, ProviderIcon> = {
     </svg>
   ),
   x: ({ className, ...props }) => (
-    <svg
-      className={className}
-      viewBox="0 0 512 512"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
+    <svg className={className} viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
         d="M389.2 48h70.6L305.6 224.2L487 464H345L233.7 318.6L106.5 464H35.8l164.9-188.5L26.8 48h145.6l100.5 132.9zm-24.8 373.8h39.1L151.1 88h-42z"
         fill="currentColor"
       />
     </svg>
-  ),
-};
+  )
+}

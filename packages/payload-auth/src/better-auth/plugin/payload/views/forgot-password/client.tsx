@@ -68,7 +68,8 @@ export const ForgotPasswordForm: FC<ForgotPasswordFormProps> = () => {
       onSubmit={(e) => {
         e.preventDefault()
         void form.handleSubmit()
-      }}>
+      }}
+    >
       <FormHeader heading={t('authentication:forgotPassword')} description={t('authentication:forgotPasswordEmailInstructions')} />
       <FormInputWrap>
         <form.AppField

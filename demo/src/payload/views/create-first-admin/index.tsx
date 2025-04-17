@@ -1,43 +1,36 @@
-import React from "react";
-import type { AdminViewServerProps, ServerProps } from "payload";
-import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
-import { redirect } from "next/navigation";
-import { Gutter } from "@payloadcms/ui";
-import SignIn from "@/components/sign-in";
-import { SignUp } from "@/components/sign-up";
+import React from 'react'
+import type { AdminViewServerProps, ServerProps } from 'payload'
+import { RenderServerComponent } from '@payloadcms/ui/elements/RenderServerComponent'
+import { redirect } from 'next/navigation'
+import { Gutter } from '@payloadcms/ui'
+import SignIn from '@/components/sign-in'
+import { SignUp } from '@/components/sign-up'
 
-export default async function CreateFirstAdmin({
-  initPageResult,
-  params,
-  searchParams,
-}: AdminViewServerProps) {
-  const { locale, permissions, req } = initPageResult;
+export default async function CreateFirstAdmin({ initPageResult, params, searchParams }: AdminViewServerProps) {
+  const { locale, permissions, req } = initPageResult
   const {
     i18n,
     payload: { config },
     payload,
-    user,
-  } = req;
+    user
+  } = req
 
   const {
-    admin: {
-      components: { afterLogin, beforeLogin, graphics } = {},
-      user: userSlug,
-    },
-    routes: { admin },
-  } = config;
+    admin: { components: { afterLogin, beforeLogin, graphics } = {}, user: userSlug },
+    routes: { admin }
+  } = config
 
   const adminCount = await req.payload.count({
-    collection: "users",
+    collection: 'users',
     where: {
       role: {
-        equals: "admin",
-      },
-    },
-  });
+        equals: 'admin'
+      }
+    }
+  })
 
   if (adminCount.totalDocs > 0) {
-    redirect("/admin");
+    redirect('/admin')
   }
 
   return (
@@ -52,8 +45,8 @@ export default async function CreateFirstAdmin({
           payload,
           permissions,
           searchParams,
-          user: user ?? undefined,
-        } satisfies ServerProps,
+          user: user ?? undefined
+        } satisfies ServerProps
       })}
       {/* {RenderServerComponent({
           Component: beforeLogin,
@@ -81,9 +74,9 @@ export default async function CreateFirstAdmin({
           payload,
           permissions,
           searchParams,
-          user: user ?? undefined,
-        } satisfies ServerProps,
+          user: user ?? undefined
+        } satisfies ServerProps
       })}
     </Gutter>
-  );
+  )
 }
