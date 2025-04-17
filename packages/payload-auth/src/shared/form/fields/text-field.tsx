@@ -1,8 +1,8 @@
-import { useFieldContext } from '../'
 import { useStore } from '@tanstack/react-form'
-import { FieldErrors, FieldInputWrap, FormErrors, FormField, FormInputWrap, FormLabel } from '../ui'
+import { useFieldContext } from '../index'
+import { FieldErrors, FieldInputWrap, FormField, FormLabel } from '../ui'
 
-export default function TextField({
+export function TextField({
   className,
   label,
   required = false,
@@ -26,13 +26,14 @@ export default function TextField({
       <FieldInputWrap>
         <input
           autoComplete={autoComplete}
-          type={type}
+          type={type} 
           id={field.name}
           name={field.name}
           value={field.state.value}
           onChange={(e) => field.handleChange(e.target.value)}
           onBlur={field.handleBlur}
           required={required}
+          className="text-field"
         />
         <FieldErrors meta={meta} />
       </FieldInputWrap>

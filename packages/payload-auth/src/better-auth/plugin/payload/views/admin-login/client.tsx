@@ -43,6 +43,7 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
   const { config } = useConfig()
   const { t } = useTranslation()
   const { canLoginWithEmail, canLoginWithUsername } = getLoginOptions(loginWithUsername)
+  const usernameSettings = { minLength: 5, maxLength: 128 }
   const redirectUrl = getSafeRedirect(searchParams?.redirect as string, config.routes.admin)
   const forgotPasswordUrl = formatAdminURL({
     adminRoute: config.routes.admin,
@@ -63,22 +64,37 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
   const validationMap = {
     email: {
       isValid: (val: string) => emailRegex.test(val),
-      errorMessage: t('authentication:emailNotValid') || 'Invalid email'
+      getErrorMessage: () => t('authentication:emailNotValid') || 'Email is not valid'
     },
     username: {
-      isValid: (val: string) => usernameRegex.test(val),
-      errorMessage: t('authentication:usernameNotValid') || 'Username invalid'
+      isValid: (val: string) =>
+        usernameRegex.test(val) &&
+        val.length >= usernameSettings.minLength &&
+        val.length <= usernameSettings.maxLength,
+      getErrorMessage: () => t('authentication:usernameNotValid') || 'Username is not valid'
     },
     emailOrUsername: {
-      isValid: (val: string) => emailRegex.test(val) || usernameRegex.test(val),
-      errorMessage: t('authentication:emailOrUsername') || 'Email or username is invalid'
+      isValid: (val: string) =>
+        val.includes('@')
+          ? emailRegex.test(val)
+          : usernameRegex.test(val) &&
+            val.length >= usernameSettings.minLength &&
+            val.length <= usernameSettings.maxLength,
+      getErrorMessage: (val: string) => {
+        const isProbablyEmail = val.includes('@') || !canLoginWithUsername
+        return isProbablyEmail
+          ? t('authentication:emailNotValid') || 'Email is not valid'
+          : t('authentication:usernameNotValid') || 'Username is not valid'
+      }
     }
   }
 
   const loginSchema = z.object({
     login: z.string().refine(
       (val) => (val ? validationMap[loginType].isValid(val) : false),
-      (val) => ({ message: !val ? t('validation:required') : validationMap[loginType].errorMessage })
+      (val) => ({
+        message: !val ? t('validation:required') : validationMap[loginType].getErrorMessage(val)
+      })
     ),
     password: z.string().min(1, 'Password is required')
   })
@@ -112,7 +128,7 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
       }
     },
     validators: {
-      onChange: loginSchema
+      onSubmit: loginSchema
     }
   })
 
@@ -138,13 +154,13 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
           <form.AppField
             name="login"
             children={(field) => (
-              <field.TextField type="text" className="email" autoComplete="email" label={getLoginTypeLabel()} required />
+              <field.TextField type="text" className="email" autoComplete="email" label={getLoginTypeLabel()} />
             )}
           />
           <form.AppField
             name="password"
             children={(field) => (
-              <field.TextField type="password" className="password" autoComplete="password" label={t('general:password')} required />
+              <field.TextField type="password" className="password" autoComplete="password" label={t('general:password')} />
             )}
           />
         </FormInputWrap>
