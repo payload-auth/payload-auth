@@ -1,10 +1,19 @@
+import React from 'react'
 import { useFormContext } from '..'
+import { FormSubmit } from '@payloadcms/ui'
 
-export function Submit({ label }: { label: string }) {
+type SubmitProps = {
+  label: string
+  loadingLabel: string
+}
+
+export const Submit: React.FC<SubmitProps> = ({ label, loadingLabel }) => {
   const form = useFormContext()
+
   return (
-    <form.Subscribe selector={(state) => state.isSubmitting}>
-      {(isSubmitting) => <button disabled={isSubmitting}>{label}</button>}
-    </form.Subscribe>
+    <form.Subscribe
+      selector={(state) => [state.canSubmit, state.isSubmitting]}
+      children={([canSubmit, isSubmitting]) => <FormSubmit disabled={!canSubmit}>{isSubmitting ? loadingLabel : label}</FormSubmit>}
+    />
   )
 }

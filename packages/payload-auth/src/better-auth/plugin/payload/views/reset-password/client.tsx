@@ -6,7 +6,7 @@ import { Form } from '@/shared/form/ui'
 import { useRouter } from 'next/navigation.js'
 import { formatAdminURL } from 'payload/shared'
 import { createAuthClient } from 'better-auth/react'
-import { PasswordField } from '@/shared/form/components/password'
+// import { PasswordField } from '@/shared/form/components/password'
 import { useAuth, useConfig, useTranslation, toast, FormSubmit } from '@payloadcms/ui'
 
 type PasswordResetFormArgs = {
@@ -122,7 +122,7 @@ export const PasswordResetForm: React.FC<PasswordResetFormArgs> = ({ token, minP
 
   return (
     <Form onSubmit={handleSubmit}>
-      <PasswordField
+      {/* <PasswordField
         id="password"
         label={t('authentication:newPassword')}
         value={password}
@@ -140,7 +140,7 @@ export const PasswordResetForm: React.FC<PasswordResetFormArgs> = ({ token, minP
         onChange={handleConfirmPasswordChange}
         onBlur={(e: React.FocusEvent<HTMLInputElement>) => validateConfirmPassword(e.target.value, true)}
         required
-      />
+      /> */}
       <input type="hidden" name="token" value={token} />
       <FormSubmit disabled={isPending}>{isPending ? t('general:loading') : t('authentication:resetPassword')}</FormSubmit>
     </Form>

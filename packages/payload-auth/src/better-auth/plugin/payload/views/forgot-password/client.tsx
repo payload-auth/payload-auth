@@ -84,7 +84,7 @@ export const ForgotPasswordForm: FC<ForgotPasswordFormProps> = () => {
         id="email"
         label={t('general:email')}
         value={email}
-        error={emailError}
+        errors={emailError ? [emailError] : undefined}
         onChange={handleFieldChange}
         onBlur={handleBlur}
         required

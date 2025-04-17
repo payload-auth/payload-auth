@@ -1,28 +1,23 @@
 'use client'
 
-import React from 'react'
-import { Form } from '@/shared/form/ui'
+import React, { useMemo, useState } from 'react'
+import { z } from 'zod'
+import { useAppForm } from '@/shared/form'
+import { Form, FormInputWrap } from '@/shared/form/ui'
 import { FormHeader } from '@/shared/form/ui/header'
-import { PasswordField } from '@/shared/form/components/password'
-import { EmailOrUsernameField } from '@/shared/form/components/email-or-username'
 import { createAuthClient } from 'better-auth/client'
 import { usernameClient } from 'better-auth/client/plugins'
+import { adminRoutes } from '@/better-auth/plugin/constants'
 import { formatAdminURL, getLoginOptions } from 'payload/shared'
 import { getSafeRedirect } from '@/better-auth/plugin/payload/utils/get-safe-redirect'
-import { FormSubmit, Link, toast, useConfig, useTranslation } from '@payloadcms/ui'
+import { Link, toast, useConfig, useTranslation } from '@payloadcms/ui'
 import AdminSocialProviderButtons from '@/better-auth/plugin/payload/components/admin-social-provider-buttons'
-import { useCallback, useMemo, useState, useTransition, type ChangeEvent, type FocusEvent, type FormEvent } from 'react'
+import { emailRegex, usernameRegex } from '@/shared/utils/regex'
+
 import type { SocialProviders } from '@/better-auth/plugin/types'
-import { adminRoutes } from '@/better-auth/plugin/constants'
 import type { LoginWithUsernameOptions } from 'payload'
 
 const baseClass = 'login__form'
-const emailRegex = /^(?!\.)(?!.*\.\.)([a-z0-9_'+\-\.]*)[a-z0-9_'+\-]@([a-z0-9][a-z0-9\-]*\.)+[a-z]{2,}$/i
-
-type FieldState = { value: string; error?: string }
-type LoginFormState = {
-  [key: string]: { value: string; error?: string }
-}
 
 type AdminLoginClientProps = {
   socialProviders: SocialProviders
@@ -45,198 +40,124 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
   searchParams,
   loginWithUsername
 }) => {
-  const authClient = useMemo(() => createAuthClient({ plugins: [usernameClient()] }), [])
-
-  const [login, setLogin] = useState(prefillEmail ?? prefillUsername ?? '')
-  const [loginError, setLoginError] = useState<string | undefined>(undefined)
-  const [password, setPassword] = useState(prefillPassword ?? '')
-  const [passwordError, setPasswordError] = useState<string | undefined>(undefined)
-  const [isPending, startTransition] = useTransition()
-
-  const [requireEmailVerification, setRequireEmailVerification] = useState<boolean>(false)
-  const { t } = useTranslation()
   const { config } = useConfig()
-
-  const adminRoute = config.routes.admin
-
+  const { t } = useTranslation()
   const { canLoginWithEmail, canLoginWithUsername } = getLoginOptions(loginWithUsername)
-  const redirectUrl = getSafeRedirect(searchParams?.redirect as string, adminRoute)
-
-  let loginType: 'email' | 'username' | 'emailOrUsername' = 'email'
-  if (canLoginWithEmail && canLoginWithUsername && hasUsernamePlugin) {
-    loginType = 'emailOrUsername'
-  } else if (canLoginWithUsername && hasUsernamePlugin) {
-    loginType = 'username'
-  }
-
-  // Validation helpers
-  const validateLogin = (value: string): boolean => {
-    if (!value) {
-      setLoginError(t('authentication:emailOrUsername') || 'Email or username is required')
-      return false
-    }
-    if (loginType === 'email' && !emailRegex.test(value)) {
-      setLoginError(t('authentication:emailNotValid') || 'Invalid email')
-      return false
-    }
-    setLoginError(undefined)
-    return true
-  }
-
-  const validatePassword = (value: string): boolean => {
-    if (!value) {
-      setPasswordError(t('general:password') || 'Password is required')
-      return false
-    }
-    setPasswordError(undefined)
-    return true
-  }
-
-  // Handlers
-  const handleLoginChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setLogin(e.target.value)
-    setLoginError(undefined)
-  }, [])
-
-  const handlePasswordChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value)
-    setPasswordError(undefined)
-  }, [])
-
-  const handleLoginBlur = useCallback((e: FocusEvent<HTMLInputElement>) => {
-    if (!e.target.value) {
-      setLoginError(undefined)
-      return
-    }
-    validateLogin(e.target.value)
-  }, [])
-
-  const handlePasswordBlur = useCallback((e: FocusEvent<HTMLInputElement>) => {
-    if (!e.target.value) {
-      setPasswordError(undefined)
-      return
-    }
-    validatePassword(e.target.value)
-  }, [])
-
-  const handleSignInError = (error: any) => {
-    if (error?.code === 'EMAIL_NOT_VERIFIED') {
-      setRequireEmailVerification(true)
-      return true
-    }
-    if (error?.message) {
-      toast.error(error.message.charAt(0).toUpperCase() + error.message.slice(1))
-      return false
-    }
-    return false
-  }
-
-  const handleSignInSuccess = (data: any) => {
-    if (data && data.token) {
-      toast.success(t('authentication:loggedIn'))
-      window.location.href = redirectUrl
-      return true
-    }
-    return false
-  }
-
-  const signInWithEmail = async (email: string, password: string) => {
-    const { data, error } = await authClient.signIn.email({
-      email,
-      password,
-      callbackURL: redirectUrl
-    })
-    if (error && handleSignInError(error)) return
-    if (handleSignInSuccess(data)) return
-  }
-
-  const signInWithUsername = async (username: string, password: string) => {
-    const { data, error } = await authClient.signIn.username({
-      username,
-      password
-    })
-    if (error && handleSignInError(error)) return
-    if (handleSignInSuccess(data)) return
-  }
-
-  const signInWithEmailOrUsername = async (login: string, password: string) => {
-    if (emailRegex.test(login)) {
-      await signInWithEmail(login, password)
-      return
-    }
-    await signInWithUsername(login, password)
-  }
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    let valid = validatePassword(password)
-    valid = validateLogin(login) && valid
-    if (!valid) return
-    startTransition(async () => {
-      try {
-        if (loginType === 'emailOrUsername') {
-          await signInWithEmailOrUsername(login, password)
-          return
-        }
-        if (loginType === 'username') {
-          await signInWithUsername(login, password)
-          return
-        }
-        await signInWithEmail(login, password)
-      } catch (e) {
-        return
-      }
-    })
-  }
+  const redirectUrl = getSafeRedirect(searchParams?.redirect as string, config.routes.admin)
+  const forgotPasswordUrl = formatAdminURL({
+    adminRoute: config.routes.admin,
+    path: adminRoutes?.forgotPassword as `/${string}`
+  })
+  const authClient = useMemo(() => createAuthClient({ plugins: [usernameClient()] }), [])
+  const loginType = useMemo(() => {
+    if (canLoginWithEmail && canLoginWithUsername && hasUsernamePlugin) return 'emailOrUsername'
+    if (canLoginWithUsername && hasUsernamePlugin) return 'username'
+    return 'email'
+  }, [canLoginWithEmail, canLoginWithUsername, hasUsernamePlugin])
+  const [requireEmailVerification, setRequireEmailVerification] = useState<boolean>(false)
 
   if (requireEmailVerification) {
-    return (
-      <FormHeader heading={'Verify your email'} description={'Check your email for a verification link.'} style={{ textAlign: 'center' }} />
-    )
+    return <FormHeader heading="Please verify your email" description={t('authentication:emailSent')} style={{ textAlign: 'center' }} />
+  }
+
+  const validationMap = {
+    email: {
+      isValid: (val: string) => emailRegex.test(val),
+      errorMessage: t('authentication:emailNotValid') || 'Invalid email'
+    },
+    username: {
+      isValid: (val: string) => usernameRegex.test(val),
+      errorMessage: t('authentication:usernameNotValid') || 'Username invalid'
+    },
+    emailOrUsername: {
+      isValid: (val: string) => emailRegex.test(val) || usernameRegex.test(val),
+      errorMessage: t('authentication:emailOrUsername') || 'Email or username is invalid'
+    }
+  }
+
+  const loginSchema = z.object({
+    login: z.string().refine(
+      (val) => (val ? validationMap[loginType].isValid(val) : false),
+      (val) => ({ message: !val ? t('validation:required') : validationMap[loginType].errorMessage })
+    ),
+    password: z.string().min(1, 'Password is required')
+  })
+
+  const form = useAppForm({
+    defaultValues: {
+      login: prefillEmail ?? prefillUsername ?? '',
+      password: prefillPassword ?? ''
+    },
+    onSubmit: async ({ value }) => {
+      const { login, password } = value
+      const isEmail = emailRegex.test(login)
+      try {
+        const { data, error } = await (loginType === 'email' || (loginType === 'emailOrUsername' && isEmail)
+          ? authClient.signIn.email({ email: login, password, callbackURL: redirectUrl })
+          : authClient.signIn.username({ username: login, password }))
+        if (error) {
+          if (error.code === 'EMAIL_NOT_VERIFIED') {
+            setRequireEmailVerification(true)
+          }
+          if (error.message) {
+            toast.error(error.message.charAt(0).toUpperCase() + error.message.slice(1))
+          }
+        }
+        if (data?.token) {
+          toast.success(t('general:success'))
+          window.location.href = redirectUrl
+        }
+      } catch (err) {
+        toast.error(t('error:unknown') || 'An unexpected error occurred')
+      }
+    },
+    validators: {
+      onChange: loginSchema
+    }
+  })
+
+  const getLoginTypeLabel = () => {
+    const labels = {
+      email: t('general:email') || 'Email',
+      username: t('authentication:username') || 'Username',
+      emailOrUsername: t('authentication:emailOrUsername') || 'Email or Username'
+    }
+
+    return labels[loginType]
   }
 
   return (
     <div className={`${baseClass}__wrapper`}>
-      <Form className={baseClass} onSubmit={handleSubmit}>
-        <div className={`${baseClass}__inputWrap`}>
-          <EmailOrUsernameField
-            id={loginType}
-            label={
-              loginType === 'email'
-                ? t('general:email')
-                : loginType === 'username'
-                  ? t('authentication:username') || 'Username'
-                  : t('authentication:emailOrUsername') || 'Email or Username'
-            }
-            name={loginType}
-            value={login}
-            error={loginError}
-            onChange={handleLoginChange}
-            onBlur={handleLoginBlur}
-            required
+      <Form
+        className={baseClass}
+        onSubmit={(e) => {
+          e.preventDefault()
+          void form.handleSubmit()
+        }}>
+        <FormInputWrap className={baseClass}>
+          <form.AppField
+            name="login"
+            children={(field) => (
+              <field.TextField type="text" className="email" autoComplete="email" label={getLoginTypeLabel()} required />
+            )}
           />
-          <PasswordField
-            id="password"
-            label={t('general:password')}
-            value={password}
-            error={passwordError}
-            onChange={handlePasswordChange}
-            onBlur={handlePasswordBlur}
-            required
+          <form.AppField
+            name="password"
+            children={(field) => (
+              <field.TextField type="password" className="password" autoComplete="password" label={t('general:password')} required />
+            )}
           />
-        </div>
-        <Link
-          href={formatAdminURL({
-            adminRoute: adminRoute,
-            path: adminRoutes?.forgotPassword as `/${string}`
-          })}
-          prefetch={false}>
+        </FormInputWrap>
+        <Link href={forgotPasswordUrl} prefetch={false}>
           {t('authentication:forgotPasswordQuestion')}
         </Link>
-        <FormSubmit disabled={isPending} size="large">
-          {isPending ? t('general:loading') : t('authentication:login')}
-        </FormSubmit>
+        <form.AppForm children={<form.Submit label={t('authentication:login')} loadingLabel={t('general:loading')} />} />
       </Form>
+      {(Object.keys(socialProviders || {}).length > 0 || hasPasskeySupport) && (
+        <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+          <span>Or login with</span>
+        </div>
+      )}
       <AdminSocialProviderButtons
         allowSignup={false}
         socialProviders={socialProviders}
