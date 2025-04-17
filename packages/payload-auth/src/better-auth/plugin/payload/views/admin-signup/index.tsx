@@ -47,11 +47,36 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
     }
   } = initPageResult
 
-  const { token } = searchParamsSchema.parse(searchParams)
+  const { success, data, error } = searchParamsSchema.safeParse(searchParams)
+
+  if (!success) {
+    return (
+      <section className={`${baseClass} login template-minimal template-minimal--width-normal`}>
+        <div className="template-minimal__wrap">
+          <div className={`${baseClass}__brand`}>
+            <Logo
+              i18n={i18n}
+              locale={locale}
+              params={params}
+              payload={req.payload}
+              permissions={permissions}
+              searchParams={searchParams}
+              user={user ?? undefined}
+            />
+          </div>
+          <FormHeader
+            style={{ textAlign: 'center' }}
+            heading="Invalid or expired token"
+            description="You need to get a new invite to sign up."
+          />
+        </div>
+      </section>
+    )
+  }
 
   const invite = await req.payload.find({
     collection: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
-    where: { token: { equals: token } },
+    where: { token: { equals: data.token } },
     limit: 1
   })
 
@@ -97,7 +122,7 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
           />
         </div>
         <AdminSignupClient
-          token={token}
+          token={data.token}
           role={inviteRole}
           userSlug={userSlug}
           socialProviders={socialProviders}
