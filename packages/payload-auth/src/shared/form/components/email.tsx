@@ -1,5 +1,5 @@
 import React, { type ComponentPropsWithoutRef } from 'react'
-import { FormField, FormLabel, FormErrors, FormInputWrap } from '../ui'
+import { FormField, FormLabel, FieldErrors, FormInputWrap, FormErrors } from '../ui'
 import clsx from 'clsx'
 
 export type EmailFieldProps = ComponentPropsWithoutRef<'input'> & {

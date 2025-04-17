@@ -34,12 +34,13 @@ type FieldErrorsProps = {
 
 export const FieldErrors = ({ meta, className }: FieldErrorsProps) => {
   if (!meta.isTouched) return null
+  const error = meta.errors.at(0)?.message || null
 
-  return meta.errors.map(({ message }: ZodError, index) => (
-    <p key={index} className={clsx('field-error-message', className)}>
-      {message}
-    </p>
-  ))
+  return (
+    <Tooltip alignCaret="right" className={clsx('field-error', className)} show={!!error} delay={0} staticPositioning>
+      {error}
+    </Tooltip>
+  )
 }
 
 type FormErrorProps = {
@@ -49,7 +50,7 @@ type FormErrorProps = {
 
 const FormErrors: React.FC<FormErrorProps> = ({ errors, className }) =>
   errors ? (
-    <Tooltip alignCaret="right" className={clsx('field-error', className)} delay={0} staticPositioning>
+    <Tooltip alignCaret="right" className={clsx('field-error', className)} delay={0}  staticPositioning>
       {errors.join(', ')}
     </Tooltip>
   ) : null
