@@ -2,6 +2,7 @@ import React from 'react'
 
 import { z } from 'zod'
 import { Logo } from '../../../../../shared/components/logo'
+import { MinimalTemplate } from '@payloadcms/next/templates'
 import { AdminSignupClient } from './client'
 import { FormHeader } from '../../../../../shared/form/ui/header'
 import { baseCollectionSlugs } from '../../../constants'
@@ -47,30 +48,28 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
     }
   } = initPageResult
 
-  const { success, data, error } = searchParamsSchema.safeParse(searchParams)
+  const { success, data } = searchParamsSchema.safeParse(searchParams)
 
   if (!success) {
     return (
-      <section className={`${baseClass} login template-minimal template-minimal--width-normal`}>
-        <div className="template-minimal__wrap">
-          <div className={`${baseClass}__brand`}>
-            <Logo
-              i18n={i18n}
-              locale={locale}
-              params={params}
-              payload={req.payload}
-              permissions={permissions}
-              searchParams={searchParams}
-              user={user ?? undefined}
-            />
-          </div>
-          <FormHeader
-            style={{ textAlign: 'center' }}
-            heading="Invalid or expired token"
-            description="You need to get a new invite to sign up."
+      <MinimalTemplate className={baseClass}>
+        <div className={`${baseClass}__brand`}>
+          <Logo
+            i18n={i18n}
+            locale={locale}
+            params={params}
+            payload={req.payload}
+            permissions={permissions}
+            searchParams={searchParams}
+            user={user ?? undefined}
           />
         </div>
-      </section>
+        <FormHeader
+          style={{ textAlign: 'center' }}
+          heading="Invalid or expired token"
+          description="You need to get a new invite to sign up."
+        />
+      </MinimalTemplate>
     )
   }
 

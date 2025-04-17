@@ -3,6 +3,7 @@ import { AdminLoginClient } from './client'
 import { redirect } from 'next/navigation'
 import { Logo } from '@/shared/components/logo'
 import { getSafeRedirect } from '@/better-auth/plugin/payload/utils/get-safe-redirect'
+import { MinimalTemplate } from '@payloadcms/next/templates'
 import { checkPasskeyPlugin } from '@/better-auth/plugin/helpers/check-passkey-plugin'
 import { checkUsernamePlugin } from '@/better-auth/plugin/helpers/check-username-plugin'
 import { RenderServerComponent } from '@payloadcms/ui/elements/RenderServerComponent'
@@ -86,57 +87,55 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
   const canLoginWithUsername = (hasUsernamePlugin && loginWithUsername) ?? false
 
   return (
-    <section className="login template-minimal template-minimal--width-normal">
-      <div className="template-minimal__wrap">
-        <div className={`${loginBaseClass}__brand`}>
-          <Logo
-            i18n={i18n}
-            locale={locale}
-            params={params}
-            payload={payload}
-            permissions={permissions}
-            searchParams={searchParams}
-            user={user ?? undefined}
-          />
-        </div>
-        {RenderServerComponent({
-          Component: beforeLogin,
-          importMap: payload.importMap,
-          serverProps: {
-            i18n,
-            locale,
-            params,
-            payload,
-            permissions,
-            searchParams,
-            user: user ?? undefined
-          } satisfies ServerProps
-        })}
-        <AdminLoginClient
-          loginWithUsername={canLoginWithUsername}
-          hasPasskeySupport={hasPasskeyPlugin}
-          hasUsernamePlugin={hasUsernamePlugin}
-          socialProviders={socialProviders}
-          prefillEmail={prefillEmail}
-          prefillPassword={prefillPassword}
-          prefillUsername={prefillUsername}
-          searchParams={searchParams ?? {}}
+    <MinimalTemplate className={loginBaseClass}>
+      <div className={`${loginBaseClass}__brand`}>
+        <Logo
+          i18n={i18n}
+          locale={locale}
+          params={params}
+          payload={payload}
+          permissions={permissions}
+          searchParams={searchParams}
+          user={user ?? undefined}
         />
-        {RenderServerComponent({
-          Component: filteredAfterLogin,
-          importMap: payload.importMap,
-          serverProps: {
-            i18n,
-            locale,
-            params,
-            payload,
-            permissions,
-            searchParams,
-            user: user ?? undefined
-          } satisfies ServerProps
-        })}
       </div>
-    </section>
+      {RenderServerComponent({
+        Component: beforeLogin,
+        importMap: payload.importMap,
+        serverProps: {
+          i18n,
+          locale,
+          params,
+          payload,
+          permissions,
+          searchParams,
+          user: user ?? undefined
+        } satisfies ServerProps
+      })}
+      <AdminLoginClient
+        loginWithUsername={canLoginWithUsername}
+        hasPasskeySupport={hasPasskeyPlugin}
+        hasUsernamePlugin={hasUsernamePlugin}
+        socialProviders={socialProviders}
+        prefillEmail={prefillEmail}
+        prefillPassword={prefillPassword}
+        prefillUsername={prefillUsername}
+        searchParams={searchParams ?? {}}
+      />
+      {RenderServerComponent({
+        Component: filteredAfterLogin,
+        importMap: payload.importMap,
+        serverProps: {
+          i18n,
+          locale,
+          params,
+          payload,
+          permissions,
+          searchParams,
+          user: user ?? undefined
+        } satisfies ServerProps
+      })}
+    </MinimalTemplate>
   )
 }
 
