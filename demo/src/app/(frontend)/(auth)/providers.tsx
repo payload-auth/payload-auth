@@ -28,7 +28,8 @@ export function Providers({ children }: { children: ReactNode }) {
           settings: 'dashboard'
         }}
         basePath="/"
-        LinkComponent={Link}>
+        LinkComponent={Link}
+      >
         {children}
       </AuthUIProvider>
     </QueryClientProvider>

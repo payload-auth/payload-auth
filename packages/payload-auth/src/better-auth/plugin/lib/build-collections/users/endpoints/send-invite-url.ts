@@ -1,50 +1,63 @@
-import {
-  addDataAndFileToRequest,
-  Endpoint,
-  headersWithCors,
-  killTransaction,
-} from "payload";
-import { status as httpStatus } from "http-status";
-import { z } from "zod";
+import { addDataAndFileToRequest, Endpoint, headersWithCors, killTransaction } from 'payload'
+import { status as httpStatus } from 'http-status'
+import { z } from 'zod'
+import { adminEndpoints } from '@/better-auth/plugin/constants'
+import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
 
 const requestSchema = z.object({
   email: z.string().email(),
-  username: z.string().optional(),
-});
+  link: z.string()
+})
 
-export const getSendInviteUrlEndpoint = (): Endpoint => {
+export const getSendInviteUrlEndpoint = (pluginOptions: BetterAuthPluginOptions): Endpoint => {
   const endpoint: Endpoint = {
-    path: "/invite/send",
-    method: "post",
+    path: adminEndpoints.sendInvite,
+    method: 'post',
     handler: async (req) => {
-      await addDataAndFileToRequest(req);
-      const { t } = req;
-      const body = requestSchema.safeParse(req.data);
+      await addDataAndFileToRequest(req)
+      const { t } = req
+      const body = requestSchema.safeParse(req.data)
       if (!body.success) {
-        return Response.json(
-          { message: body.error.message },
-          { status: httpStatus.BAD_REQUEST }
-        );
+        return Response.json({ message: body.error.message }, { status: httpStatus.BAD_REQUEST })
+      }
+
+      const sendInviteEmailFn = pluginOptions.adminInvitations?.sendInviteEmail
+
+      if (!sendInviteEmailFn) {
+        req.payload.logger.error(
+          'Send admin invite email function not configured, please add the function to the betterAuthPlugin options.'
+        )
+        return Response.json({ message: 'Send invite email function not found' }, { status: httpStatus.INTERNAL_SERVER_ERROR })
       }
 
       try {
+        const res = await sendInviteEmailFn({
+          payload: req.payload,
+          email: body.data.email,
+          url: body.data.link
+        })
+
+        if (!res.success) {
+          return Response.json({ message: res.message }, { status: httpStatus.INTERNAL_SERVER_ERROR })
+        }
+
         return Response.json(
           {
-            message: t("general:success"),
+            message: t('general:success')
           },
           {
             headers: headersWithCors({
               headers: new Headers(),
-              req,
+              req
             }),
-            status: httpStatus.OK,
+            status: httpStatus.OK
           }
-        );
+        )
       } catch (error) {
-        await killTransaction(req);
-        throw error;
+        await killTransaction(req)
+        throw error
       }
-    },
-  };
-  return endpoint;
-};
+    }
+  }
+  return endpoint
+}

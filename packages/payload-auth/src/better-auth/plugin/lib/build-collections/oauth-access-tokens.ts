@@ -1,105 +1,101 @@
-import { CollectionConfig } from "payload";
-import { BetterAuthPluginOptions } from "../../types";
-import { betterAuthPluginSlugs, baseCollectionSlugs } from "../constants";
-import { getTimestampFields } from "./utils/get-timestamp-fields";
-import { getAdminAccess } from "../../helpers/get-admin-access";
+import { CollectionConfig } from 'payload'
+import { BetterAuthPluginOptions } from '../../types'
+import { betterAuthPluginSlugs, baseCollectionSlugs } from '../../constants'
+import { getTimestampFields } from './utils/get-timestamp-fields'
+import { getAdminAccess } from '../../helpers/get-admin-access'
 
-export function buildOauthAccessTokensCollection({
-  pluginOptions,
-}: {
-  pluginOptions: BetterAuthPluginOptions;
-}) {
-  const oauthAccessTokenSlug = betterAuthPluginSlugs.oauthAccessTokens;
-  const oauthApplicationSlug = betterAuthPluginSlugs.oauthApplications;
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users;
+export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }) {
+  const oauthAccessTokenSlug = betterAuthPluginSlugs.oauthAccessTokens
+  const oauthApplicationSlug = betterAuthPluginSlugs.oauthApplications
+  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
 
   const oauthAccessTokenCollection: CollectionConfig = {
     slug: oauthAccessTokenSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: "accessToken",
-      description: "OAuth access tokens for custom OAuth clients",
-      group: pluginOptions?.collectionAdminGroup ?? "Auth",
+      useAsTitle: 'accessToken',
+      description: 'OAuth access tokens for custom OAuth clients',
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
     },
     access: {
-      ...getAdminAccess(pluginOptions),
+      ...getAdminAccess(pluginOptions)
     },
     fields: [
       {
-        name: "accessToken",
-        type: "text",
+        name: 'accessToken',
+        type: 'text',
         required: true,
         index: true,
-        label: "Access Token",
+        label: 'Access Token',
         admin: {
           readOnly: true,
-          description: "Access token issued to the client",
-        },
+          description: 'Access token issued to the client'
+        }
       },
       {
-        name: "refreshToken",
-        type: "text",
+        name: 'refreshToken',
+        type: 'text',
         required: true,
-        label: "Refresh Token",
+        label: 'Refresh Token',
         admin: {
           readOnly: true,
-          description: "Refresh token issued to the client",
-        },
+          description: 'Refresh token issued to the client'
+        }
       },
       {
-        name: "accessTokenExpiresAt",
-        type: "date",
+        name: 'accessTokenExpiresAt',
+        type: 'date',
         required: true,
-        label: "Access Token Expires At",
+        label: 'Access Token Expires At',
         admin: {
           readOnly: true,
-          description: "Expiration date of the access token",
-        },
+          description: 'Expiration date of the access token'
+        }
       },
       {
-        name: "refreshTokenExpiresAt",
-        type: "date",
+        name: 'refreshTokenExpiresAt',
+        type: 'date',
         required: true,
-        label: "Refresh Token Expires At",
+        label: 'Refresh Token Expires At',
         admin: {
           readOnly: true,
-          description: "Expiration date of the refresh token",
-        },
+          description: 'Expiration date of the refresh token'
+        }
       },
       {
-        name: "client",
-        type: "relationship",
+        name: 'client',
+        type: 'relationship',
         relationTo: oauthApplicationSlug,
         required: true,
-        label: "Client",
+        label: 'Client',
         admin: {
           readOnly: true,
-          description: "OAuth application associated with the access token",
-        },
+          description: 'OAuth application associated with the access token'
+        }
       },
       {
-        name: "user",
-        type: "relationship",
+        name: 'user',
+        type: 'relationship',
         relationTo: userSlug,
         required: true,
-        label: "User",
+        label: 'User',
         admin: {
           readOnly: true,
-          description: "User associated with the access token",
-        },
+          description: 'User associated with the access token'
+        }
       },
       {
-        name: "scopes",
-        type: "text",
+        name: 'scopes',
+        type: 'text',
         required: true,
-        label: "Scopes",
+        label: 'Scopes',
         admin: {
-          description: "Comma-separated list of scopes granted",
-        },
+          description: 'Comma-separated list of scopes granted'
+        }
       },
-      ...getTimestampFields(),
-    ],
-  };
+      ...getTimestampFields()
+    ]
+  }
 
-  return oauthAccessTokenCollection;
+  return oauthAccessTokenCollection
 }

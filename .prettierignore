@@ -1,0 +1,15 @@
+**/payload-types.ts
+**/importMap.js
+.tmp
+**/.git
+**/.hg
+**/.pnp.*
+**/.svn
+**/.yarn/**
+**/build
+**/dist/**
+**/node_modules
+**/temp
+**/docs/**
+tsconfig.json
+

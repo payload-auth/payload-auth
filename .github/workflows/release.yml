@@ -32,14 +32,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # Needed by semantic-release to create releases, push tags/commits
-      issues: write  # Needed by semantic-release to comment on issues/PRs (optional but recommended)
-      pull-requests: write 
+      issues: write # Needed by semantic-release to comment on issues/PRs (optional but recommended)
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           # Required for semantic-release to analyze the full commit history
-          fetch-depth: 0 
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -47,7 +47,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20  # Use the Node.js version required by your project
+          node-version: 20 # Use the Node.js version required by your project
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -55,7 +55,7 @@ jobs:
 
       # Build the specific package required for release
       - name: Build payload-auth package
-        run: pnpm run build 
+        run: pnpm run build
 
       # Create an archive of the distribution files
       - name: Archive distribution files
@@ -65,4 +65,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Token for GitHub authentication (provided by Actions)
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }} # Token for npm authentication (needs to be created in GitHub secrets)
-        run: pnpm exec semantic-release 
+        run: pnpm exec semantic-release

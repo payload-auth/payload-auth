@@ -1,67 +1,52 @@
-import type { Metadata } from "next";
-import type { Icon } from "next/dist/lib/metadata/types/metadata-types.js";
-import type { MetaConfig, SanitizedConfig } from "payload";
-import type { I18nClient } from "@payloadcms/translations";
+import type { Metadata } from 'next'
+import type { Icon } from 'next/dist/lib/metadata/types/metadata-types.js'
+import type { MetaConfig, SanitizedConfig } from 'payload'
+import type { I18nClient } from '@payloadcms/translations'
 
-import {
-  payloadFaviconDark,
-  payloadFaviconLight,
-  staticOGImage,
-} from "@payloadcms/ui/assets";
-import * as qs from "qs-esm";
+import { payloadFaviconDark, payloadFaviconLight, staticOGImage } from '@payloadcms/ui/assets'
+import * as qs from 'qs-esm'
 
-const defaultOpenGraph: Metadata["openGraph"] = {
-  description:
-    "Payload is a headless CMS and application framework built with TypeScript, Node.js, and React.",
-  siteName: "Payload App",
-  title: "Payload App",
-};
+const defaultOpenGraph: Metadata['openGraph'] = {
+  description: 'Payload is a headless CMS and application framework built with TypeScript, Node.js, and React.',
+  siteName: 'Payload App',
+  title: 'Payload App'
+}
 
-export const generateMetadata = async (
-  args: { serverURL: string } & MetaConfig
-): Promise<Metadata> => {
-  const { defaultOGImageType, serverURL, titleSuffix, ...rest } = args;
+export const generateMetadata = async (args: { serverURL: string } & MetaConfig): Promise<Metadata> => {
+  const { defaultOGImageType, serverURL, titleSuffix, ...rest } = args
 
   /**
    * @todo find a way to remove the type assertion here.
    * It is a result of needing to `DeepCopy` the `MetaConfig` type from Payload.
    * This is required for the `DeepRequired` from `Config` to `SanitizedConfig`.
    */
-  const incomingMetadata = rest as Metadata;
+  const incomingMetadata = rest as Metadata
 
-  const icons: Metadata["icons"] =
+  const icons: Metadata['icons'] =
     incomingMetadata.icons ||
     ([
       {
-        type: "image/png",
-        rel: "icon",
-        sizes: "32x32",
-        url:
-          typeof payloadFaviconDark === "object"
-            ? payloadFaviconDark?.src
-            : payloadFaviconDark,
+        type: 'image/png',
+        rel: 'icon',
+        sizes: '32x32',
+        url: typeof payloadFaviconDark === 'object' ? payloadFaviconDark?.src : payloadFaviconDark
       },
       {
-        type: "image/png",
-        media: "(prefers-color-scheme: dark)",
-        rel: "icon",
-        sizes: "32x32",
-        url:
-          typeof payloadFaviconLight === "object"
-            ? payloadFaviconLight?.src
-            : payloadFaviconLight,
-      },
-    ] satisfies Array<Icon>);
+        type: 'image/png',
+        media: '(prefers-color-scheme: dark)',
+        rel: 'icon',
+        sizes: '32x32',
+        url: typeof payloadFaviconLight === 'object' ? payloadFaviconLight?.src : payloadFaviconLight
+      }
+    ] satisfies Array<Icon>)
 
-  const metaTitle: Metadata["title"] = [incomingMetadata.title, titleSuffix]
-    .filter(Boolean)
-    .join(" ");
+  const metaTitle: Metadata['title'] = [incomingMetadata.title, titleSuffix].filter(Boolean).join(' ')
 
-  const ogTitle = `${typeof incomingMetadata.openGraph?.title === "string" ? incomingMetadata.openGraph.title : incomingMetadata.title} ${titleSuffix}`;
+  const ogTitle = `${typeof incomingMetadata.openGraph?.title === 'string' ? incomingMetadata.openGraph.title : incomingMetadata.title} ${titleSuffix}`
 
-  const mergedOpenGraph: Metadata["openGraph"] = {
+  const mergedOpenGraph: Metadata['openGraph'] = {
     ...(defaultOpenGraph || {}),
-    ...(defaultOGImageType === "dynamic"
+    ...(defaultOGImageType === 'dynamic'
       ? {
           images: [
             {
@@ -69,55 +54,46 @@ export const generateMetadata = async (
               height: 630,
               url: `/api/og${qs.stringify(
                 {
-                  description:
-                    incomingMetadata.openGraph?.description ||
-                    defaultOpenGraph.description,
-                  title: ogTitle,
+                  description: incomingMetadata.openGraph?.description || defaultOpenGraph.description,
+                  title: ogTitle
                 },
                 {
-                  addQueryPrefix: true,
+                  addQueryPrefix: true
                 }
               )}`,
-              width: 1200,
-            },
-          ],
+              width: 1200
+            }
+          ]
         }
       : {}),
-    ...(defaultOGImageType === "static"
+    ...(defaultOGImageType === 'static'
       ? {
           images: [
             {
               alt: ogTitle,
               height: 480,
-              url:
-                typeof staticOGImage === "object"
-                  ? staticOGImage?.src
-                  : staticOGImage,
-              width: 640,
-            },
-          ],
+              url: typeof staticOGImage === 'object' ? staticOGImage?.src : staticOGImage,
+              width: 640
+            }
+          ]
         }
       : {}),
     title: ogTitle,
-    ...(incomingMetadata.openGraph || {}),
-  };
+    ...(incomingMetadata.openGraph || {})
+  }
 
   return Promise.resolve({
     ...incomingMetadata,
     icons,
-    metadataBase: new URL(
-      serverURL ||
-        process.env.PAYLOAD_PUBLIC_SERVER_URL ||
-        `http://localhost:${process.env.PORT || 3000}`
-    ),
+    metadataBase: new URL(serverURL || process.env.PAYLOAD_PUBLIC_SERVER_URL || `http://localhost:${process.env.PORT || 3000}`),
     openGraph: mergedOpenGraph,
-    title: metaTitle,
-  });
-};
+    title: metaTitle
+  })
+}
 
 export type GenerateViewMetadata = (args: {
-  config: SanitizedConfig;
-  i18n: I18nClient;
-  isEditing?: boolean;
-  params?: { [key: string]: string | string[] };
-}) => Promise<Metadata>;
+  config: SanitizedConfig
+  i18n: I18nClient
+  isEditing?: boolean
+  params?: { [key: string]: string | string[] }
+}) => Promise<Metadata>

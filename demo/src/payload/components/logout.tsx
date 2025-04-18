@@ -1,45 +1,37 @@
-"use client";
-import React from "react";
-import { authClient } from "@/lib/auth/client";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { Loader2, LogOut } from "lucide-react";
+'use client'
+import React from 'react'
+import { authClient } from '@/lib/auth/client'
+import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
+import { Loader2, LogOut } from 'lucide-react'
 
 export default function LogoutButton() {
-  const [loading, setLoading] = React.useState(false);
-  const router = useRouter();
+  const [loading, setLoading] = React.useState(false)
+  const router = useRouter()
   const handleLogout = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       await authClient.signOut({
         fetchOptions: {
           onResponse: () => {
-            setLoading(false);
+            setLoading(false)
           },
           onError: () => {
-            setLoading(false);
+            setLoading(false)
           },
           onSuccess: () => {
-            router.refresh();
-          },
-        },
-      });
+            router.refresh()
+          }
+        }
+      })
     } catch (error) {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <Button
-      onClick={handleLogout}
-      disabled={loading}
-      className="border-none bg-transparent"
-    >
-      {loading ? (
-        <Loader2 className="animate-spin h-8 w-8" />
-      ) : (
-        <LogOut className="h-8 w-8" />
-      )}
+    <Button onClick={handleLogout} disabled={loading} className="border-none bg-transparent">
+      {loading ? <Loader2 className="h-8 w-8 animate-spin" /> : <LogOut className="h-8 w-8" />}
     </Button>
-  );
+  )
 }

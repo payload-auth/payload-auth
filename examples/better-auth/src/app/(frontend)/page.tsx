@@ -12,7 +12,8 @@ export default function Home() {
           <SignInButton />
           <Link
             href="/admin"
-            className="bg-secondary text-secondary-foreground hover:bg-secondary/90 inline-flex h-9 items-center gap-2 rounded-md px-3 py-1 text-sm font-medium transition-colors">
+            className="bg-secondary text-secondary-foreground hover:bg-secondary/90 inline-flex h-9 items-center gap-2 rounded-md px-3 py-1 text-sm font-medium transition-colors"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
               <path
                 fill="currentColor"

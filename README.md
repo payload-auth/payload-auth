@@ -1,6 +1,6 @@
 # Payload Auth
 
-This monorepo contains packages that integrate [Payload CMS](https://payloadcms.com) with various 
+This monorepo contains packages that integrate [Payload CMS](https://payloadcms.com) with various
 authentication providers to provide enhanced authentication capabilities for your applications.
 
 ## Supported Authentication Providers

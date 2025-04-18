@@ -93,7 +93,8 @@ export function UserCard() {
                       }
                     }
                   )
-                }}>
+                }}
+              >
                 {emailVerificationPending ? (
                   <div className="flex items-center gap-2">
                     <Loader2 size={14} className="animate-spin" />
@@ -138,7 +139,8 @@ export function UserCard() {
                           }
                           router.refresh()
                           setIsTerminating(undefined)
-                        }}>
+                        }}
+                      >
                         {isTerminating === sessionData.session.id ? (
                           <Loader2 size={15} className="animate-spin" />
                         ) : sessionData.session.id === session?.session.id ? (
@@ -212,7 +214,8 @@ export function UserCard() {
                               }
                             )
                             setTwoFaPassword('')
-                          }}>
+                          }}
+                        >
                           Show QR Code
                         </Button>
                       </div>
@@ -320,7 +323,8 @@ export function UserCard() {
                         }
                         setIsPendingTwoFa(false)
                         setTwoFaPassword('')
-                      }}>
+                      }}
+                    >
                       {isPendingTwoFa ? (
                         <Loader2 size={15} className="animate-spin" />
                       ) : currentUser?.twoFactorEnabled ? (
@@ -355,7 +359,8 @@ export function UserCard() {
             })
             setIsSignOut(false)
           }}
-          disabled={isSignOut}>
+          disabled={isSignOut}
+        >
           <span className="text-sm">
             {isSignOut ? (
               <Loader2 size={15} className="animate-spin" />
@@ -395,7 +400,8 @@ function ChangePassword() {
           <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
             <path
               fill="currentColor"
-              d="M2.5 18.5v-1h19v1zm.535-5.973l-.762-.442l.965-1.693h-1.93v-.884h1.93l-.965-1.642l.762-.443L4 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L4 10.835zm8 0l-.762-.442l.966-1.693H9.308v-.884h1.93l-.965-1.642l.762-.443L12 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L12 10.835zm8 0l-.762-.442l.966-1.693h-1.931v-.884h1.93l-.965-1.642l.762-.443L20 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L20 10.835z"></path>
+              d="M2.5 18.5v-1h19v1zm.535-5.973l-.762-.442l.965-1.693h-1.93v-.884h1.93l-.965-1.642l.762-.443L4 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L4 10.835zm8 0l-.762-.442l.966-1.693H9.308v-.884h1.93l-.965-1.642l.762-.443L12 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L12 10.835zm8 0l-.762-.442l.966-1.693h-1.931v-.884h1.93l-.965-1.642l.762-.443L20 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L20 10.835z"
+            ></path>
           </svg>
           <span className="text-muted-foreground text-sm">Change Password</span>
         </Button>
@@ -460,7 +466,8 @@ function ChangePassword() {
                 setNewPassword('')
                 setConfirmPassword('')
               }
-            }}>
+            }}
+          >
             {loading ? <Loader2 size={15} className="animate-spin" /> : 'Change Password'}
           </Button>
         </DialogFooter>
@@ -562,7 +569,8 @@ function EditUserDialog() {
                   setIsLoading(false)
                   router.refresh()
                 })
-            }}>
+            }}
+          >
             {isLoading ? <Loader2 size={15} className="animate-spin" /> : 'Update'}
           </Button>
         </DialogFooter>
@@ -693,7 +701,8 @@ function ListPasskeys() {
                             }
                           }
                         })
-                      }}>
+                      }}
+                    >
                       {isDeletePasskey ? (
                         <Loader2 size={15} className="animate-spin" />
                       ) : (

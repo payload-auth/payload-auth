@@ -180,37 +180,7 @@ export const betterAuthPluginOptions: BetterAuthPluginOptions = {
     slug: 'users',
     hidden: false,
     adminRoles: ['admin'],
-    allowedFields: ['name'],
-    blockFirstBetterAuthVerificationEmail: true
-    // collectionOverrides: ({ collection }) => {
-    //   return {
-    //     ...collection,
-    //     auth: {
-    //       ...(typeof collection?.auth === 'object' ? collection.auth : {}),
-    //       // verify: {
-    //       //   generateEmailHTML: async ({ user, req, token }) => {
-    //       //     const betterAuth = (req.payload as any).betterAuth as BetterAuthReturn<BetterAuthPlugins>
-    //       //     const authContext = await betterAuth.$context
-    //       //     const verifyUrl = await generateVerifyEmailUrl({
-    //       //       userEmail: user.email,
-    //       //       secret: authContext.secret,
-    //       //       expiresIn: betterAuth.options?.emailVerification?.expiresIn || 3600,
-    //       //       verifyRouteUrl: `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/verify-email`,
-    //       //       callbackURL: '/dashboard'
-    //       //     })
-
-    //       //     console.log('generateEmailHTML verifyUrl', verifyUrl)
-
-    //       //     return `<p>Verify your email by clicking <a href="${verifyUrl}">here</a></p>`
-    //       //   }
-    //       // },
-    //       // loginWithUsername: {
-    //       //   allowEmailLogin: true,
-    //       //   requireEmail: true
-    //       // }
-    //     }
-    //   } satisfies CollectionConfig
-    // }
+    allowedFields: ['name']
   },
   accounts: {
     slug: 'accounts'
@@ -220,6 +190,14 @@ export const betterAuthPluginOptions: BetterAuthPluginOptions = {
   },
   verifications: {
     slug: 'verifications'
+  },
+  adminInvitations: {
+    sendInviteEmail: async ({ payload, email, url }) => {
+      console.log('Send admin invite: ', email, url)
+      return {
+        success: true
+      }
+    }
   },
   betterAuthOptions: betterAuthOptions
 }

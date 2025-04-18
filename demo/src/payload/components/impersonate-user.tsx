@@ -36,7 +36,8 @@ export default function ImpersonateUser(props: UIFieldClientComponent) {
       onClick={handleImpersonate}
       className="rounded-md border-[0.5px] border-gray-300 bg-orange-500 text-sm font-medium text-white transition-colors hover:bg-orange-600"
       type="button"
-      aria-label={`Impersonate ${initialData?.name}`}>
+      aria-label={`Impersonate ${initialData?.name}`}
+    >
       Impersonate {initialData?.name}
     </Button>
   )

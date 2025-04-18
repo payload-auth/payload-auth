@@ -31,7 +31,8 @@ const PasswordInput = ({ className, ref, enableToggle = true, ...props }: Passwo
           size="sm"
           className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
           onClick={() => setShowPassword((prev) => !prev)}
-          disabled={disabled}>
+          disabled={disabled}
+        >
           {showPassword && !disabled ? (
             <EyeIcon className="h-4 w-4" aria-hidden="true" />
           ) : (

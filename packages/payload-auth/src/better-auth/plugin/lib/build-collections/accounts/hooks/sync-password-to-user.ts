@@ -1,34 +1,25 @@
-import type { CollectionAfterChangeHook } from "payload";
-import type { CollectionHookWithBetterAuth } from "../../../../types";
+import type { CollectionAfterChangeHook } from 'payload'
+import type { CollectionHookWithBetterAuth } from '@/better-auth/plugin/types'
 
-type CollectionAfterChangeHookWithBetterAuth =
-  CollectionHookWithBetterAuth<CollectionAfterChangeHook>;
+type CollectionAfterChangeHookWithBetterAuth = CollectionHookWithBetterAuth<CollectionAfterChangeHook>
 
 type SyncPasswordToUserOptions = {
-  userSlug: string;
-  accountSlug: string;
-};
+  userSlug: string
+  accountSlug: string
+}
 
-export const getSyncPasswordToUserHook = (
-  options: SyncPasswordToUserOptions
-): CollectionAfterChangeHook => {
-  const hook: CollectionAfterChangeHookWithBetterAuth = async ({
-    doc,
-    req,
-    operation,
-    context,
-  }) => {
-    if (context?.syncAccountHook) return doc;
+export const getSyncPasswordToUserHook = (options: SyncPasswordToUserOptions): CollectionAfterChangeHook => {
+  const hook: CollectionAfterChangeHookWithBetterAuth = async ({ doc, req, operation, context }) => {
+    if (context?.syncAccountHook) return doc
 
-    if (operation !== "create" && operation !== "update") {
-      return doc;
+    if (operation !== 'create' && operation !== 'update') {
+      return doc
     }
 
-    const userField =
-      req.payload.betterAuth.options.account?.fields?.userId || "userId";
+    const userField = req.payload.betterAuth.options.account?.fields?.userId || 'userId'
 
     if (!doc[userField]) {
-      return doc;
+      return doc
     }
 
     const account = await req.payload.findByID({
@@ -36,21 +27,20 @@ export const getSyncPasswordToUserHook = (
       id: doc.id,
       depth: 0,
       req,
-      showHiddenFields: true,
-    });
+      showHiddenFields: true
+    })
 
     if (!account || !account.password) {
-      return doc;
+      return doc
     }
 
-    const [salt, hash] = account.password.split(":");
+    const [salt, hash] = account.password.split(':')
 
     if (!salt || !hash) {
-      return doc;
+      return doc
     }
 
-    const userId =
-      typeof doc[userField] === "string" ? doc[userField] : doc[userField]?.id;
+    const userId = typeof doc[userField] === 'string' ? doc[userField] : doc[userField]?.id
 
     try {
       await req.payload.update({
@@ -58,17 +48,17 @@ export const getSyncPasswordToUserHook = (
         id: userId,
         data: {
           salt,
-          hash,
+          hash
         },
         req,
-        context: { syncPasswordToUser: true },
-      });
+        context: { syncPasswordToUser: true }
+      })
     } catch (error) {
-      console.error("Failed to sync password to user:", error);
+      console.error('Failed to sync password to user:', error)
     }
 
-    return doc;
-  };
+    return doc
+  }
 
-  return hook as CollectionAfterChangeHook;
-};
+  return hook as CollectionAfterChangeHook
+}

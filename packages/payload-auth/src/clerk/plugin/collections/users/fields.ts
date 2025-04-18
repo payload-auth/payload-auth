@@ -11,7 +11,7 @@ export const clerkUserFields: Field[] = [
     index: true,
     admin: {
       description: 'Clerk user ID',
-      readOnly: true,
+      readOnly: true
     }
   },
   {
@@ -20,28 +20,28 @@ export const clerkUserFields: Field[] = [
     defaultValue: false,
     admin: {
       description: 'Whether the email is verified',
-      readOnly: true,
+      readOnly: true
     }
   },
   {
     name: 'firstName',
     type: 'text',
     admin: {
-      description: 'User first name',
+      description: 'User first name'
     }
   },
   {
     name: 'lastName',
     type: 'text',
     admin: {
-      description: 'User last name',
+      description: 'User last name'
     }
   },
   {
     name: 'imageUrl',
     type: 'text',
     admin: {
-      description: 'User profile image URL',
+      description: 'User profile image URL'
     }
   },
   {
@@ -52,23 +52,23 @@ export const clerkUserFields: Field[] = [
     options: [
       {
         label: 'Admin',
-        value: 'admin',
+        value: 'admin'
       },
       {
         label: 'User',
-        value: 'user',
-      },
+        value: 'user'
+      }
     ],
     admin: {
-      description: 'User role for access control',
-    },
+      description: 'User role for access control'
+    }
   },
   {
     name: 'lastSyncedAt',
     type: 'date',
     admin: {
       description: 'When the user was last synced with Clerk',
-      readOnly: true,
+      readOnly: true
     }
   },
   {
@@ -76,7 +76,7 @@ export const clerkUserFields: Field[] = [
     type: 'json',
     admin: {
       description: 'Additional metadata from Clerk',
-      readOnly: true,
+      readOnly: true
     }
-  },
-] 
+  }
+]

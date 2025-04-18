@@ -1,19 +1,12 @@
-import type { UnionToIntersection, betterAuth } from "better-auth";
+import type { UnionToIntersection, betterAuth } from 'better-auth'
 import type {
   BetterAuthOptions as BetterAuthOptionsType,
   BetterAuthPlugin as BetterAuthPluginType,
   InferAPI,
-  InferPluginTypes,
-} from "better-auth/types";
-import type {
-  BasePayload,
-  CollectionConfig,
-  Config,
-  Endpoint,
-  Payload,
-  PayloadRequest,
-} from "payload";
-import { adminRoutes } from "./lib/constants";
+  InferPluginTypes
+} from 'better-auth/types'
+import type { BasePayload, CollectionConfig, Config, Endpoint, Payload, PayloadRequest } from 'payload'
+import { adminRoutes } from './constants'
 
 /**
  * BetterAuth options with the following caveats:
@@ -26,56 +19,31 @@ import { adminRoutes } from "./lib/constants";
  * @see https://www.better-auth.com/docs/reference/options
  */
 export interface BetterAuthOptions
-  extends Omit<
-    BetterAuthOptionsType,
-    "database" | "user" | "account" | "verification" | "session" | "advanced"
-  > {
-  user?:
-    | Omit<NonNullable<BetterAuthOptionsType["user"]>, "modelName" | "fields">
-    | undefined;
-  account?:
-    | Omit<
-        NonNullable<BetterAuthOptionsType["account"]>,
-        "modelName" | "fields"
-      >
-    | undefined;
-  session?:
-    | Omit<
-        NonNullable<BetterAuthOptionsType["session"]>,
-        "modelName" | "fields"
-      >
-    | undefined;
-  verification?:
-    | Omit<
-        NonNullable<BetterAuthOptionsType["verification"]>,
-        "modelName" | "fields"
-      >
-    | undefined;
-  advanced?:
-    | Omit<NonNullable<BetterAuthOptionsType["advanced"]>, "generateId">
-    | undefined;
+  extends Omit<BetterAuthOptionsType, 'database' | 'user' | 'account' | 'verification' | 'session' | 'advanced'> {
+  user?: Omit<NonNullable<BetterAuthOptionsType['user']>, 'modelName' | 'fields'> | undefined
+  account?: Omit<NonNullable<BetterAuthOptionsType['account']>, 'modelName' | 'fields'> | undefined
+  session?: Omit<NonNullable<BetterAuthOptionsType['session']>, 'modelName' | 'fields'> | undefined
+  verification?: Omit<NonNullable<BetterAuthOptionsType['verification']>, 'modelName' | 'fields'> | undefined
+  advanced?: Omit<NonNullable<BetterAuthOptionsType['advanced']>, 'generateId'> | undefined
 }
 
-export interface SanitizedBetterAuthOptions
-  extends Omit<BetterAuthOptionsType, "database"> {}
+export interface SanitizedBetterAuthOptions extends Omit<BetterAuthOptionsType, 'database'> {}
 
-export type SocialProvider = keyof NonNullable<
-  BetterAuthOptionsType["socialProviders"]
->;
+export type SocialProvider = keyof NonNullable<BetterAuthOptionsType['socialProviders']>
 
 export type SocialProviders = {
   [key in SocialProvider]?: {
-    enabled?: boolean;
-    disableSignUp?: boolean;
-  };
-};
+    enabled?: boolean
+    disableSignUp?: boolean
+  }
+}
 
 export interface BetterAuthPluginOptions {
   /**
    * Disable the plugin
    * @default false
    */
-  disabled?: boolean;
+  disabled?: boolean
   /**
    * Disable the default payload auth
    *
@@ -90,7 +58,7 @@ export interface BetterAuthPluginOptions {
    *
    * @default false
    */
-  disableDefaultPayloadAuth?: boolean;
+  disableDefaultPayloadAuth?: boolean
   /**
    * Custom admin components when disableDefaultPayloadAuth is true
    *
@@ -104,8 +72,8 @@ export interface BetterAuthPluginOptions {
      *
      * Make sure to include the provider in the betterAuthOptions.socialProviders array
      */
-    socialProviders?: SocialProviders;
-  };
+    socialProviders?: SocialProviders
+  }
   /**
    * Debug options
    */
@@ -114,23 +82,23 @@ export interface BetterAuthPluginOptions {
      * Enable debug logs
      * @default false
      */
-    enableDebugLogs?: boolean;
+    enableDebugLogs?: boolean
     /**
      * Log the tables that are needed for better-auth on init
      * @default false
      */
-    logTables?: boolean;
-  };
+    logTables?: boolean
+  }
   /**
    * Hide the better-authplugin collections from the payload admin UI
    * @default false
    */
-  hidePluginCollections?: boolean;
+  hidePluginCollections?: boolean
   /**
    * Defines the admin group for collections.
    * @default "Auth"
    */
-  collectionAdminGroup?: string;
+  collectionAdminGroup?: string
   /**
    * Configure the Users collections:
    */
@@ -142,7 +110,7 @@ export interface BetterAuthPluginOptions {
      *
      * @default 'users'
      */
-    slug?: string | undefined;
+    slug?: string | undefined
     /**
      * The default role for users
      *
@@ -154,7 +122,7 @@ export interface BetterAuthPluginOptions {
      * @see https://www.better-auth.com/docs/plugins/admin#default-role
      * @default "user"
      */
-    defaultRole?: string;
+    defaultRole?: string
     /**
      * The default role for admins
      *
@@ -163,7 +131,7 @@ export interface BetterAuthPluginOptions {
      *
      * @default "admin"
      */
-    defaultAdminRole?: string;
+    defaultAdminRole?: string
     /**
      * All roles for the users collection
      *
@@ -176,7 +144,7 @@ export interface BetterAuthPluginOptions {
      *
      * @default ["user"]
      */
-    roles?: string[];
+    roles?: string[]
     /**
      * Define admin roles for the users collection
      *
@@ -190,13 +158,13 @@ export interface BetterAuthPluginOptions {
      *
      * @default ["admin"]
      */
-    adminRoles?: string[];
+    adminRoles?: string[]
     /**
      * Hide the `users` collection from the payload admin UI
      *
      * This will be overwritten if you change the value in the collection overrides option
      */
-    hidden?: boolean | undefined;
+    hidden?: boolean | undefined
     /**
      * Define which fields users can update themselves
      *
@@ -205,7 +173,7 @@ export interface BetterAuthPluginOptions {
      * @example ['name', 'dateOfBirth', 'phoneNumber']
      * @default ['name']
      */
-    allowedFields?: string[] | undefined;
+    allowedFields?: string[] | undefined
     /**
      * Function to override the collection configuration
      *
@@ -216,17 +184,15 @@ export interface BetterAuthPluginOptions {
      * @param options Object containing the collection config and potentially additional parameters
      * @returns Modified collection config
      */
-    collectionOverrides?: (options: {
-      collection: CollectionConfig;
-    }) => CollectionConfig;
+    collectionOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
     /**
      * This will block the first on sign up verification email from better-auth.
      * If you are using Payload's userCollection.verify option, you will want to set this to true.
      * Function that will be blocked: options.emailVerificationsendVerificationEmail
      * @default false
      */
-    blockFirstBetterAuthVerificationEmail?: boolean;
-  };
+    blockFirstBetterAuthVerificationEmail?: boolean
+  }
   /**
    * Configure the Accounts collections:
    */
@@ -238,11 +204,11 @@ export interface BetterAuthPluginOptions {
      *
      * @default 'accounts'
      */
-    slug?: string | undefined;
+    slug?: string | undefined
     /**
      * Hide the `accounts` collection from the payload admin UI
      */
-    hidden?: boolean | undefined;
+    hidden?: boolean | undefined
     /**
      * Function to override the collection configuration
      *
@@ -251,10 +217,8 @@ export interface BetterAuthPluginOptions {
      * @param options Object containing the collection config and potentially additional parameters
      * @returns Modified collection config
      */
-    collectionOverrides?: (options: {
-      collection: CollectionConfig;
-    }) => CollectionConfig;
-  };
+    collectionOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
+  }
   /**
    * Configure the Sessions collections:
    */
@@ -266,11 +230,11 @@ export interface BetterAuthPluginOptions {
      *
      * @default 'sessions'
      */
-    slug?: string | undefined;
+    slug?: string | undefined
     /**
      * Hide the `sessions` collection from the payload admin UI
      */
-    hidden?: boolean | undefined;
+    hidden?: boolean | undefined
     /**
      * Function to override the collection configuration
      *
@@ -279,10 +243,8 @@ export interface BetterAuthPluginOptions {
      * @param options Object containing the collection config and potentially additional parameters
      * @returns Modified collection config
      */
-    collectionOverrides?: (options: {
-      collection: CollectionConfig;
-    }) => CollectionConfig;
-  };
+    collectionOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
+  }
   /**
    * Configure the Verifications collections:
    */
@@ -294,11 +256,11 @@ export interface BetterAuthPluginOptions {
      *
      * @default 'verifications'
      */
-    slug?: string | undefined;
+    slug?: string | undefined
     /**
      * Hide the `verifications` collection from the payload admin UI
      */
-    hidden?: boolean | undefined;
+    hidden?: boolean | undefined
     /**
      * Function to override the collection configuration
      *
@@ -307,10 +269,8 @@ export interface BetterAuthPluginOptions {
      * @param options Object containing the collection config and potentially additional parameters
      * @returns Modified collection config
      */
-    collectionOverrides?: (options: {
-      collection: CollectionConfig;
-    }) => CollectionConfig;
-  };
+    collectionOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
+  }
   /**
    * Configure the Admin Invitations collections:
    */
@@ -320,18 +280,25 @@ export interface BetterAuthPluginOptions {
      *
      * @default 'admin-invitations'
      */
-    slug?: string | undefined;
+    slug?: string | undefined
     /**
      * Hide the `admin-invitations` collection from the payload admin UI
      */
-    hidden?: boolean | undefined;
+    hidden?: boolean | undefined
     /**
      * This will be used to generate the admin invite url
      *
      * @param options Object containing payload and the token
      * @returns The admin invite url
      */
-    generateInviteUrl?: GenerateAdminInviteUrlFn;
+    generateInviteUrl?: GenerateAdminInviteUrlFn
+    /**
+     * This will be used to send the admin invite email
+     *
+     * @param options Object containing payload, email and the url
+     * @returns The admin invite url
+     */
+    sendInviteEmail?: SendAdminInviteEmailFn
     /**
      * Function to override the collection configuration
      *
@@ -340,10 +307,8 @@ export interface BetterAuthPluginOptions {
      * @param options Object containing the collection config and potentially additional parameters
      * @returns Modified collection config
      */
-    collectionOverrides?: (options: {
-      collection: CollectionConfig;
-    }) => CollectionConfig;
-  };
+    collectionOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
+  }
   /**
    * BetterAuth options with the following caveats:
    * - The `database` option is removed as it is configured internally
@@ -354,74 +319,59 @@ export interface BetterAuthPluginOptions {
    *
    * @see https://www.better-auth.com/docs/reference/options
    */
-  betterAuthOptions?: BetterAuthOptions;
+  betterAuthOptions?: BetterAuthOptions
 }
 
-export type GenerateAdminInviteUrlFn = (options: {
-  payload: Payload;
-  token: string;
-}) => string;
+export type SendAdminInviteEmailFn = (options: { payload: Payload; email: string; url: string }) => Promise<
+  | { success: true; message?: string }
+  | { success: false; message: string }
+>
+
+export type GenerateAdminInviteUrlFn = (options: { payload: Payload; token: string }) => string
 
 export type ConfigAdminCustom = {
   betterAuth: {
     adminRoutes: {
-      [key in keyof typeof adminRoutes]: string;
-    };
-  };
-};
+      [key in keyof typeof adminRoutes]: string
+    }
+  }
+}
 
 export interface BetterAuthPlugin {
-  (config: Config): Config;
-  pluginOptions: BetterAuthPluginOptions;
+  (config: Config): Config
+  pluginOptions: BetterAuthPluginOptions
 }
 
-export interface PayloadRequestWithBetterAuth<
-  TPlugins extends BetterAuthPluginType[] = [],
-> extends PayloadRequest {
+export interface PayloadRequestWithBetterAuth<TPlugins extends BetterAuthPluginType[] = []> extends PayloadRequest {
   payload: BasePayload & {
-    betterAuth: BetterAuthReturn<TPlugins>;
-  };
+    betterAuth: BetterAuthReturn<TPlugins>
+  }
 }
 
-export type CollectionHookWithBetterAuth<T extends (args: any) => any> =
-  T extends (args: infer A) => infer R
-    ? (args: Omit<A, "req"> & { req: PayloadRequestWithBetterAuth }) => R
-    : never;
+export type CollectionHookWithBetterAuth<T extends (args: any) => any> = T extends (args: infer A) => infer R
+  ? (args: Omit<A, 'req'> & { req: PayloadRequestWithBetterAuth }) => R
+  : never
 
-export type EndpointWithBetterAuth = Omit<Endpoint, "handler"> & {
-  handler: (req: PayloadRequestWithBetterAuth) => Promise<Response> | Response;
-};
+export type EndpointWithBetterAuth = Omit<Endpoint, 'handler'> & {
+  handler: (req: PayloadRequestWithBetterAuth) => Promise<Response> | Response
+}
 
-export type ExtractEndpoints<T> = T extends BetterAuthPlugin
-  ? T extends { endpoints?: infer E }
-    ? E
-    : {}
-  : {};
+export type ExtractEndpoints<T> = T extends BetterAuthPlugin ? (T extends { endpoints?: infer E } ? E : {}) : {}
 
-export type TPlugins<
-  TPlugins extends BetterAuthPluginType[] = BetterAuthPluginType[],
-> = TPlugins;
+export type TPlugins<TPlugins extends BetterAuthPluginType[] = BetterAuthPluginType[]> = TPlugins
 
 export type PluginInferTypes<T extends TPlugins> = {
   [K in keyof InferPluginTypes<{ plugins: T }>]: InferPluginTypes<{
-    plugins: T;
-  }>[K];
-};
+    plugins: T
+  }>[K]
+}
 
-export type BetterAuthReturn<T extends TPlugins> = Omit<
-  ReturnType<typeof betterAuth>,
-  "$Infer"
-> & {
-  api: T extends (infer P)[]
-    ? InferAPI<UnionToIntersection<ExtractEndpoints<P>>>
-    : {};
-  $Infer: ReturnType<typeof betterAuth>["$Infer"] & PluginInferTypes<T>;
-};
+export type BetterAuthReturn<T extends TPlugins> = Omit<ReturnType<typeof betterAuth>, '$Infer'> & {
+  api: T extends (infer P)[] ? InferAPI<UnionToIntersection<ExtractEndpoints<P>>> : {}
+  $Infer: ReturnType<typeof betterAuth>['$Infer'] & PluginInferTypes<T>
+}
 
-export type BetterAuthFunctionOptions<P extends TPlugins> = Omit<
-  BetterAuthOptions,
-  "database" | "plugins"
-> & {
-  enableDebugLogs?: boolean;
-  plugins: P;
-};
+export type BetterAuthFunctionOptions<P extends TPlugins> = Omit<BetterAuthOptions, 'database' | 'plugins'> & {
+  enableDebugLogs?: boolean
+  plugins: P
+}

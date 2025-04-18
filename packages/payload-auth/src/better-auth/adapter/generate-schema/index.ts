@@ -7,15 +7,15 @@ import { getPayloadSchema } from './get-payload-schema'
 export const generateSchema = async (
   BAoptions: BetterAuthOptions,
   options: { outputDir: string } = {
-    outputDir: './generated',
-  },
+    outputDir: './generated'
+  }
 ): Promise<string> => {
   const { outputDir } = options
   const existing_schema_code: string = await getPayloadSchema(outputDir)
 
   const new_schema_code = await generateSchemaBuilderStage({
     code: existing_schema_code,
-    BAOptions: BAoptions,
+    BAOptions: BAoptions
   })
 
   const schemaPath = path.resolve(outputDir, 'schema.ts')

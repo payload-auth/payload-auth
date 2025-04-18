@@ -1,12 +1,12 @@
-import React from "react";
-import { redirect } from "next/navigation";
+import React from 'react'
+import { redirect } from 'next/navigation'
 
 type RSCRedirectProps = {
-  redirectTo: string;
-};
+  redirectTo: string
+}
 
 const RSCRedirect: React.FC<RSCRedirectProps> = ({ redirectTo }) => {
-  redirect(redirectTo);
-};
+  redirect(redirectTo)
+}
 
-export default RSCRedirect;
+export default RSCRedirect

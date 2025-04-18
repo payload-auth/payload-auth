@@ -10,7 +10,7 @@ export const CanvasRevealEffect = ({
   colors = [[0, 255, 255]],
   containerClassName,
   dotSize,
-  showGradient = true,
+  showGradient = true
 }: {
   /**
    * 0.1 - slower
@@ -24,7 +24,7 @@ export const CanvasRevealEffect = ({
   showGradient?: boolean
 }) => {
   return (
-    <div className={cn('h-full relative bg-white w-full', containerClassName)}>
+    <div className={cn('relative h-full w-full bg-white', containerClassName)}>
       <div className="h-full w-full">
         <DotMatrix
           colors={colors ?? [[0, 255, 255]]}
@@ -59,7 +59,7 @@ const DotMatrix: React.FC<DotMatrixProps> = ({
   totalSize = 4,
   dotSize = 2,
   shader = '',
-  center = ['x', 'y'],
+  center = ['x', 'y']
 }) => {
   const uniforms = React.useMemo(() => {
     let colorsArray = [colors[0], colors[0], colors[0], colors[0], colors[0], colors[0]]
@@ -72,20 +72,20 @@ const DotMatrix: React.FC<DotMatrixProps> = ({
     return {
       u_colors: {
         value: colorsArray.map((color) => [color[0] / 255, color[1] / 255, color[2] / 255]),
-        type: 'uniform3fv',
+        type: 'uniform3fv'
       },
       u_opacities: {
         value: opacities,
-        type: 'uniform1fv',
+        type: 'uniform1fv'
       },
       u_total_size: {
         value: totalSize,
-        type: 'uniform1f',
+        type: 'uniform1f'
       },
       u_dot_size: {
         value: dotSize,
-        type: 'uniform1f',
-      },
+        type: 'uniform1f'
+      }
     }
   }, [colors, opacities, totalSize, dotSize])
 
@@ -111,16 +111,8 @@ const DotMatrix: React.FC<DotMatrixProps> = ({
         }
         void main() {
             vec2 st = fragCoord.xy;
-            ${
-              center.includes('x')
-                ? 'st.x -= abs(floor((mod(u_resolution.x, u_total_size) - u_dot_size) * 0.5));'
-                : ''
-            }
-            ${
-              center.includes('y')
-                ? 'st.y -= abs(floor((mod(u_resolution.y, u_total_size) - u_dot_size) * 0.5));'
-                : ''
-            }
+            ${center.includes('x') ? 'st.x -= abs(floor((mod(u_resolution.x, u_total_size) - u_dot_size) * 0.5));' : ''}
+            ${center.includes('y') ? 'st.y -= abs(floor((mod(u_resolution.y, u_total_size) - u_dot_size) * 0.5));' : ''}
       float opacity = step(0.0, st.x);
       opacity *= step(0.0, st.y);
 
@@ -152,16 +144,7 @@ type Uniforms = {
     type: string
   }
 }
-const ShaderMaterial = ({
-  source,
-  uniforms,
-  maxFps = 60,
-}: {
-  source: string
-  hovered?: boolean
-  maxFps?: number
-  uniforms: Uniforms
-}) => {
+const ShaderMaterial = ({ source, uniforms, maxFps = 60 }: { source: string; hovered?: boolean; maxFps?: number; uniforms: Uniforms }) => {
   const { size } = useThree()
   const ref = useRef<THREE.Mesh>(null)
   let lastFrameTime = 0
@@ -192,7 +175,7 @@ const ShaderMaterial = ({
         case 'uniform3f':
           preparedUniforms[uniformName] = {
             value: new THREE.Vector3().fromArray(uniform.value),
-            type: '3f',
+            type: '3f'
           }
           break
         case 'uniform1fv':
@@ -201,13 +184,13 @@ const ShaderMaterial = ({
         case 'uniform3fv':
           preparedUniforms[uniformName] = {
             value: uniform.value.map((v: number[]) => new THREE.Vector3().fromArray(v)),
-            type: '3fv',
+            type: '3fv'
           }
           break
         case 'uniform2f':
           preparedUniforms[uniformName] = {
             value: new THREE.Vector2().fromArray(uniform.value),
-            type: '2f',
+            type: '2f'
           }
           break
         default:
@@ -218,7 +201,7 @@ const ShaderMaterial = ({
 
     preparedUniforms['u_time'] = { value: 0, type: '1f' }
     preparedUniforms['u_resolution'] = {
-      value: new THREE.Vector2(size.width * 2, size.height * 2),
+      value: new THREE.Vector2(size.width * 2, size.height * 2)
     } // Initialize u_resolution
     return preparedUniforms
   }
@@ -244,7 +227,7 @@ const ShaderMaterial = ({
       glslVersion: THREE.GLSL3,
       blending: THREE.CustomBlending,
       blendSrc: THREE.SrcAlphaFactor,
-      blendDst: THREE.OneFactor,
+      blendDst: THREE.OneFactor
     })
 
     return materialObject
@@ -260,7 +243,7 @@ const ShaderMaterial = ({
 
 const Shader: React.FC<ShaderProps> = ({ source, uniforms, maxFps = 60 }) => {
   return (
-    <Canvas className="absolute inset-0  h-full w-full">
+    <Canvas className="absolute inset-0 h-full w-full">
       <ShaderMaterial source={source} uniforms={uniforms} maxFps={maxFps} />
     </Canvas>
   )

@@ -1,19 +1,9 @@
-import type { Payload } from "payload";
-import { getAdminRoutes } from "../../helpers/get-admin-routes";
-import type { GenerateAdminInviteUrlFn } from "../../types";
+import { adminRoutes } from '@/better-auth/plugin/constants'
+import type { GenerateAdminInviteUrlFn } from '@/better-auth/plugin/types'
 
-export const generateAdminInviteUrl: GenerateAdminInviteUrlFn = ({
-  payload,
-  token,
-}: {
-  payload: Payload;
-  token: string;
-}) => {
-  const {
-    routes: { admin: adminRoute },
-    serverURL,
-    admin: { custom },
-  } = payload.config;
-  const adminRoutes = getAdminRoutes(custom);
-  return `${serverURL}${adminRoute}${adminRoutes.adminInvite}?token=${token}`;
-};
+export const generateAdminInviteUrl: GenerateAdminInviteUrlFn = ({ payload, token }) => {
+  if (!payload?.config?.serverURL) {
+    payload.logger.warn('payload.config.serverURL is not set. Set it to generate a full URL for the admin invite link.')
+  }
+  return `${payload.getAdminURL()}${adminRoutes.adminSignup}?token=${token}`
+}
