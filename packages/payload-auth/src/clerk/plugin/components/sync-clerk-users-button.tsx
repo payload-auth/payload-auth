@@ -1,61 +1,54 @@
-"use client";
+'use client'
 
-import { Button, toast } from "@payloadcms/ui";
-import { useState } from "react";
-import { usePathname } from "next/navigation";
-import type { SyncClerkUsersResponse } from "../collections/users/endpoints/sync-from-clerk";
+import { Button, toast } from '@payloadcms/ui'
+import { useState } from 'react'
+import { usePathname } from 'next/navigation'
+import type { SyncClerkUsersResponse } from '../collections/users/endpoints/sync-from-clerk'
 
 export const SyncClerkUsersButton = ({
   userCollectionSlug,
   apiBasePath,
-  adminBasePath,
+  adminBasePath
 }: {
-  userCollectionSlug: string;
-  apiBasePath: string;
-  adminBasePath: string;
+  userCollectionSlug: string
+  apiBasePath: string
+  adminBasePath: string
 }) => {
-  const [isPending, setIsPending] = useState(false);
-  const path = usePathname();
+  const [isPending, setIsPending] = useState(false)
+  const path = usePathname()
 
-  if (`${adminBasePath}/collections/${userCollectionSlug}` !== path) return null;
+  if (`${adminBasePath}/collections/${userCollectionSlug}` !== path) return null
 
   const handleSync = async () => {
-    setIsPending(true);
+    setIsPending(true)
 
     try {
-      const response = await fetch(
-        `${apiBasePath}/${userCollectionSlug}/sync-from-clerk`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+      const response = await fetch(`${apiBasePath}/${userCollectionSlug}/sync-from-clerk`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         }
-      );
+      })
 
-      const result: SyncClerkUsersResponse = await response.json();
+      const result: SyncClerkUsersResponse = await response.json()
 
       if (result.success) {
-        toast.success(result.message || `Successfully synced users from Clerk`, { duration: 5000 });
+        toast.success(result.message || `Successfully synced users from Clerk`, { duration: 5000 })
       } else {
-        toast.error(result.error || "Failed to sync users from Clerk", { duration: 5000 });
+        toast.error(result.error || 'Failed to sync users from Clerk', { duration: 5000 })
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Error syncing users from Clerk", { duration: 5000 });
-      console.error("Error syncing users:", error);
+      toast.error(error instanceof Error ? error.message : 'Error syncing users from Clerk', { duration: 5000 })
+      console.error('Error syncing users:', error)
     } finally {
-      setIsPending(false);
+      setIsPending(false)
     }
-  };
+  }
 
   return (
     <>
-      <Button
-        className="sync-clerk-users-button"
-        disabled={isPending}
-        onClick={handleSync}
-      >
-        {isPending ? "Syncing..." : "Sync Users"}
+      <Button className="sync-clerk-users-button" disabled={isPending} onClick={handleSync}>
+        {isPending ? 'Syncing...' : 'Sync Users'}
       </Button>
 
       <style>
@@ -84,5 +77,5 @@ export const SyncClerkUsersButton = ({
         `}
       </style>
     </>
-  );
-};
+  )
+}

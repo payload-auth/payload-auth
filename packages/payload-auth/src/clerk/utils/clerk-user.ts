@@ -13,7 +13,7 @@ export const defaultClerkMapping: ClerkToPayloadMappingFunction = (clerkUser: Us
     lastName: clerkUser.last_name,
     imageUrl: clerkUser.image_url,
     lastSyncedAt: new Date(),
-    clerkPublicMetadata: clerkUser?.public_metadata || {},
+    clerkPublicMetadata: clerkUser?.public_metadata || {}
   }
 }
 
@@ -21,16 +21,14 @@ export const defaultClerkMapping: ClerkToPayloadMappingFunction = (clerkUser: Us
  * Ensures that essential Clerk fields are always set regardless of the mapping function
  * This wrapper guarantees that clerkId and email will always be present in the mapped data
  */
-export const createMappingWithRequiredClerkFields = (
-  mappingFunction: ClerkToPayloadMappingFunction
-): ClerkToPayloadMappingFunction => {
+export const createMappingWithRequiredClerkFields = (mappingFunction: ClerkToPayloadMappingFunction): ClerkToPayloadMappingFunction => {
   return (clerkUser: UserJSON) => {
     const mappedData = mappingFunction(clerkUser)
-    
+
     return {
       ...mappedData,
       clerkId: clerkUser.id,
-      email: mappedData.email || getPrimaryEmailFromJson(clerkUser),
+      email: mappedData.email || getPrimaryEmailFromJson(clerkUser)
     }
   }
 }
@@ -39,18 +37,14 @@ export const createMappingWithRequiredClerkFields = (
  * Extracts the primary email from Clerk user data
  */
 export function getPrimaryEmail(clerkUser: User): string | undefined {
-  const primaryEmail = clerkUser.emailAddresses?.find(
-    (email) => email.id === clerkUser.primaryEmailAddressId
-  )
-  
+  const primaryEmail = clerkUser.emailAddresses?.find((email) => email.id === clerkUser.primaryEmailAddressId)
+
   return primaryEmail?.emailAddress || clerkUser.emailAddresses?.[0]?.emailAddress
 }
 
 export function getPrimaryEmailFromJson(clerkUser: UserJSON): string | undefined {
-  const primaryEmail = clerkUser.email_addresses?.find(
-    (email) => email.id === clerkUser.primary_email_address_id
-  )
-  
+  const primaryEmail = clerkUser.email_addresses?.find((email) => email.id === clerkUser.primary_email_address_id)
+
   return primaryEmail?.email_address || clerkUser.email_addresses?.[0]?.email_address
 }
 
@@ -60,4 +54,4 @@ export function getPrimaryEmailFromJson(clerkUser: UserJSON): string | undefined
 export function formatFullName(firstName?: string, lastName?: string): string | undefined {
   if (!firstName && !lastName) return undefined
   return `${firstName || ''} ${lastName || ''}`.trim()
-} 
+}

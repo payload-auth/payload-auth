@@ -1,19 +1,7 @@
-import CreateFirstAdmin from "../views/create-first-admin";
-import Login from "../views/login";
-import Logout from "../views/logout";
-import Forgot from "../views/forgot-password";
-import AdminInvite from "../views/admin-invite";
-import Inactivity from "../views/inactivity";
-import ResetPassword from "../views/reset-password";
-import RSCRedirect from "../components/rsc-redirect";
+import AdminSignup from '../views/admin-signup'
+import AdminLogin from '../views/admin-login'
+import ForgotPassword from '../views/forgot-password'
+import ResetPassword from '../views/reset-password'
+import RSCRedirect from '../components/rsc-redirect'
 
-export {
-  CreateFirstAdmin,
-  Login,
-  Forgot,
-  AdminInvite,
-  Inactivity,
-  Logout,
-  ResetPassword,
-  RSCRedirect,
-};
+export { AdminSignup, AdminLogin, ForgotPassword, ResetPassword, RSCRedirect }

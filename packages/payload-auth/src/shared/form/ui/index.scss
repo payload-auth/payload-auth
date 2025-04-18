@@ -1,0 +1,12 @@
+.field-error {
+  display: block;
+}
+
+.field-error-message {
+  margin-top: 6px;
+  color: var(--theme-error-950);
+  background-color: var(--theme-error-300);
+  border-radius: 2px;
+  padding: 4px 8px;
+  line-height: 15px;
+}

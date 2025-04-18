@@ -1,1 +1,1 @@
-export const authjs = "authjs";
+export const authjs = 'authjs'

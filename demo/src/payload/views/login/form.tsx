@@ -1,24 +1,19 @@
-"use client";
+'use client'
 
-import { Loader2 } from "lucide-react";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  socialProviders,
-  type AuthLocalization,
-  type AuthView,
-  type SocialProvider,
-} from "@daveyplate/better-auth-ui";
-import { useIsRestoring } from "@tanstack/react-query";
-import { authClient } from "@/lib/auth/client";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { PasswordInput } from "@/components/ui/password-input";
+import { Loader2 } from 'lucide-react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { socialProviders, type AuthLocalization, type AuthView, type SocialProvider } from '@daveyplate/better-auth-ui'
+import { useIsRestoring } from '@tanstack/react-query'
+import { authClient } from '@/lib/auth/client'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { PasswordInput } from '@/components/ui/password-input'
 
 // import type { AuthLocalization } from "../../lib/auth-localization";
 // import { AuthUIContext } from "../../lib/auth-ui-provider";
@@ -30,15 +25,15 @@ import { PasswordInput } from "@/components/ui/password-input";
 // import { ProviderButton } from "./provider-button";
 
 export type AuthFormClassNames = {
-  base?: string;
-  actionButton?: string;
-  forgotPasswordLink?: string;
-  input?: string;
-  label?: string;
-  description?: string;
-  providerButton?: string;
-  secondaryButton?: string;
-};
+  base?: string
+  actionButton?: string
+  forgotPasswordLink?: string
+  input?: string
+  label?: string
+  description?: string
+  providerButton?: string
+  secondaryButton?: string
+}
 
 export function AuthForm({
   className,
@@ -47,80 +42,80 @@ export function AuthForm({
   localization,
   pathname,
   redirectTo,
-  socialLayout = "auto",
-  view,
+  socialLayout = 'auto',
+  view
 }: {
-  className?: string;
-  classNames?: AuthFormClassNames;
-  callbackURL?: string;
-  localization?: Partial<AuthLocalization>;
-  pathname?: string;
-  redirectTo?: string;
-  socialLayout?: "auto" | "horizontal" | "grid" | "vertical";
-  view?: AuthView;
+  className?: string
+  classNames?: AuthFormClassNames
+  callbackURL?: string
+  localization?: Partial<AuthLocalization>
+  pathname?: string
+  redirectTo?: string
+  socialLayout?: 'auto' | 'horizontal' | 'grid' | 'vertical'
+  view?: AuthView
 }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const isRestoring = useIsRestoring();
-  const signingOut = useRef(false);
-  const isRedirecting = useRef(false);
-  const checkingResetPasswordToken = useRef(false);
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false)
+  const isRestoring = useIsRestoring()
+  const signingOut = useRef(false)
+  const isRedirecting = useRef(false)
+  const checkingResetPasswordToken = useRef(false)
+  const router = useRouter()
 
   const formAction = async (formData: FormData) => {
-    const provider = formData.get("provider") as SocialProvider;
+    const provider = formData.get('provider') as SocialProvider
 
     if (provider) {
       const { error } = await authClient.signIn.social({
         provider,
-        callbackURL,
-      });
+        callbackURL
+      })
       if (error) {
-        toast.error(error.message || error.statusText);
+        toast.error(error.message || error.statusText)
       } else {
-        setIsLoading(true);
+        setIsLoading(true)
       }
 
-      return;
+      return
     }
 
-    if (formData.get("passkey")) {
-      const response = await authClient.signIn.passkey();
+    if (formData.get('passkey')) {
+      const response = await authClient.signIn.passkey()
 
       if (response?.error) {
-        toast.error(response.error.message || response.error.statusText);
+        toast.error(response.error.message || response.error.statusText)
       } else {
-        setIsLoading(true);
+        setIsLoading(true)
         // await onSessionChange?.();
-        redirectTo && router.push(redirectTo);
+        redirectTo && router.push(redirectTo)
       }
 
-      return;
+      return
     }
 
-    let email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const name = formData.get("name") || ("" as string);
+    let email = formData.get('email') as string
+    const password = formData.get('password') as string
+    const name = formData.get('name') || ('' as string)
 
     switch (view) {
-      case "signIn": {
+      case 'signIn': {
         const params = {
           password,
-          rememberMe: formData.has("rememberMe"),
-        };
-
-        const { error } = await authClient.signIn.email({
-          callbackURL: "/admin",
-          email,
-          ...params,
-        });
-        if (error) {
-          toast.error(error.message || error.statusText);
-        } else {
-          setIsLoading(true);
-          redirectTo && router.push(redirectTo);
+          rememberMe: formData.has('rememberMe')
         }
 
-        break;
+        const { error } = await authClient.signIn.email({
+          callbackURL: '/admin',
+          email,
+          ...params
+        })
+        if (error) {
+          toast.error(error.message || error.statusText)
+        } else {
+          setIsLoading(true)
+          redirectTo && router.push(redirectTo)
+        }
+
+        break
       }
 
       //   case "magicLink": {
@@ -227,17 +222,17 @@ export function AuthForm({
       //     break;
       //   }
     }
-  };
+  }
 
   useEffect(() => {
-    if (view !== "signOut") {
-      signingOut.current = false;
+    if (view !== 'signOut') {
+      signingOut.current = false
     }
 
-    if (view !== "callback") {
-      isRedirecting.current = false;
+    if (view !== 'callback') {
+      isRedirecting.current = false
     }
-  }, [view]);
+  }, [view])
 
   //   useEffect(() => {
   //     if (view !== "signOut" || signingOut.current) return;
@@ -305,14 +300,10 @@ export function AuthForm({
   //     onSessionChange,
   //   ]);
 
-  if (["signOut", "callback"].includes(view || ""))
-    return <Loader2 className="animate-spin" />;
+  if (['signOut', 'callback'].includes(view || '')) return <Loader2 className="animate-spin" />
 
   return (
-    <form
-      action={formAction}
-      className={cn("twp grid w-full gap-4", className, classNames?.base)}
-    >
+    <form action={formAction} className={cn('twp grid w-full gap-4', className, classNames?.base)}>
       {/* <div className="grid gap-2">
         <Label className={classNames?.label} htmlFor="name">
           {localization.name}
@@ -332,14 +323,7 @@ export function AuthForm({
           Email
         </Label>
 
-        <Input
-          className={classNames?.input}
-          id="email"
-          name="email"
-          placeholder={localization?.emailPlaceholder}
-          required
-          type="email"
-        />
+        <Input className={classNames?.input} id="email" name="email" placeholder={localization?.emailPlaceholder} required type="email" />
       </div>
 
       <div className="grid gap-2">
@@ -348,12 +332,9 @@ export function AuthForm({
             Password
           </Label>
 
-          {view === "signIn" && (
+          {view === 'signIn' && (
             <Link
-              className={cn(
-                "-my-1 ml-auto inline-block text-sm hover:underline",
-                classNames?.forgotPasswordLink
-              )}
+              className={cn('-my-1 ml-auto inline-block text-sm hover:underline', classNames?.forgotPasswordLink)}
               href="/admin/forgot-password"
             >
               Forgot password?
@@ -364,14 +345,10 @@ export function AuthForm({
         <PasswordInput
           id="password"
           name="password"
-          autoComplete={
-            ["signUp", "resetPassword"].includes(view || "")
-              ? "new-password"
-              : "password"
-          }
+          autoComplete={['signUp', 'resetPassword'].includes(view || '') ? 'new-password' : 'password'}
           className={classNames?.input}
-          enableToggle={view !== "signIn"}
-          placeholder={"Password"}
+          enableToggle={view !== 'signIn'}
+          placeholder={'Password'}
           required
         />
       </div>
@@ -384,26 +361,21 @@ export function AuthForm({
 
       <div
         className={cn(
-          "flex w-full items-center gap-2",
-          "justify-between",
-          socialLayout === "horizontal" && "flex-wrap",
-          socialLayout === "vertical" && "flex-col",
-          socialLayout === "grid" && "grid grid-cols-2"
+          'flex w-full items-center gap-2',
+          'justify-between',
+          socialLayout === 'horizontal' && 'flex-wrap',
+          socialLayout === 'vertical' && 'flex-col',
+          socialLayout === 'grid' && 'grid grid-cols-2'
         )}
       >
-        {["google"]?.map((provider) => {
-          const socialProvider = socialProviders.find(
-            (socialProvider) => socialProvider.provider === provider
-          );
-          if (!socialProvider) return null;
+        {['google']?.map((provider) => {
+          const socialProvider = socialProviders.find((socialProvider) => socialProvider.provider === provider)
+          if (!socialProvider) return null
 
           return (
             <Button
               key={provider}
-              className={cn(
-                socialLayout === "vertical" ? "w-full" : "grow",
-                "cursor-pointer"
-              )}
+              className={cn(socialLayout === 'vertical' ? 'w-full' : 'grow', 'cursor-pointer')}
               disabled={isLoading}
               formNoValidate
               name="provider"
@@ -411,19 +383,19 @@ export function AuthForm({
               variant="outline"
             >
               <>
-                <socialProvider.icon className="dark:hidden size-4" color />
-                <socialProvider.icon className="hidden dark:block size-4" />
+                <socialProvider.icon className="size-4 dark:hidden" color />
+                <socialProvider.icon className="hidden size-4 dark:block" />
               </>
 
-              {socialLayout === "grid" && <>{socialProvider.name}</>}
+              {socialLayout === 'grid' && <>{socialProvider.name}</>}
 
-              {socialLayout === "vertical" && (
+              {socialLayout === 'vertical' && (
                 <>
                   {localization?.signInWith} {socialProvider.name}
                 </>
               )}
             </Button>
-          );
+          )
         })}
       </div>
 
@@ -505,5 +477,5 @@ export function AuthForm({
         />
       )} */}
     </form>
-  );
+  )
 }

@@ -5,6 +5,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "prepare": "node scripts/prepare.js",
     "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
@@ -54,7 +55,7 @@
     "@react-three/fiber": "9.1.0",
     "@tailwindcss/postcss": "4.0.17",
     "@tanstack/react-query": "^5.70.0",
-    "better-auth": "1.2.6",
+    "better-auth": "^1.2.7",
     "better-auth-harmony": "^1.2.4",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
@@ -64,12 +65,12 @@
     "input-otp": "1.4.2",
     "lucide-react": "0.479.0",
     "motion": "12.4.10",
-    "next": "15.3.0",
+    "next": "^15.3.0",
     "next-themes": "0.4.6",
     "open": "^10.1.0",
     "monaco-editor": "0.52.2",
-    "payload": "3.34.0",
-    "payload-auth": "latest",
+    "payload": "^3.34.0",
+    "payload-auth": "workspace:*",
     "qs-esm": "7.0.2",
     "react": "^19",
     "react-day-picker": "9.6.3",
@@ -105,7 +106,6 @@
     "typescript": "5.8.2"
   },
   "engines": {
-    "node": "^18.20.2 || >=20.9.0",
-    "pnpm": "^9 || ^10"
+    "node": "^18.20.2 || >=20.9.0"
   }
 }

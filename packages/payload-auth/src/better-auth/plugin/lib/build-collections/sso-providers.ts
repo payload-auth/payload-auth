@@ -1,93 +1,86 @@
-import { CollectionConfig } from "payload";
-import { BetterAuthPluginOptions } from "../../types";
-import { baseCollectionSlugs, betterAuthPluginSlugs } from "../constants";
-import { getTimestampFields } from "./utils/get-timestamp-fields";
-import { getAdminAccess } from "../../helpers/get-admin-access";
+import { CollectionConfig } from 'payload'
+import { BetterAuthPluginOptions } from '../../types'
+import { baseCollectionSlugs, betterAuthPluginSlugs } from '../../constants'
+import { getTimestampFields } from './utils/get-timestamp-fields'
+import { getAdminAccess } from '../../helpers/get-admin-access'
 
-export function buildSsoProvidersCollection({
-  pluginOptions,
-}: {
-  pluginOptions: BetterAuthPluginOptions;
-}) {
-  const ssoProviderSlug = betterAuthPluginSlugs.ssoProviders;
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users;
+export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }) {
+  const ssoProviderSlug = betterAuthPluginSlugs.ssoProviders
+  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
 
   const ssoProviderCollection: CollectionConfig = {
     slug: ssoProviderSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: "issuer",
-      description:
-        "SSO providers are used to authenticate users with an external provider",
-      group: pluginOptions?.collectionAdminGroup ?? "Auth",
+      useAsTitle: 'issuer',
+      description: 'SSO providers are used to authenticate users with an external provider',
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
     },
     access: {
-      ...getAdminAccess(pluginOptions),
+      ...getAdminAccess(pluginOptions)
     },
     fields: [
       {
-        name: "issuer",
-        type: "text",
+        name: 'issuer',
+        type: 'text',
         required: true,
         index: true,
-        label: "Issuer",
+        label: 'Issuer',
         admin: {
-          description: "The issuer of the SSO provider",
-        },
+          description: 'The issuer of the SSO provider'
+        }
       },
       {
-        name: "domain",
-        type: "text",
+        name: 'domain',
+        type: 'text',
         required: true,
-        label: "Domain",
+        label: 'Domain',
         admin: {
-          description: "The domain of the SSO provider",
-        },
+          description: 'The domain of the SSO provider'
+        }
       },
       {
-        name: "oidcConfig",
-        type: "text",
+        name: 'oidcConfig',
+        type: 'text',
         required: true,
-        label: "OIDC Config",
+        label: 'OIDC Config',
         admin: {
-          description: "The OIDC config of the SSO provider",
-        },
+          description: 'The OIDC config of the SSO provider'
+        }
       },
       {
-        name: "user",
-        type: "relationship",
+        name: 'user',
+        type: 'relationship',
         relationTo: userSlug,
         required: true,
-        label: "User",
+        label: 'User',
         admin: {
-          description: "The user associated with the SSO provider",
-        },
+          description: 'The user associated with the SSO provider'
+        }
       },
       {
-        name: "providerId",
-        type: "text",
+        name: 'providerId',
+        type: 'text',
         required: true,
-        label: "Provider ID",
+        label: 'Provider ID',
         admin: {
           readOnly: true,
-          description:
-            "The provider id. Used to identify a provider and to generate a redirect url",
-        },
+          description: 'The provider id. Used to identify a provider and to generate a redirect url'
+        }
       },
       {
-        name: "organizationId",
-        type: "text",
+        name: 'organizationId',
+        type: 'text',
         required: true,
-        label: "Organization ID",
+        label: 'Organization ID',
         admin: {
           readOnly: true,
-          description:
-            "The organization Id. If provider is linked to an organization",
-        },
+          description: 'The organization Id. If provider is linked to an organization'
+        }
       },
-      ...getTimestampFields(),
-    ],
-  };
+      ...getTimestampFields()
+    ]
+  }
 
-  return ssoProviderCollection;
+  return ssoProviderCollection
 }

@@ -1,143 +1,107 @@
-import { CollectionConfig } from "payload";
-import type {
-  BetterAuthPluginOptions,
-  SanitizedBetterAuthOptions,
-} from "../../../types";
-import { baseCollectionSlugs } from "../../constants";
-import {
-  isAdminOrCurrentUserUpdateWithAllowedFields,
-  isAdminOrCurrentUserWithRoles,
-  isAdminWithRoles,
-} from "../utils/payload-access";
-import { getRefreshTokenEndpoint } from "./endpoints/refresh-token";
-import { onVerifiedChange } from "./hooks/on-verified-change";
-import { getSyncAccountHook } from "./hooks/sync-account";
-import { getBeforeLoginHook } from "./hooks/before-login";
-import { getAfterLoginHook } from "./hooks/after-login";
-import { getAfterLogoutHook } from "./hooks/after-logout";
-import { getBeforeDeleteHook } from "./hooks/before-delete";
-import { betterAuthStrategy } from "./better-auth-strategy";
-import { getTimestampFields } from "../utils/get-timestamp-fields";
-import { getLoginEndpoint } from "./endpoints/login";
-import { getAllRoleOptions } from "../../../helpers/get-all-roles";
-import { getForgotPasswordEndpoint } from "./endpoints/forgot-password";
-import { getSignupEndpoint } from "./endpoints/signup";
-import { getSetAdminRoleEndpoint } from "./endpoints/set-admin-role";
-import { getResetPasswordEndpoint } from "./endpoints/reset-password";
-import { getGenerateInviteUrlEndpoint } from "./endpoints/generate-invite-url";
-import { getSendInviteUrlEndpoint } from "./endpoints/send-invite-url";
-import { checkUsernamePlugin } from "../../../helpers/check-username-plugin";
+import { CollectionConfig } from 'payload'
+import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../../../types'
+import { baseCollectionSlugs } from '../../../constants'
+import { isAdminOrCurrentUserUpdateWithAllowedFields, isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
+import { getRefreshTokenEndpoint } from './endpoints/refresh-token'
+import { onVerifiedChange } from './hooks/on-verified-change'
+import { getSyncAccountHook } from './hooks/sync-account'
+import { getBeforeLoginHook } from './hooks/before-login'
+import { getAfterLoginHook } from './hooks/after-login'
+import { getAfterLogoutHook } from './hooks/after-logout'
+import { getBeforeDeleteHook } from './hooks/before-delete'
+import { betterAuthStrategy } from './better-auth-strategy'
+import { getTimestampFields } from '../utils/get-timestamp-fields'
+import { getAllRoleOptions } from '../../../helpers/get-all-roles'
+import { getSignupEndpoint } from './endpoints/signup'
+import { getSetAdminRoleEndpoint } from './endpoints/set-admin-role'
+import { getGenerateInviteUrlEndpoint } from './endpoints/generate-invite-url'
+import { getSendInviteUrlEndpoint } from './endpoints/send-invite-url'
+import { checkUsernamePlugin } from '../../../helpers/check-username-plugin'
 
 export function buildUsersCollection({
   incomingCollections,
   pluginOptions,
-  betterAuthOptions,
+  betterAuthOptions
 }: {
-  incomingCollections: CollectionConfig[];
-  pluginOptions: BetterAuthPluginOptions;
-  betterAuthOptions: SanitizedBetterAuthOptions;
+  incomingCollections: CollectionConfig[]
+  pluginOptions: BetterAuthPluginOptions
+  betterAuthOptions: SanitizedBetterAuthOptions
 }) {
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users;
-  const accountSlug =
-    pluginOptions.accounts?.slug ?? baseCollectionSlugs.accounts;
-  const sessionSlug =
-    pluginOptions.sessions?.slug ?? baseCollectionSlugs.sessions;
-  const verificationsSlug =
-    pluginOptions.verifications?.slug ?? baseCollectionSlugs.verifications;
-  const baPlugins = betterAuthOptions.plugins ?? null;
-  const adminRoles = pluginOptions.users?.adminRoles ?? ["admin"];
-  const allRoleOptions = getAllRoleOptions(pluginOptions);
-  const hasUsernamePlugin = checkUsernamePlugin(betterAuthOptions);
-  const existingUserCollection = incomingCollections.find(
-    (collection) => collection.slug === userSlug
-  ) as CollectionConfig | undefined;
+  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
+  const accountSlug = pluginOptions.accounts?.slug ?? baseCollectionSlugs.accounts
+  const sessionSlug = pluginOptions.sessions?.slug ?? baseCollectionSlugs.sessions
+  const verificationsSlug = pluginOptions.verifications?.slug ?? baseCollectionSlugs.verifications
+  const baPlugins = betterAuthOptions.plugins ?? null
+  const adminRoles = pluginOptions.users?.adminRoles ?? ['admin']
+  const allRoleOptions = getAllRoleOptions(pluginOptions)
+  const hasUsernamePlugin = checkUsernamePlugin(betterAuthOptions)
+  const existingUserCollection = incomingCollections.find((collection) => collection.slug === userSlug) as CollectionConfig | undefined
 
-  const allowedFields = pluginOptions.users?.allowedFields ?? ["name"];
-
-  const baseUrl =
-    betterAuthOptions.baseURL ??
-    process.env.NEXT_PUBLIC_URL ??
-    "http://localhost:3000";
+  const allowedFields = pluginOptions.users?.allowedFields ?? ['name']
 
   let usersCollection: CollectionConfig = {
     ...existingUserCollection,
     slug: userSlug,
     admin: {
-      defaultColumns: ["email"],
-      useAsTitle: "email",
-      group: pluginOptions?.collectionAdminGroup ?? "Auth",
+      defaultColumns: ['email'],
+      useAsTitle: 'email',
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingUserCollection?.admin,
       hidden: pluginOptions.users?.hidden ?? false,
       components: {
         Description: {
-          path: "payload-auth/better-auth/plugin/client#AdminInviteButton",
+          path: 'payload-auth/better-auth/plugin/client#AdminInviteButton',
           clientProps: {
-            roles: allRoleOptions,
-          },
+            roles: allRoleOptions
+          }
         },
         views: {
           edit: {
             adminButtons: {
               tab: {
                 Component: {
-                  path: "payload-auth/better-auth/plugin/client#AdminButtons",
+                  path: 'payload-auth/better-auth/plugin/client#AdminButtons',
                   clientProps: {
-                    userSlug,
-                  },
+                    userSlug
+                  }
                 },
                 condition: () => {
                   // Only show the impersonate button if the admin plugin is enabled
-                  return (
-                    (baPlugins &&
-                      baPlugins.some((plugin) => plugin.id === "admin")) ??
-                    false
-                  );
-                },
-              },
-            },
-          },
-        },
-      },
+                  return (baPlugins && baPlugins.some((plugin) => plugin.id === 'admin')) ?? false
+                }
+              }
+            }
+          }
+        }
+      }
     },
     access: {
-      admin: ({ req }) =>
-        adminRoles.includes((req.user?.role as string) ?? "user"),
-      read: isAdminOrCurrentUserWithRoles({ adminRoles, idField: "id" }),
+      admin: ({ req }) => adminRoles.includes((req.user?.role as string) ?? 'user'),
+      read: isAdminOrCurrentUserWithRoles({ adminRoles, idField: 'id' }),
       create: isAdminWithRoles({ adminRoles }),
-      delete: isAdminOrCurrentUserWithRoles({ adminRoles, idField: "id" }),
+      delete: isAdminOrCurrentUserWithRoles({ adminRoles, idField: 'id' }),
       update: isAdminOrCurrentUserUpdateWithAllowedFields({
         allowedFields,
         adminRoles,
-        userSlug,
+        userSlug
       }),
-      ...(existingUserCollection?.access ?? {}),
+      ...(existingUserCollection?.access ?? {})
     },
     endpoints: [
-      ...(existingUserCollection?.endpoints
-        ? existingUserCollection.endpoints
-        : []),
-      ...(pluginOptions.disableDefaultPayloadAuth
-        ? [getLoginEndpoint(betterAuthOptions)]
-        : []),
-      getSetAdminRoleEndpoint(
-        pluginOptions,
-        pluginOptions.users?.slug ?? "users"
-      ),
+      ...(existingUserCollection?.endpoints ? existingUserCollection.endpoints : []),
+      getRefreshTokenEndpoint(userSlug),
+      getSetAdminRoleEndpoint(pluginOptions, userSlug),
       getGenerateInviteUrlEndpoint({
         roles: allRoleOptions,
-        baseUrl,
-        pluginOptions,
+        pluginOptions
       }),
-      getSendInviteUrlEndpoint(),
-      getSignupEndpoint(pluginOptions, betterAuthOptions),
-      getRefreshTokenEndpoint(userSlug),
-      getForgotPasswordEndpoint(),
-      getResetPasswordEndpoint(),
+      getSendInviteUrlEndpoint(pluginOptions),
+      getSignupEndpoint(pluginOptions, betterAuthOptions)
     ],
     hooks: {
       beforeChange: [
         ...(existingUserCollection?.hooks?.beforeChange ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [onVerifiedChange]),
+        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [onVerifiedChange])
       ],
       afterChange: [
         ...(existingUserCollection?.hooks?.afterChange ?? []),
@@ -146,15 +110,13 @@ export function buildUsersCollection({
           : [
               getSyncAccountHook({
                 userSlug,
-                accountSlug,
-              }),
-            ]),
+                accountSlug
+              })
+            ])
       ],
       beforeLogin: [
         ...(existingUserCollection?.hooks?.beforeLogin ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth
-          ? []
-          : [getBeforeLoginHook()]),
+        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [getBeforeLoginHook()])
       ],
       afterLogin: [
         ...(existingUserCollection?.hooks?.afterLogin ?? []),
@@ -163,224 +125,214 @@ export function buildUsersCollection({
           : [
               getAfterLoginHook({
                 sessionsCollectionSlug: sessionSlug,
-                usersCollectionSlug: userSlug,
-              }),
-            ]),
+                usersCollectionSlug: userSlug
+              })
+            ])
       ],
-      afterLogout: [
-        ...(existingUserCollection?.hooks?.afterLogout ?? []),
-        getAfterLogoutHook({ sessionsCollectionSlug: sessionSlug }),
-      ],
+      afterLogout: [...(existingUserCollection?.hooks?.afterLogout ?? []), getAfterLogoutHook({ sessionsCollectionSlug: sessionSlug })],
       beforeDelete: [
         ...(existingUserCollection?.hooks?.beforeDelete ?? []),
         getBeforeDeleteHook({
           accountsSlug: accountSlug,
           sessionsSlug: sessionSlug,
-          verificationsSlug: verificationsSlug,
-        }),
-      ],
+          verificationsSlug: verificationsSlug
+        })
+      ]
     },
     auth: {
-      ...(existingUserCollection &&
-      typeof existingUserCollection.auth === "object"
-        ? existingUserCollection.auth
-        : {}),
-      disableLocalStrategy: pluginOptions.disableDefaultPayloadAuth
-        ? true
-        : undefined,
+      ...(existingUserCollection && typeof existingUserCollection.auth === 'object' ? existingUserCollection.auth : {}),
+      disableLocalStrategy: pluginOptions.disableDefaultPayloadAuth ? true : undefined,
       ...(hasUsernamePlugin && {
         loginWithUsername: {
           allowEmailLogin: true,
           requireEmail: true,
-          requireUsername: false,
-        },
+          requireUsername: false
+        }
       }),
-      strategies: [betterAuthStrategy(userSlug)],
+      strategies: [betterAuthStrategy(userSlug)]
     },
     fields: [
       ...(existingUserCollection?.fields ?? []),
       {
-        name: "name",
-        type: "text",
-        label: "Name",
+        name: 'name',
+        type: 'text',
+        label: 'Name',
         saveToJWT: true,
         admin: {
-          description: "Users chosen display name",
-        },
+          description: 'Users chosen display name'
+        }
       },
       {
-        name: "email",
-        type: "text",
+        name: 'email',
+        type: 'text',
         required: true,
         unique: true,
         index: true,
-        label: "Email",
+        label: 'Email',
         admin: {
-          description: "The email of the user",
-        },
+          description: 'The email of the user'
+        }
       },
       {
-        name: "emailVerified",
-        type: "checkbox",
+        name: 'emailVerified',
+        type: 'checkbox',
         required: true,
         defaultValue: false,
         saveToJWT: true,
-        label: "Email Verified",
+        label: 'Email Verified',
         admin: {
-          description: "Whether the email of the user has been verified",
-        },
+          description: 'Whether the email of the user has been verified'
+        }
       },
       {
-        name: "image",
-        type: "text",
-        label: "Image",
+        name: 'image',
+        type: 'text',
+        label: 'Image',
         saveToJWT: true,
         admin: {
-          description: "The image of the user",
-        },
+          description: 'The image of the user'
+        }
       },
       {
-        name: "role",
-        label: "Role",
-        type: "select",
+        name: 'role',
+        label: 'Role',
+        type: 'select',
         required: true,
-        defaultValue: pluginOptions.users?.defaultRole ?? "user",
+        defaultValue: pluginOptions.users?.defaultRole ?? 'user',
         saveToJWT: true,
         options: allRoleOptions,
         admin: {
-          description: "The role of the user",
-        },
+          description: 'The role of the user'
+        }
       },
       ...getTimestampFields({
         saveUpdatedAtToJWT: false,
-        saveCreatedAtToJWT: false,
-      }),
-    ],
-  };
+        saveCreatedAtToJWT: false
+      })
+    ]
+  }
 
   if (baPlugins) {
     baPlugins.forEach((plugin) => {
       switch (plugin.id) {
-        case "two-factor":
+        case 'two-factor':
           usersCollection.fields.push({
-            name: "twoFactorEnabled",
-            type: "checkbox",
+            name: 'twoFactorEnabled',
+            type: 'checkbox',
             defaultValue: false,
-            label: "Two Factor Enabled",
+            label: 'Two Factor Enabled',
             admin: {
-              description:
-                "Whether the user has two factor authentication enabled",
-            },
-          });
-          break;
-        case "username":
+              description: 'Whether the user has two factor authentication enabled'
+            }
+          })
+          break
+        case 'username':
           usersCollection.fields.push(
             {
-              name: "username",
-              type: "text",
+              name: 'username',
+              type: 'text',
               unique: true,
               required: false, // TODO: decide if this should be required, will have to tell users they need to add ui for it.
-              label: "Username",
+              label: 'Username',
               admin: {
-                description: "The username of the user",
-              },
+                description: 'The username of the user'
+              }
             },
             {
-              name: "displayUsername",
-              type: "text",
+              name: 'displayUsername',
+              type: 'text',
               required: false,
-              label: "Display Username",
+              label: 'Display Username',
               admin: {
-                description: "The display username of the user",
-              },
+                description: 'The display username of the user'
+              }
             }
-          );
-          break;
-        case "anonymous":
+          )
+          break
+        case 'anonymous':
           usersCollection.fields.push({
-            name: "isAnonymous",
-            type: "checkbox",
+            name: 'isAnonymous',
+            type: 'checkbox',
             defaultValue: false,
-            label: "Is Anonymous",
+            label: 'Is Anonymous',
             admin: {
-              description: "Whether the user is anonymous.",
-            },
-          });
-          break;
-        case "phone-number":
+              description: 'Whether the user is anonymous.'
+            }
+          })
+          break
+        case 'phone-number':
           usersCollection.fields.push(
             {
-              name: "phoneNumber",
-              type: "text",
-              label: "Phone Number",
+              name: 'phoneNumber',
+              type: 'text',
+              label: 'Phone Number',
               admin: {
-                description: "The phone number of the user",
-              },
+                description: 'The phone number of the user'
+              }
             },
             {
-              name: "phoneNumberVerified",
-              type: "checkbox",
+              name: 'phoneNumberVerified',
+              type: 'checkbox',
               defaultValue: false,
-              label: "Phone Number Verified",
+              label: 'Phone Number Verified',
               admin: {
-                description:
-                  "Whether the phone number of the user has been verified",
-              },
+                description: 'Whether the phone number of the user has been verified'
+              }
             }
-          );
-          break;
-        case "admin":
+          )
+          break
+        case 'admin':
           usersCollection.fields.push(
             {
-              name: "banned",
-              type: "checkbox",
+              name: 'banned',
+              type: 'checkbox',
               defaultValue: false,
-              label: "Banned",
+              label: 'Banned',
               admin: {
-                description: "Whether the user is banned from the platform",
-              },
+                description: 'Whether the user is banned from the platform'
+              }
             },
             {
-              name: "banReason",
-              type: "text",
-              label: "Ban Reason",
+              name: 'banReason',
+              type: 'text',
+              label: 'Ban Reason',
               admin: {
-                description: "The reason for the ban",
-              },
+                description: 'The reason for the ban'
+              }
             },
             {
-              name: "banExpires",
-              type: "date",
-              label: "Ban Expires",
+              name: 'banExpires',
+              type: 'date',
+              label: 'Ban Expires',
               admin: {
-                description: "The date and time when the ban will expire",
-              },
+                description: 'The date and time when the ban will expire'
+              }
             }
-          );
-          break;
-        case "harmony-email":
+          )
+          break
+        case 'harmony-email':
           usersCollection.fields.push({
-            name: "normalizedEmail",
-            type: "text",
+            name: 'normalizedEmail',
+            type: 'text',
             required: false,
             unique: true,
             admin: {
               readOnly: true,
-              description: "The normalized email of the user",
-            },
-          });
-          break;
+              description: 'The normalized email of the user'
+            }
+          })
+          break
         default:
-          break;
+          break
       }
-    });
+    })
   }
 
   if (pluginOptions.users?.collectionOverrides) {
     usersCollection = pluginOptions.users.collectionOverrides({
-      collection: usersCollection,
-    });
+      collection: usersCollection
+    })
   }
 
-  return usersCollection;
+  return usersCollection
 }

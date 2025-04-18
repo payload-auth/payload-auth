@@ -1,1 +1,1 @@
-export const kinde = "kinde";
+export const kinde = 'kinde'

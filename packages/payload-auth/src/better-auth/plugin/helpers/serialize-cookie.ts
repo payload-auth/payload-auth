@@ -1,6 +1,6 @@
-import { subtle } from "uncrypto";
+import { subtle } from 'uncrypto'
 
-type CookiePrefixOptions = "host" | "secure";
+type CookiePrefixOptions = 'host' | 'secure'
 
 type CookieOptions = {
   /**
@@ -14,7 +14,7 @@ type CookieOptions = {
    * @example
    * `domain: "example.com"`
    */
-  domain?: string;
+  domain?: string
   /**
    * A lifetime of a cookie. Permanent cookies are deleted after the date specified in the
    * Expires attribute:
@@ -24,21 +24,21 @@ type CookieOptions = {
    * Expires date and time, they're relative to the client the cookie is being set on. If the
    * server is set to a different time, this could cause errors
    */
-  expires?: Date;
+  expires?: Date
   /**
    * Forbids JavaScript from accessing the cookie, for example, through the Document.cookie
    * property. Note that a cookie that has been created with HttpOnly will still be sent with
    * JavaScript-initiated requests, for example, when calling XMLHttpRequest.send() or fetch().
    * This mitigates attacks against cross-site scripting
    */
-  httpOnly?: boolean;
+  httpOnly?: boolean
   /**
    * Indicates the number of seconds until the cookie expires. A zero or negative number will
    * expire the cookie immediately. If both Expires and Max-Age are set, Max-Age has precedence.
    *
    * @example 604800 - 7 days
    */
-  maxAge?: number;
+  maxAge?: number
   /**
    * Indicates the path that must exist in the requested URL for the browser to send the Cookie
    * header.
@@ -47,12 +47,12 @@ type CookieOptions = {
    * "/docs"
    * // -> the request paths /docs, /docs/, /docs/Web/, and /docs/Web/HTTP will all match. the request paths /, /fr/docs will not match.
    */
-  path?: string;
+  path?: string
   /**
    * Indicates that the cookie is sent to the server only when a request is made with the https:
    * scheme (except on localhost), and therefore, is more resistant to man-in-the-middle attacks.
    */
-  secure?: boolean;
+  secure?: boolean
   /**
    * Controls whether or not a cookie is sent with cross-site requests, providing some protection
    * against cross-site request forgery attacks (CSRF).
@@ -70,14 +70,14 @@ type CookieOptions = {
    * None - Means that the browser sends the cookie with both cross-site and same-site requests.
    * The Secure attribute must also be set when setting this value.
    */
-  sameSite?: "Strict" | "Lax" | "None" | "strict" | "lax" | "none";
+  sameSite?: 'Strict' | 'Lax' | 'None' | 'strict' | 'lax' | 'none'
   /**
    * Indicates that the cookie should be stored using partitioned storage. Note that if this is
    * set, the Secure directive must also be set.
    *
    * @see https://developer.mozilla.org/en-US/docs/Web/Privacy/Privacy_sandbox/Partitioned_cookies
    */
-  partitioned?: boolean;
+  partitioned?: boolean
   /**
    * Cooke Prefix
    *
@@ -86,182 +86,146 @@ type CookieOptions = {
    *
    * `secure` must be set to true to use prefixes
    */
-  prefix?: CookiePrefixOptions;
-};
+  prefix?: CookiePrefixOptions
+}
 
-export const verifySignature = async (
-  base64Signature: string,
-  value: string,
-  secret: CryptoKey
-): Promise<boolean> => {
+export const verifySignature = async (base64Signature: string, value: string, secret: CryptoKey): Promise<boolean> => {
   try {
-    const signatureBinStr = atob(base64Signature);
-    const signature = new Uint8Array(signatureBinStr.length);
+    const signatureBinStr = atob(base64Signature)
+    const signature = new Uint8Array(signatureBinStr.length)
     for (let i = 0, len = signatureBinStr.length; i < len; i++) {
-      signature[i] = signatureBinStr.charCodeAt(i);
+      signature[i] = signatureBinStr.charCodeAt(i)
     }
-    return await subtle.verify(
-      algorithm,
-      secret,
-      signature,
-      new TextEncoder().encode(value)
-    );
+    return await subtle.verify(algorithm, secret, signature, new TextEncoder().encode(value))
   } catch (e) {
-    return false;
+    return false
   }
-};
+}
 
 const _serialize = (key: string, value: string, opt: CookieOptions = {}) => {
-  let cookie: string;
+  let cookie: string
 
-  if (opt?.prefix === "secure") {
-    cookie = `${`__Secure-${key}`}=${value}`;
-  } else if (opt?.prefix === "host") {
-    cookie = `${`__Host-${key}`}=${value}`;
+  if (opt?.prefix === 'secure') {
+    cookie = `${`__Secure-${key}`}=${value}`
+  } else if (opt?.prefix === 'host') {
+    cookie = `${`__Host-${key}`}=${value}`
   } else {
-    cookie = `${key}=${value}`;
+    cookie = `${key}=${value}`
   }
 
-  if (key.startsWith("__Secure-") && !opt.secure) {
-    opt.secure = true;
+  if (key.startsWith('__Secure-') && !opt.secure) {
+    opt.secure = true
   }
 
-  if (key.startsWith("__Host-")) {
+  if (key.startsWith('__Host-')) {
     if (!opt.secure) {
-      opt.secure = true;
+      opt.secure = true
     }
 
-    if (opt.path !== "/") {
-      opt.path = "/";
+    if (opt.path !== '/') {
+      opt.path = '/'
     }
 
     if (opt.domain) {
-      opt.domain = undefined;
+      opt.domain = undefined
     }
   }
 
-  if (opt && typeof opt.maxAge === "number" && opt.maxAge >= 0) {
+  if (opt && typeof opt.maxAge === 'number' && opt.maxAge >= 0) {
     if (opt.maxAge > 34560000) {
-      throw new Error(
-        "Cookies Max-Age SHOULD NOT be greater than 400 days (34560000 seconds) in duration."
-      );
+      throw new Error('Cookies Max-Age SHOULD NOT be greater than 400 days (34560000 seconds) in duration.')
     }
-    cookie += `; Max-Age=${Math.floor(opt.maxAge)}`;
+    cookie += `; Max-Age=${Math.floor(opt.maxAge)}`
   }
 
-  if (opt.domain && opt.prefix !== "host") {
-    cookie += `; Domain=${opt.domain}`;
+  if (opt.domain && opt.prefix !== 'host') {
+    cookie += `; Domain=${opt.domain}`
   }
 
   if (opt.path) {
-    cookie += `; Path=${opt.path}`;
+    cookie += `; Path=${opt.path}`
   }
 
   if (opt.expires) {
     if (opt.expires.getTime() - Date.now() > 34560000_000) {
-      throw new Error(
-        "Cookies Expires SHOULD NOT be greater than 400 days (34560000 seconds) in the future."
-      );
+      throw new Error('Cookies Expires SHOULD NOT be greater than 400 days (34560000 seconds) in the future.')
     }
-    cookie += `; Expires=${opt.expires.toUTCString()}`;
+    cookie += `; Expires=${opt.expires.toUTCString()}`
   }
 
   if (opt.httpOnly) {
-    cookie += "; HttpOnly";
+    cookie += '; HttpOnly'
   }
 
   if (opt.secure) {
-    cookie += "; Secure";
+    cookie += '; Secure'
   }
 
   if (opt.sameSite) {
-    cookie += `; SameSite=${opt.sameSite.charAt(0).toUpperCase() + opt.sameSite.slice(1)}`;
+    cookie += `; SameSite=${opt.sameSite.charAt(0).toUpperCase() + opt.sameSite.slice(1)}`
   }
 
   if (opt.partitioned) {
     if (!opt.secure) {
-      opt.secure = true;
+      opt.secure = true
     }
-    cookie += "; Partitioned";
+    cookie += '; Partitioned'
   }
 
-  return cookie;
-};
+  return cookie
+}
 
-const algorithm = { name: "HMAC", hash: "SHA-256" };
+const algorithm = { name: 'HMAC', hash: 'SHA-256' }
 
 const getCryptoKey = async (secret: string | BufferSource) => {
-  const secretBuf =
-    typeof secret === "string" ? new TextEncoder().encode(secret) : secret;
-  return await subtle.importKey("raw", secretBuf, algorithm, false, [
-    "sign",
-    "verify",
-  ]);
-};
+  const secretBuf = typeof secret === 'string' ? new TextEncoder().encode(secret) : secret
+  return await subtle.importKey('raw', secretBuf, algorithm, false, ['sign', 'verify'])
+}
 
-const makeSignature = async (
-  value: string,
-  secret: string | BufferSource
-): Promise<string> => {
-  const key = await getCryptoKey(secret);
-  const signature = await subtle.sign(
-    algorithm.name,
-    key,
-    new TextEncoder().encode(value)
-  );
+const makeSignature = async (value: string, secret: string | BufferSource): Promise<string> => {
+  const key = await getCryptoKey(secret)
+  const signature = await subtle.sign(algorithm.name, key, new TextEncoder().encode(value))
   // the returned base64 encoded signature will always be 44 characters long and end with one or two equal signs
-  return btoa(String.fromCharCode(...new Uint8Array(signature)));
-};
+  return btoa(String.fromCharCode(...new Uint8Array(signature)))
+}
 
-export const signCookieValue = async (
-  value: string,
-  secret: string | BufferSource
-) => {
-  const signature = await makeSignature(value, secret);
-  value = `${value}.${signature}`;
-  value = encodeURIComponent(value);
-  value = decodeURIComponent(value);
-  return value;
-};
+export const signCookieValue = async (value: string, secret: string | BufferSource) => {
+  const signature = await makeSignature(value, secret)
+  value = `${value}.${signature}`
+  value = encodeURIComponent(value)
+  value = decodeURIComponent(value)
+  return value
+}
 
-export const serializeCookie = (
-  key: string,
-  value: string,
-  opt?: CookieOptions
-) => {
-  value = encodeURIComponent(value);
-  return _serialize(key, value, opt);
-};
+export const serializeCookie = (key: string, value: string, opt?: CookieOptions) => {
+  value = encodeURIComponent(value)
+  return _serialize(key, value, opt)
+}
 
-export const serializeSignedCookie = async (
-  key: string,
-  value: string,
-  secret: string,
-  opt?: CookieOptions
-) => {
-  value = await signCookieValue(value, secret);
-  return _serialize(key, value, opt);
-};
+export const serializeSignedCookie = async (key: string, value: string, secret: string, opt?: CookieOptions) => {
+  value = await signCookieValue(value, secret)
+  return _serialize(key, value, opt)
+}
 
 export const getCookieKey = (key: string, prefix?: CookiePrefixOptions) => {
-  let finalKey = key;
+  let finalKey = key
   if (prefix) {
-    if (prefix === "secure") {
-      finalKey = "__Secure-" + key;
-    } else if (prefix === "host") {
-      finalKey = "__Host-" + key;
+    if (prefix === 'secure') {
+      finalKey = '__Secure-' + key
+    } else if (prefix === 'host') {
+      finalKey = '__Host-' + key
     } else {
-      return undefined;
+      return undefined
     }
   }
-  return finalKey;
-};
+  return finalKey
+}
 
 export function tryDecode(str: string) {
   try {
-    return str.includes("%") ? decodeURIComponent(str) : str;
+    return str.includes('%') ? decodeURIComponent(str) : str
   } catch {
-    return str;
+    return str
   }
 }
 
@@ -274,70 +238,65 @@ export function tryDecode(str: string) {
  * @param str the string representing a `Cookie` header value
  */
 export function parseCookies(str: string) {
-  if (typeof str !== "string") {
-    throw new TypeError("argument str must be a string");
+  if (typeof str !== 'string') {
+    throw new TypeError('argument str must be a string')
   }
 
-  const cookies: Map<string, string> = new Map();
+  const cookies: Map<string, string> = new Map()
 
-  let index = 0;
+  let index = 0
   while (index < str.length) {
-    const eqIdx = str.indexOf("=", index);
+    const eqIdx = str.indexOf('=', index)
 
     if (eqIdx === -1) {
-      break;
+      break
     }
 
-    let endIdx = str.indexOf(";", index);
+    let endIdx = str.indexOf(';', index)
 
     if (endIdx === -1) {
-      endIdx = str.length;
+      endIdx = str.length
     } else if (endIdx < eqIdx) {
-      index = str.lastIndexOf(";", eqIdx - 1) + 1;
-      continue;
+      index = str.lastIndexOf(';', eqIdx - 1) + 1
+      continue
     }
 
-    const key = str.slice(index, eqIdx).trim();
+    const key = str.slice(index, eqIdx).trim()
     if (!cookies.has(key)) {
-      let val = str.slice(eqIdx + 1, endIdx).trim();
+      let val = str.slice(eqIdx + 1, endIdx).trim()
       if (val.codePointAt(0) === 0x22) {
-        val = val.slice(1, -1);
+        val = val.slice(1, -1)
       }
-      cookies.set(key, tryDecode(val));
+      cookies.set(key, tryDecode(val))
     }
 
-    index = endIdx + 1;
+    index = endIdx + 1
   }
 
-  return cookies;
+  return cookies
 }
 
-export const getSignedCookie = async (
-  key: string,
-  secret: string,
-  headers: Headers,
-  prefix?: CookiePrefixOptions
-) => {
-  const finalKey = getCookieKey(key, prefix);
+export const getSignedCookie = async (key: string, secret: string, headers: Headers, prefix?: CookiePrefixOptions) => {
+  const finalKey = getCookieKey(key, prefix)
   if (!finalKey) {
-    return null;
+    return null
   }
-  const cookieHeader = headers.get("cookie");
-  const parsedCookies = cookieHeader ? parseCookies(cookieHeader) : undefined;
-  const value = parsedCookies?.get(finalKey);
+  const cookieHeader = headers.get('cookie')
+  const parsedCookies = cookieHeader ? parseCookies(cookieHeader) : undefined
+  const value = parsedCookies?.get(finalKey)
   if (!value) {
-    return null;
+    return null
   }
-  const signatureStartPos = value.lastIndexOf(".");
+  const signatureStartPos = value.lastIndexOf('.')
   if (signatureStartPos < 1) {
-    return null;
+    return null
   }
-  const signedValue = value.substring(0, signatureStartPos);
-  const signature = value.substring(signatureStartPos + 1);
-  if (signature.length !== 44 || !signature.endsWith("=")) {
-    return null;
+  const signedValue = value.substring(0, signatureStartPos)
+  const signature = value.substring(signatureStartPos + 1)
+  if (signature.length !== 44 || !signature.endsWith('=')) {
+    return null
   }
-  const secretKey = await getCryptoKey(secret);
-  const isVerified = await verifySignature(signature, signedValue, secretKey);
-  return isVerified ? signedValue : false;
-};
+  const secretKey = await getCryptoKey(secret)
+  const isVerified = await verifySignature(signature, signedValue, secretKey)
+  return isVerified ? signedValue : false
+}

@@ -11,13 +11,11 @@ interface ClerkWebhookEndpointOptions {
 /**
  * Creates a webhook endpoint for handling Clerk events
  */
-export const clerkWebhookEndpoint = ({ 
-  userSlug, 
-  options 
-}: ClerkWebhookEndpointOptions): Endpoint => {
+export const clerkWebhookEndpoint = ({ userSlug, options }: ClerkWebhookEndpointOptions): Endpoint => {
   const mappingFunction = options.users?.clerkToPayloadMapping // This is forced to be set by the plugin.ts
-  
-  if (!mappingFunction) { // This should never happen. Just to make TS happy.
+
+  if (!mappingFunction) {
+    // This should never happen. Just to make TS happy.
     throw new Error('Clerk to Payload mapping function is not set')
   }
 
@@ -27,29 +25,31 @@ export const clerkWebhookEndpoint = ({
     handler: async (req) => {
       try {
         const { payload } = req
-        
+
         if (!req.text) {
           throw new APIError('Invalid request body', 400)
         }
-        
+
         // Validate the webhook before reading the body
-        if (!await validateWebhook({
-          request: req,
-          secret: options.webhook?.svixSecret
-        })) {
+        if (
+          !(await validateWebhook({
+            request: req,
+            secret: options.webhook?.svixSecret
+          }))
+        ) {
           throw new APIError('Invalid webhook signature', 401)
         }
-        
+
         // Now we can read the body safely
         const rawBody = await req.text()
-        
+
         const webhookData = parseWebhookData(rawBody)
         const { type, data } = webhookData
-        
+
         if (options.enableDebugLogs) {
           console.log(`Processing Clerk webhook: ${type}`)
         }
-        
+
         switch (type) {
           case 'user.created':
             await handleUserCreated({
@@ -60,7 +60,7 @@ export const clerkWebhookEndpoint = ({
               options
             })
             break
-            
+
           case 'user.updated':
             await handleUserUpdated({
               data,
@@ -70,7 +70,7 @@ export const clerkWebhookEndpoint = ({
               options
             })
             break
-            
+
           case 'user.deleted':
             await handleUserDeleted({
               data,
@@ -79,22 +79,19 @@ export const clerkWebhookEndpoint = ({
               options
             })
             break
-            
+
           default:
             if (options.enableDebugLogs) {
               console.log(`Unhandled Clerk webhook type: ${type}`)
             }
         }
-        
-        return new Response(
-          JSON.stringify({ success: true }), 
-          { status: 200, headers: { 'Content-Type': 'application/json' } }
-        )
+
+        return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
       } catch (error) {
         console.error('Error processing Clerk webhook:', error)
         throw new APIError('Internal server error', 500)
       }
-    },
+    }
   }
 }
 

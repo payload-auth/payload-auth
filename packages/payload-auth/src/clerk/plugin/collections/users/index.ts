@@ -18,11 +18,11 @@ export function withClerkUsersCollection({
   collection = { slug: 'users' },
   options,
   apiBasePath = '/api',
-  adminBasePath = '/admin',
+  adminBasePath = '/admin'
 }: WithClerkUsersCollectionOptions): CollectionConfig {
   const userSlug = options.users?.slug ?? 'users'
   const adminRoles = options.users?.adminRoles ?? ['admin']
-  
+
   let clerkUserCollection: CollectionConfig = {
     ...collection,
     slug: userSlug,
@@ -37,26 +37,21 @@ export function withClerkUsersCollection({
           clientProps: {
             userCollectionSlug: userSlug,
             apiBasePath,
-            adminBasePath,
+            adminBasePath
           }
         }
       }
     },
-    fields: [
-      ...(collection.fields || []),
-      ...clerkUserFields,
-    ],
+    fields: [...(collection.fields || []), ...clerkUserFields],
     auth: {
       ...(typeof collection?.auth === 'object' ? collection.auth : {}),
-      strategies: [
-        clerkAuthStrategy(userSlug),
-      ],
+      strategies: [clerkAuthStrategy(userSlug)]
     },
     access: {
       read: getReadAccess({ adminRoles }),
       create: getCreateAccess({ adminRoles }),
       update: getUpdateAccess({ adminRoles }),
-      delete: getDeleteAccess({ adminRoles }),
+      delete: getDeleteAccess({ adminRoles })
     },
     endpoints: [
       ...(collection.endpoints || []),
@@ -67,10 +62,10 @@ export function withClerkUsersCollection({
       afterLogout: [
         async () => {
           const cookieStore = await cookies()
-          
+
           // Get all cookies and delete any with __session or __clerk in their name
           const allCookies = cookieStore.getAll()
-          allCookies.forEach(cookie => {
+          allCookies.forEach((cookie) => {
             if (cookie.name.includes('__session') || cookie.name.includes('__clerk')) {
               cookieStore.delete(cookie.name)
             }
@@ -81,10 +76,10 @@ export function withClerkUsersCollection({
   }
 
   if (options.users?.collectionOverrides) {
-    clerkUserCollection = options.users.collectionOverrides({ 
-      collection: clerkUserCollection 
+    clerkUserCollection = options.users.collectionOverrides({
+      collection: clerkUserCollection
     })
   }
 
   return clerkUserCollection
-} 
+}
