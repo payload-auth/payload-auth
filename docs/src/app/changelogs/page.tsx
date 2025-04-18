@@ -4,58 +4,66 @@ import { StarField } from "@/components/ui/star-field";
 import { MarkdownClient } from "./_comps/markdown.client";
 import { IconLink } from "@/components/ui/icon-link";
 import { Icons } from "@/components/ui/icons";
+import { betterFetch } from "@better-fetch/fetch";
 
 export default async function ChangelogsPage() {
-    // const { data: releases } = await betterFetch<
-    //   {
-    //     id: number;
-    //     tag_name: string;
-    //     name: string;
-    //     body: string;
-    //     html_url: string;
-    //     prerelease: boolean;
-    //     published_at: string;
-    //   }[]
-    // >("https://api.github.com/repos/forrestdevs/payload-better-auth/releases");
+  const { data: releases } = await betterFetch<
+    {
+      id: number;
+      tag_name: string;
+      name: string;
+      body: string;
+      html_url: string;
+      prerelease: boolean;
+      published_at: string;
+    }[]
+  >("https://api.github.com/repos/payload-auth/payload-auth/releases");
 
-    // const messages = releases
-    //   ?.filter((release) => !release.prerelease)
-    //   .map((release) => ({
-    //     tag: release.tag_name,
-    //     title: release.name,
-    //     content: getContent(release.body),
-    //     date: new Date(release.published_at).toLocaleDateString("en-US", {
-    //       year: "numeric",
-    //       month: "short",
-    //       day: "numeric",
-    //     }),
-    //     url: release.html_url,
-    //   }));
+  // console.log(releases);
 
-    // function getContent(content: string) {
-    //   const lines = content.split("\n");
-    //   const newContext = lines.map((line) => {
-    //     if (line.startsWith("- ")) {
-    //       const mainContent = line.split(";")[0];
-    //       const context = line.split(";")[2];
-    //       const mentions = context
-    //         ?.split(" ")
-    //         .filter((word) => word.startsWith("@"))
-    //         .map((mention) => {
-    //           const username = mention.replace("@", "");
-    //           const avatarUrl = `https://github.com/${username}.png`;
-    //           return `[![${mention}](${avatarUrl})](https://github.com/${username})`;
-    //         });
-    //       if (!mentions) {
-    //         return line;
-    //       }
-    //       // Remove &nbsp
-    //       return mainContent.replace(/&nbsp/g, "") + " – " + mentions.join(" ");
-    //     }
-    //     return line;
-    //   });
-    //   return newContext.join("\n");
-    // }
+  const messages = releases
+    ?.filter((release) => !release.prerelease)
+    .map((release) => ({
+      tag: release.tag_name,
+      title: release.name,
+      content: getContent(release.body),
+      date: new Date(release.published_at).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+      url: release.html_url,
+    }));
+
+  function getContent(content: string) {
+    // Remove the first part of the content before the first newline
+    const contentWithoutHeader = content.includes("\n")
+      ? content.substring(content.indexOf("\n") + 1)
+      : content;
+
+    const lines = contentWithoutHeader.split("\n");
+    const newContext = lines.map((line) => {
+      if (line.startsWith("- ")) {
+        const mainContent = line.split(";")[0];
+        const context = line.split(";")[2];
+        const mentions = context
+          ?.split(" ")
+          .filter((word) => word.startsWith("@"))
+          .map((mention) => {
+            const username = mention.replace("@", "");
+            const avatarUrl = `https://github.com/${username}.png`;
+            return `[![${mention}](${avatarUrl})](https://github.com/${username})`;
+          });
+        if (!mentions) {
+          return line;
+        }
+        // Remove &nbsp
+        return mainContent.replace(/&nbsp/g, "") + " – " + mentions.join(" ");
+      }
+      return line;
+    });
+    return newContext.join("\n");
+  }
 
   return (
     <div className="grid md:grid-cols-2 items-start">
@@ -96,7 +104,7 @@ export default async function ChangelogsPage() {
         <div className="absolute top-0 left-0 mb-2 w-2 h-full -translate-x-full bg-gradient-to-b from-black/10 dark:from-white/20 from-50% to-50% to-transparent bg-[length:100%_5px] bg-repeat-y"></div>
 
         <div className="max-w-2xl relative">
-          <MarkdownClient messages={[]} />
+          <MarkdownClient messages={messages} />
         </div>
       </div>
     </div>
