@@ -187,7 +187,8 @@ export default function AdminDashboard() {
                   <Label htmlFor="role">Role</Label>
                   <Select
                     value={newUser.role}
-                    onValueChange={(value: 'admin' | 'user') => setNewUser({ ...newUser, role: value as 'user' })}>
+                    onValueChange={(value: 'admin' | 'user') => setNewUser({ ...newUser, role: value as 'user' })}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
@@ -227,7 +228,8 @@ export default function AdminDashboard() {
                       <Button
                         id="expirationDate"
                         variant={'outline'}
-                        className={cn('w-full justify-start text-left font-normal', !banForm.expirationDate && 'text-muted-foreground')}>
+                        className={cn('w-full justify-start text-left font-normal', !banForm.expirationDate && 'text-muted-foreground')}
+                      >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {banForm.expirationDate ? new Date(banForm.expirationDate).toLocaleDateString() : <span>Pick a date</span>}
                       </Button>
@@ -285,14 +287,16 @@ export default function AdminDashboard() {
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDeleteUser(user.id)}
-                          disabled={isLoading?.startsWith('delete')}>
+                          disabled={isLoading?.startsWith('delete')}
+                        >
                           {isLoading === `delete-${user.id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash className="h-4 w-4" />}
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleRevokeSessions(user.id)}
-                          disabled={isLoading?.startsWith('revoke')}>
+                          disabled={isLoading?.startsWith('revoke')}
+                        >
                           {isLoading === `revoke-${user.id}` ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
                           ) : (
@@ -303,7 +307,8 @@ export default function AdminDashboard() {
                           variant="secondary"
                           size="sm"
                           onClick={() => handleImpersonateUser(user.id)}
-                          disabled={isLoading?.startsWith('impersonate')}>
+                          disabled={isLoading?.startsWith('impersonate')}
+                        >
                           {isLoading === `impersonate-${user.id}` ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
                           ) : (
@@ -348,7 +353,8 @@ export default function AdminDashboard() {
                               setIsBanDialogOpen(true)
                             }
                           }}
-                          disabled={isLoading?.startsWith('ban')}>
+                          disabled={isLoading?.startsWith('ban')}
+                        >
                           {isLoading === `ban-${user.id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : user.banned ? 'Unban' : 'Ban'}
                         </Button>
                       </div>

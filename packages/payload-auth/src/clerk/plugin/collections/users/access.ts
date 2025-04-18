@@ -7,7 +7,7 @@ const isAdmin = (req: any, adminRoles: string[]): boolean => {
 const isCurrentUser = (req: PayloadRequest) => {
   return {
     id: {
-      equals: req.user?.id,
+      equals: req.user?.id
     }
   }
 }
@@ -15,11 +15,11 @@ const isCurrentUser = (req: PayloadRequest) => {
 export const getReadAccess = ({ adminRoles }: { adminRoles: string[] }): Access => {
   return ({ req }) => {
     if (!req.user) return false
-    
+
     if (isAdmin(req, adminRoles)) {
       return true
     }
-    
+
     return isCurrentUser(req)
   }
 }

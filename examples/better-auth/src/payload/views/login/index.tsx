@@ -1,47 +1,37 @@
-import SignIn from "@/components/sign-in";
-import { Gutter } from "@payloadcms/ui";
-import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
-import { redirect } from "next/navigation";
-import type { AdminViewServerProps, ServerProps } from "payload";
+import SignIn from '@/components/sign-in'
+import { Gutter } from '@payloadcms/ui'
+import { RenderServerComponent } from '@payloadcms/ui/elements/RenderServerComponent'
+import { redirect } from 'next/navigation'
+import type { AdminViewServerProps, ServerProps } from 'payload'
 
-export default async function LoginView({
-  initPageResult,
-  params,
-  searchParams,
-}: AdminViewServerProps) {
-  const { locale, permissions, req } = initPageResult;
+export default async function LoginView({ initPageResult, params, searchParams }: AdminViewServerProps) {
+  const { locale, permissions, req } = initPageResult
   const {
     i18n,
     payload: { config },
     payload,
-    user,
-  } = req;
+    user
+  } = req
 
   const {
-    admin: {
-      components: { afterLogin, beforeLogin, graphics } = {},
-      user: userSlug,
-    },
-    routes: { admin },
-  } = config;
+    admin: { components: { afterLogin, beforeLogin, graphics } = {}, user: userSlug },
+    routes: { admin }
+  } = config
 
   const adminCount = await req.payload.count({
-    collection: "users",
+    collection: 'users',
     where: {
       role: {
-        equals: "admin",
-      },
-    },
-  });
+        equals: 'admin'
+      }
+    }
+  })
 
   // Filter out the first component from afterLogin array or set to undefined if not more than 1
-  const filteredAfterLogin =
-    Array.isArray(afterLogin) && afterLogin.length > 1
-      ? afterLogin.slice(1)
-      : undefined;
+  const filteredAfterLogin = Array.isArray(afterLogin) && afterLogin.length > 1 ? afterLogin.slice(1) : undefined
 
   if (adminCount.totalDocs === 0) {
-    redirect("/admin/create-first-admin");
+    redirect('/admin/create-first-admin')
   }
 
   return (
@@ -56,8 +46,8 @@ export default async function LoginView({
           payload,
           permissions,
           searchParams,
-          user: user ?? undefined,
-        } satisfies ServerProps,
+          user: user ?? undefined
+        } satisfies ServerProps
       })}
       {RenderServerComponent({
         Component: beforeLogin,
@@ -69,8 +59,8 @@ export default async function LoginView({
           payload,
           permissions,
           searchParams,
-          user: user ?? undefined,
-        } satisfies ServerProps,
+          user: user ?? undefined
+        } satisfies ServerProps
       })}
       <div className="flex flex-col items-center justify-center">
         <SignIn admin={true} />
@@ -85,9 +75,9 @@ export default async function LoginView({
           payload,
           permissions,
           searchParams,
-          user: user ?? undefined,
-        } satisfies ServerProps,
+          user: user ?? undefined
+        } satisfies ServerProps
       })}
     </Gutter>
-  );
+  )
 }

@@ -104,7 +104,8 @@ function SignInBox() {
               }
             }
           )
-        }}>
+        }}
+      >
         {loading ? <Loader2 size={16} className="animate-spin" /> : 'Login'}
       </Button>
       <Button
@@ -115,7 +116,8 @@ function SignInBox() {
             provider: 'google',
             callbackURL: '/dashboard'
           })
-        }}>
+        }}
+      >
         <svg xmlns="http://www.w3.org/2000/svg" width="0.98em" height="1em" viewBox="0 0 256 262">
           <path
             fill="#4285F4"
@@ -150,7 +152,8 @@ function SignInBox() {
               }
             }
           })
-        }}>
+        }}
+      >
         <Key size={16} />
         Sign-in with Passkey
       </Button>

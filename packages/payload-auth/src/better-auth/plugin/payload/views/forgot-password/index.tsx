@@ -1,47 +1,33 @@
-import React, { Fragment } from "react";
-import type { AdminViewServerProps } from "payload";
-import { ForgotPasswordClient } from "./client";
-import Link from "next/link";
-import { formatAdminURL } from "payload/shared";
-import { redirect } from "next/navigation";
-import { checkUsernamePlugin } from "../../../helpers/check-username-plugin";
-import type { SanitizedBetterAuthOptions } from "../../../types";
-import { Button, Translation } from "@payloadcms/ui";
-import { FormHeader } from "../../components/form-header";
+import React, { Fragment } from 'react'
+import { MinimalTemplate } from '@payloadcms/next/templates'
+import { Button, Translation } from '@payloadcms/ui'
+import Link from 'next/link'
+import type { AdminViewServerProps } from 'payload'
+import { formatAdminURL } from 'payload/shared'
+import type { SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
+import { FormHeader } from '@/shared/form/ui/header'
+import { ForgotPasswordForm } from './client'
+import { adminRoutes } from '@/better-auth/plugin/constants'
 
-type ForgotViewProps = AdminViewServerProps & {
-  betterAuthOptions: SanitizedBetterAuthOptions;
-};
+type ForgotPasswordProps = AdminViewServerProps & {
+  betterAuthOptions: SanitizedBetterAuthOptions
+}
 
-const ForgotView: React.FC<ForgotViewProps> = ({
-  initPageResult,
-  betterAuthOptions,
-}) => {
+const ForgotPassword: React.FC<ForgotPasswordProps> = ({ initPageResult }) => {
   const {
     req: {
       payload: {
-        collections,
         config: {
           admin: {
-            user: userSlug,
-            custom,
-            routes: { login, account: accountRoute },
+            routes: { account: accountRoute }
           },
-          routes: { admin: adminRoute },
-        },
+          routes: { admin: adminRoute }
+        }
       },
       user,
-      i18n,
-    },
-  } = initPageResult;
-
-  const loginRoute = custom?.betterAuth?.adminRoutes?.login ?? login;
-  const collectionConfig = collections?.[userSlug]?.config;
-  const { auth: authOptions } = collectionConfig;
-  const hasUsernamePlugin = checkUsernamePlugin(betterAuthOptions);
-  const loginWithUsername = authOptions.loginWithUsername;
-  const canLoginWithUsername =
-    (hasUsernamePlugin && loginWithUsername) ?? false;
+      i18n
+    }
+  } = initPageResult
 
   if (user) {
     return (
@@ -50,47 +36,45 @@ const ForgotView: React.FC<ForgotViewProps> = ({
           description={
             <Translation
               elements={{
-                "0": ({ children }) => (
+                '0': ({ children }) => (
                   <Link
                     href={formatAdminURL({
                       adminRoute,
-                      path: accountRoute,
+                      path: accountRoute
                     })}
                     prefetch={false}
                   >
                     {children}
                   </Link>
-                ),
+                )
               }}
               i18nKey="authentication:loggedInChangePassword"
               t={i18n.t}
             />
           }
-          heading={i18n.t("authentication:alreadyLoggedIn")}
+          heading={i18n.t('authentication:alreadyLoggedIn')}
         />
         <Button buttonStyle="secondary" el="link" size="large" to={adminRoute}>
-          {i18n.t("general:backToDashboard")}
+          {i18n.t('general:backToDashboard')}
         </Button>
       </Fragment>
-    );
+    )
   }
 
   return (
-    <section className="forgot-password template-minimal template-minimal--width-normal">
-      <div className="template-minimal__wrap">
-        <ForgotPasswordClient loginWithUsername={canLoginWithUsername} />
-        <Link
-          href={formatAdminURL({
-            adminRoute,
-            path: loginRoute,
-          })}
-          prefetch={false}
-        >
-          {i18n.t("authentication:backToLogin")}
-        </Link>
-      </div>
-    </section>
-  );
-};
+    <MinimalTemplate>
+      <ForgotPasswordForm />
+      <Link
+        href={formatAdminURL({
+          adminRoute,
+          path: adminRoutes.adminLogin as `/${string}`
+        })}
+        prefetch={false}
+      >
+        {i18n.t('authentication:backToLogin')}
+      </Link>
+    </MinimalTemplate>
+  )
+}
 
-export default ForgotView;
+export default ForgotPassword

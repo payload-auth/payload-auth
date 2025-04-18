@@ -1,189 +1,83 @@
-"use client";
+'use client'
 
-import React, { useState } from "react";
-import {
-  EmailField,
-  Form,
-  FormProps,
-  FormSubmit,
-  TextField,
-  toast,
-  useConfig,
-  useTranslation,
-} from "@payloadcms/ui";
-import { text, email } from "payload/shared";
-import { FormHeader } from "../../components/form-header";
-import { FormState, LoginWithUsernameOptions, PayloadRequest } from "payload";
+import React, { useMemo, useState, useTransition } from 'react'
+import { createAuthClient } from 'better-auth/react'
+// import { Form } from '@/shared/form/ui'
+// import { EmailField } from '@/shared/form/components/email'
+import { FormSubmit, Link, toast, useConfig, useTranslation } from '@payloadcms/ui'
+import { FormHeader } from '@/shared/form/ui/header'
+import type { FC, FormEvent, ChangeEvent, FocusEvent } from 'react'
+import { adminRoutes } from '@/better-auth/plugin/constants'
+import { Form, FormInputWrap } from '@/shared/form/ui'
+import { useAppForm } from '@/shared/form'
+import { emailRegex } from '@/shared/utils/regex'
+import { z } from 'zod'
 
-type ForgotPasswordFormProps = {
-  loginWithUsername?: false | LoginWithUsernameOptions;
-};
+type ForgotPasswordFormProps = {}
 
-const ForgotPasswordClient: React.FC<ForgotPasswordFormProps> = ({
-  loginWithUsername,
-}) => {
-  const { config } = useConfig();
-  const {
-    admin: { user: userSlug },
-    routes: { api },
-  } = config;
-  const { t } = useTranslation();
-  const [hasSubmitted, setHasSubmitted] = useState(false);
+export const ForgotPasswordForm: FC<ForgotPasswordFormProps> = () => {
+  const { t } = useTranslation()
+  const { config } = useConfig()
+  const adminRoute = config.routes.admin
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
+  const authClient = useMemo(() => createAuthClient(), [])
 
-  const handleResponse: FormProps["handleResponse"] = (
-    res,
-    successToast,
-    errorToast
-  ) => {
-    res
-      .json()
-      .then(() => {
-        setHasSubmitted(true);
-        successToast(t("general:submissionSuccessful"));
-      })
-      .catch(() => {
-        errorToast(
-          loginWithUsername
-            ? t("authentication:usernameNotValid")
-            : t("authentication:emailNotValid")
-        );
-      });
-  };
+  const forgotSchema = z.object({
+    email: z.string().refine(
+      (val) => emailRegex.test(val),
+      (val) => ({ message: val ? t('authentication:emailNotValid') || 'Invalid email' : t('validation:required') })
+    )
+  })
 
-  const initialState: FormState = loginWithUsername
-    ? {
-        username: {
-          initialValue: "",
-          valid: true,
-          value: undefined,
-        },
+  const form = useAppForm({
+    defaultValues: {
+      email: ''
+    },
+    onSubmit: async ({ value }) => {
+      const { email } = value
+      try {
+        const { data, error } = await authClient.forgetPassword({
+          email,
+          redirectTo: `${adminRoute}${adminRoutes.resetPassword}`
+        })
+        if (error) {
+          toast.error(error.message || t('authentication:emailNotValid') || 'Error')
+          return
+        }
+        if (data?.status) {
+          setHasSubmitted(true)
+          toast.success('Successfully sent reset email.')
+        } else {
+          toast.error(t('general:error') || 'Server Error')
+        }
+      } catch (e) {
+        toast.error(t('general:error') || 'An unexpected error occurred')
       }
-    : {
-        email: {
-          initialValue: "",
-          valid: true,
-          value: undefined,
-        },
-      };
+    },
+    validators: {
+      onSubmit: forgotSchema
+    }
+  })
 
   if (hasSubmitted) {
-    return (
-      <FormHeader
-        description={t("authentication:checkYourEmailForPasswordReset")}
-        heading={t("authentication:emailSent")}
-      />
-    );
+    return <FormHeader description={t('authentication:checkYourEmailForPasswordReset')} heading={t('authentication:emailSent')} />
   }
 
   return (
     <Form
-      action={`${api}/${userSlug}/forgot-password`}
-      handleResponse={handleResponse}
-      initialState={initialState}
-      method="POST"
+      onSubmit={(e) => {
+        e.preventDefault()
+        void form.handleSubmit()
+      }}
     >
-      <FormHeader
-        description={
-          loginWithUsername
-            ? t("authentication:forgotPasswordUsernameInstructions")
-            : t("authentication:forgotPasswordEmailInstructions")
-        }
-        heading={t("authentication:forgotPassword")}
-      />
-      {loginWithUsername ? (
-        <TextField
-          field={{
-            name: "username",
-            label: t("authentication:username"),
-            required: true,
-          }}
-          path="username"
-          validate={(value) =>
-            text(value, {
-              name: "username",
-              type: "text",
-              blockData: {},
-              data: {},
-              event: "onChange",
-              path: ["username"],
-              preferences: { fields: {} },
-              req: {
-                payload: {
-                  config,
-                },
-                t,
-              } as unknown as PayloadRequest,
-              required: true,
-              siblingData: {},
-            })
-          }
+      <FormHeader heading={t('authentication:forgotPassword')} description={t('authentication:forgotPasswordEmailInstructions')} />
+      <FormInputWrap>
+        <form.AppField
+          name="email"
+          children={(field) => <field.TextField type="text" className="email" autoComplete="email" label={t('general:email')} />}
         />
-      ) : (
-        <EmailField
-          field={{
-            name: "email",
-            admin: {
-              autoComplete: "email",
-              placeholder: "Email",
-            },
-            label: t("general:email"),
-            required: true,
-          }}
-          path="email"
-          validate={(value) =>
-            email(value, {
-              name: "email",
-              type: "email",
-              blockData: {},
-              data: {},
-              event: "onChange",
-              path: ["email"],
-              preferences: { fields: {} },
-              req: { payload: { config }, t } as unknown as PayloadRequest,
-              required: true,
-              siblingData: {},
-            })
-          }
-        />
-      )}
-      <FormSubmit size="large">{t("general:submit")}</FormSubmit>
+      </FormInputWrap>
+      <form.AppForm children={<form.Submit label={t('general:submit')} loadingLabel={t('general:loading')} />} />
     </Form>
-    // <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-    //   <h1>{t("authentication:forgotPassword")}</h1>
-    //   <p>{t("authentication:forgotPasswordEmailInstructions")}</p>
-    //   <form onSubmit={handleSubmit}>
-    //     <div className={`field-type email${emailError ? " error" : ""}`}>
-    //       <label className="field-label" htmlFor="field-email">
-    //         {t("general:email")}
-    //         <span className="required">*</span>
-    //       </label>
-    //       <div className="field-type__wrap">
-    //         {emailError && (
-    //           <Tooltip
-    //             alignCaret="right"
-    //             className="field-error"
-    //             delay={0}
-    //             staticPositioning
-    //           >
-    //             {emailError}
-    //           </Tooltip>
-    //         )}
-    //         <input
-    //           autoComplete="email"
-    //           id="field-email"
-    //           placeholder="Email"
-    //           onChange={handleEmailChange}
-    //           onBlur={(e) => validateEmail(e.target.value)}
-    //           type="email"
-    //           name="email"
-    //           value={email}
-    //         />
-    //       </div>
-    //     </div>
-
-    //   </form>
-    // </div>
-  );
-};
-
-export { ForgotPasswordClient };
+  )
+}

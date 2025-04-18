@@ -1,88 +1,113 @@
-"use client";
+'use client'
 
-import React, { useCallback } from "react";
-import {
-  ConfirmPasswordField,
-  PasswordField,
-  Form,
-  FormSubmit,
-  HiddenField,
-  useAuth,
-  useConfig,
-  useTranslation,
-} from "@payloadcms/ui";
-import { useRouter } from "next/navigation.js";
-import { formatAdminURL } from "payload/shared";
-import { FormState } from "payload";
+import React, { useMemo } from 'react'
+import { z } from 'zod'
+import { Form, FormInputWrap } from '@/shared/form/ui'
+import { FormHeader } from '@/shared/form/ui/header'
+import { useRouter } from 'next/navigation.js'
+import { formatAdminURL } from 'payload/shared'
+import { createAuthClient } from 'better-auth/react'
+import { useAuth, useConfig, useTranslation, toast } from '@payloadcms/ui'
+import { useAppForm } from '@/shared/form'
 
 type PasswordResetFormArgs = {
-  readonly token: string;
-};
+  readonly token: string
+  readonly minPasswordLength?: number
+  readonly maxPasswordLength?: number
+}
 
-const initialState: FormState = {
-  "confirm-password": {
-    initialValue: "",
-    valid: false,
-    value: "",
-  },
-  password: {
-    initialValue: "",
-    valid: false,
-    value: "",
-  },
-};
-
-export const PasswordResetClient: React.FC<PasswordResetFormArgs> = ({
-  token,
-}) => {
-  const { t } = useTranslation();
+export const PasswordResetForm: React.FC<PasswordResetFormArgs> = ({ token }) => {
+  const { t } = useTranslation()
+  const history = useRouter()
+  const { fetchFullUser } = useAuth()
+  const authClient = useMemo(() => createAuthClient(), [])
   const {
     config: {
-      serverURL,
       admin: {
-        user: userSlug,
-        routes: { login: loginRoute },
+        routes: { login: loginRoute }
       },
-      routes: { admin: adminRoute, api: apiRoute },
-    },
-  } = useConfig();
-  const history = useRouter();
-  const { fetchFullUser } = useAuth();
-  const onSuccess = useCallback(async () => {
-    const user = await fetchFullUser();
-    if (user) {
-      history.push(adminRoute);
-    } else {
-      history.push(
-        formatAdminURL({
-          adminRoute,
-          path: loginRoute,
-        })
-      );
+      routes: { admin: adminRoute }
     }
-  }, [adminRoute, fetchFullUser, history, loginRoute]);
+  } = useConfig()
+
+  const resetPasswordSchema = z
+    .object({
+      password: z.string().min(1, t('validation:required') || 'Password is required'),
+      confirmPassword: z.string().min(1, t('validation:required') || 'Confirm password is required')
+    })
+    .refine(
+      (data) => {
+        // Only validate matching passwords if both fields have values
+        if (data.password && data.confirmPassword) {
+          return data.password === data.confirmPassword
+        }
+        // If one or both fields are empty, validation will be handled by the min(1) validators
+        return true
+      },
+      {
+        message: t('fields:passwordsDoNotMatch') || 'Passwords do not match',
+        path: ['confirmPassword']
+      }
+    )
+
+  const form = useAppForm({
+    defaultValues: {
+      password: '',
+      confirmPassword: ''
+    },
+    onSubmit: async ({ value }) => {
+      const { password } = value
+      try {
+        const { data, error } = await authClient.resetPassword({
+          newPassword: password,
+          token
+        })
+        if (error) {
+          toast.error(error.message || 'Error resetting password')
+          return
+        }
+        if (data?.status) {
+          const user = await fetchFullUser()
+          if (user) {
+            history.push(adminRoute)
+          } else {
+            history.push(
+              formatAdminURL({
+                adminRoute,
+                path: loginRoute
+              })
+            )
+          }
+          toast.success(t('authentication:passwordResetSuccessfully'))
+        }
+      } catch (e) {
+        toast.error('An unexpected error occurred')
+      }
+    },
+    validators: {
+      onSubmit: resetPasswordSchema
+    }
+  })
 
   return (
     <Form
-      action={`${serverURL}${apiRoute}/${userSlug}/reset-password`}
-      initialState={initialState}
-      method="POST"
-      onSuccess={onSuccess}
-    >
-      <div className="inputWrap">
-        <PasswordField
-          field={{
-            name: "password",
-            label: t("authentication:newPassword"),
-            required: true,
-          }}
-          path="password"
+      onSubmit={(e) => {
+        e.preventDefault()
+        void form.handleSubmit()
+      }}>
+      <FormInputWrap>
+        <form.AppField
+          name="password"
+          children={(field) => <field.TextField type="password" className="password" label={t('authentication:newPassword')} required />}
         />
-        <ConfirmPasswordField />
-        <HiddenField path="token" value={token} />
-      </div>
-
-      <FormSubmit size="large">{t("authentication:resetPassword")}</FormSubmit>
+        <form.AppField
+          name="confirmPassword"
+          children={(field) => (
+            <field.TextField type="password" className="password" label={t('authentication:confirmPassword')} required />
+          )}
+        />
+      </FormInputWrap>
+      <form.AppForm children={<form.Submit label={t('authentication:resetPassword')} loadingLabel={t('general:loading')} />} />
     </Form>
-  );
-};
+  )
+}

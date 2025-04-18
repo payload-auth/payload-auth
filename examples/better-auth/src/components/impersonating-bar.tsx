@@ -35,7 +35,8 @@ export function ImpersonatingBar() {
           variant="secondary"
           size="sm"
           onClick={handleStopImpersonating}
-          className="cursor-pointer font-medium transition-colors duration-200 hover:bg-zinc-200 dark:hover:bg-zinc-800">
+          className="cursor-pointer font-medium transition-colors duration-200 hover:bg-zinc-200 dark:hover:bg-zinc-800"
+        >
           Stop Impersonating
         </Button>
       </div>

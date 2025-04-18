@@ -24,7 +24,15 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/shared/*": ["./src/shared/*"],
+      "@/better-auth/*": ["./src/better-auth/*"],
+      "@/clerk/*": ["./src/clerk/*"],
+      "@/authjs/*": ["./src/authjs/*"],
+      "@/kinde/*": ["./src/kinde/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts", "src/**/*.json"],
   "exclude": ["dist", "build", "node_modules"]

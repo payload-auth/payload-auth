@@ -54,6 +54,7 @@ export default buildConfig({
   secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
   cors: allowedOrigins,
   csrf: allowedOrigins,
+  serverURL: process.env.NEXT_PUBLIC_SERVER_URL,
   sharp,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts')

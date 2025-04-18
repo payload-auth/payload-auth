@@ -167,7 +167,8 @@ export function SignUp({ admin = false }: { admin?: boolean }) {
                     onClick={() => {
                       setImage(null)
                       setImagePreview(null)
-                    }}>
+                    }}
+                  >
                     <X className="h-4 w-4" />
                   </Button>
                 )}
@@ -220,7 +221,8 @@ export function SignUp({ admin = false }: { admin?: boolean }) {
               //   // image: image ? await convertImageToBase64(image) : "",
 
               // });
-            }}>
+            }}
+          >
             {loading ? <Loader2 size={16} className="mr-2 animate-spin" /> : null}
             {loading ? 'Creating account...' : 'Create an account'}
           </Button>
@@ -243,7 +245,8 @@ export function SignUp({ admin = false }: { admin?: boolean }) {
                       callbackURL: '/dashboard'
                     })
                   }}
-                  title="GitHub">
+                  title="GitHub"
+                >
                   <GitHubLogoIcon className="h-4 w-4" />
                 </Button>
                 <Button
@@ -256,7 +259,8 @@ export function SignUp({ admin = false }: { admin?: boolean }) {
                       callbackURL: '/dashboard'
                     })
                   }}
-                  title="Discord">
+                  title="Discord"
+                >
                   <DiscordLogoIcon className="h-4 w-4" />
                 </Button>
                 <Button
@@ -269,7 +273,8 @@ export function SignUp({ admin = false }: { admin?: boolean }) {
                       callbackURL: '/dashboard'
                     })
                   }}
-                  title="Google">
+                  title="Google"
+                >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 262">
                     <path
                       fill="#4285F4"
@@ -299,7 +304,8 @@ export function SignUp({ admin = false }: { admin?: boolean }) {
                       callbackURL: '/dashboard'
                     })
                   }}
-                  title="Microsoft">
+                  title="Microsoft"
+                >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
                     <path fill="currentColor" d="M2 3h9v9H2zm9 19H2v-9h9zM21 3v9h-9V3zm0 19h-9v-9h9z"></path>
                   </svg>
@@ -314,11 +320,13 @@ export function SignUp({ admin = false }: { admin?: boolean }) {
                       callbackURL: '/dashboard'
                     })
                   }}
-                  title="Twitch">
+                  title="Twitch"
+                >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
                     <path
                       fill="currentColor"
-                      d="M11.64 5.93h1.43v4.28h-1.43m3.93-4.28H17v4.28h-1.43M7 2L3.43 5.57v12.86h4.28V22l3.58-3.57h2.85L20.57 12V2m-1.43 9.29l-2.85 2.85h-2.86l-2.5 2.5v-2.5H7.71V3.43h11.43Z"></path>
+                      d="M11.64 5.93h1.43v4.28h-1.43m3.93-4.28H17v4.28h-1.43M7 2L3.43 5.57v12.86h4.28V22l3.58-3.57h2.85L20.57 12V2m-1.43 9.29l-2.85 2.85h-2.86l-2.5 2.5v-2.5H7.71V3.43h11.43Z"
+                    ></path>
                   </svg>
                 </Button>
                 <Button
@@ -331,11 +339,13 @@ export function SignUp({ admin = false }: { admin?: boolean }) {
                       callbackURL: '/dashboard'
                     })
                   }}
-                  title="Facebook">
+                  title="Facebook"
+                >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
                     <path
                       fill="currentColor"
-                      d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95"></path>
+                      d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95"
+                    ></path>
                   </svg>
                 </Button>
                 <Button
@@ -348,13 +358,15 @@ export function SignUp({ admin = false }: { admin?: boolean }) {
                       callbackURL: '/dashboard'
                     })
                   }}
-                  title="Twitter">
+                  title="Twitter"
+                >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 14 14">
                     <g fill="none">
                       <g clipPath="url(#primeTwitter0)">
                         <path
                           fill="currentColor"
-                          d="M11.025.656h2.147L8.482 6.03L14 13.344H9.68L6.294 8.909l-3.87 4.435H.275l5.016-5.75L0 .657h4.43L7.486 4.71zm-.755 11.4h1.19L3.78 1.877H2.504z"></path>
+                          d="M11.025.656h2.147L8.482 6.03L14 13.344H9.68L6.294 8.909l-3.87 4.435H.275l5.016-5.75L0 .657h4.43L7.486 4.71zm-.755 11.4h1.19L3.78 1.877H2.504z"
+                        ></path>
                       </g>
                       <defs>
                         <clipPath id="primeTwitter0">

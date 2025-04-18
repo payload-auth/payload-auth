@@ -1,7 +1,4 @@
-export const getSafeRedirect = (
-  redirectParam: string | string[],
-  fallback: string = '/',
-): string => {
+export const getSafeRedirect = (redirectParam: string | string[], fallback: string = '/'): string => {
   if (typeof redirectParam !== 'string') {
     return fallback
   }

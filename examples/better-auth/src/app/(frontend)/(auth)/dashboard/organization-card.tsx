@@ -78,7 +78,8 @@ export function OrganizationCard() {
                     organizationId: null
                   })
                   setOptimisticOrg(null)
-                }}>
+                }}
+              >
                 <p className="sm text-sm">Personal</p>
               </DropdownMenuItem>
               {organizations.data?.map((org) => (
@@ -98,7 +99,8 @@ export function OrganizationCard() {
                       organizationId: org.id.toString()
                     })
                     setOptimisticOrg(data)
-                  }}>
+                  }}
+                >
                   <p className="sm text-sm">{org.name}</p>
                 </DropdownMenuItem>
               ))}
@@ -146,7 +148,8 @@ export function OrganizationCard() {
                         organization.removeMember({
                           memberIdOrEmail: member.id.toString()
                         })
-                      }}>
+                      }}
+                    >
                       {currentMember?.id === member.id ? 'Leave' : 'Remove'}
                     </Button>
                   )}
@@ -182,7 +185,8 @@ export function OrganizationCard() {
                       initial="hidden"
                       animate="visible"
                       exit="exit"
-                      layout>
+                      layout
+                    >
                       <div>
                         <p className="text-sm">{invitation.email}</p>
                         <p className="text-muted-foreground text-xs">{invitation.role}</p>
@@ -215,7 +219,8 @@ export function OrganizationCard() {
                                 }
                               }
                             )
-                          }}>
+                          }}
+                        >
                           {isRevoking.includes(invitation.id.toString()) ? <Loader2 className="animate-spin" size={16} /> : 'Revoke'}
                         </Button>
                         <div>
@@ -345,7 +350,8 @@ function CreateOrganizationDialog() {
                   }
                 }
               )
-            }}>
+            }}
+          >
             {loading ? <Loader2 className="animate-spin" size={16} /> : 'Create'}
           </Button>
         </DialogFooter>
@@ -417,7 +423,8 @@ function InviteMemberDialog({
                   success: 'Member invited successfully',
                   error: (error) => error.error.message
                 })
-              }}>
+              }}
+            >
               Invite
             </Button>
           </DialogClose>
