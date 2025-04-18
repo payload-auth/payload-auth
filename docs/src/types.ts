@@ -7,6 +7,7 @@ export interface DocLink {
   href?: string;
   Icon: ((props?: SVGProps<any>) => ReactNode) | LucideIcon;
   isNew?: boolean;
+  isSingle?: boolean;
   list: {
     title: string;
     href: string;
