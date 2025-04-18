@@ -4,6 +4,7 @@ import { status as httpStatus } from 'http-status'
 import { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
 import { getRequestCollection } from '../../../../helpers/get-requst-collection'
 import { adminEndpoints, baseCollectionSlugs } from '@/better-auth/plugin/constants'
+
 const routeParamsSchema = z.object({
   token: z.string(),
   redirect: z.string().optional()
@@ -58,9 +59,11 @@ export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions, better
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
+            name: '',
             email: email,
             password: password,
-            username: username
+            ...(username ? { username: username } : {}),
+            callbackURL: routeParamsData.redirect ?? `${baseURL}${req.payload.config.routes.admin}`
           })
         })
         const ok = result.ok
@@ -82,7 +85,7 @@ export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions, better
         await req.payload.delete({
           collection: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
           where: {
-            token: { equals: routeParamsData.token }
+            token: { equals: invite.docs[0].token }
           },
           req
         })
@@ -93,12 +96,11 @@ export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions, better
 
         const sentEmailVerification = betterAuthOptions.emailVerification?.sendVerificationEmail !== undefined
 
+        let response: Response | null = null
+
         if (requireEmailVerification) {
-          if (shouldCommit) {
-            await commitTransaction(req)
-          }
           if (sentEmailVerification) {
-            return new Response(
+            response = new Response(
               JSON.stringify({
                 message: t('authentication:verifyYourEmail'),
                 sentEmailVerification,
@@ -107,7 +109,7 @@ export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions, better
               { status: httpStatus.UNAUTHORIZED }
             )
           } else {
-            return new Response(
+            response = new Response(
               JSON.stringify({
                 message: t('authentication:verifyYourEmail'),
                 sentEmailVerification,
@@ -116,16 +118,18 @@ export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions, better
               { status: httpStatus.UNAUTHORIZED }
             )
           }
+        } else {
+          response = new Response(
+            JSON.stringify({
+              message: t('authentication:passed'),
+              ...responseData
+            }),
+            {
+              status: 200
+            }
+          )
         }
-        const response = new Response(
-          JSON.stringify({
-            message: t('authentication:passed'),
-            ...responseData
-          }),
-          {
-            status: 200
-          }
-        )
+
         // Forward all Set-Cookie headers from the original response to our response
         const setCookieHeader = result.headers.get('set-cookie')
         if (setCookieHeader) {

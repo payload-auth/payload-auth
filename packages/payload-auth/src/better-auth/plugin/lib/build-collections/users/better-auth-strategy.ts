@@ -39,7 +39,6 @@ export function betterAuthStrategy(userSlug?: string): AuthStrategy {
           }
         }
       } catch (error) {
-        console.error(error)
         return { user: null }
       }
     }

@@ -39,6 +39,7 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
     routes: { admin: adminRoute }
   } = config
 
+  const invitationsCollection = pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations
   const adminRole = pluginOptions.users?.defaultAdminRole ?? defaults.adminRole
   const redirectUrl = getSafeRedirect(searchParams?.redirect ?? '', adminRoute)
 
@@ -55,31 +56,44 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
     }
   })
 
-  // Filter out the first component from afterLogin array or set to undefined if not more than 1
-  // This is because of the custom login redirect component, we don't want an infinite loop
-  const filteredAfterLogin = Array.isArray(afterLogin) && afterLogin.length > 1 ? afterLogin.slice(1) : undefined
-
-  const prefillAutoLogin = typeof config.admin?.autoLogin === 'object' && config.admin?.autoLogin.prefillOnly
-
-  const prefillUsername = prefillAutoLogin && typeof config.admin?.autoLogin === 'object' ? config.admin?.autoLogin.username : undefined
-
-  const prefillEmail = prefillAutoLogin && typeof config.admin?.autoLogin === 'object' ? config.admin?.autoLogin.email : undefined
-
-  const prefillPassword = prefillAutoLogin && typeof config.admin?.autoLogin === 'object' ? config.admin?.autoLogin.password : undefined
-
   if (adminCount.totalDocs === 0) {
-    //generate a secure invite and redirect to admin-signup
-    const token = crypto.randomUUID()
-    await req.payload.create({
-      collection: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
-      data: {
-        role: adminRole,
-        token
+    // Check if we already have an admin invitation
+    const existingInvitations = await req.payload.find({
+      collection: invitationsCollection,
+      where: {
+        role: {
+          equals: adminRole
+        }
       }
     })
+
+    let token
+
+    if (existingInvitations.totalDocs > 0) {
+      // Use existing token
+      token = existingInvitations.docs[0].token
+    } else {
+      // Generate a new secure invite token
+      token = crypto.randomUUID()
+      await req.payload.create({
+        collection: invitationsCollection,
+        data: {
+          role: adminRole,
+          token
+        }
+      })
+    }
+
     redirect(`${adminRoute}${adminRoutes.adminSignup}?token=${token}`)
   }
 
+  // Filter out the first component from afterLogin array or set to undefined if not more than 1
+  // This is because of the custom login redirect component, we don't want an infinite loop
+  const filteredAfterLogin = Array.isArray(afterLogin) && afterLogin.length > 1 ? afterLogin.slice(1) : undefined
+  const prefillAutoLogin = typeof config.admin?.autoLogin === 'object' && config.admin?.autoLogin.prefillOnly
+  const prefillUsername = prefillAutoLogin && typeof config.admin?.autoLogin === 'object' ? config.admin?.autoLogin.username : undefined
+  const prefillEmail = prefillAutoLogin && typeof config.admin?.autoLogin === 'object' ? config.admin?.autoLogin.email : undefined
+  const prefillPassword = prefillAutoLogin && typeof config.admin?.autoLogin === 'object' ? config.admin?.autoLogin.password : undefined
   const hasUsernamePlugin = checkUsernamePlugin(betterAuthOptions)
   const hasPasskeyPlugin = checkPasskeyPlugin(betterAuthOptions)
   const socialProviders = pluginOptions.adminComponents?.socialProviders ?? {}

@@ -5,9 +5,9 @@ import { usePathname } from 'next/navigation'
 import { Copy, Loader2, XIcon } from 'lucide-react'
 import type { Option } from '@payloadcms/ui/elements/ReactSelect'
 import { Button, Modal, Select, TextInput, toast, useConfig, useModal } from '@payloadcms/ui'
+import { adminEndpoints } from '@/better-auth/plugin/constants'
 
 import './index.scss'
-import { adminEndpoints, adminRoutes } from '@/better-auth/plugin/constants'
 
 const baseClass = 'admin-invite-modal'
 
@@ -36,6 +36,11 @@ const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
   if (pathname !== `${adminRoute}/collections/${userSlug}`) return null
 
   const handleGenerateInvite = async () => {
+    if (!role) {
+      toast.error('Please select a role first')
+      return null
+    }
+
     try {
       const url = `${serverURL}${apiRoute}/${userSlug}${adminEndpoints.generateInviteUrl}`
       const response = await fetch(url, {
@@ -57,6 +62,11 @@ const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
   }
 
   const handleSendEmail = async () => {
+    if (!role) {
+      toast.error('Please select a role first')
+      return
+    }
+
     if (!email) {
       toast.error('Please enter an email address')
       return
@@ -64,25 +74,36 @@ const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
 
     try {
       setIsLoading(true)
-      const response = await fetch(`${serverURL}${apiRoute}/${userSlug}${adminEndpoints.sendInvite}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, role }),
-        credentials: 'include'
-      })
-      if (!response.ok) throw new Error('Failed to send invite')
-      toast.success('Invite sent successfully')
-      setIsLoading(false)
-      toggleModal('admin-invite-modal')
+      let linkToCopy = inviteLink
+      if (!linkToCopy) {
+        linkToCopy = await handleGenerateInvite()
+      }
+      if (linkToCopy) {
+        const response = await fetch(`${serverURL}${apiRoute}/${userSlug}${adminEndpoints.sendInvite}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, link: linkToCopy }),
+          credentials: 'include'
+        })
+        if (!response.ok) throw new Error('Failed to send invite')
+        toast.success('Invite sent successfully')
+        handleToggleModal()
+      }
     } catch (error) {
       toast.error('Failed to send invite email')
+    } finally {
       setIsLoading(false)
     }
   }
 
   const handleCopyLink = async () => {
+    if (!role) {
+      toast.error('Please select a role first')
+      return
+    }
+
     try {
       setIsCopyLoading(true)
       let linkToCopy = inviteLink
@@ -134,7 +155,7 @@ const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
               </div>
 
               <div className={`${baseClass}__buttons`}>
-                <Button type="button" onClick={handleSendEmail} disabled={isLoading}>
+                <Button type="button" onClick={handleSendEmail} disabled={isLoading || !role || !email}>
                   {isLoading ? <Loader2 size={24} className="mr-2 animate-spin" /> : null}
                   Send Email
                 </Button>
@@ -145,8 +166,7 @@ const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
                   className={`${baseClass}__copy-button`}
                   type="button"
                   onClick={handleCopyLink}
-                  disabled={isCopyLoading}
-                >
+                  disabled={isCopyLoading || !role}>
                   {isCopyLoading ? <Loader2 size={20} strokeWidth={1.5} className="animate-spin" /> : <Copy size={20} strokeWidth={1.5} />}
                   Generate Link
                 </Button>

@@ -293,6 +293,13 @@ export interface BetterAuthPluginOptions {
      */
     generateInviteUrl?: GenerateAdminInviteUrlFn
     /**
+     * This will be used to send the admin invite email
+     *
+     * @param options Object containing payload, email and the url
+     * @returns The admin invite url
+     */
+    sendInviteEmail?: SendAdminInviteEmailFn
+    /**
      * Function to override the collection configuration
      *
      * This allows modifying the collection config after it has been built
@@ -314,6 +321,11 @@ export interface BetterAuthPluginOptions {
    */
   betterAuthOptions?: BetterAuthOptions
 }
+
+export type SendAdminInviteEmailFn = (options: { payload: Payload; email: string; url: string }) => Promise<
+  | { success: true; message?: string }
+  | { success: false; message: string }
+>
 
 export type GenerateAdminInviteUrlFn = (options: { payload: Payload; token: string }) => string
 

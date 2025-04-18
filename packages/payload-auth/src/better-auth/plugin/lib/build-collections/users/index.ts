@@ -95,7 +95,7 @@ export function buildUsersCollection({
         roles: allRoleOptions,
         pluginOptions
       }),
-      getSendInviteUrlEndpoint(),
+      getSendInviteUrlEndpoint(pluginOptions),
       getSignupEndpoint(pluginOptions, betterAuthOptions)
     ],
     hooks: {

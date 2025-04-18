@@ -121,7 +121,7 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
       }
     },
     validators: {
-      onBlur: signupSchema
+      onSubmit: signupSchema
     }
   })
 
@@ -135,8 +135,7 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
       onSubmit={(e) => {
         e.preventDefault()
         void form.handleSubmit()
-      }}
-    >
+      }}>
       <FormHeader heading={t('general:welcome')} style={{ textAlign: 'center' }} />
       <FormInputWrap className={baseClass}>
         <form.AppField
@@ -147,7 +146,13 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
           <form.AppField
             name="username"
             children={(field) => (
-              <field.TextField type="name" className="text" autoComplete="username" label={t('authentication:username')} required />
+              <field.TextField
+                type="name"
+                className="text"
+                autoComplete="username"
+                label={t('authentication:username')}
+                required={loginWithUsername.requireUsername ?? false}
+              />
             )}
           />
         )}
@@ -164,7 +169,15 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
       </FormInputWrap>
       <form.AppForm children={<form.Submit label={t('general:create')} loadingLabel={t('general:loading')} />} />
       {Object.keys(socialProviders || {}).length > 0 && (
-        <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+        <div
+          style={{
+            textAlign: 'center',
+            fontSize: '0.875rem',
+            textTransform: 'uppercase',
+            marginTop: '-.5rem',
+            color: 'var(--theme-elevation-450)',
+            marginBottom: '1.5rem'
+          }}>
           <span>Or sign up with</span>
         </div>
       )}
