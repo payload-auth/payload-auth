@@ -7,43 +7,38 @@ import AdminSocialProviderButtons from '../../components/admin-social-provider-b
 import { SocialProviders } from '../../../types'
 import { getSafeRedirect } from '../../utils/get-safe-redirect'
 import { toast } from '@payloadcms/ui'
-import { adminEndpoints } from '@/better-auth/plugin/constants'
 import { useAppForm } from '@/shared/form'
 import { emailRegex, usernameRegex } from '@/shared/utils/regex'
 import { FormHeader } from '@/shared/form/ui/header'
 import { Form, FormInputWrap } from '@/shared/form/ui'
 
 import type { LoginWithUsernameOptions } from 'payload'
-import { tryCatch } from '@/shared/utils/try-catch'
+import { createAuthClient } from 'better-auth/react'
+import { usernameClient } from 'better-auth/client/plugins'
 
 const baseClass = 'admin-signup'
 
 type AdminSignupClientProps = {
-  token: string
-  role: string
-  userSlug: string
+  adminInviteToken: string
   socialProviders: SocialProviders
   searchParams: { [key: string]: string | string[] | undefined }
   loginWithUsername: false | LoginWithUsernameOptions
 }
 
 export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
-  token,
-  userSlug,
-  role,
+  adminInviteToken,
   searchParams,
   socialProviders,
   loginWithUsername
 }) => {
   const {
     config: {
-      routes: { admin: adminRoute, api: apiRoute },
-      serverURL
+      routes: { admin: adminRoute }
     }
   } = useConfig()
   const { t } = useTranslation()
+  const authClient = createAuthClient({ plugins: [usernameClient()] })
   const redirectUrl = getSafeRedirect(searchParams?.redirect as string, adminRoute)
-  const newUserCallbackURL = `${serverURL}${apiRoute}/${userSlug}${adminEndpoints.setAdminRole}?role=${role}&token=${token}&redirect=${redirectUrl}`
   const [requireEmailVerification, setRequireEmailVerification] = useState<boolean>(false)
 
   const validationMap = {
@@ -70,15 +65,14 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
           )
         : z.string().optional(),
       password: z.string().min(1, t('validation:required') || 'Password is required'),
-      confirmPassword: z.string().min(1, t('validation:required') || 'Confirm password is required')
+      confirmPassword: z.string().min(1, t('validation:required') || 'Confirm password is required'),
+      adminInviteToken: z.string().nullable()
     })
     .refine(
       (data) => {
-        // Only validate matching passwords if both fields have values
         if (data.password && data.confirmPassword) {
           return data.password === data.confirmPassword
         }
-        // If one or both fields are empty, validation will be handled by the min(1) validators
         return true
       },
       {
@@ -92,32 +86,29 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
       email: '',
       ...(loginWithUsername ? { username: '' } : {}),
       password: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      adminInviteToken: adminInviteToken || null
     },
     onSubmit: async ({ value }) => {
-      const { email, username, password } = value
-      const { data, error } = await tryCatch(
-        fetch(`${serverURL}${apiRoute}/${userSlug}${adminEndpoints.signup}?token=${token}&redirect=${redirectUrl}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, username, password })
-        })
-      )
+      const { email, username, password, adminInviteToken } = value
+      const { data, error } = await authClient.signUp.email({
+        name: '',
+        email,
+        password,
+        callbackURL: redirectUrl,
+        ...(loginWithUsername && username ? { username } : {}),
+        ...(adminInviteToken ? { adminInviteToken } : {})
+      })
+
+      if((error && error.code === 'EMAIL_NOT_VERIFIED') || (!error && !data.token && !data?.user.emailVerified)) {
+        setRequireEmailVerification(true)
+        toast.success('Check your email for a verification link')
+        return
+      }
 
       if (error) {
         toast.error(error.message)
-      }
-
-      if (data) {
-        data.json().then((json: any) => {
-          if (json.requireEmailVerification) {
-            setRequireEmailVerification(true)
-            toast.message(json.message)
-          } else {
-            toast.success(json.message)
-            window.location.href = redirectUrl
-          }
-        })
+        return
       }
     },
     validators: {
@@ -126,7 +117,13 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
   })
 
   if (requireEmailVerification) {
-    return <FormHeader heading="Please verify your email" description={t('authentication:emailSent')} style={{ textAlign: 'center' }} />
+    return (
+      <FormHeader
+        heading="Please verify your email"
+        description={'Check your email for a verification link.'}
+        style={{ textAlign: 'center' }}
+      />
+    )
   }
 
   return (
@@ -136,8 +133,7 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
         e.preventDefault()
         void form.handleSubmit()
       }}>
-      <FormHeader heading={t('general:welcome')} style={{ textAlign: 'center' }} />
-      <FormInputWrap className={baseClass}>
+      <FormInputWrap className="login__form">
         <form.AppField
           name="email"
           children={(field) => <field.TextField type="email" className="email" autoComplete="email" label={t('general:email')} required />}
@@ -166,6 +162,7 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
             <field.TextField type="password" className="password" label={t('authentication:confirmPassword')} required />
           )}
         />
+        <form.AppField name="adminInviteToken" children={(field) => <field.HiddenField />} />
       </FormInputWrap>
       <form.AppForm children={<form.Submit label={t('general:create')} loadingLabel={t('general:loading')} />} />
       {Object.keys(socialProviders || {}).length > 0 && (
@@ -186,7 +183,7 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
         socialProviders={socialProviders}
         setLoading={() => {}}
         redirectUrl={redirectUrl}
-        newUserCallbackURL={newUserCallbackURL}
+        adminInviteToken={adminInviteToken}
       />
     </Form>
   )

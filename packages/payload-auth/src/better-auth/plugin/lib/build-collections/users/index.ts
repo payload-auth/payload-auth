@@ -12,11 +12,10 @@ import { getBeforeDeleteHook } from './hooks/before-delete'
 import { betterAuthStrategy } from './better-auth-strategy'
 import { getTimestampFields } from '../utils/get-timestamp-fields'
 import { getAllRoleOptions } from '../../../helpers/get-all-roles'
-import { getSignupEndpoint } from './endpoints/signup'
-import { getSetAdminRoleEndpoint } from './endpoints/set-admin-role'
 import { getGenerateInviteUrlEndpoint } from './endpoints/generate-invite-url'
 import { getSendInviteUrlEndpoint } from './endpoints/send-invite-url'
 import { checkUsernamePlugin } from '../../../helpers/check-username-plugin'
+import { getBeforeCreateUserHook } from './hooks/before-create-user'
 
 export function buildUsersCollection({
   incomingCollections,
@@ -31,6 +30,7 @@ export function buildUsersCollection({
   const accountSlug = pluginOptions.accounts?.slug ?? baseCollectionSlugs.accounts
   const sessionSlug = pluginOptions.sessions?.slug ?? baseCollectionSlugs.sessions
   const verificationsSlug = pluginOptions.verifications?.slug ?? baseCollectionSlugs.verifications
+  const adminInviteCollectionSlug = pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations
   const baPlugins = betterAuthOptions.plugins ?? null
   const adminRoles = pluginOptions.users?.adminRoles ?? ['admin']
   const allRoleOptions = getAllRoleOptions(pluginOptions)
@@ -90,17 +90,16 @@ export function buildUsersCollection({
     endpoints: [
       ...(existingUserCollection?.endpoints ? existingUserCollection.endpoints : []),
       getRefreshTokenEndpoint(userSlug),
-      getSetAdminRoleEndpoint(pluginOptions, userSlug),
       getGenerateInviteUrlEndpoint({
         roles: allRoleOptions,
         pluginOptions
       }),
-      getSendInviteUrlEndpoint(pluginOptions),
-      getSignupEndpoint(pluginOptions, betterAuthOptions)
+      getSendInviteUrlEndpoint(pluginOptions)
     ],
     hooks: {
       beforeChange: [
         ...(existingUserCollection?.hooks?.beforeChange ?? []),
+        getBeforeCreateUserHook(adminInviteCollectionSlug),
         ...(pluginOptions.disableDefaultPayloadAuth ? [] : [onVerifiedChange])
       ],
       afterChange: [

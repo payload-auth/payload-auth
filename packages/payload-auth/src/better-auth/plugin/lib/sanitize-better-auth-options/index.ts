@@ -1,16 +1,17 @@
+import { supportedBetterAuthPluginIds } from '@/better-auth/plugin/constants'
 import { configureAdminPlugin } from './admin-plugin'
 import { configureApiKeyPlugin } from './api-key-plugin'
+import { configureOidcPlugin } from './oidc-plugin'
 import { configureOrganizationPlugin } from './organizations-plugin'
 import { configurePasskeyPlugin } from './passkey-plugin'
 import { configureSsoPlugin } from './sso-plugin'
-import { configureOidcPlugin } from './oidc-plugin'
-import { supportedBetterAuthPluginIds } from '@/better-auth/plugin/constants'
 import { ensurePasswordSetBeforeUserCreate } from './utils/ensure-password-set-before-create'
-import { verifyPassword, hashPassword } from './utils/password'
+import { hashPassword, verifyPassword } from './utils/password'
 import { saveToJwtMiddleware } from './utils/save-to-jwt-middleware'
+import { configureAdminInviteHooks } from './utils/admin-invite-hooks'
 
-import type { Config, Payload } from 'payload'
 import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
+import type { Config, Payload } from 'payload'
 
 /**
  * Sanitizes the BetterAuth options
@@ -27,7 +28,8 @@ export function sanitizeBetterAuthOptions({
   const accountCollectionSlug = options.accounts?.slug ?? 'accounts'
   const sessionCollectionSlug = options.sessions?.slug ?? 'sessions'
   const verificationCollectionSlug = options.verifications?.slug ?? 'verifications'
-
+  const adminInviteCollectionSlug = options.adminInvitations?.slug ?? 'admin-invitations'
+  
   // Initialize with base configuration
   let res: SanitizedBetterAuthOptions = {
     ...baOptions,
@@ -82,6 +84,14 @@ export function sanitizeBetterAuthOptions({
       }
     }
   }
+
+  // Configure admin‑invite hooks (verification parsing, callback middleware, user create)
+  configureAdminInviteHooks({
+    sanitizedOptions: res,
+    verificationCollectionSlug,
+    adminInviteCollectionSlug,
+    payloadConfig: config
+  })
 
   // Ensure password is set before user creation
   if (!options.disableDefaultPayloadAuth) {
