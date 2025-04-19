@@ -18,6 +18,7 @@ type AdminSocialProviderButtonsProps = {
   hasPasskeySupport?: boolean
   redirectUrl?: string
   newUserCallbackURL?: string
+  adminInviteToken?: string
 }
 
 const baseClass = 'admin-social-provider-buttons'
@@ -28,6 +29,7 @@ const AdminSocialProviderButtons: React.FC<AdminSocialProviderButtonsProps> = ({
   setLoading,
   hasPasskeySupport,
   redirectUrl,
+  adminInviteToken,
   newUserCallbackURL
 }) => {
   const router = useRouter()
@@ -35,7 +37,7 @@ const AdminSocialProviderButtons: React.FC<AdminSocialProviderButtonsProps> = ({
   const providers = Object.keys(socialProviders ?? {}) as Array<keyof SocialProviders>
   const providerCount = providers.length
 
-  const renderProviderButton = (provider: keyof SocialProviders, showIconOnly: boolean) => {
+  const renderProviderButton = (provider: keyof SocialProviders, showIconOnly: boolean) => {  
     const providerConfig = socialProviders?.[provider]
     const Icon = Icons[provider as keyof typeof Icons]
     const providerName = provider.charAt(0).toUpperCase() + provider.slice(1)
@@ -49,12 +51,26 @@ const AdminSocialProviderButtons: React.FC<AdminSocialProviderButtonsProps> = ({
         onClick={async () => {
           setLoading(true)
           try {
-            await authClient.signIn.social({
+            const { data, error } = await authClient.signIn.social({
               provider: provider,
+              fetchOptions: {
+                query: {
+                  adminInviteToken: adminInviteToken || null
+                }
+              },
               requestSignUp: allowSignup ? true : !providerConfig?.disableSignUp,
-              callbackURL: redirectUrl,
+              // We set the admin invite token in the callback URL
+              // because better auth doesn't support catching their context in verification.create database hook.
+              // @see https://github.com/better-auth/better-auth/pull/2363
+              callbackURL: `${redirectUrl}${adminInviteToken ? '?adminInviteToken=' + adminInviteToken : ''}`,
               newUserCallbackURL: newUserCallbackURL
             })
+
+            if(error) {
+              toast.error(error.message)
+              return
+            }
+
           } catch (error: any) {
             toast.error(`Failed to sign in with ${providerName}`)
           } finally {

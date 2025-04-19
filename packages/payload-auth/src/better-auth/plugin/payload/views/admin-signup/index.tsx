@@ -16,7 +16,7 @@ import './index.scss'
 const baseClass = 'admin-signup'
 
 const searchParamsSchema = z.object({
-  token: z.string()
+  token: z.string().uuid()
 })
 
 type AdminSignupProps = AdminViewServerProps & {
@@ -50,86 +50,61 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
 
   const { success, data } = searchParamsSchema.safeParse(searchParams)
 
-  if (!success) {
-    return (
-      <MinimalTemplate className={baseClass}>
-        <div className={`${baseClass}__brand`}>
-          <Logo
-            i18n={i18n}
-            locale={locale}
-            params={params}
-            payload={req.payload}
-            permissions={permissions}
-            searchParams={searchParams}
-            user={user ?? undefined}
-          />
-        </div>
-        <FormHeader
-          style={{ textAlign: 'center' }}
-          heading="Invalid or expired token"
-          description="You need to get a new invite to sign up."
+  const renderInvalidInvite = () => (
+    <MinimalTemplate className={baseClass}>
+      <div className={`${baseClass}__brand`}>
+        <Logo
+          i18n={i18n}
+          locale={locale}
+          params={params}
+          payload={req.payload}
+          permissions={permissions}
+          searchParams={searchParams}
+          user={user ?? undefined}
         />
-      </MinimalTemplate>
-    )
-  }
+      </div>
+      <FormHeader
+        heading="Invalid or expired token"
+        description="You need to get a new invite to sign up."
+        style={{ textAlign: 'center' }}
+      />
+    </MinimalTemplate>
+  )
 
-  const invite = await req.payload.find({
+  if (!success) return renderInvalidInvite()
+
+  const { totalDocs: hasInvite } = await req.payload.count({
     collection: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
     where: { token: { equals: data.token } },
-    limit: 1
   })
 
-  if (invite.docs.length === 0) {
-    return (
-      <section className={`${baseClass} login template-minimal template-minimal--width-normal`}>
-        <div className="template-minimal__wrap">
-          <div className={`${baseClass}__brand`}>
-            <Logo
-              i18n={i18n}
-              locale={locale}
-              params={params}
-              payload={req.payload}
-              permissions={permissions}
-              searchParams={searchParams}
-              user={user ?? undefined}
-            />
-          </div>
-          <FormHeader heading={i18n.t('error:tokenInvalidOrExpired')} />
-        </div>
-      </section>
-    )
-  }
+  if (!hasInvite) return renderInvalidInvite()
 
-  const inviteRole = invite.docs[0].role as string
   const socialProviders = pluginOptions.adminComponents?.socialProviders ?? {}
   const hasUsernamePlugin = checkUsernamePlugin(betterAuthOptions)
   const loginWithUsername = collections?.[userSlug]?.config.auth.loginWithUsername
   const canLoginWithUsername = (hasUsernamePlugin && loginWithUsername) ?? false
 
   return (
-    <section className={`${baseClass} login template-minimal template-minimal--width-normal`}>
-      <div className="template-minimal__wrap">
-        <div className={`${baseClass}__brand`}>
-          <Logo
-            i18n={i18n}
-            locale={locale}
-            params={params}
-            payload={req.payload}
-            permissions={permissions}
-            searchParams={searchParams}
-            user={user ?? undefined}
-          />
-        </div>
-        <AdminSignupClient
-          token={data.token}
-          role={inviteRole}
-          userSlug={userSlug}
-          socialProviders={socialProviders}
-          searchParams={searchParams ?? {}}
-          loginWithUsername={canLoginWithUsername}
+    <MinimalTemplate className={baseClass}>
+      <div className={`${baseClass}__brand`}>
+        <Logo
+          i18n={i18n}
+          locale={locale}
+          params={params}
+          payload={req.payload}
+          permissions={permissions}
+          searchParams={searchParams}
+          user={user ?? undefined}
         />
       </div>
-    </section>
+      <AdminSignupClient
+        adminInviteToken={data.token}
+        socialProviders={socialProviders}
+        searchParams={searchParams ?? {}}
+        loginWithUsername={canLoginWithUsername}
+      />
+    </MinimalTemplate>
   )
 }
 

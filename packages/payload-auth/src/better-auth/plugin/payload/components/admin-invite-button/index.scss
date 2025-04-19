@@ -28,6 +28,11 @@
     align-items: center;
   }
 
+  .list-header:has(.collection-list__sub-header .admin-invite-button) .list-selection {
+    order: 2;
+    margin-left: 0;
+  }
+
   .list-header:has(.collection-list__sub-header .admin-invite-button) .collection-list__sub-header {
     margin-left: auto;
     display: flex;
