@@ -6,7 +6,7 @@ import type {
   InferPluginTypes
 } from 'better-auth/types'
 import type { BasePayload, CollectionConfig, Config, Endpoint, Payload, PayloadRequest } from 'payload'
-import { adminRoutes } from './constants'
+import { adminRoutes, loginMethods, socialProviders } from './constants'
 
 /**
  * BetterAuth options with the following caveats:
@@ -29,14 +29,9 @@ export interface BetterAuthOptions
 
 export interface SanitizedBetterAuthOptions extends Omit<BetterAuthOptionsType, 'database'> {}
 
-export type SocialProvider = keyof NonNullable<BetterAuthOptionsType['socialProviders']>
+export type SocialProvider = (typeof socialProviders)[number]
 
-export type SocialProviders = {
-  [key in SocialProvider]?: {
-    enabled?: boolean
-    disableSignUp?: boolean
-  }
-}
+export type LoginMethod = (typeof loginMethods)[number]
 
 export interface BetterAuthPluginOptions {
   /**
@@ -64,15 +59,13 @@ export interface BetterAuthPluginOptions {
    *
    * These components will be used to render the login, create first admin, and other auth-related views
    */
-  adminComponents?: {
+  admin?: {
     /**
-     * Custom social providers
+     * Override which social buttons are shown in the Payload Login / Sign Up view.
      *
-     * This will add social providers to the login view
-     *
-     * Make sure to include the provider in the betterAuthOptions.socialProviders array
+     * Provide an array of LoginMethod keys.
      */
-    socialProviders?: SocialProviders
+    loginMethods?: LoginMethod[]
   }
   /**
    * Debug options

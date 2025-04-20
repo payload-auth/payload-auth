@@ -15,7 +15,7 @@ type AdminInviteButtonProps = {
   roles: { label: string; value: string }[]
 }
 
-const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
+export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
   const [role, setRole] = useState<Option | undefined>(undefined)
   const [email, setEmail] = useState('')
   const [inviteLink, setInviteLink] = useState('')
@@ -178,5 +178,3 @@ const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
     </>
   )
 }
-
-export default AdminInviteButton

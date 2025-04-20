@@ -6,7 +6,7 @@ import { LogOutIcon, useConfig, useTranslation } from '@payloadcms/ui'
 
 const baseClass = 'nav'
 
-const LogoutButton: React.FC<{
+export const LogoutButton: React.FC<{
   tabIndex?: number
 }> = ({ tabIndex = 0 }) => {
   const { t } = useTranslation()
@@ -33,5 +33,3 @@ const LogoutButton: React.FC<{
     </a>
   )
 }
-
-export default LogoutButton
