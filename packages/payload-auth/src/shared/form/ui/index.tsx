@@ -48,11 +48,11 @@ type FormErrorProps = {
   className?: string
 }
 
-const FormErrors: React.FC<FormErrorProps> = ({ errors, className }) =>
+const FormError: React.FC<FormErrorProps> = ({ errors, className }) =>
   errors ? (
-    <Tooltip alignCaret="right" className={clsx('field-error', className)} delay={0} staticPositioning>
+    <div className={clsx('form-error', className)}>
       {errors.join(', ')}
-    </Tooltip>
+    </div>
   ) : null
 
 type FormProps = ComponentPropsWithoutRef<'form'>
@@ -80,4 +80,4 @@ const FieldInputWrap: React.FC<FieldInputWrapProps> = ({ children, className, ..
 )
 
 export type { FormFieldProps, FormLabelProps, FormErrorProps, FormProps, FormInputWrapProps }
-export { FormField, FormLabel, FormErrors, Form, FormInputWrap, FieldInputWrap }
+export { FormField, FormLabel, FormError, Form, FormInputWrap, FieldInputWrap }

@@ -93,6 +93,22 @@ export interface BetterAuthPluginOptions {
    */
   collectionAdminGroup?: string
   /**
+   * Require a valid admin invitation for any *public* sign‑up.
+   *
+   * – Applies to both email/password and social‑provider flows.  
+   * – Existing users can still sign in; admins can still create users via
+   *   the Payload UI or server‑side calls.  
+   * – Ignores provider‑level `disableImplicitSignUp` and `disableSignUp`:
+   *   with a valid invite the sign‑up proceeds, without one it's blocked.
+   * – Also sets `disableImplicitSignUp` for all providers, requiring `requestSignUp` to be true for all `authClient.signIn.social` calls when creating a new account with a provider.
+   *
+   * Enable when you want OAuth for internal/admin use only and no public
+   * registrations at all.
+   *
+   * @default false
+   */
+  requireAdminInviteForSignUp?: boolean
+  /**
    * Configure the Users collections:
    */
   users?: {

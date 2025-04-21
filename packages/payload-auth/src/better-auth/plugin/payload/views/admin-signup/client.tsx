@@ -67,7 +67,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
         fetch(`${serverURL}${apiRoute}/${userSlug}${adminEndpoints.signup}?token=${adminInviteToken}&redirect=${redirectUrl}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, username, password })
+          body: JSON.stringify({ email, username, password, adminInviteToken })
         }).then((res) => res.json())
       )
 
@@ -173,6 +173,7 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
         <AdminSocialProviderButtons
           isSignup={true}
           loginMethods={loginMethods}
+          adminInviteToken={adminInviteToken}
           setLoading={() => {}}
           redirectUrl={redirectUrl}
           newUserCallbackURL={setAdminRoleCallbackURL}

@@ -8,7 +8,7 @@ import type { LoginMethod } from '@/better-auth/plugin/types'
 import type { LoginWithUsernameOptions } from 'payload'
 import { adminRoutes } from '@/better-auth/plugin/constants'
 import { useAppForm } from '@/shared/form'
-import { Form, FormInputWrap } from '@/shared/form/ui'
+import { Form, FormError, FormInputWrap } from '@/shared/form/ui'
 import { FormHeader } from '@/shared/form/ui/header'
 import { createLoginSchema, isValidEmail } from '@/shared/form/validation'
 import { createAuthClient } from 'better-auth/client'
@@ -45,6 +45,7 @@ const LoginForm: React.FC<{
   const { config } = useConfig()
   const { t } = useTranslation()
   const { canLoginWithEmail, canLoginWithUsername } = getLoginOptions(loginWithUsername)
+  const searchParamError = searchParams?.error
   const redirectUrl = getSafeRedirect(searchParams?.redirect as string, config.routes.admin)
   const forgotPasswordUrl = formatAdminURL({
     adminRoute: config.routes.admin,
@@ -108,6 +109,7 @@ const LoginForm: React.FC<{
 
   return (
     <div className={`${baseClass}__wrapper`}>
+      {searchParamError && searchParamError === 'signup_disabled' && <FormError errors={['Sign up is disabled.']} />}
       <Form
         className={baseClass}
         onSubmit={e => {

@@ -27,7 +27,8 @@ export const AdminSocialProviderButtons: React.FC<AdminSocialProviderButtonsProp
   loginMethods,
   setLoading,
   redirectUrl,
-  newUserCallbackURL
+  newUserCallbackURL,
+  adminInviteToken
 }) => {
   const router = useRouter()
   const authClient = useMemo(() => createAuthClient({ plugins: [passkeyClient()] }), [])
@@ -104,6 +105,12 @@ export const AdminSocialProviderButtons: React.FC<AdminSocialProviderButtonsProp
               try {
                 const { error } = await authClient.signIn.social({
                   provider: loginMethod as SocialProvider,
+                  fetchOptions: {
+                    query: {
+                      ...(isSignup && { adminInviteToken })
+                    }
+                  },
+                  errorCallbackURL: window.location.href,
                   callbackURL: redirectUrl,
                   newUserCallbackURL,
                   ...(isSignup && { requestSignUp: true }),
