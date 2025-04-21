@@ -30,7 +30,6 @@ export const requireAdminInviteForSignUpMiddleware = async ({
       !(ctx.path === '/sign-in/social' && ctx.body?.requestSignUp) // not a social sign-in request with sign-up intent
     ) return;
     const adminInviteToken = ctx?.query?.adminInviteToken ?? ctx.body.adminInviteToken
-    console.log('adminInviteToken', adminInviteToken)
     if(!!pluginOptions.requireAdminInviteForSignUp && !z.string().uuid().safeParse(adminInviteToken).success) {
       throwUnauthorizedError()
       return;
@@ -46,7 +45,7 @@ export const requireAdminInviteForSignUpMiddleware = async ({
     })
     if(isValidAdminInvitation) {
       if(originalBefore) return originalBefore(ctx)
-      return;
+      return ctx;
     }
     throwUnauthorizedError()
   })
