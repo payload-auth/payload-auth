@@ -80,8 +80,8 @@
     "build:types": "tsc --project tsconfig.json"
   },
   "peerDependencies": {
-    "@payloadcms/ui": "^3.34.0",
-    "payload": "^3.34.0",
+    "@payloadcms/ui": "3.35.1",
+    "payload": "^3.35",
     "next": "^15.3.0",
     "react": "^19",
     "react-dom": "^19",

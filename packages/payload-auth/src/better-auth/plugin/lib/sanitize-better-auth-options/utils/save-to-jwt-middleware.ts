@@ -41,9 +41,9 @@ export function saveToJwtMiddleware({
     if (filteredSessionData) {
       await setCookieCache(ctx, filteredSessionData as any)
     }
-    if(typeof originalAfter === 'function') {
+    if (typeof originalAfter === 'function') {
       return originalAfter(ctx)
     }
-    return;
+    return
   })
 }
