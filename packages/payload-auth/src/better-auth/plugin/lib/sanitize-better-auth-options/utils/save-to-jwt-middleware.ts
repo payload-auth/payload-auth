@@ -44,6 +44,6 @@ export function saveToJwtMiddleware({
     if(typeof originalAfter === 'function') {
       return originalAfter(ctx)
     }
-    return ctx;
+    return;
   })
 }
