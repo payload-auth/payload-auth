@@ -6,7 +6,7 @@ import type {
   InferPluginTypes
 } from 'better-auth/types'
 import type { BasePayload, CollectionConfig, Config, Endpoint, Payload, PayloadRequest } from 'payload'
-import { adminRoutes } from './constants'
+import { adminRoutes, loginMethods, socialProviders } from './constants'
 
 /**
  * BetterAuth options with the following caveats:
@@ -29,14 +29,9 @@ export interface BetterAuthOptions
 
 export interface SanitizedBetterAuthOptions extends Omit<BetterAuthOptionsType, 'database'> {}
 
-export type SocialProvider = keyof NonNullable<BetterAuthOptionsType['socialProviders']>
+export type SocialProvider = (typeof socialProviders)[number]
 
-export type SocialProviders = {
-  [key in SocialProvider]?: {
-    enabled?: boolean
-    disableSignUp?: boolean
-  }
-}
+export type LoginMethod = (typeof loginMethods)[number]
 
 export interface BetterAuthPluginOptions {
   /**
@@ -64,15 +59,13 @@ export interface BetterAuthPluginOptions {
    *
    * These components will be used to render the login, create first admin, and other auth-related views
    */
-  adminComponents?: {
+  admin?: {
     /**
-     * Custom social providers
+     * Override which social buttons are shown in the Payload Login / Sign Up view.
      *
-     * This will add social providers to the login view
-     *
-     * Make sure to include the provider in the betterAuthOptions.socialProviders array
+     * Provide an array of LoginMethod keys.
      */
-    socialProviders?: SocialProviders
+    loginMethods?: LoginMethod[]
   }
   /**
    * Debug options
@@ -99,6 +92,22 @@ export interface BetterAuthPluginOptions {
    * @default "Auth"
    */
   collectionAdminGroup?: string
+  /**
+   * Require a valid admin invitation for any *public* sign‑up.
+   *
+   * – Applies to both email/password and social‑provider flows.  
+   * – Existing users can still sign in; admins can still create users via
+   *   the Payload UI or server‑side calls.  
+   * – Ignores provider‑level `disableImplicitSignUp` and `disableSignUp`:
+   *   with a valid invite the sign‑up proceeds, without one it's blocked.
+   * – Also sets `disableImplicitSignUp` for all providers, requiring `requestSignUp` to be true for all `authClient.signIn.social` calls when creating a new account with a provider.
+   *
+   * Enable when you want OAuth for internal/admin use only and no public
+   * registrations at all.
+   *
+   * @default false
+   */
+  requireAdminInviteForSignUp?: boolean
   /**
    * Configure the Users collections:
    */

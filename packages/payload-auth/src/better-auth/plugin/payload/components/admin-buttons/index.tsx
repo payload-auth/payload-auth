@@ -12,7 +12,7 @@ type AdminButtonsProps = {
   userSlug: string
 }
 
-const AdminButtons: React.FC<AdminButtonsProps> = () => {
+export const AdminButtons: React.FC<AdminButtonsProps> = () => {
   const router = useRouter()
   const { id } = useDocumentInfo()
   const isBanned = useFormFields(([fields]) => fields.banned)
@@ -113,5 +113,3 @@ const AdminButtons: React.FC<AdminButtonsProps> = () => {
     </Fragment>
   )
 }
-
-export default AdminButtons

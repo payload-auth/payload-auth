@@ -1,3 +1,34 @@
+export const socialProviders = [
+  'apple',
+  'discord',
+  'facebook',
+  'github',
+  'google',
+  'linkedin',
+  'microsoft',
+  'spotify',
+  'tiktok',
+  'twitter',
+  'twitch',
+  'zoom',
+  'gitlab',
+  'roblox',
+  'vk',
+  'kick',
+  'reddit'
+] as const
+
+export const loginMethods = [
+  'emailPassword',
+  'magicLink',
+  'emailOTP',
+  'phonePassword',
+  'phoneOTP',
+  'phoneMagicLink',
+  'passkey',
+  ...socialProviders
+] as const
+
 export const supportedBetterAuthPluginIds = {
   harmonyEmail: 'harmony-email',
   harmonyPhoneNumber: 'harmony-phone-number',
