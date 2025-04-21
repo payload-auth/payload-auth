@@ -12,8 +12,9 @@ import { Form, FormError, FormInputWrap } from '@/shared/form/ui'
 import { FormHeader } from '@/shared/form/ui/header'
 import { createLoginSchema, isValidEmail } from '@/shared/form/validation'
 import { createAuthClient } from 'better-auth/client'
-import { usernameClient } from 'better-auth/client/plugins'
+import { usernameClient, twoFactorClient } from 'better-auth/client/plugins'
 import { formatAdminURL, getLoginOptions } from 'payload/shared'
+import { useRouter } from 'next/navigation'
 
 type AdminLoginClientProps = {
   loginMethods: LoginMethod[]
@@ -43,15 +44,30 @@ const LoginForm: React.FC<{
   loginWithUsername
 }) => {
   const { config } = useConfig()
+  const router = useRouter()
+  const adminRoute = config?.routes?.admin || '/admin'
   const { t } = useTranslation()
   const { canLoginWithEmail, canLoginWithUsername } = getLoginOptions(loginWithUsername)
   const searchParamError = searchParams?.error
-  const redirectUrl = getSafeRedirect(searchParams?.redirect as string, config.routes.admin)
+  const redirectUrl = getSafeRedirect(searchParams?.redirect as string, adminRoute)
   const forgotPasswordUrl = formatAdminURL({
-    adminRoute: config.routes.admin,
+    adminRoute: adminRoute,
     path: adminRoutes?.forgotPassword as `/${string}`
   })
-  const authClient = useMemo(() => createAuthClient({ plugins: [usernameClient()] }), [])
+  const authClient = useMemo(() =>
+    createAuthClient({
+      plugins: [
+        usernameClient(),
+        twoFactorClient({
+          onTwoFactorRedirect() {
+            console.log('redirectUrl', adminRoute, `${adminRoute}/two-factor-verify?redirect=${redirectUrl}`)
+            router.push(`${adminRoute}/two-factor-verify?redirect=${redirectUrl}`)
+          }
+        })
+      ]
+    }),
+    []
+  )
   const loginType = useMemo(() => {
     if (canLoginWithEmail && canLoginWithUsername && hasUsernamePlugin) return 'emailOrUsername'
     if (canLoginWithUsername && hasUsernamePlugin) return 'username'
