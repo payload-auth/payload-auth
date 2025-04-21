@@ -167,14 +167,6 @@ export const betterAuthPluginOptions: BetterAuthPluginOptions = {
     enableDebugLogs: false
   },
   disableDefaultPayloadAuth: true,
-  adminComponents: {
-    socialProviders: {
-      google: {
-        enabled: true,
-        disableSignUp: true
-      }
-    }
-  },
   hidePluginCollections: true,
   users: {
     slug: 'users',
