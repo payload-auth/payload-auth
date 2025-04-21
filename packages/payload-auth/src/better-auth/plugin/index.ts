@@ -85,7 +85,17 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
             resetPassword: {
               path: adminRoutes.resetPassword,
               Component: {
-                path: 'payload-auth/better-auth/plugin/rsc#ResetPassword'
+                path: 'payload-auth/better-auth/plugin/rsc#ResetPassword',
+              }
+            },
+            twoFactorVerify: {
+              path: adminRoutes.twoFactorVerify,
+              Component: {
+                path: 'payload-auth/better-auth/plugin/rsc#TwoFactorVerify',
+                serverProps: {
+                  payloadConfig: config,
+                  verificationSlug: pluginOptions.verifications?.slug
+                }
               }
             },
             ...(checkTwoFactorPlugin(betterAuthOptions) && {
