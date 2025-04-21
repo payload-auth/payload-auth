@@ -1,0 +1,77 @@
+---
+title: Admin Invitations
+description: Learn how to use admin invitations in Better Auth.
+---
+
+# Admin Invitations
+
+Admin invitations are a feature that allows you to invite users to the admin panel. This is useful for teams that want to control access to the admin panel.
+
+## How to use admin invitations
+
+To use admin invitations, you need to enable the `adminInvitations` option in the `auth` configuration.
+
+```ts
+export default defineConfig({
+  auth: {
+    adminInvitations: true,
+  },
+});
+```
+
+This will enable the admin invitations feature and allow you to invite users to the admin panel.
+
+## How to invite users to the admin panel
+
+To invite users to the admin panel, you need to use the `inviteUser` function.
+
+```ts
+const user = await inviteUser({
+  email: 'test@example.com',
+  role: 'admin',
+});
+```
+
+This will invite a user to the admin panel with the `admin` role.
+
+## How to accept an invitation
+
+To accept an invitation, you need to use the `acceptInvitation` function.
+
+
+
+```ts
+const user = await acceptInvitation({
+  email: 'test@example.com',
+  password: 'password',
+});
+```
+
+This will accept the invitation and log the user in.
+
+## How to verify an invitation
+
+To verify an invitation, you need to use the `verifyInvitation` function.
+
+
+
+```ts
+const user = await verifyInvitation({
+  email: 'test@example.com',
+  token: 'token',
+});
+```
+
+This will verify the invitation and return the user.
+
+## How to revoke an invitation
+
+To revoke an invitation, you need to use the `revokeInvitation` function.
+
+
+
+```ts
+const user = await revokeInvitation({
+  email: 'test@example.com',
+});
+``` 

@@ -1,0 +1,6 @@
+{
+  "title": "Clerk",
+  "description": "Clerk plugin for Payload Auth",
+  "root": true,
+  "pages": ["---Getting Started---", "index"]
+}

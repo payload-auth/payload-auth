@@ -1,0 +1,27 @@
+---
+title: Disable Local Strategy
+description: Learn how to disable the local strategy in Better Auth.
+---
+
+# Disable Local Strategy
+
+By default, Better Auth will use the local strategy for authentication. However, you can disable the local strategy by setting the `disableLocalStrategy` option to `true`.
+
+```ts
+export default defineConfig({
+  auth: {
+    disableLocalStrategy: true,
+  },
+});
+```
+
+This will disable the local strategy and only use the auth provider's strategy.
+
+## Example
+
+```ts
+export default defineConfig({
+  auth: { disableLocalStrategy: true },
+});
+```
+    

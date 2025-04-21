@@ -1,0 +1,28 @@
+{
+  "title": "Better Auth",
+  "description": "The official content source",
+  "root": true,
+  "pages": [
+    "---Getting Started---",
+    "index",
+    "installation",
+    "basic-usage",
+    "---Configuration---",
+    "disable-local-strat",
+    "admin-invitations",
+    "social-sign-on",
+    "---Adapter---",
+    "philosophy",
+    "options",
+    "---Reference---",
+    "email-password",
+    "social-sign-on",
+    "magic-link",
+    "passwordless",
+    "---Examples---",
+    "astro",
+    "nextjs",
+    "nuxt",
+    "remix"
+  ]
+}

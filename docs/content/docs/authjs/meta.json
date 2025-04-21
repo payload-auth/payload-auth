@@ -1,0 +1,6 @@
+{
+  "title": "Auth.js",
+  "description": "The official content source",
+  "root": true,
+  "pages": ["---Getting Started---", "index"]
+}

@@ -1,0 +1,40 @@
+---
+title: Installation
+description: Installation instructions for Payload Auth.
+---
+
+## Installation
+
+Install the package using your preferred package manager.
+
+```package-install
+npm i payload-auth
+```
+
+## Usage
+
+After installation, you can import any of the authentication plugins from their respective subpaths. 
+
+<Callout>Each plugin is organized in its own subpath for better tree-shaking and to keep your bundle size optimized.</Callout>
+
+### Importing Plugins
+
+```ts
+import { betterAuthPlugin } from 'payload-auth/better-auth'
+import { clerkPlugin } from 'payload-auth/clerk'
+import { authjsPlugin } from 'payload-auth/authjs'
+import { kindePlugin } from 'payload-auth/kinde'
+```
+
+### Configuration
+
+Each authentication plugin has its own configuration options and setup process. Please refer to the specific documentation for the plugin you want to use:
+
+- [Better Auth Configuration](/docs/better-auth/installation)
+- [Clerk Configuration](/docs/clerk/installation)
+- [Auth.js Configuration](/docs/authjs/installation)
+- [Kinde Configuration](/docs/kinde/installation)
+
+
+
+

@@ -1,139 +1,92 @@
-"use client";
+'use client'
 
-import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
-import { Suspense, useCallback, useEffect, useState } from "react";
-import { AnimatePresence, motion, MotionConfig } from "motion/react";
-import { AsideLink } from "@/components/ui/aside-link";
-import { docLinks, exampleLinks } from "@/config";
-import { ChevronDownIcon } from "lucide-react";
-import { SidebarSearch } from "./sidebar-search";
-import { SidebarTabs } from "./sidebar-tabs";
-import { NewBadge } from "./new-badge";
+import { cn } from '@/lib/utils'
+import { usePathname, useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState, useMemo } from 'react'
+import { MotionConfig } from 'motion/react'
+import { AsideLink } from '@/components/ui/aside-link'
+import { sidebarTabs } from '@/config'
+import { SidebarSearch } from './sidebar-search'
+import { SidebarTabs } from './sidebar-tabs'
+import { NewBadge } from './new-badge'
+import { source } from '@/lib/source'
+import { processPageTree } from '@/lib/utils'
 
 export default function Sidebar() {
-  const [group, setGroup] = useState("docs");
-  const [currentOpen, setCurrentOpen] = useState<number>(0);
+  const router = useRouter()
+  const pathname = usePathname()
+  const pageTree = source.getPageTree()
 
-  const pathname = usePathname();
+  const getCurrentGroup = useCallback(() => {
+    const pathSegments = pathname.split('/')
 
-  const getDefaultValue = useCallback(() => {
-    const defaultValue = docLinks.findIndex((item) =>
-      item.list.some((listItem) => listItem.href === pathname)
-    );
-    return defaultValue === -1 ? 0 : defaultValue;
-  }, [pathname]);
+    // Handle root path or first level paths
+    if (pathSegments.length <= 2) {
+      return 'docs'
+    }
 
+    // For paths like /docs/better-auth, /docs/clerk, etc.
+    if (pathSegments[1] === 'docs' && pathSegments[2]) {
+      const fullPath = `docs/${pathSegments[2]}`
+      const matchedTab = sidebarTabs.find((tab) => tab.value === fullPath)
+      return matchedTab ? matchedTab.value : 'docs'
+    }
+
+    return 'docs'
+  }, [pathname])
+
+  const [group, setGroup] = useState(getCurrentGroup)
+
+  const pageNodes = useMemo(() => {
+    return processPageTree(pageTree, group)
+  }, [pageTree, group])
+
+  // Handle tab changes
+  const handleGroupChange = (newGroup: string) => {
+    setGroup(newGroup)
+    router.replace(`/${newGroup}`)
+  }
+
+  // Update group when pathname changes
   useEffect(() => {
-    const grp = pathname.includes("docs/examples") ? "examples" : "docs";
-    setGroup(grp);
-    setCurrentOpen(getDefaultValue());
-  }, [pathname, getDefaultValue]);
-
-  const cts = group === "docs" ? docLinks : exampleLinks;
+    const newGroup = getCurrentGroup()
+    setGroup(newGroup)
+  }, [pathname, getCurrentGroup])
 
   return (
-    <div className={cn("fixed top-0")}>
+    <div className={cn('fixed top-0')}>
       <aside
         className={cn(
-          "md:transition-all",
-          "pt-[var(--fd-nav-height)] border-r border-solid hidden md:flex overflow-y-scroll h-screen flex-col justify-between md:w-[268px] no-scrollbar"
-        )}
-      >
+          'md:transition-all',
+          `no-scrollbar mt-[var(--fd-nav-height)] hidden h-screen flex-col justify-between overflow-y-scroll border-r border-solid md:flex md:w-[268px]`
+        )}>
         <div>
-          <SidebarTabs group={group} setGroup={setGroup} />
+          <SidebarTabs group={group} setGroup={handleGroupChange} />
           <SidebarSearch />
-          <MotionConfig
-            transition={{ duration: 0.4, type: "spring", bounce: 0 }}
-          >
+          <MotionConfig transition={{ duration: 0.4, type: 'spring', bounce: 0 }}>
             <div className="flex flex-col">
-              {cts.map((item, index) => {
-                if (item.isSingle) {
-                  return (
-                    <AsideLink
-                      key={item.title}
-                      href={item.href ?? ""}
-                      startWith="/docs"
-                      title={item.title}
-                      className="break-words text-nowrap w-[--fd-sidebar-width] [&>div>div]:hover:!bg-fd-muted"
-                      activeClassName="[&>div>div]:!bg-fd-muted"
-                    >
-                      <div className="min-w-4">
-                        <item.Icon className="text-stone-950 dark:text-white" />
+              {pageNodes.map((node, index) => {
+                switch (node.type) {
+                  case 'separator':
+                    return (
+                      <div key={index} className="mx-5 my-2 flex items-center gap-2">
+                        <span className="text-foreground text-xs font-semibold tracking-wider uppercase">{node.name}</span>
                       </div>
-                      {item.title}
-                      {item.isNew && <NewBadge />}
-                    </AsideLink>
-                  );
-                } else {
-                  return (
-                    <div key={item.title}>
-                      <button
-                        className="border-b w-full hover:underline border-lines text-sm px-5 py-2.5 text-left flex items-center gap-2"
-                        onClick={() => {
-                          if (currentOpen === index) {
-                            setCurrentOpen(-1);
-                          } else {
-                            setCurrentOpen(index);
-                          }
-                        }}
-                      >
-                        <item.Icon className="size-5" />
-                        <span className="grow">{item.title}</span>
-                        {item.isNew && <NewBadge />}
-                        <motion.div
-                          animate={{ rotate: currentOpen === index ? 180 : 0 }}
-                        >
-                          <ChevronDownIcon
-                            className={cn(
-                              "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200"
-                            )}
-                          />
-                        </motion.div>
-                      </button>
-                      <AnimatePresence initial={false}>
-                        {currentOpen === index && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="relative overflow-hidden"
-                          >
-                            <motion.div className="text-sm">
-                              {item.list.map((listItem, j) => (
-                                <div key={listItem.title}>
-                                  <Suspense fallback={<>Loading...</>}>
-                                    {listItem.group ? (
-                                      <div className="flex flex-row items-center gap-2 mx-5 my-1 ">
-                                        <p className="text-sm text-transparent bg-gradient-to-tr dark:from-gray-100 dark:to-stone-200 bg-clip-text from-gray-900 to-stone-900">
-                                          {listItem.title}
-                                        </p>
-                                        <div className="flex-grow h-px bg-gradient-to-r from-stone-800/90 to-stone-800/60" />
-                                      </div>
-                                    ) : (
-                                      <AsideLink
-                                        href={listItem.href}
-                                        startWith="/docs"
-                                        title={listItem.title}
-                                        className="break-words text-nowrap w-[--fd-sidebar-width] [&>div>div]:hover:!bg-fd-muted"
-                                        activeClassName="[&>div>div]:!bg-fd-muted"
-                                      >
-                                        <div className="min-w-4">
-                                          <listItem.icon className="text-stone-950 dark:text-white" />
-                                        </div>
-                                        {listItem.title}
-                                        {listItem.isNew && <NewBadge />}
-                                      </AsideLink>
-                                    )}
-                                  </Suspense>
-                                </div>
-                              ))}
-                            </motion.div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
+                    )
+                  case 'page':
+                    return (
+                      <AsideLink key={index} href={node.url}>
+                        {node.name}
+                      </AsideLink>
+                    )
+                  case 'folder':
+                    return (
+                      <AsideLink key={index} href={node.index?.url || ''}>
+                        {node.name}
+                      </AsideLink>
+                    )
+                  default:
+                    return null
                 }
               })}
             </div>
@@ -141,5 +94,5 @@ export default function Sidebar() {
         </div>
       </aside>
     </div>
-  );
+  )
 }

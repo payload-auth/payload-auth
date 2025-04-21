@@ -1,0 +1,6 @@
+{
+  "title": "Kinde",
+  "description": "Kinde plugin for Payload Auth",
+  "root": true,
+  "pages": ["---Getting Started---", "index"]
+}

@@ -1,13 +1,20 @@
 {
-	"title:": "guide",
-	"root": true,
-	"pages": [
-		"introduction",
-		"installation",
-		"basic-usage",
-		"email-password/sign-in-and-sign-up",
-		"email-password/password-reset",
-		"email-password/configuration",
-		"social-sign-on/apple"
-	]
+  "title": "Payload Auth",
+  "description": "Payload Auth docs",
+  "pages": [
+    "---Getting Started---",
+    "index",
+    "installation",
+    "---Plugins---",
+    "better-auth",
+    "clerk",
+    "authjs",
+    "kinde",
+    "---Contributing---",
+    "contribute/getting-started",
+    "contribute/areas-to-contribute",
+    "contribute/security-issues",
+    "contribute/documenting",
+    "contribute/testing"
+  ]
 }
