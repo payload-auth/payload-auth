@@ -1,11 +1,12 @@
 import { BetterAuthError } from 'better-auth'
 import type { Adapter, BetterAuthOptions, Where } from 'better-auth'
 import { generateSchema } from './generate-schema'
-import { createTransform } from './transform'
+import { createAdapterContext, convertWhereClause, getCollectionName, mapInputData, mapSelectFields, mapOutputData } from './utils'
+import { APIError } from 'better-auth/api'
+import { getAuthTables } from 'better-auth/db'
 import type { PayloadAdapter } from './types'
 
-export const BETTER_AUTH_CONTEXT_KEY = 'payload-db-adapter'
-const PAYLOAD_QUERY_DEPTH = 2
+export const PAYLOAD_QUERY_DEPTH = 5
 
 const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
   function debugLog(message: any[]) {
@@ -13,18 +14,6 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
       console.log('[payload-db-adapter]', ...message)
     }
   }
-
-  function errorLog(message: any[]) {
-    console.error(`[payload-db-adapter]`, ...message)
-  }
-
-  function collectionSlugError(model: string) {
-    throw new BetterAuthError(`Collection ${model} does not exist. Please check your payload collection slugs match the better auth schema`)
-  }
-
-  const createAdapterContext = (data: Record<string, any>) => ({
-    [BETTER_AUTH_CONTEXT_KEY]: { ...data }
-  })
 
   async function resolvePayloadClient() {
     const payload = typeof payloadClient === 'function' ? await payloadClient() : await payloadClient
@@ -34,444 +23,275 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
     return payload
   }
 
-  return (options: BetterAuthOptions): Adapter => {
-    const {
-      transformInput,
-      transformOutput,
-      convertWhereClause,
-      convertSelect,
-      convertSort,
-      getModelName,
-      singleIdQuery,
-      multipleIdsQuery
-    } = createTransform(options, config.enableDebugLogs ?? false)
+  return (authOptions: BetterAuthOptions): Adapter => {
+    const schema = getAuthTables(authOptions)
 
     return {
-      id: 'payload',
-      async create<T extends Record<string, any>, R = T>(data: { model: string; data: T; select?: string[] }): Promise<R> {
-        const start = Date.now()
-        const { model, data: values, select } = data
-        const collectionSlug = getModelName(model)
-        const transformed = transformInput({
-          data: values,
-          model,
-          action: 'create',
-          idType: config.idType
-        })
-        debugLog(['create', { collectionSlug, transformed, select }])
+      id: 'payload-adapter',
+      async create<T extends Record<string, any>, R = T>({
+        model,
+        data: values,
+        select
+      }: {
+        model: string
+        data: T
+        select?: string[]
+      }): Promise<R> {
+        const payload = await resolvePayloadClient()
+        const collection = getCollectionName(model, schema)
+        const mappedData = mapInputData(model, values, schema)
+        debugLog(['create', { collection, model, data: mappedData }])
         try {
-          const payload = await resolvePayloadClient()
-          if (!collectionSlug || !(collectionSlug in payload.collections)) {
-            collectionSlugError(model)
+          const response = await payload.create({
+            collection,
+            data: mappedData,
+            depth: PAYLOAD_QUERY_DEPTH,
+            context: createAdapterContext({ model, operation: 'create' })
+          })
+
+          if (select?.length) {
+            const filtered: Record<string, unknown> = {}
+            select.forEach((field) => {
+              if ((response as any)[field] !== undefined) {
+                filtered[field] = (response as any)[field]
+              }
+            })
+            return filtered as R
           }
-          const result = await payload.create({
-            collection: collectionSlug,
-            data: transformed,
-            select: convertSelect(model, select),
-            context: createAdapterContext({ model, operation: 'create' }),
-            depth: PAYLOAD_QUERY_DEPTH
-          })
-          const transformedResult = transformOutput({
-            doc: result,
-            model
-          })
-          debugLog([
-            'create result',
-            {
-              collectionSlug,
-              transformedResult,
-              duration: `${Date.now() - start}ms`
-            }
-          ])
-          return transformedResult as R
+          return response as R
         } catch (error) {
-          errorLog(['Error in creating:', model, error])
-          return null as R
+          debugLog(['error in create', error])
+          throw error
         }
       },
-      async findOne<T>(data: { model: string; where: Where[]; select?: string[] }): Promise<T | null> {
-        const start = Date.now()
-        const { model, where, select } = data
-        const collectionSlug = getModelName(model)
-        const payloadWhere = convertWhereClause({
-          idType: config.idType,
-          model,
-          where
-        })
-        debugLog(['findOne', { collectionSlug }])
+
+      async findOne<T>({ model, where, select }: { model: string; where: Where[]; select?: string[] }): Promise<T | null> {
+        const payload = await resolvePayloadClient()
+        const collection = getCollectionName(model, schema)
+        debugLog(['findOne', { collection, model, rawWhere: where, where: convertWhereClause(where, model, schema), select }])
         try {
-          const payload = await resolvePayloadClient()
-          if (!collectionSlug || !(collectionSlug in payload.collections)) {
-            collectionSlugError(model)
-          }
-          const id = singleIdQuery(payloadWhere)
-          let result: Record<string, any> | null = null
-          if (id) {
-            debugLog(['findOneByID', { collectionSlug, id }])
-            const doc = await payload.findByID({
-              collection: collectionSlug,
-              id,
-              select: convertSelect(model, select),
-              context: createAdapterContext({
-                model,
-                operation: 'findOneByID'
-              }),
-              depth: PAYLOAD_QUERY_DEPTH
-            })
-            result = doc
-          } else {
-            debugLog(['findOneByWhere', { collectionSlug, payloadWhere }])
-            const docs = await payload.find({
-              collection: collectionSlug,
-              where: payloadWhere,
-              select: convertSelect(model, select),
-              context: createAdapterContext({
-                model,
-                operation: 'findOneByWhere'
-              }),
-              depth: PAYLOAD_QUERY_DEPTH,
-              limit: 1
-            })
-            result = docs.docs[0]
-          }
-          const transformedResult = transformOutput<typeof result | null>({
-            doc: result,
-            model
+          const response = await payload.find({
+            collection,
+            where: convertWhereClause(where, model, schema),
+            select: mapSelectFields(model, select, schema),
+            limit: 1,
+            showHiddenFields: true,
+            depth: PAYLOAD_QUERY_DEPTH,
+            context: createAdapterContext({ model, operation: 'findOne' })
           })
-          debugLog([
-            'findOne result',
-            {
-              collectionSlug,
-              transformedResult,
-              duration: `${Date.now() - start}ms`
-            }
-          ])
-          return transformedResult as T
+
+          if (!response.docs?.length) return null
+
+          const result = response.docs.at(0)
+
+          debugLog(['findOne result', { ...mapOutputData(model, result as any, schema)  }])
+
+          if (select?.length) {
+            const filtered: Record<string, unknown> = {}
+            select.forEach((field) => {
+              if ((result as any)[field] !== undefined) {
+                filtered[field] = (result as any)[field]
+              }
+            })
+            return filtered as T
+          }
+
+          return mapOutputData(model, result as any, schema) as T
         } catch (error) {
-          errorLog(['Error in findOne: ', error])
-          return null
+          debugLog(['error in findOne', error])
+          throw error
         }
       },
-      async findMany<T>(data: {
+
+      async findMany<T>({
+        model,
+        where,
+        limit = 100,
+        offset = 0,
+        sortBy
+      }: {
         model: string
         where?: Where[]
         limit?: number
-        sortBy?: {
-          field: string
-          direction: 'asc' | 'desc'
-        }
         offset?: number
+        sortBy?: { field: string; direction: 'asc' | 'desc' }
       }): Promise<T[]> {
-        const start = Date.now()
-        const { model, where, sortBy, limit, offset } = data
-        const collectionSlug = getModelName(model)
-        const payloadWhere = convertWhereClause({
-          idType: config.idType,
-          model,
-          where
-        })
-        debugLog(['findMany', { collectionSlug, sortBy, limit, offset }])
+        const payload = await resolvePayloadClient()
+        const collection = getCollectionName(model, schema)
+        debugLog(['findMany', { collection, model, where: convertWhereClause(where, model, schema) }])
         try {
-          const payload = await resolvePayloadClient()
-          if (!collectionSlug || !(collectionSlug in payload.collections)) {
-            collectionSlugError(model)
-          }
-          let result: {
-            docs: Record<string, any>[]
-            totalDocs: number
-          } | null = null
-          const multipleIds = where && multipleIdsQuery(payloadWhere)
-          const singleId = where && singleIdQuery(payloadWhere)
-          if (multipleIds && multipleIds.length > 0) {
-            debugLog(['findManyByMultipleIDs', { collectionSlug, ids: multipleIds }])
-            const res = {
-              docs: [] as Record<string, any>[],
-              totalDocs: 0
-            }
-            for (const id of multipleIds) {
-              const doc = await payload.findByID({
-                collection: collectionSlug,
-                id,
-                depth: PAYLOAD_QUERY_DEPTH,
-                context: createAdapterContext({
-                  model,
-                  operation: 'findManyByMultipleIDs'
-                })
-              })
-              res.docs.push(doc)
-              res.totalDocs++
-            }
-            result = { docs: res.docs, totalDocs: res.totalDocs }
-          } else if (singleId) {
-            debugLog(['findManyBySingleID', { collectionSlug, id: singleId }])
-            const doc = await payload.findByID({
-              collection: collectionSlug,
-              id: singleId,
-              depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({
-                model,
-                operation: 'findManyBySingleID'
-              })
-            })
-            result = { docs: doc ? [doc] : [], totalDocs: doc ? 1 : 0 }
-          } else {
-            debugLog(['findManyByWhere', { collectionSlug, payloadWhere }])
-            const res = await payload.find({
-              collection: collectionSlug,
-              where: payloadWhere,
-              limit: limit,
-              page: offset ? Math.floor(offset / (limit || 10)) + 1 : 1,
-              sort: convertSort(model, sortBy),
-              depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({
-                model,
-                operation: 'findManyByWhere'
-              })
-            })
-            result = { docs: res.docs, totalDocs: res.totalDocs }
-          }
-          const transformedResult =
-            result?.docs.map((doc) =>
-              transformOutput({
-                doc,
-                model
-              })
-            ) ?? null
-          debugLog([
-            'findMany result',
-            {
-              collectionSlug,
-              transformedResult,
-              duration: `${Date.now() - start}ms`
-            }
-          ])
-          return transformedResult as T[]
-        } catch (error) {
-          errorLog(['Error in findMany: ', error])
-          return [] as T[]
-        }
-      },
-      async update<T>(data: { model: string; where: Where[]; update: Record<string, unknown> }): Promise<T | null> {
-        const start = Date.now()
-        const { model, where, update } = data
-        const collectionSlug = getModelName(model)
-        const payloadWhere = convertWhereClause({
-          idType: config.idType,
-          model,
-          where
-        })
-        debugLog(['update', { collectionSlug, update }])
-        try {
-          const payload = await resolvePayloadClient()
-          if (!collectionSlug || !(collectionSlug in payload.collections)) {
-            collectionSlugError(model)
-          }
-          let result: Record<string, any> | null = null
-          const id = singleIdQuery(payloadWhere)
-          if (id) {
-            debugLog(['updateByID', { collectionSlug, id }])
-            const doc = await payload.update({
-              collection: collectionSlug,
-              id,
-              data: update,
-              depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({ model, operation: 'updateByID' })
-            })
-            result = doc
-          } else {
-            debugLog(['updateByWhere', { collectionSlug, payloadWhere }])
-            const doc = await payload.update({
-              collection: collectionSlug,
-              where: payloadWhere,
-              data: update,
-              depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({
-                model,
-                operation: 'updateByWhere'
-              })
-            })
-            result = doc.docs[0]
-          }
-          const transformedResult = transformOutput<typeof result | null>({
-            doc: result,
-            model
-          })
-          debugLog([
-            'update result',
-            {
-              collectionSlug,
-              transformedResult,
-              duration: `${Date.now() - start}ms`
-            }
-          ])
-          return transformedResult as T
-        } catch (error) {
-          errorLog(['Error in update: ', error])
-          return null
-        }
-      },
-      async updateMany(data: { model: string; where: Where[]; update: Record<string, unknown> }): Promise<number> {
-        const start = Date.now()
-        const { model, where, update } = data
-        const collectionSlug = getModelName(model)
-        const payloadWhere = convertWhereClause({
-          idType: config.idType,
-          model,
-          where
-        })
-        debugLog(['updateMany', { collectionSlug, payloadWhere, update }])
-        try {
-          const payload = await resolvePayloadClient()
-          if (!collectionSlug || !(collectionSlug in payload.collections)) {
-            collectionSlugError(model)
-          }
-          const { docs: updateResult } = await payload.update({
-            collection: collectionSlug,
-            where: payloadWhere,
-            data: update,
+          const response = await payload.find({
+            collection,
+            where: where ? convertWhereClause(where, model, schema) : {},
+            select: mapSelectFields(model, undefined, schema),
+            limit,
+            showHiddenFields: true,
+            page: Math.floor(offset / limit) + 1,
+            sort: sortBy ? `${sortBy.direction === 'desc' ? '-' : ''}${sortBy.field}` : undefined,
             depth: PAYLOAD_QUERY_DEPTH,
-            context: createAdapterContext({ model, operation: 'updateMany' })
+            context: createAdapterContext({ model, operation: 'findMany' })
           })
-          debugLog([
-            'updateMany result',
-            {
-              collectionSlug,
-              result: updateResult,
-              duration: `${Date.now() - start}ms`
-            }
-          ])
-          return updateResult?.length || 0
+
+          const mappedDocs = (response.docs as unknown[]).map((d) => mapOutputData(model, d as any, schema)) as T[]
+          return mappedDocs || []
         } catch (error) {
-          errorLog(['Error in updateMany: ', error])
-          return 0
+          debugLog(['error in findMany', error])
+          throw error
         }
       },
-      async delete(data: { model: string; where: Where[] }): Promise<void> {
-        const start = Date.now()
-        const { model, where } = data
-        const collectionSlug = getModelName(model)
-        const payloadWhere = convertWhereClause({
-          idType: config.idType,
-          model,
-          where
-        })
-        debugLog(['delete', { collectionSlug }])
+
+      async update<T>({ model, where, update: values }: { model: string; where: Where[]; update: Record<string, any> }): Promise<T | null> {
+        const payload = await resolvePayloadClient()
+        const collection = getCollectionName(model, schema)
+        debugLog(['update', { collection, model }])
         try {
-          const payload = await resolvePayloadClient()
-          if (!collectionSlug || !(collectionSlug in payload.collections)) {
-            collectionSlugError(model)
-          }
-          let deleteResult: {
-            doc: Record<string, any> | null
-            errors: any[]
-          } | null = null
-          const id = singleIdQuery(payloadWhere)
-          if (id) {
-            debugLog(['deleteByID', { collectionSlug, id }])
-            const doc = await payload.delete({
-              collection: collectionSlug,
-              id,
-              depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({ model, operation: 'deleteByID' })
-            })
-            deleteResult = { doc, errors: [] }
-          } else {
-            debugLog(['deleteByWhere', { collectionSlug, payloadWhere }])
-            const doc = await payload.delete({
-              collection: collectionSlug,
-              where: payloadWhere,
-              depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({
-                model,
-                operation: 'deleteByWhere'
-              })
-            })
-            deleteResult = { doc: doc.docs[0], errors: [] }
-          }
-          debugLog([
-            'delete result',
-            {
-              collectionSlug,
-              result: deleteResult,
-              duration: `${Date.now() - start}ms`
-            }
-          ])
-          return
-        } catch (error) {
-          errorLog(['Error in delete: ', error])
-          return
-        }
-      },
-      async deleteMany(data: { model: string; where: Where[] }): Promise<number> {
-        const start = Date.now()
-        const { model, where } = data
-        const collectionSlug = getModelName(model)
-        const payloadWhere = convertWhereClause({
-          idType: config.idType,
-          model,
-          where
-        })
-        debugLog(['deleteMany', { collectionSlug, payloadWhere }])
-        try {
-          const payload = await resolvePayloadClient()
-          if (!collectionSlug || !(collectionSlug in payload.collections)) {
-            collectionSlugError(model)
-          }
-          const deleteResult = await payload.delete({
-            collection: collectionSlug,
-            where: payloadWhere,
+          const findResponse = await payload.find({
+            collection,
+            where: convertWhereClause(where, model, schema),
+            limit: 1,
             depth: PAYLOAD_QUERY_DEPTH,
-            context: createAdapterContext({ model, operation: 'deleteMany' })
+            context: createAdapterContext({ model, operation: 'updateFind' })
           })
-          debugLog([
-            'deleteMany result',
-            {
-              collectionSlug,
-              result: deleteResult,
-              duration: `${Date.now() - start}ms`
-            }
-          ])
-          return deleteResult.docs.length
-        } catch (error) {
-          errorLog(['Error in deleteMany: ', error])
-          return 0
-        }
-      },
-      async count(data: { model: string; where?: Where[] }): Promise<number> {
-        const start = Date.now()
-        const { model, where } = data
-        const collectionSlug = getModelName(model)
-        const payloadWhere = convertWhereClause({
-          idType: config.idType,
-          model,
-          where
-        })
-        debugLog(['count', { collectionSlug, payloadWhere }])
-        try {
-          const payload = await resolvePayloadClient()
-          if (!collectionSlug || !(collectionSlug in payload.collections)) {
-            collectionSlugError(model)
-          }
-          const result = await payload.count({
-            collection: collectionSlug,
-            where: payloadWhere,
+
+          if (!findResponse.docs?.length) return null
+
+          const docToUpdate = findResponse.docs[0]
+
+          const response = await payload.update({
+            collection,
+            id: docToUpdate.id,
+            data: values,
             depth: PAYLOAD_QUERY_DEPTH,
-            context: createAdapterContext({ model, operation: 'count' })
+            context: createAdapterContext({ model, operation: 'update' })
           })
-          debugLog([
-            'count result',
-            {
-              collectionSlug,
-              result: { totalDocs: result.totalDocs },
-              duration: `${Date.now() - start}ms`
-            }
-          ])
-          return result.totalDocs
-        } catch (error) {
-          errorLog(['Error in count: ', error])
-          return 0
+
+          return mapOutputData(model, response as any, schema) as unknown as T
+        } catch (error: any) {
+          debugLog(['error in update', error])
+          throw new APIError('BAD_REQUEST', {
+            message: error.message
+          })
         }
       },
+
+      async updateMany({ model, where, update: values }) {
+        const payload = await resolvePayloadClient()
+        const collection = getCollectionName(model, schema)
+        debugLog(['updateMany', { collection, model }])
+        try {
+          const findResponse = await payload.find({
+            collection,
+            where: convertWhereClause(where, model, schema),
+            limit: 1000,
+            depth: PAYLOAD_QUERY_DEPTH,
+            context: createAdapterContext({ model, operation: 'updateManyFind' })
+          })
+
+          if (!findResponse.docs?.length) return 0
+
+          const updatePromises = findResponse.docs.map((doc) =>
+            payload.update({
+              collection,
+              id: doc.id,
+              data: values,
+              depth: PAYLOAD_QUERY_DEPTH,
+              context: createAdapterContext({ model, operation: 'updateMany' })
+            })
+          )
+
+          await Promise.all(updatePromises)
+
+          return findResponse.docs.length
+        } catch (error: any) {
+          debugLog(['error in updateMany', error])
+          throw new APIError('BAD_REQUEST', {
+            message: error.message
+          })
+        }
+      },
+
+      async delete({ model, where }: { model: string; where: Where[] }): Promise<void> {
+        const payload = await resolvePayloadClient()
+        const collection = getCollectionName(model, schema)
+        debugLog(['delete', { collection, model }])
+        try {
+          const findResponse = await payload.find({
+            collection,
+            where: convertWhereClause(where, model, schema),
+            limit: 1,
+            depth: PAYLOAD_QUERY_DEPTH,
+            context: createAdapterContext({ model, operation: 'deleteFind' })
+          })
+
+          if (!findResponse.docs?.length) return
+
+          const docToDelete = findResponse.docs[0]
+
+          await payload.delete({
+            collection,
+            id: docToDelete.id,
+            depth: PAYLOAD_QUERY_DEPTH,
+            context: createAdapterContext({ model, operation: 'delete' })
+          })
+        } catch (error: any) {
+          debugLog(['error in delete', error])
+          throw new APIError('BAD_REQUEST', {
+            message: error.message
+          })
+        }
+      },
+
+      async deleteMany({ model, where }: { model: string; where: Where[] }): Promise<number> {
+        const payload = await resolvePayloadClient()
+        const collection = getCollectionName(model, schema)
+        debugLog(['deleteMany', { collection, model }])
+        try {
+          const findResponse = await payload.find({
+            collection,
+            where: convertWhereClause(where, model, schema),
+            limit: 1000,
+            depth: PAYLOAD_QUERY_DEPTH,
+            context: createAdapterContext({ model, operation: 'deleteManyFind' })
+          })
+
+          if (!findResponse.docs?.length) return 0
+
+          const deletePromises = findResponse.docs.map((doc) =>
+            payload.delete({
+              collection,
+              id: doc.id,
+              depth: PAYLOAD_QUERY_DEPTH,
+              context: createAdapterContext({ model, operation: 'deleteMany' })
+            })
+          )
+
+          await Promise.all(deletePromises)
+
+          return findResponse.docs.length
+        } catch (error: any) {
+          debugLog(['error in deleteMany', error])
+          throw new APIError('BAD_REQUEST', {
+            message: error.message
+          })
+        }
+      },
+
+      async count({ model, where }: { model: string; where?: Where[] }): Promise<number> {
+        const payload = await resolvePayloadClient()
+        const collection = getCollectionName(model, schema)
+        debugLog(['count', { collection, model }])
+        const query = where ? convertWhereClause(where, model, schema) : { id: { exists: true } }
+
+        const response = await payload.count({
+          collection,
+          where: query,
+          depth: PAYLOAD_QUERY_DEPTH,
+          context: createAdapterContext({ model, operation: 'count' })
+        })
+
+        return response.totalDocs
+      },
+
       createSchema: async (options, file) => {
         const schemaCode = await generateSchema(options)
         return {
@@ -481,6 +301,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
           overwrite: true
         }
       },
+
       options: {
         enableDebugLogs: config.enableDebugLogs,
         idType: config.idType

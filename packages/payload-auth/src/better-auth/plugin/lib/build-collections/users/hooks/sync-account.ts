@@ -1,6 +1,6 @@
 import type { CollectionAfterChangeHook } from 'payload'
 import type { CollectionHookWithBetterAuth } from '@/better-auth/plugin/types'
-import { BETTER_AUTH_CONTEXT_KEY } from '@/better-auth/adapter'
+import { BETTER_AUTH_CONTEXT_KEY } from '@/better-auth/adapter/utils'
 
 type CollectionAfterChangeHookWithBetterAuth = CollectionHookWithBetterAuth<CollectionAfterChangeHook>
 
