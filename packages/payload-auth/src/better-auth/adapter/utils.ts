@@ -7,74 +7,50 @@ export const createAdapterContext = (data: Record<string, any>) => ({
   [BETTER_AUTH_CONTEXT_KEY]: { ...data }
 })
 
+const getFieldName = (model: string, field: string, schema: any) => {
+  if (field === 'id') return field
+  return schema?.[model]?.fields?.[field]?.fieldName || field
+}
+
+const isPlainObject = (val: unknown): val is Record<string, any> =>
+  typeof val === 'object' && val !== null && !Array.isArray(val) && !(val instanceof Date)
+
 export const convertWhereClause = (where: Where[] = [], model: string, schema: any) => {
   if (!where.length) return {}
 
-  const conditions = where.map((w) => {
-    const { field, value: rawValue, operator = 'eq', connector = 'AND' } = w
+  const conditions = where.map(({ field, value: rawValue, operator = 'eq', connector = 'AND' }) => {
+    const mappedField = getFieldName(model, field, schema)
 
-    const mappedField = schema?.[model]?.fields?.[field]?.fieldName || field
     let value: any = rawValue
-
-    if (typeof rawValue === 'object' && rawValue !== null && !Array.isArray(rawValue)) {
-      if ('id' in rawValue) {
-        // Relationship object `{ id: ... }`
-        value = (rawValue as any).id
-      } else if (field in rawValue) {
-        // Object contains the same key we're querying
-        value = (rawValue as any)[field]
-      } else {
-        // Object does not include expected identifier – this is likely a mistake
+    if (isPlainObject(rawValue)) {
+      if ('id' in rawValue) value = rawValue.id
+      else if (field in rawValue) value = (rawValue as any)[field]
+      else
         throw new Error(
           `convertWhereClause: Expected primitive, array, or object containing 'id' or '${field}' for field '${field}', got ${JSON.stringify(
-            rawValue
-          )}`
+            rawValue,
+          )}`,
         )
-      }
     }
 
-    let condition: any
-    switch (operator.toLowerCase()) {
-      case 'eq':
-        condition = { [mappedField]: { equals: value } }
-        break
-      case 'in':
-        condition = { [mappedField]: { in: Array.isArray(value) ? value : [value] } }
-        break
-      case 'gt':
-        condition = { [mappedField]: { greater_than: value } }
-        break
-      case 'gte':
-        condition = { [mappedField]: { greater_than_equal: value } }
-        break
-      case 'lt':
-        condition = { [mappedField]: { less_than: value } }
-        break
-      case 'lte':
-        condition = { [mappedField]: { less_than_equal: value } }
-        break
-      case 'ne':
-        condition = { [mappedField]: { not_equals: value } }
-        break
-      case 'contains':
-        condition = { [mappedField]: { contains: value } }
-        break
-      case 'starts_with':
-        condition = { [mappedField]: { like: `${value}%` } }
-        break
-      case 'ends_with':
-        condition = { [mappedField]: { like: `%${value}` } }
-        break
-      default:
-        throw new Error(`Unsupported operator: ${operator}`)
-    }
+    const condition =
+      {
+        eq: { [mappedField]: { equals: value } },
+        in: { [mappedField]: { in: Array.isArray(value) ? value : [value] } },
+        gt: { [mappedField]: { greater_than: value } },
+        gte: { [mappedField]: { greater_than_equal: value } },
+        lt: { [mappedField]: { less_than: value } },
+        lte: { [mappedField]: { less_than_equal: value } },
+        ne: { [mappedField]: { not_equals: value } },
+        contains: { [mappedField]: { contains: value } },
+        starts_with: { [mappedField]: { like: `${value}%` } },
+        ends_with: { [mappedField]: { like: `%${value}` } },
+      }[operator.toLowerCase()] ?? (() => { throw new Error(`Unsupported operator: ${operator}`) })()
 
     return { condition, connector: connector as 'AND' | 'OR' }
   })
 
-  if (conditions.length === 1) {
-    return conditions[0].condition
-  }
+  if (conditions.length === 1) return conditions[0].condition
 
   const andConditions = conditions.filter((c) => c.connector === 'AND').map((c) => c.condition)
   const orConditions = conditions.filter((c) => c.connector === 'OR').map((c) => c.condition)
@@ -85,26 +61,19 @@ export const convertWhereClause = (where: Where[] = [], model: string, schema: a
   return query
 }
 
-export const getCollectionName = (model: string, schema: any): CollectionSlug => {
-  return (schema?.[model]?.modelName || model) as CollectionSlug
-}
+export const getCollectionName = (model: string, schema: any): CollectionSlug =>
+  (schema?.[model]?.modelName || model) as CollectionSlug
 
-export const mapInputData = (model: string, data: Record<string, any>, schema: any) => {
-  const mapped: Record<string, any> = {}
-  const schemaFields = schema?.[model]?.fields || {}
-  Object.entries(data).forEach(([key, value]) => {
-    const mappedKey = schemaFields[key]?.fieldName || key
-    mapped[mappedKey] = value
-  })
-  return mapped
-}
+export const mapInputData = (model: string, data: Record<string, any>, schema: any) =>
+  Object.entries(data).reduce<Record<string, any>>((acc, [key, value]) => {
+    acc[getFieldName(model, key, schema)] = value
+    return acc
+  }, {})
 
 export const mapSelectFields = (model: string, select: string[] | undefined, schema: any) => {
   if (!select || select.length === 0) return undefined
-  const schemaFields = schema?.[model]?.fields || {}
   return select.reduce<Record<string, true>>((acc, field) => {
-    const mappedKey = schemaFields[field]?.fieldName || field
-    acc[mappedKey] = true
+    acc[getFieldName(model, field, schema)] = true
     return acc
   }, {})
 }
@@ -127,26 +96,23 @@ export const mapSelectFields = (model: string, select: string[] | undefined, sch
  * @param schema  The BetterAuth schema used for field mapping
  * @returns       The document with both mapped keys and original BetterAuth keys
  */
-export const mapOutputData = <T extends Record<string, any> | null>(model: string, doc: T, schema: any): T => {
+
+export const mapOutputData = <T extends Record<string, any> | null>(
+  model: string,
+  doc: T,
+  schema: any,
+): T => {
   if (!doc || typeof doc !== 'object') return doc
 
   const result: Record<string, any> = { ...(doc as Record<string, any>) }
   const schemaFields = schema?.[model]?.fields || {}
 
   Object.entries(schemaFields).forEach(([originalKey, attr]: [string, any]) => {
-    const mappedKey = attr?.fieldName || originalKey
-    if (mappedKey in result) {
-      // Only add if originalKey not present
-      if (!(originalKey in result)) {
-        let value = result[mappedKey]
-        // If reference field and value is object with id, extract
-        if (attr?.references && value && typeof value === 'object') {
-          if ('id' in value) {
-            value = value.id
-          }
-        }
-        result[originalKey] = value
-      }
+    const mappedKey = getFieldName(model, originalKey, schema)
+    if (!(originalKey in result) && mappedKey in result) {
+      let value = result[mappedKey]
+      if (attr?.references && value && typeof value === 'object' && 'id' in value) value = value.id
+      result[originalKey] = value
     }
   })
 

@@ -1,18 +1,29 @@
-import { BetterAuthError } from 'better-auth'
 import type { Adapter, BetterAuthOptions, Where } from 'better-auth'
-import { generateSchema } from './generate-schema'
-import { createAdapterContext, convertWhereClause, getCollectionName, mapInputData, mapSelectFields, mapOutputData } from './utils'
-import { APIError } from 'better-auth/api'
+import { BetterAuthError } from 'better-auth'
 import { getAuthTables } from 'better-auth/db'
+import { generateSchema } from './generate-schema'
 import type { PayloadAdapter } from './types'
+import { convertWhereClause, createAdapterContext, getCollectionName, mapInputData, mapOutputData, mapSelectFields } from './utils'
 
-export const PAYLOAD_QUERY_DEPTH = 5
+export const PAYLOAD_QUERY_DEPTH = 0
 
 const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
+  config.enableDebugLogs = true
   function debugLog(message: any[]) {
     if (config.enableDebugLogs) {
       console.log('[payload-db-adapter]', ...message)
     }
+  }
+
+  function errorLog(message: any[]) {
+    console.error('[payload-db-adapter]', ...message)
+  }
+
+  const getSingleId = (where: Where[] | undefined): string | null => {
+    if (!where || where.length !== 1) return null
+    const [cond] = where
+    const operator = (cond.operator ?? 'eq').toLowerCase()
+    return cond.field === 'id' && operator === 'eq' && typeof cond.value === 'string' ? cond.value : null
   }
 
   async function resolvePayloadClient() {
@@ -45,61 +56,56 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
           const response = await payload.create({
             collection,
             data: mappedData,
+            select: mapSelectFields(model, select, schema),
             depth: PAYLOAD_QUERY_DEPTH,
             context: createAdapterContext({ model, operation: 'create' })
           })
 
-          if (select?.length) {
-            const filtered: Record<string, unknown> = {}
-            select.forEach((field) => {
-              if ((response as any)[field] !== undefined) {
-                filtered[field] = (response as any)[field]
-              }
-            })
-            return filtered as R
-          }
-          return response as R
+          return mapOutputData(model, response, schema) as R
         } catch (error) {
-          debugLog(['error in create', error])
-          throw error
+          errorLog(['error in create', error])
+          return null as R
         }
       },
 
       async findOne<T>({ model, where, select }: { model: string; where: Where[]; select?: string[] }): Promise<T | null> {
         const payload = await resolvePayloadClient()
         const collection = getCollectionName(model, schema)
-        debugLog(['findOne', { collection, model, rawWhere: where, where: convertWhereClause(where, model, schema), select }])
+
+        const singleId = getSingleId(where)
+        debugLog(['findOne', { collection, model, singleId, rawWhere: where, where: convertWhereClause(where, model, schema) }])
         try {
-          const response = await payload.find({
-            collection,
-            where: convertWhereClause(where, model, schema),
-            select: mapSelectFields(model, select, schema),
-            limit: 1,
-            showHiddenFields: true,
-            depth: PAYLOAD_QUERY_DEPTH,
-            context: createAdapterContext({ model, operation: 'findOne' })
-          })
+          let result: Record<string, any> | null = null
 
-          if (!response.docs?.length) return null
-
-          const result = response.docs.at(0)
-
-          debugLog(['findOne result', { ...mapOutputData(model, result as any, schema)  }])
-
-          if (select?.length) {
-            const filtered: Record<string, unknown> = {}
-            select.forEach((field) => {
-              if ((result as any)[field] !== undefined) {
-                filtered[field] = (result as any)[field]
-              }
+          if (singleId) {
+            result = await payload.findByID({
+              collection,
+              id: singleId,
+              select: mapSelectFields(model, select, schema),
+              showHiddenFields: true,
+              depth: PAYLOAD_QUERY_DEPTH,
+              context: createAdapterContext({ model, operation: 'findOneByID' })
             })
-            return filtered as T
+          } else {
+            const response = await payload.find({
+              collection,
+              where: convertWhereClause(where, model, schema),
+              select: mapSelectFields(model, select, schema),
+              limit: 1,
+              showHiddenFields: true,
+              depth: PAYLOAD_QUERY_DEPTH,
+              context: createAdapterContext({ model, operation: 'findOneByWhere' })
+            })
+            result = response.docs?.at(0) || null
           }
 
-          return mapOutputData(model, result as any, schema) as T
+          if (!result) return null
+
+          debugLog(['findOne result', { ...mapOutputData(model, result, schema) }])
+          return mapOutputData(model, result, schema) as T
         } catch (error) {
-          debugLog(['error in findOne', error])
-          throw error
+          errorLog(['error in findOne', error])
+          return null
         }
       },
 
@@ -118,95 +124,82 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
       }): Promise<T[]> {
         const payload = await resolvePayloadClient()
         const collection = getCollectionName(model, schema)
-        debugLog(['findMany', { collection, model, where: convertWhereClause(where, model, schema) }])
-        try {
-          const response = await payload.find({
-            collection,
-            where: where ? convertWhereClause(where, model, schema) : {},
-            select: mapSelectFields(model, undefined, schema),
-            limit,
-            showHiddenFields: true,
-            page: Math.floor(offset / limit) + 1,
-            sort: sortBy ? `${sortBy.direction === 'desc' ? '-' : ''}${sortBy.field}` : undefined,
-            depth: PAYLOAD_QUERY_DEPTH,
-            context: createAdapterContext({ model, operation: 'findMany' })
-          })
 
-          const mappedDocs = (response.docs as unknown[]).map((d) => mapOutputData(model, d as any, schema)) as T[]
+        const singleId = getSingleId(where)
+        debugLog(['findMany', { collection, model, singleId, rawWhere: where, where: convertWhereClause(where, model, schema) }])
+        try {
+          let docs: any[] = []
+
+          if (singleId) {
+            const doc = await payload.findByID({
+              collection,
+              id: singleId,
+              showHiddenFields: true,
+              depth: PAYLOAD_QUERY_DEPTH,
+              context: createAdapterContext({ model, operation: 'findManyBySingleID' })
+            })
+            if (doc) docs = [doc]
+          } else {
+            const response = await payload.find({
+              collection,
+              where: where ? convertWhereClause(where, model, schema) : {},
+              select: mapSelectFields(model, undefined, schema),
+              showHiddenFields: true,
+              limit,
+              page: Math.floor(offset / limit) + 1,
+              sort: sortBy ? `${sortBy.direction === 'desc' ? '-' : ''}${sortBy.field}` : undefined,
+              depth: PAYLOAD_QUERY_DEPTH,
+              context: createAdapterContext({ model, operation: 'findManyByWhere' })
+            })
+            docs = response.docs
+          }
+
+          const mappedDocs = docs.map((d) => mapOutputData(model, d, schema)) as T[]
           return mappedDocs || []
         } catch (error) {
-          debugLog(['error in findMany', error])
-          throw error
+          errorLog(['error in findMany', error])
+          return []
         }
       },
 
       async update<T>({ model, where, update: values }: { model: string; where: Where[]; update: Record<string, any> }): Promise<T | null> {
         const payload = await resolvePayloadClient()
         const collection = getCollectionName(model, schema)
-        debugLog(['update', { collection, model }])
+        debugLog(['update', { collection, model, rawWhere: where, where: convertWhereClause(where, model, schema) }])
         try {
-          const findResponse = await payload.find({
+          const res = await payload.update({
             collection,
             where: convertWhereClause(where, model, schema),
-            limit: 1,
-            depth: PAYLOAD_QUERY_DEPTH,
-            context: createAdapterContext({ model, operation: 'updateFind' })
-          })
-
-          if (!findResponse.docs?.length) return null
-
-          const docToUpdate = findResponse.docs[0]
-
-          const response = await payload.update({
-            collection,
-            id: docToUpdate.id,
             data: values,
             depth: PAYLOAD_QUERY_DEPTH,
             context: createAdapterContext({ model, operation: 'update' })
           })
 
-          return mapOutputData(model, response as any, schema) as unknown as T
+          const response = res?.docs?.at(0)
+          return response ? (mapOutputData(model, response as any, schema) as T) : null
         } catch (error: any) {
-          debugLog(['error in update', error])
-          throw new APIError('BAD_REQUEST', {
-            message: error.message
-          })
+          errorLog(['error in update', error])
+          return null
         }
       },
 
       async updateMany({ model, where, update: values }) {
         const payload = await resolvePayloadClient()
         const collection = getCollectionName(model, schema)
-        debugLog(['updateMany', { collection, model }])
+        debugLog(['updateMany', { collection, model, rawWhere: where, where: convertWhereClause(where, model, schema) }])
         try {
-          const findResponse = await payload.find({
+          const res = await payload.update({
             collection,
             where: convertWhereClause(where, model, schema),
-            limit: 1000,
+            data: values,
             depth: PAYLOAD_QUERY_DEPTH,
-            context: createAdapterContext({ model, operation: 'updateManyFind' })
+            context: createAdapterContext({ model, operation: 'updateMany' })
           })
 
-          if (!findResponse.docs?.length) return 0
-
-          const updatePromises = findResponse.docs.map((doc) =>
-            payload.update({
-              collection,
-              id: doc.id,
-              data: values,
-              depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({ model, operation: 'updateMany' })
-            })
-          )
-
-          await Promise.all(updatePromises)
-
-          return findResponse.docs.length
+          return res?.docs?.length || 0
         } catch (error: any) {
-          debugLog(['error in updateMany', error])
-          throw new APIError('BAD_REQUEST', {
-            message: error.message
-          })
+          errorLog(['error in updateMany', error])
+          return 0
         }
       },
 
@@ -215,29 +208,15 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
         const collection = getCollectionName(model, schema)
         debugLog(['delete', { collection, model }])
         try {
-          const findResponse = await payload.find({
-            collection,
-            where: convertWhereClause(where, model, schema),
-            limit: 1,
-            depth: PAYLOAD_QUERY_DEPTH,
-            context: createAdapterContext({ model, operation: 'deleteFind' })
-          })
-
-          if (!findResponse.docs?.length) return
-
-          const docToDelete = findResponse.docs[0]
-
           await payload.delete({
             collection,
-            id: docToDelete.id,
+            where: convertWhereClause(where, model, schema),
             depth: PAYLOAD_QUERY_DEPTH,
             context: createAdapterContext({ model, operation: 'delete' })
           })
         } catch (error: any) {
-          debugLog(['error in delete', error])
-          throw new APIError('BAD_REQUEST', {
-            message: error.message
-          })
+          errorLog(['error in delete', error])
+          return
         }
       },
 
@@ -246,33 +225,17 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
         const collection = getCollectionName(model, schema)
         debugLog(['deleteMany', { collection, model }])
         try {
-          const findResponse = await payload.find({
+          const res = await payload.delete({
             collection,
             where: convertWhereClause(where, model, schema),
-            limit: 1000,
             depth: PAYLOAD_QUERY_DEPTH,
-            context: createAdapterContext({ model, operation: 'deleteManyFind' })
+            context: createAdapterContext({ model, operation: 'deleteMany' })
           })
 
-          if (!findResponse.docs?.length) return 0
-
-          const deletePromises = findResponse.docs.map((doc) =>
-            payload.delete({
-              collection,
-              id: doc.id,
-              depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({ model, operation: 'deleteMany' })
-            })
-          )
-
-          await Promise.all(deletePromises)
-
-          return findResponse.docs.length
+          return res?.docs?.length || 0
         } catch (error: any) {
-          debugLog(['error in deleteMany', error])
-          throw new APIError('BAD_REQUEST', {
-            message: error.message
-          })
+          errorLog(['error in deleteMany', error])
+          return 0
         }
       },
 
