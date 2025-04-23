@@ -23,7 +23,7 @@ export function buildAccountsCollection({
   let accountCollection: CollectionConfig = {
     slug: accountSlug,
     admin: {
-      useAsTitle: 'accountId',
+      useAsTitle: 'id',
       description: 'Accounts are used to store user accounts for authentication providers',
       group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingAccountCollection?.admin,
@@ -61,17 +61,6 @@ export function buildAccountsCollection({
         admin: {
           readOnly: true,
           description: 'The user that the account belongs to'
-        }
-      },
-      {
-        name: 'accountId',
-        type: 'text',
-        label: 'Account ID',
-        required: true,
-        index: true,
-        admin: {
-          readOnly: true,
-          description: 'The id of the account as provided by the SSO or equal to userId for credential accounts'
         }
       },
       {

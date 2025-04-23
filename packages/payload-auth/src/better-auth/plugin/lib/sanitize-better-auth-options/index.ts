@@ -39,7 +39,10 @@ export function sanitizeBetterAuthOptions({
     account: {
       ...(baOptions.account || {}),
       modelName: accountCollectionSlug,
-      fields: { userId: 'user' }
+      fields: {
+        accountId: 'id',
+        userId: 'user'
+      }
     },
     session: {
       ...(baOptions.session || {}),
