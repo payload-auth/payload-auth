@@ -8,14 +8,13 @@ import { convertWhereClause, createAdapterContext, getCollectionName, mapInputDa
 export const PAYLOAD_QUERY_DEPTH = 0
 
 const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
-  config.enableDebugLogs = true
-  function debugLog(message: any[]) {
+  function debugLog(message: any) {
     if (config.enableDebugLogs) {
       console.log('[payload-db-adapter]', ...message)
     }
   }
 
-  function errorLog(message: any[]) {
+  function errorLog(message: any) {
     console.error('[payload-db-adapter]', ...message)
   }
 
@@ -196,6 +195,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
             context: createAdapterContext({ model, operation: 'updateMany' })
           })
 
+          debugLog(['updateMany result', { count: res?.docs?.length }])
           return res?.docs?.length || 0
         } catch (error: any) {
           errorLog(['error in updateMany', error])
@@ -208,12 +208,13 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
         const collection = getCollectionName(model, schema)
         debugLog(['delete', { collection, model }])
         try {
-          await payload.delete({
+          const res = await payload.delete({
             collection,
             where: convertWhereClause(where, model, schema),
             depth: PAYLOAD_QUERY_DEPTH,
             context: createAdapterContext({ model, operation: 'delete' })
           })
+          debugLog(['delete result', { count: res?.docs?.length }])
         } catch (error: any) {
           errorLog(['error in delete', error])
           return
@@ -223,7 +224,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
       async deleteMany({ model, where }: { model: string; where: Where[] }): Promise<number> {
         const payload = await resolvePayloadClient()
         const collection = getCollectionName(model, schema)
-        debugLog(['deleteMany', { collection, model }])
+        debugLog(['deleteMany', { collection, model, rawWhere: where, where: convertWhereClause(where, model, schema) }])
         try {
           const res = await payload.delete({
             collection,
@@ -231,7 +232,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
             depth: PAYLOAD_QUERY_DEPTH,
             context: createAdapterContext({ model, operation: 'deleteMany' })
           })
-
+          debugLog(['deleteMany result', { count: res?.docs?.length }])
           return res?.docs?.length || 0
         } catch (error: any) {
           errorLog(['error in deleteMany', error])
