@@ -1,4 +1,3 @@
-import { BetterAuthError } from 'better-auth'
 import { FieldAttribute, FieldType, getAuthTables } from 'better-auth/db'
 import type { BetterAuthOptions, Where } from 'better-auth'
 import type { CollectionSlug, Where as PayloadWhere } from 'payload'
@@ -12,11 +11,19 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
     }
   }
 
-  function getModelName(model: string): CollectionSlug {
-    const collection = (schema as Record<string, any>)[model]?.modelName || model
-    if (!collection) {
-      throw new BetterAuthError(`Model ${model} does not exist in the database.`)
-    }
+  /**
+   * This function gets the collection slug for a better-auth schema model.
+   *
+   * For the base collections - The sanitizeBetterAuthOptions function ensures that whatever collection slug from the plugin options is set as the model name.
+   * For plugins - The betterAuthPluginSlugs constant is set as the modelName.
+   *
+   * NOTE: If someone overides the base collection with the collectionOverride option this will result in errors being thrown.
+   *
+   * @param model - The model name
+   * @returns The collection slug
+   */
+  function getCollectionSlug(model: string): CollectionSlug {
+    const collection = schema[model]?.modelName || model
     return collection as CollectionSlug
   }
 
@@ -30,16 +37,12 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
     return fieldName
   }
 
-  function isRelationshipField(fieldKey: string) {
-    return fieldKey.endsWith('Id') || fieldKey.endsWith('By')
+  function isRelationshipField(fieldKey: string, schemaFields: Record<string, FieldAttribute<FieldType>>) {
+    return schemaFields[fieldKey].references !== undefined
   }
 
-  function isDateField({ key, value }: { key?: string; value: any }) {
-    if (key) {
-      return (key.endsWith('At') || key.endsWith('Date') || key === 'date') && typeof value === 'string' && !isNaN(Date.parse(value))
-    } else {
-      return typeof value === 'string' && !isNaN(Date.parse(value))
-    }
+  function isDateField(value: any) {
+    return typeof value === 'string' && !isNaN(Date.parse(value))
   }
 
   function singleIdQuery(where: PayloadWhere) {
@@ -78,81 +81,34 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
     return null
   }
 
-  function multipleIdsQuery(where: PayloadWhere) {
-    if (!where || 'and' in where || 'or' in where) return null
-    if ('id' in where || '_id' in where) {
-      const idField = 'id' in where ? 'id' : '_id'
-      const condition = where[idField]
-
-      // Check if this is an 'in' operator with id field and array of values
-      if (
-        condition &&
-        typeof condition === 'object' &&
-        !Array.isArray(condition) &&
-        'in' in condition &&
-        Array.isArray(condition.in) &&
-        condition.in.length > 1 &&
-        condition.in.every((id: unknown) => typeof id === 'string' || typeof id === 'number')
-      ) {
-        return condition.in as (number | string)[]
-      }
-
-      // Also check for contains operator with array of IDs
-      if (
-        condition &&
-        typeof condition === 'object' &&
-        !Array.isArray(condition) &&
-        'contains' in condition &&
-        Array.isArray(condition.contains) &&
-        condition.contains.length > 1 &&
-        condition.contains.every((id: unknown) => typeof id === 'string' || typeof id === 'number')
-      ) {
-        return condition.contains as (number | string)[]
-      }
-    }
-    return null
-  }
-
   function normalizeData({
-    fieldKey,
-    incomingValue,
-    schemaFields,
-    relationshipField,
+    key,
+    value,
+    isRelatedField,
     idType
   }: {
-    fieldKey: string
-    incomingValue: any
-    schemaFields: Record<string, FieldAttribute<FieldType>>
-    relationshipField: boolean
+    key: string
+    value: any
+    isRelatedField: boolean
     idType: 'number' | 'text'
   }) {
-    // Early return for null/undefined values
-    if (incomingValue === null || incomingValue === undefined) {
-      return incomingValue
-    }
-
-    //special case for accountId field in accounts collection
-    if (fieldKey === 'accountId') {
-      return String(incomingValue)
-    }
-
     // Handle relationship fields (IDs) based on idType
-    if (relationshipField) {
-      if (idType === 'number' && typeof incomingValue === 'string') {
-        const parsed = parseInt(incomingValue, 10)
+    if (isRelatedField) {
+      if (idType === 'number' && typeof value === 'string') {
+        const parsed = parseInt(value, 10)
         if (!isNaN(parsed)) {
-          debugLog([`ID conversion: ${fieldKey} converting string ID to number`, { original: incomingValue, converted: parsed }])
+          debugLog([`ID conversion: ${key} converting string ID to number`, { original: value, converted: parsed }])
           return parsed
         }
-      } else if (idType === 'text' && typeof incomingValue === 'number') {
-        const stringId = String(incomingValue)
-        debugLog([`ID conversion: ${fieldKey} converting number ID to string`, { original: incomingValue, converted: stringId }])
+      } else if (idType === 'text' && typeof value === 'number') {
+        const stringId = String(value)
+        debugLog([`ID conversion: ${key} converting number ID to string`, { original: value, converted: stringId }])
         return stringId
       }
 
       // Handle array of IDs
-      if (Array.isArray(incomingValue)) {
-        return incomingValue.map((id) => {
+      if (Array.isArray(value)) {
+        return value.map((id) => {
           if (idType === 'number' && typeof id === 'string') {
             const parsed = parseInt(id, 10)
             return !isNaN(parsed) ? parsed : id
@@ -163,212 +119,109 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
         })
       }
 
-      return incomingValue
-    }
-
-    const schemaField = schemaFields[fieldKey]
-
-    // If no schema field exists, return as is
-    if (!schemaField) {
-      return incomingValue
-    }
-
-    const fieldType = schemaField.type
-
-    // Handle string type
-    if (fieldType === 'string') {
-      if (typeof incomingValue !== 'string') {
-        if (incomingValue instanceof Date) {
-          const converted = incomingValue.toISOString()
-          debugLog([`Type conversion: ${fieldKey} expected string but got Date`, { original: incomingValue, converted }])
-          return converted
-        }
-
-        const converted = String(incomingValue)
-        debugLog([`Type conversion: ${fieldKey} expected string but got ${typeof incomingValue}`, { original: incomingValue, converted }])
-        return converted
-      }
-      return incomingValue
-    }
-
-    // Handle number type
-    if (fieldType === 'number') {
-      if (typeof incomingValue !== 'number') {
-        if (incomingValue instanceof Date) {
-          const converted = incomingValue.getTime()
-          debugLog([`Type conversion: ${fieldKey} expected number but got Date`, { original: incomingValue, converted }])
-          return converted
-        }
-
-        if (typeof incomingValue === 'boolean') {
-          const converted = incomingValue ? 1 : 0
-          debugLog([`Type conversion: ${fieldKey} expected number but got boolean`, { original: incomingValue, converted }])
-          return converted
-        }
-
-        if (typeof incomingValue === 'string') {
-          const parsed = parseFloat(incomingValue)
-          if (!isNaN(parsed)) {
-            debugLog([`Type conversion: ${fieldKey} expected number but got string`, { original: incomingValue, converted: parsed }])
-            return parsed
-          }
-        }
-      }
-      return incomingValue
-    }
-
-    // Handle boolean type
-    if (fieldType === 'boolean') {
-      if (typeof incomingValue !== 'boolean') {
-        let converted
-
-        if (typeof incomingValue === 'string') {
-          converted = incomingValue.toLowerCase() === 'true' || incomingValue === '1'
-        } else if (typeof incomingValue === 'number') {
-          converted = incomingValue !== 0
-        } else {
-          converted = !!incomingValue
-        }
-
-        debugLog([`Type conversion: ${fieldKey} expected boolean but got ${typeof incomingValue}`, { original: incomingValue, converted }])
-        return converted
-      }
-      return incomingValue
-    }
-
-    // Handle date type
-    if (fieldType === 'date') {
-      if (!(incomingValue instanceof Date)) {
-        let converted
-
-        if (typeof incomingValue === 'string' || typeof incomingValue === 'number') {
-          converted = new Date(incomingValue)
-          if (!isNaN(converted.getTime())) {
-            debugLog([`Type conversion: ${fieldKey} expected Date but got ${typeof incomingValue}`, { original: incomingValue, converted }])
-            return converted
-          }
-        }
-      }
-      return incomingValue
-    }
-
-    // Handle array types (string[] or number[] or LiteralString[])
-    if (typeof fieldType === 'string' && fieldType.endsWith('[]')) {
-      const baseType = fieldType.slice(0, -2)
-
-      // Convert to array if not already
-      let arrayValue = incomingValue
-      if (!Array.isArray(incomingValue)) {
-        if (typeof incomingValue === 'string') {
-          try {
-            // Try to parse as JSON array
-            const parsed = JSON.parse(incomingValue)
-            if (Array.isArray(parsed)) {
-              debugLog([`Type conversion: ${fieldKey} parsed JSON string to array`, { original: incomingValue, converted: parsed }])
-              arrayValue = parsed
-            } else {
-              arrayValue = [incomingValue]
-            }
-          } catch (e) {
-            // If parsing fails, wrap in array
-            arrayValue = [incomingValue]
-          }
-        } else {
-          // Wrap non-array values in array
-          arrayValue = [incomingValue]
-        }
-
-        debugLog([`Type conversion: ${fieldKey} converted to array`, { original: incomingValue, converted: arrayValue }])
-      }
-
-      // Normalize each array element based on the base type
-      return arrayValue.map((item: any, index: number) => {
-        if (baseType === 'string' && typeof item !== 'string') {
-          const converted = String(item)
-          debugLog([`Type conversion: ${fieldKey}[${index}] expected string but got ${typeof item}`, { original: item, converted }])
-          return converted
-        }
-
-        if (baseType === 'number' && typeof item !== 'number') {
-          if (typeof item === 'string') {
-            const parsed = parseFloat(item)
-            if (!isNaN(parsed)) {
-              debugLog([`Type conversion: ${fieldKey}[${index}] expected number but got string`, { original: item, converted: parsed }])
-              return parsed
-            }
-          } else if (typeof item === 'boolean') {
-            return item ? 1 : 0
-          }
-        }
-        return item
-      })
+      return value
     }
 
     // For any other types or if no conversion needed, return as is
-    return incomingValue
+    return value
   }
 
-  function transformInput({
-    data,
-    model,
-    idType,
-    action
-  }: {
-    data: Record<string, any>
-    model: string
-    idType: 'number' | 'text'
-    action: 'create' | 'update'
-  }) {
+  /**
+   * This function transforms the input from better-auth to the expected payload format.
+   *
+   * It handles the conversion of relationship fields to the correct format for better-auth. (String ID)
+   * and also maintains the field for how payload would expect it. (Typeof id payload would expect)
+   *
+   */
+  function transformInput({ data, model, idType }: { data: Record<string, any>; model: string; idType: 'number' | 'text' }) {
     const transformedData: Record<string, any> = {}
     const schemaFields = schema[model].fields
-    for (const fieldKey in data) {
-      if (data[fieldKey] === undefined && action === 'update') {
-        continue
+    Object.entries(data).forEach(([key, value]) => {
+      if (!value) {
+        return
       }
-      const relationshipField = isRelationshipField(fieldKey)
-      const schemaFieldName = schemaFields[fieldKey]?.fieldName
+
+      // check if we're dealing with a relationship field
+      const isRelatedField = isRelationshipField(key, schemaFields)
+      // get the updated fieldName from the better-auth schema
+      const schemaFieldName = schemaFields[key]?.fieldName
       const normalizedData = normalizeData({
         idType,
-        fieldKey,
-        incomingValue: data[fieldKey],
-        schemaFields,
-        relationshipField
+        key,
+        value,
+        isRelatedField
       })
+
+      // If there is an updated fieldName we use that, otherwise we use the original key
       if (schemaFieldName) {
         transformedData[schemaFieldName] = normalizedData
       } else {
-        transformedData[fieldKey] = normalizedData
+        transformedData[key] = normalizedData
       }
-    }
+    })
 
     return transformedData
   }
 
+  /**
+   * This function transforms the output of a payload operation to a better-auth schema.
+   
+   * The main use case for this function is to ensure that relationship fields align with the better-auth schema.
+   * Also because better-auth has all id fields typed as a string as seen here: 
+   * @see https://github.com/better-auth/better-auth/blob/main/packages/better-auth/src/db/schema.ts#L125
+   *
+   * We want to ensure that the returned typeof data is consistent with what the better-auth schemas expect.  
+   * 
+   * NOTE: By adding depth: 0 to our operations we remove the need to reduce objects and just have to do a simple type conversion to string,
+   * but will keep these checks as a redundancy.
+   * 
+   * This also means that we need to handle string id type conversion back to the proper type with the payload database.
+   * 
+   * Also as dates are stored as strings in payload while better auth expects dates to be typeof date we convert those values back.
+   *
+   * @param doc - The payload document
+   * @param model - The model name
+   * @returns The transformed document
+   */
   function transformOutput<T extends Record<string, any> | null>({ doc, model }: { doc: T; model: string }): T {
-    if (doc === null || doc === undefined || typeof doc !== 'object') return doc
+    if (!doc || typeof doc !== 'object') return doc
 
-    const result = { ...doc } as any
+    const result = { ...doc }
     const schemaFields = schema[model].fields
+
+    // We get all the relationship fields from the schema
     const relationshipFields = Object.entries(schemaFields)
-      .filter(([key]) => isRelationshipField(key))
+      .filter(([key]) => isRelationshipField(key, schemaFields))
       .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {} as Record<string, FieldAttribute<FieldType>>)
 
     Object.entries(doc).forEach(([key, value]) => {
       if (value === null || value === undefined) return
-
+      // this finds the better-auth schema field key for the renamed relationship fieldName
       const originalKey = findRelationshipOriginalKey(key, relationshipFields)
       if (originalKey) {
+        // if this value exists then we know that this field is both a related document field and that its fieldName has been renamed
         processRelationshipField(result, originalKey, key, value)
+        return
+      }
+      // Check if the value is a date value and convert to be typeof date
+      if (isDateField({ value })) {
+        result[key] = new Date(value)
+        return
       }
 
-      if (isDateField({ key, value })) {
-        result[key] = new Date(value)
-      }
+      // Otherwise we do nothing and leave the value as is
     })
 
     return result as T
   }
 
+  /**
+   * This function finds the original better-auth schema key for a relationship field.
+   *
+   * @param fieldName - The field name
+   * @param relationshipFields - The relationship fields
+   * @returns The original key
+   */
   function findRelationshipOriginalKey(
     fieldName: string,
     relationshipFields: Record<string, FieldAttribute<FieldType>>
@@ -376,26 +229,38 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
     return Object.keys(relationshipFields).find((key) => relationshipFields[key].fieldName === fieldName)
   }
 
+  /**
+   * This function processes a relationship field.
+   *
+   * It handles the conversion of relationship fields to the correct format for better-auth. (String ID)
+   * and also maintains the field for how payload would expect it. (Typeof id payload would expect)
+   *
+   * For redundancy we assume the value could be an object, array or primitive value
+   *
+   */
   function processRelationshipField(result: Record<string, any>, originalKey: string, fieldName: string, value: any): void {
-    // Simple ID value (string or number)
+    // Primitive ID value (string or number)
     if (typeof value === 'string' || typeof value === 'number') {
-      result[originalKey] = value
+      result[originalKey] = String(value)
+      result[fieldName] = value
       return
     }
-
+    // simple object with ID
+    if (typeof value === 'object' && 'id' in value) {
+      result[originalKey] = String(value.id)
+      result[fieldName] = value.id
+      return
+    }
     // Array of relationships
     if (Array.isArray(value) && value.length > 0) {
       if (value.every((item) => typeof item === 'object' && 'id' in item)) {
-        result[originalKey] = value.map((item) => item.id)
+        result[originalKey] = value.map((item) => String(item.id))
         result[fieldName] = value.map((item) => item.id)
+      } else {
+        result[originalKey] = value.map((item) => String(item))
+        result[fieldName] = value.map((item) => item)
       }
       return
-    }
-
-    // Single relationship object with ID
-    if (typeof value === 'object' && 'id' in value) {
-      result[originalKey] = value.id
-      result[fieldName] = value.id
     }
   }
 
@@ -513,9 +378,8 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
 
   return {
     getFieldName,
-    getModelName,
+    getCollectionSlug,
     singleIdQuery,
-    multipleIdsQuery,
     transformInput,
     transformOutput,
     convertWhereClause,
