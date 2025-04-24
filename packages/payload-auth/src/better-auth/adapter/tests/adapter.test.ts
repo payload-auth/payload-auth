@@ -149,7 +149,12 @@ describe('Run BetterAuth Base Collections Adapter tests with number id', async (
     },
     {
       predefinedOptions: {
-        ...payload.betterAuth.options
+        ...payload.betterAuth.options,
+        advanced: {
+          database: {
+            useNumberId: true
+          }
+        }
       }
     }
   )
