@@ -96,7 +96,7 @@ export const payloadConfig = buildConfig({
   secret: 'super-secret-payload-key',
   db: postgresAdapter({
     pool: {
-      connectionString: 'postgres://postgres:postgres@localhost:5432/postgres'
+      connectionString: 'postgres://forrestdevs:@localhost:5432/pba-tests'
     },
     push: false,
     transactionOptions: false

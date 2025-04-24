@@ -681,16 +681,12 @@ export async function runBaseCollectionsTests(
   )
 }
 
-export async function runBaseCollectionsNumberIdTests(opts: NumberIdAdapterTestOptions) {
+export async function runBaseCollectionsNumberIdTests(
+  opts: NumberIdAdapterTestOptions,
+  internalOptions?: { predefinedOptions: Omit<BetterAuthOptions, 'database'> }
+) {
   const cleanup: { modelName: string; id: string }[] = []
-  const adapter = async () =>
-    await opts.getAdapter({
-      advanced: {
-        database: {
-          useNumberId: true
-        }
-      }
-    })
+  const adapter = async () => await opts.getAdapter(internalOptions?.predefinedOptions)
 
   describe('Should run number id specific tests', async () => {
     let idNumber = -1
@@ -750,19 +746,14 @@ export async function runBaseCollectionsNumberIdTests(opts: NumberIdAdapterTestO
     })
     await runBaseCollectionsTests(
       {
-        ...opts,
+        getAdapter: async () => await adapter(),
         disableTests: {
-          ...opts.disableTests,
           SHOULD_PREFER_GENERATE_ID_IF_PROVIDED: true
         }
       },
       {
         predefinedOptions: {
-          advanced: {
-            database: {
-              useNumberId: true
-            }
-          }
+          ...internalOptions?.predefinedOptions
         }
       }
     )

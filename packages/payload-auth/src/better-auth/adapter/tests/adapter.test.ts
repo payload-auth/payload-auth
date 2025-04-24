@@ -1,7 +1,7 @@
 import { betterAuth, type BetterAuthOptions } from 'better-auth'
 import { afterAll, beforeAll, describe, expect, it, test } from 'vitest'
 import { payloadAdapter } from '../index'
-import { runBaseCollectionsTests } from './base-collections-tests'
+import { runBaseCollectionsNumberIdTests, runBaseCollectionsTests } from './base-collections-tests'
 import { getPayload } from './dev'
 import { BasePayload } from 'payload'
 
@@ -118,6 +118,41 @@ describe('Run BetterAuth Base Collections Adapter tests', async () => {
       SHOULD_PREFER_GENERATE_ID_IF_PROVIDED: true
     }
   })
+})
+
+describe('Run BetterAuth Base Collections Adapter tests with number id', async () => {
+  const payload = await getPayload()
+
+  deleteAll(payload)
+
+  const adapter = payloadAdapter(payload, {
+    idType: 'number'
+  })
+
+  await runBaseCollectionsNumberIdTests(
+    {
+      getAdapter: async (
+        customOptions = {
+          ...payload.betterAuth.options,
+          advanced: {
+            database: {
+              useNumberId: true
+            }
+          }
+        }
+      ) => {
+        return adapter({ ...customOptions })
+      },
+      disableTests: {
+        SHOULD_PREFER_GENERATE_ID_IF_PROVIDED: true
+      }
+    },
+    {
+      predefinedOptions: {
+        ...payload.betterAuth.options
+      }
+    }
+  )
 })
 
 describe('Authentication Flow Tests', async () => {
