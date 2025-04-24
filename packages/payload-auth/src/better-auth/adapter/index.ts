@@ -327,7 +327,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
           where
         })
 
-        const transformed = transformInput({
+        const transformedInput = transformInput({
           data: update,
           model,
           idType: config.idType
@@ -344,7 +344,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
             result = await payload.update({
               collection: collectionSlug,
               id,
-              data: transformed,
+              data: transformedInput,
               depth: PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({ model, operation: 'updateByID' })
             })
@@ -353,7 +353,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
             const doc = await payload.update({
               collection: collectionSlug,
               where: payloadWhere,
-              data: transformed,
+              data: transformedInput,
               depth: PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({
                 model,
@@ -400,7 +400,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
           where
         })
 
-        const transformed = transformInput({
+        const transformedInput = transformInput({
           data: update,
           model,
           idType: config.idType
@@ -412,7 +412,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
           const { docs: updateResult } = await payload.update({
             collection: collectionSlug,
             where: payloadWhere,
-            data: transformed,
+            data: transformedInput,
             depth: PAYLOAD_QUERY_DEPTH,
             context: createAdapterContext({ model, operation: 'updateMany' })
           })

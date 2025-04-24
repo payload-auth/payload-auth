@@ -230,6 +230,21 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
       return value
     }
 
+    if (['id', '_id'].includes(key)) {
+      if (typeof value === 'string' && idType === 'number') {
+        const parsed = parseInt(value, 10)
+        if (!isNaN(parsed)) {
+          debugLog([`ID conversion: ${key} converting string ID to number`, { original: value, converted: parsed }])
+          return parsed
+        }
+      }
+      if (typeof value === 'number' && idType === 'text') {
+        const stringId = String(value)
+        debugLog([`ID conversion: ${key} converting number ID to string`, { original: value, converted: stringId }])
+        return stringId
+      }
+    }
+
     // Only process relationship fields that need type conversion
     if (isRelatedField) {
       // Handle single ID value conversion
@@ -353,7 +368,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
       if (value === null || value === undefined) return
 
       // Convert ID fields to strings for BetterAuth compatibility
-      if (key === 'id') {
+      if (['id', '_id'].includes(key)) {
         result[key] = String(value)
         return
       }
