@@ -5,7 +5,7 @@ import { createTransform } from './transform'
 import type { PayloadAdapter } from './types'
 
 export const BETTER_AUTH_CONTEXT_KEY = 'payload-db-adapter'
-const PAYLOAD_QUERY_DEPTH = 1
+const PAYLOAD_QUERY_DEPTH = 0
 
 /**
  * Payload adapter for Better Auth
