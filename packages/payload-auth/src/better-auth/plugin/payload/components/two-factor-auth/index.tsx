@@ -15,7 +15,7 @@ import { useAppForm } from '@/shared/form'
 
 const baseClass = 'two-factor-auth-modal'
 
-export function TwoFactorAuth() {
+export const TwoFactorAuth: React.FC = () => {
   const [totpURI, setTotpURI] = useState('')
   const [backupCodes, setBackupCodes] = useState<string[] | null>(null)
   const [formState, setFormState] = useState<'enable' | 'verify' | 'backupCodes' | 'disable'>('enable')
@@ -180,7 +180,7 @@ export function TwoFactorAuth() {
           }}
           size="medium"
           buttonStyle="pill">
-          Manage Two‑Factor
+          Disable Two-Factor
         </Button>
       ) : (
         <Button
@@ -190,7 +190,7 @@ export function TwoFactorAuth() {
           }}
           size="medium"
           buttonStyle="pill">
-          Enable Two‑Factor
+          Enable Two-Factor
         </Button>
       )}
       <Modal slug="two-factor-auth-modal" className={baseClass} closeOnBlur>

@@ -15,6 +15,7 @@ import { createAuthClient } from 'better-auth/client'
 import { usernameClient, twoFactorClient } from 'better-auth/client/plugins'
 import { formatAdminURL, getLoginOptions } from 'payload/shared'
 import { useRouter } from 'next/navigation'
+import { valueOrDefaultString } from '@/shared/utils/value-or-default'
 
 type AdminLoginClientProps = {
   loginMethods: LoginMethod[]
@@ -45,7 +46,7 @@ const LoginForm: React.FC<{
 }) => {
   const { config } = useConfig()
   const router = useRouter()
-  const adminRoute = config?.routes?.admin || '/admin'
+  const adminRoute = valueOrDefaultString(config?.routes?.admin, '/admin')
   const { t } = useTranslation()
   const { canLoginWithEmail, canLoginWithUsername } = getLoginOptions(loginWithUsername)
   const searchParamError = searchParams?.error
@@ -60,7 +61,6 @@ const LoginForm: React.FC<{
         usernameClient(),
         twoFactorClient({
           onTwoFactorRedirect() {
-            console.log('redirectUrl', adminRoute, `${adminRoute}/two-factor-verify?redirect=${redirectUrl}`)
             router.push(`${adminRoute}/two-factor-verify?redirect=${redirectUrl}`)
           }
         })

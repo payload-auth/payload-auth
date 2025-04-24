@@ -4,8 +4,9 @@ import { sanitizeBetterAuthOptions } from './lib/sanitize-better-auth-options/in
 import { getRequiredCollectionSlugs } from './lib/get-required-collection-slugs'
 import { buildCollections } from './lib/build-collections/index'
 import { initBetterAuth } from './lib/init-better-auth'
-import { adminRoutes } from './constants'
+import { adminRoutes, baseCollectionSlugs, betterAuthPluginSlugs, supportedBetterAuthPluginIds } from './constants'
 import { setLoginMethods } from './lib/set-login-methods'
+import { checkTwoFactorPlugin } from './helpers/check-two-factor-plugin'
 
 export { sanitizeBetterAuthOptions } from './lib/sanitize-better-auth-options/index'
 export { getPayloadAuth } from './lib/get-payload-auth'
@@ -84,19 +85,23 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
             resetPassword: {
               path: adminRoutes.resetPassword,
               Component: {
-                path: 'payload-auth/better-auth/plugin/rsc#ResetPassword',
+                path: 'payload-auth/better-auth/plugin/rsc#ResetPassword'
               }
             },
-            twoFactorVerify: {
-              path: adminRoutes.twoFactorVerify,
-              Component: {
-                path: 'payload-auth/better-auth/plugin/rsc#TwoFactorVerify',
-                serverProps: {
-                  payloadConfig: config,
-                  verificationSlug: pluginOptions.verifications?.slug
+            ...(checkTwoFactorPlugin(betterAuthOptions) && {
+              twoFactorVerify: {
+                path: adminRoutes.twoFactorVerify,
+                Component: {
+                  path: 'payload-auth/better-auth/plugin/rsc#TwoFactorVerify',
+                  serverProps: {
+                    payloadConfig: config,
+                    twoFactorOptions:
+                      betterAuthOptions.plugins?.find((plugin) => plugin.id === supportedBetterAuthPluginIds.twoFactor)?.options ?? {},
+                    verificationSlug: pluginOptions.verifications?.slug ?? baseCollectionSlugs.verifications
+                  }
                 }
               }
-            }
+            })
           }
         },
         routes: {
