@@ -82,11 +82,11 @@
   },
   "peerDependencies": {
     "@payloadcms/ui": "3.35.1",
-    "payload": "^3.35",
+    "better-auth": "^1.2",
     "next": "^15.3.0",
+    "payload": "^3.35",
     "react": "^19",
-    "react-dom": "^19",
-    "better-auth": "^1.2"
+    "react-dom": "^19"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
@@ -100,19 +100,21 @@
     "@types/node": "^20.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "copyfiles": "^2.4.1",
     "typescript": "5.8.2",
     "vitest": "^1.0.0"
   },
   "dependencies": {
-    "@tanstack/react-form": "1.4.0",
     "@better-auth/utils": "0.2.4",
     "@clerk/backend": "^1.25.8",
     "@clerk/clerk-js": "^5.58.1",
     "@clerk/nextjs": "^6.12.12",
+    "@tanstack/react-form": "1.4.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "jose": "^6.0.10",
     "lucide-react": "0.482.0",
+    "qrcode.react": "^4.2.0",
     "sonner": "2.0.1",
     "svix": "^1.62.0",
     "tailwind-merge": "3.0.2",

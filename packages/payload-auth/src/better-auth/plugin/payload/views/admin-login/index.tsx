@@ -95,7 +95,6 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
   const prefillEmail = prefillAutoLogin && typeof config.admin?.autoLogin === 'object' ? config.admin?.autoLogin.email : undefined
   const prefillPassword = prefillAutoLogin && typeof config.admin?.autoLogin === 'object' ? config.admin?.autoLogin.password : undefined
   const hasUsernamePlugin = checkUsernamePlugin(betterAuthOptions)
-  const hasPasskeyPlugin = checkPasskeyPlugin(betterAuthOptions)
   const loginMethods = pluginOptions.admin?.loginMethods ?? []
   const loginWithUsername = collections?.[userSlug]?.config.auth.loginWithUsername
   const canLoginWithUsername = (hasUsernamePlugin && loginWithUsername) ?? false

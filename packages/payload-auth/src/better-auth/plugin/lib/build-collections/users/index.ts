@@ -222,7 +222,12 @@ export function buildUsersCollection({
             defaultValue: false,
             label: 'Two Factor Enabled',
             admin: {
-              description: 'Whether the user has two factor authentication enabled'
+              description: 'Whether the user has two factor authentication enabled',
+              components: {
+                Field: {
+                  path: 'payload-auth/better-auth/plugin/client#TwoFactorAuth'
+                }
+              }
             }
           })
           break

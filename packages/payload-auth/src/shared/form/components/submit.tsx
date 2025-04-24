@@ -14,7 +14,7 @@ export const Submit: React.FC<SubmitProps> = ({ label, loadingLabel }) => {
     <form.Subscribe
       selector={(state) => [state.canSubmit, state.isSubmitting]}
       children={([canSubmit, isSubmitting]) => (
-        <FormSubmit buttonStyle="primary" size="large" disabled={!canSubmit}>
+        <FormSubmit buttonStyle="primary" type="button" onClick={() => form.handleSubmit()} size="large" disabled={!canSubmit}>
           {isSubmitting ? loadingLabel : label}
         </FormSubmit>
       )}
