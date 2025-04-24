@@ -381,7 +381,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
       }
 
       // Convert ISO date strings to Date objects for BetterAuth
-      if (isDateField({ value })) {
+      if (isDateField(value)) {
         result[key] = new Date(value)
         return
       }
