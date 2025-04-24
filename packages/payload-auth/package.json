@@ -75,7 +75,7 @@
   "scripts": {
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo",
     "build": "pnpm clean && pnpm copyfiles && pnpm build:types && pnpm build:swc",
-    "copyfiles": "copyfiles -u 1 \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist",
+    "copyfiles": "copyfiles -u 1 --exclude \"**/tests/**\" \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist",
     "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
     "build:types": "tsc --project tsconfig.json",
     "test": "vitest"

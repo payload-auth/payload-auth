@@ -110,8 +110,6 @@ export async function runBaseCollectionsTests(
         }
       })
       expect(res).toHaveProperty('id')
-      //@ts-ignore
-      expect(typeof res?.id).toEqual('string')
     }
   )
 

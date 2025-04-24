@@ -153,3 +153,28 @@ describe('Authentication Flow Tests', async () => {
     expect(user.user).toBeDefined()
   })
 })
+
+describe('ID type conversion', async () => {
+  const payload = await getPayload()
+  deleteAll(payload)
+
+  it('should retrieve a document by string ID when stored as number', async () => {
+    const created = await payload.create({
+      collection: 'users',
+      data: {
+        email: 'id-type-test@email.com',
+        password: 'testpassword',
+        name: 'ID Type Test'
+      }
+    })
+    expect(created).toBeDefined()
+    expect(typeof created.id).toBe('number')
+
+    const found = await payload.findByID({
+      collection: 'users',
+      id: String(created.id)
+    })
+    expect(found).toBeDefined()
+    expect(found.id).toEqual(created.id)
+  })
+})

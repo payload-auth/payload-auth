@@ -32,6 +32,13 @@ export function sanitizeBetterAuthOptions({
   // Initialize with base configuration
   let res: SanitizedBetterAuthOptions = {
     ...baOptions,
+    advanced: {
+      ...(baOptions.advanced || {}),
+      database: {
+        ...(baOptions.advanced?.database || {}),
+        generateId: false
+      }
+    },
     user: {
       ...(baOptions.user || {}),
       modelName: userCollectionSlug
