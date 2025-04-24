@@ -80,7 +80,8 @@ export const adminRoutes = {
   resetPassword: '/reset-password',
   adminSignup: '/signup',
   adminLogin: '/login',
-  loginRedirect: '/login-redirect'
+  loginRedirect: '/login-redirect',
+  twoFactorVerify: '/two-factor-verify'
 } as const
 
 export const adminEndpoints = {

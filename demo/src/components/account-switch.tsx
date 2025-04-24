@@ -36,8 +36,7 @@ export default function AccountSwitcher() {
               <CommandItem
                 onSelect={() => {}}
                 className="hover:bg-accent/50 w-full justify-between text-sm"
-                key={`current-account-${currentUser?.id}`}
-              >
+                key={`current-account-${currentUser?.id}`}>
                 <div className="flex items-center">
                   <Avatar className="mr-2 h-5 w-5">
                     <AvatarImage src={currentUser?.image || ''} alt={currentUser?.name ?? ''} />
@@ -51,25 +50,24 @@ export default function AccountSwitcher() {
             <CommandGroup heading="Switch Account">
               {deviceSessions &&
                 deviceSessions
-                  .filter((session) => session.user.id !== currentUser?.id)
+                  .filter((session) => Number(session.userId) !== currentUser?.id)
                   .map((userSession, index) => (
                     <CommandItem
                       key={index}
                       onSelect={async () => {
                         await authClient.multiSession.setActive({
-                          sessionToken: userSession.session.token
+                          sessionToken: userSession.token
                         })
                         setOpen(false)
                       }}
-                      className="hover:bg-accent hover:text-accent-foreground text-sm transition-colors duration-200"
-                    >
+                      className="hover:bg-accent hover:text-accent-foreground text-sm transition-colors duration-200">
                       <Avatar className="mr-2 h-5 w-5">
-                        <AvatarImage src={userSession.user.image || ''} alt={userSession.user.name} />
-                        <AvatarFallback className="bg-secondary/20 text-secondary">{userSession.user.name.charAt(0)}</AvatarFallback>
+                        <AvatarImage src={''} alt={userSession.userId} />
+                        <AvatarFallback className="bg-secondary/20 text-secondary">{userSession.userId.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div className="flex w-full flex-col">
-                        <span className="font-medium">{userSession.user.name}</span>
-                        <span className="text-muted-foreground truncate text-xs">{userSession.user.email}</span>
+                        <span className="font-medium">{userSession.userId}</span>
+                        <span className="text-muted-foreground truncate text-xs">{userSession.userId}</span>
                       </div>
                     </CommandItem>
                   ))}
@@ -83,8 +81,7 @@ export default function AccountSwitcher() {
                   router.push('/sign-in')
                   setOpen(false)
                 }}
-                className="hover:bg-accent hover:text-accent-foreground group cursor-pointer text-sm transition-colors duration-200"
-              >
+                className="hover:bg-accent hover:text-accent-foreground group cursor-pointer text-sm transition-colors duration-200">
                 <PlusCircle className="text-primary group-hover:text-primary/80 mr-2 h-5 w-5 transition-colors duration-200" />
                 <span className="font-medium">Add Account</span>
               </CommandItem>

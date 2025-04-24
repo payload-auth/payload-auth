@@ -3,5 +3,6 @@ import AdminLogin from '../views/admin-login'
 import ForgotPassword from '../views/forgot-password'
 import ResetPassword from '../views/reset-password'
 import RSCRedirect from '../components/rsc-redirect'
+import TwoFactorVerify from '../views/two-factor-verify'
 
-export { AdminSignup, AdminLogin, ForgotPassword, ResetPassword, RSCRedirect }
+export { AdminSignup, AdminLogin, ForgotPassword, ResetPassword, RSCRedirect, TwoFactorVerify }
