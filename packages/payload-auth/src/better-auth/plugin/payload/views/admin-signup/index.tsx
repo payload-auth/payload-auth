@@ -11,9 +11,8 @@ import { checkUsernamePlugin } from '../../../helpers/check-username-plugin'
 import type { AdminViewServerProps } from 'payload'
 import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../../../types'
 
-import './index.scss'
-
-const baseClass = 'admin-signup'
+//  Avoid the need for custom styles
+const baseClass = 'login'
 
 const searchParamsSchema = z.object({
   token: z.string()
@@ -50,86 +49,55 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
 
   const { success, data } = searchParamsSchema.safeParse(searchParams)
 
+  let hasInvalidToken = false
   if (!success) {
-    return (
-      <MinimalTemplate className={baseClass}>
-        <div className={`${baseClass}__brand`}>
-          <Logo
-            i18n={i18n}
-            locale={locale}
-            params={params}
-            payload={req.payload}
-            permissions={permissions}
-            searchParams={searchParams}
-            user={user ?? undefined}
-          />
-        </div>
-        <FormHeader
-          style={{ textAlign: 'center' }}
-          heading="Invalid or expired token"
-          description="You need to get a new invite to sign up."
-        />
-      </MinimalTemplate>
-    )
+    hasInvalidToken = true
+  } else {
+    const { totalDocs: isValidInvite } = await req.payload.count({
+      collection: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
+      where: { token: { equals: data.token } }
+    })
+    if (!isValidInvite) {
+      hasInvalidToken = true
+    }
   }
 
-  const invite = await req.payload.find({
-    collection: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
-    where: { token: { equals: data.token } },
-    limit: 1
-  })
-
-  if (invite.docs.length === 0) {
-    return (
-      <section className={`${baseClass} login template-minimal template-minimal--width-normal`}>
-        <div className="template-minimal__wrap">
-          <div className={`${baseClass}__brand`}>
-            <Logo
-              i18n={i18n}
-              locale={locale}
-              params={params}
-              payload={req.payload}
-              permissions={permissions}
-              searchParams={searchParams}
-              user={user ?? undefined}
-            />
-          </div>
-          <FormHeader heading={i18n.t('error:tokenInvalidOrExpired')} />
-        </div>
-      </section>
-    )
-  }
-
-  const inviteRole = invite.docs[0].role as string
-  const socialProviders = pluginOptions.adminComponents?.socialProviders ?? {}
+  const loginMethods = pluginOptions.admin?.loginMethods ?? []
   const hasUsernamePlugin = checkUsernamePlugin(betterAuthOptions)
   const loginWithUsername = collections?.[userSlug]?.config.auth.loginWithUsername
   const canLoginWithUsername = (hasUsernamePlugin && loginWithUsername) ?? false
 
   return (
-    <section className={`${baseClass} login template-minimal template-minimal--width-normal`}>
-      <div className="template-minimal__wrap">
-        <div className={`${baseClass}__brand`}>
-          <Logo
-            i18n={i18n}
-            locale={locale}
-            params={params}
-            payload={req.payload}
-            permissions={permissions}
-            searchParams={searchParams}
-            user={user ?? undefined}
-          />
-        </div>
-        <AdminSignupClient
-          token={data.token}
-          role={inviteRole}
-          userSlug={userSlug}
-          socialProviders={socialProviders}
-          searchParams={searchParams ?? {}}
-          loginWithUsername={canLoginWithUsername}
+    <MinimalTemplate className={`${baseClass} admin-signup`}>
+      <div className={`${baseClass}__brand admin-signup__brand`}>
+        <Logo
+          i18n={i18n}
+          locale={locale}
+          params={params}
+          payload={req.payload}
+          permissions={permissions}
+          searchParams={searchParams}
+          user={user ?? undefined}
         />
       </div>
-    </section>
+      {hasInvalidToken ? (
+        <FormHeader
+          style={{ textAlign: 'center' }}
+          heading="Invalid or expired token"
+          description="You need to get a new invite to sign up."
+        />
+      ) : (
+        data && (
+          <AdminSignupClient
+            adminInviteToken={data.token}
+            userSlug={userSlug}
+            loginMethods={loginMethods}
+            searchParams={searchParams ?? {}}
+            loginWithUsername={canLoginWithUsername}
+          />
+        )
+      )}
+    </MinimalTemplate>
   )
 }
 

@@ -52,7 +52,10 @@ export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions, better
         const baseURL = betterAuthOptions.baseURL
         const basePath = betterAuthOptions.basePath ?? '/api/auth'
         const authApiURL = `${baseURL}${basePath}`
-        const url = authApiURL + '/sign-up/email'
+        let url = `${authApiURL}/sign-up/email`
+        if (routeParamsData?.token) {
+          url += `?adminInviteToken=${routeParamsData.token}`
+        }
         const result = await fetch(url, {
           method: 'POST',
           headers: {

@@ -1,5 +1,9 @@
 'use client'
 
+/**
+ * This whole file needs to be looked over before used again.
+ */
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,15 +22,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { organization, useActiveOrganization, useListOrganizations, useSession } from '@/lib/auth/client'
+import { organization, useActiveOrganization, useListOrganizations } from '@/lib/auth/client'
+import { useBetterAuth } from '@/lib/auth/context'
 import { ChevronDownIcon, PlusIcon } from '@radix-ui/react-icons'
 import { Loader2, MailPlus } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import Image from 'next/image'
 import { use, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { Member, Invitation } from '@/payload-types'
-import { useBetterAuth } from '@/lib/auth/context'
 
 export function OrganizationCard() {
   const organizations = useListOrganizations()
@@ -50,9 +53,9 @@ export function OrganizationCard() {
     exit: { opacity: 0, height: 0 }
   }
 
-  const currentMember = optimisticOrg?.members.find((member: Member) => {
-    if (typeof member.user === 'object') return member.user.id === parseInt(session?.user.id || '0')
-    return member.user === parseInt(session?.user.id || '0')
+  const currentMember = optimisticOrg?.members.find((member) => {
+    if (typeof member.user === 'object') return member.user.id === session?.user.id
+    return member.user === session?.user.id
   })
 
   return (
@@ -98,7 +101,33 @@ export function OrganizationCard() {
                     const { data } = await organization.setActive({
                       organizationId: org.id.toString()
                     })
-                    setOptimisticOrg(data)
+                    console.log(data)
+                    // @TODO: Fix this mess
+                    setOptimisticOrg(
+                      data
+                        ? {
+                            ...data,
+                            members: data.members.map((member) => ({
+                              ...member,
+                              user:
+                                typeof member.user === 'object'
+                                  ? {
+                                      // @ts-ignore
+                                      id: member.user.id ?? member.userId ?? '',
+                                      name: member.user.name ?? '',
+                                      email: member.user.email ?? '',
+                                      image: member.user.image ?? undefined
+                                    }
+                                  : {
+                                      id: member.user,
+                                      name: '',
+                                      email: '',
+                                      image: undefined
+                                    }
+                            }))
+                          }
+                        : null
+                    )
                   }}
                 >
                   <p className="sm text-sm">{org.name}</p>
@@ -126,7 +155,7 @@ export function OrganizationCard() {
           <div className="flex flex-grow flex-col gap-2">
             <p className="border-b-foreground/10 border-b-2 font-medium">Members</p>
             <div className="flex flex-col gap-2">
-              {optimisticOrg?.members.map((member: Member) => (
+              {optimisticOrg?.members.map((member) => (
                 <div key={member.id} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {typeof member?.user === 'object' && (
@@ -176,8 +205,8 @@ export function OrganizationCard() {
             <div className="flex flex-col gap-2">
               <AnimatePresence>
                 {optimisticOrg?.invitations
-                  .filter((invitation: Invitation) => invitation.status === 'pending')
-                  .map((invitation: Invitation) => (
+                  .filter((invitation) => invitation.status === 'pending')
+                  .map((invitation) => (
                     <motion.div
                       key={invitation.id}
                       className="flex items-center justify-between"
@@ -210,8 +239,8 @@ export function OrganizationCard() {
                                   setIsRevoking(isRevoking.filter((id) => id !== invitation.id.toString()))
                                   setOptimisticOrg({
                                     ...optimisticOrg,
-                                    invitations: optimisticOrg?.invitations.filter((inv: Invitation) => inv.id !== invitation.id)
-                                  } as typeof activeOrganization)
+                                    invitations: optimisticOrg?.invitations.filter((inv) => inv.id !== invitation.id)
+                                  } as typeof optimisticOrg)
                                 },
                                 onError: (ctx) => {
                                   toast.error(ctx.error.message)

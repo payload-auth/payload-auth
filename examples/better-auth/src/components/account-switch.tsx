@@ -51,13 +51,13 @@ export default function AccountSwitcher() {
             <CommandGroup heading="Switch Account">
               {deviceSessions &&
                 deviceSessions
-                  .filter((session) => session.user.id !== currentUser?.id)
+                  .filter((session) => session.userId !== currentUser?.id)
                   .map((userSession, index) => (
                     <CommandItem
                       key={index}
                       onSelect={async () => {
                         await authClient.multiSession.setActive({
-                          sessionToken: userSession.session.token
+                          sessionToken: userSession.token
                         })
                         setOpen(false)
                       }}

@@ -1,28 +1,23 @@
 'use client'
 
+import { AdminSocialProviderButtons } from '@/better-auth/plugin/payload/components/social-provider-buttons'
+import { getSafeRedirect } from '@/better-auth/plugin/payload/utils/get-safe-redirect'
+import { useConfig, Link, toast, useTranslation } from '@payloadcms/ui'
 import React, { useMemo, useState } from 'react'
-import { z } from 'zod'
+import type { LoginMethod } from '@/better-auth/plugin/types'
+import type { LoginWithUsernameOptions } from 'payload'
+import { adminRoutes } from '@/better-auth/plugin/constants'
 import { useAppForm } from '@/shared/form'
-import { Form, FormInputWrap } from '@/shared/form/ui'
+import { Form, FormError, FormInputWrap } from '@/shared/form/ui'
 import { FormHeader } from '@/shared/form/ui/header'
+import { createLoginSchema, isValidEmail } from '@/shared/form/validation'
 import { createAuthClient } from 'better-auth/client'
 import { usernameClient } from 'better-auth/client/plugins'
-import { adminRoutes } from '@/better-auth/plugin/constants'
 import { formatAdminURL, getLoginOptions } from 'payload/shared'
-import { getSafeRedirect } from '@/better-auth/plugin/payload/utils/get-safe-redirect'
-import { Link, toast, useConfig, useTranslation } from '@payloadcms/ui'
-import AdminSocialProviderButtons from '@/better-auth/plugin/payload/components/admin-social-provider-buttons'
-import { emailRegex, usernameRegex } from '@/shared/utils/regex'
-
-import type { SocialProviders } from '@/better-auth/plugin/types'
-import type { LoginWithUsernameOptions } from 'payload'
-
-const baseClass = 'login__form'
 
 type AdminLoginClientProps = {
-  socialProviders: SocialProviders
+  loginMethods: LoginMethod[]
   hasUsernamePlugin: boolean
-  hasPasskeySupport: boolean
   prefillEmail?: string
   prefillPassword?: string
   prefillUsername?: string
@@ -30,10 +25,17 @@ type AdminLoginClientProps = {
   loginWithUsername: false | LoginWithUsernameOptions
 }
 
-export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
-  socialProviders,
+const baseClass = 'login__form'
+
+const LoginForm: React.FC<{
+  hasUsernamePlugin: boolean
+  prefillEmail?: string
+  prefillPassword?: string
+  prefillUsername?: string
+  searchParams: { [key: string]: string | string[] | undefined }
+  loginWithUsername: false | LoginWithUsernameOptions
+}> = ({
   hasUsernamePlugin,
-  hasPasskeySupport,
   prefillEmail,
   prefillPassword,
   prefillUsername,
@@ -43,7 +45,7 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
   const { config } = useConfig()
   const { t } = useTranslation()
   const { canLoginWithEmail, canLoginWithUsername } = getLoginOptions(loginWithUsername)
-  const usernameSettings = { minLength: 5, maxLength: 128 }
+  const searchParamError = searchParams?.error
   const redirectUrl = getSafeRedirect(searchParams?.redirect as string, config.routes.admin)
   const forgotPasswordUrl = formatAdminURL({
     adminRoute: config.routes.admin,
@@ -61,39 +63,7 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
     return <FormHeader heading="Please verify your email" description={t('authentication:emailSent')} style={{ textAlign: 'center' }} />
   }
 
-  const validationMap = {
-    email: {
-      isValid: (val: string) => emailRegex.test(val),
-      getErrorMessage: () => t('authentication:emailNotValid') || 'Email is not valid'
-    },
-    username: {
-      isValid: (val: string) =>
-        usernameRegex.test(val) && val.length >= usernameSettings.minLength && val.length <= usernameSettings.maxLength,
-      getErrorMessage: () => t('authentication:usernameNotValid') || 'Username is not valid'
-    },
-    emailOrUsername: {
-      isValid: (val: string) =>
-        val.includes('@')
-          ? emailRegex.test(val)
-          : usernameRegex.test(val) && val.length >= usernameSettings.minLength && val.length <= usernameSettings.maxLength,
-      getErrorMessage: (val: string) => {
-        const isProbablyEmail = val.includes('@') || !canLoginWithUsername
-        return isProbablyEmail
-          ? t('authentication:emailNotValid') || 'Email is not valid'
-          : t('authentication:usernameNotValid') || 'Username is not valid'
-      }
-    }
-  }
-
-  const loginSchema = z.object({
-    login: z.string().refine(
-      (val) => (val ? validationMap[loginType].isValid(val) : false),
-      (val) => ({
-        message: !val ? t('validation:required') : validationMap[loginType].getErrorMessage(val)
-      })
-    ),
-    password: z.string().min(1, 'Password is required')
-  })
+  const loginSchema = createLoginSchema({ t, loginType, canLoginWithUsername })
 
   const form = useAppForm({
     defaultValues: {
@@ -102,7 +72,7 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
     },
     onSubmit: async ({ value }) => {
       const { login, password } = value
-      const isEmail = emailRegex.test(login)
+      const isEmail = isValidEmail(login)
       try {
         const { data, error } = await (loginType === 'email' || (loginType === 'emailOrUsername' && isEmail)
           ? authClient.signIn.email({ email: login, password, callbackURL: redirectUrl })
@@ -134,15 +104,15 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
       username: t('authentication:username') || 'Username',
       emailOrUsername: t('authentication:emailOrUsername') || 'Email or Username'
     }
-
     return labels[loginType]
   }
 
   return (
     <div className={`${baseClass}__wrapper`}>
+      {searchParamError && searchParamError === 'signup_disabled' && <FormError errors={['Sign up is disabled.']} />}
       <Form
         className={baseClass}
-        onSubmit={(e) => {
+        onSubmit={e => {
           e.preventDefault()
           void form.handleSubmit()
         }}
@@ -150,11 +120,11 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
         <FormInputWrap className={baseClass}>
           <form.AppField
             name="login"
-            children={(field) => <field.TextField type="text" className="email" autoComplete="email" label={getLoginTypeLabel()} />}
+            children={field => <field.TextField type="text" className="email" autoComplete="email" label={getLoginTypeLabel()} />}
           />
           <form.AppField
             name="password"
-            children={(field) => (
+            children={field => (
               <field.TextField type="password" className="password" autoComplete="password" label={t('general:password')} />
             )}
           />
@@ -164,27 +134,37 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
         </Link>
         <form.AppForm children={<form.Submit label={t('authentication:login')} loadingLabel={t('general:loading')} />} />
       </Form>
-      {(Object.keys(socialProviders || {}).length > 0 || hasPasskeySupport) && (
-        <div
-          style={{
-            textAlign: 'center',
-            fontSize: '0.875rem',
-            textTransform: 'uppercase',
-            marginTop: '-.5rem',
-            color: 'var(--theme-elevation-450)',
-            marginBottom: '1.5rem'
-          }}
-        >
-          <span>Or login with</span>
-        </div>
+    </div>
+  )
+}
+
+export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
+  loginMethods,
+  hasUsernamePlugin,
+  prefillEmail,
+  prefillPassword,
+  prefillUsername,
+  searchParams,
+  loginWithUsername
+}) => {
+  return (
+    <>
+      {loginMethods.includes('emailPassword') && (
+        <LoginForm
+          hasUsernamePlugin={hasUsernamePlugin}
+          prefillEmail={prefillEmail}
+          prefillPassword={prefillPassword}
+          prefillUsername={prefillUsername}
+          searchParams={searchParams}
+          loginWithUsername={loginWithUsername}
+        />
       )}
       <AdminSocialProviderButtons
-        allowSignup={false}
-        socialProviders={socialProviders}
+        isSignup={false}
+        loginMethods={loginMethods}
         setLoading={() => {}}
-        hasPasskeySupport={hasPasskeySupport}
-        redirectUrl={redirectUrl}
+        redirectUrl={getSafeRedirect(searchParams?.redirect as string, useConfig().config.routes.admin)}
       />
-    </div>
+    </>
   )
 }

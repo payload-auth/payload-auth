@@ -188,7 +188,7 @@ export function buildUsersCollection({
         name: 'image',
         type: 'text',
         label: 'Image',
-        saveToJWT: true,
+        saveToJWT: false,
         admin: {
           description: 'The image of the user'
         }

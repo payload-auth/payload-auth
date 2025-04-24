@@ -13,6 +13,7 @@ import { PasswordInput } from '@/components/ui/password-input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { authClient as client, signOut } from '@/lib/auth/client'
 import { useBetterAuth } from '@/lib/auth/context'
+import { DeviceSession } from '@/lib/auth/types'
 import { MobileIcon } from '@radix-ui/react-icons'
 import { Edit, Fingerprint, Laptop, Loader2, LogOut, Plus, QrCode, ShieldCheck, ShieldOff, Trash, X } from 'lucide-react'
 import Image from 'next/image'
@@ -27,8 +28,8 @@ export function UserCard() {
   const { sessionPromise, userAccountsPromise, deviceSessionsPromise, currentUserPromise } = useBetterAuth()
   const session = use(sessionPromise)
   const accounts = use(userAccountsPromise)
-  const sessions = use(deviceSessionsPromise)
   const currentUser = use(currentUserPromise)
+  const sessions = use(deviceSessionsPromise) || []
   const [isTerminating, setIsTerminating] = useState<string | undefined>(undefined)
   const [isPendingTwoFa, setIsPendingTwoFa] = useState<boolean>(false)
   const [twoFaPassword, setTwoFaPassword] = useState<string>('')
@@ -112,24 +113,20 @@ export function UserCard() {
           <div className="flex w-max flex-col gap-1 border-l-2 px-2">
             <p className="text-xs font-medium">Active Sessions</p>
             {sessions
-              .filter((sessionData) => sessionData?.session?.userAgent)
+              .filter((sessionData) => sessionData?.userAgent)
               .map((sessionData) => {
                 return (
-                  <div key={sessionData.session.id}>
+                  <div key={sessionData.id}>
                     <div className="flex items-center gap-2 text-sm font-medium text-black dark:text-white">
-                      {new UAParser(sessionData.session.userAgent || '').getDevice().type === 'mobile' ? (
-                        <MobileIcon />
-                      ) : (
-                        <Laptop size={16} />
-                      )}
-                      {new UAParser(sessionData.session.userAgent || '').getOS().name},{' '}
-                      {new UAParser(sessionData.session.userAgent || '').getBrowser().name}
+                      {new UAParser(sessionData.userAgent || '').getDevice().type === 'mobile' ? <MobileIcon /> : <Laptop size={16} />}
+                      {new UAParser(sessionData.userAgent || '').getOS().name},{' '}
+                      {new UAParser(sessionData.userAgent || '').getBrowser().name}
                       <button
                         className="cursor-pointer border-red-600 text-xs text-red-500 underline opacity-80"
                         onClick={async () => {
-                          setIsTerminating(sessionData.session.id)
+                          setIsTerminating(sessionData.id)
                           const res = await client.revokeSession({
-                            token: sessionData.session.token
+                            token: sessionData.token
                           })
 
                           if (res.error) {
@@ -141,9 +138,9 @@ export function UserCard() {
                           setIsTerminating(undefined)
                         }}
                       >
-                        {isTerminating === sessionData.session.id ? (
+                        {isTerminating === sessionData.id ? (
                           <Loader2 size={15} className="animate-spin" />
-                        ) : sessionData.session.id === session?.session.id ? (
+                        ) : sessionData.id === session?.session.id ? (
                           'Sign Out'
                         ) : (
                           'Terminate'

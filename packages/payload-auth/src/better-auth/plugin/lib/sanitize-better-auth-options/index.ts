@@ -11,6 +11,7 @@ import { saveToJwtMiddleware } from './utils/save-to-jwt-middleware'
 
 import type { Config, Payload } from 'payload'
 import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
+import { requireAdminInviteForSignUpMiddleware } from './utils/require-admin-invite-for-sign-up-middleware'
 
 /**
  * Sanitizes the BetterAuth options
@@ -62,6 +63,21 @@ export function sanitizeBetterAuthOptions({
       verify: ({ hash, password }) => verifyPassword({ hash, password }),
       hash: (password) => hashPassword(password)
     }
+  }
+
+  // Handle admin invite for sign up
+  if (options.requireAdminInviteForSignUp) {
+    res.socialProviders = res.socialProviders || {}
+    res.socialProviders = Object.fromEntries(
+      Object.entries(res.socialProviders).map(([provider, config]) => [
+        provider,
+        { ...config, disableImplicitSignUp: true }
+      ])
+    )
+    requireAdminInviteForSignUpMiddleware({
+      options: res,
+      pluginOptions: options
+    })
   }
 
   // Handle verification email blocking

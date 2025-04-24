@@ -1,16 +1,14 @@
 'use client'
 
-import React, { useMemo, useState, useTransition } from 'react'
 import { createAuthClient } from 'better-auth/react'
-// import { Form } from '@/shared/form/ui'
-// import { EmailField } from '@/shared/form/components/email'
-import { FormSubmit, Link, toast, useConfig, useTranslation } from '@payloadcms/ui'
-import { FormHeader } from '@/shared/form/ui/header'
-import type { FC, FormEvent, ChangeEvent, FocusEvent } from 'react'
+import { useMemo, useState } from 'react'
 import { adminRoutes } from '@/better-auth/plugin/constants'
-import { Form, FormInputWrap } from '@/shared/form/ui'
 import { useAppForm } from '@/shared/form'
+import { Form, FormInputWrap } from '@/shared/form/ui'
+import { FormHeader } from '@/shared/form/ui/header'
 import { emailRegex } from '@/shared/utils/regex'
+import { toast, useConfig, useTranslation } from '@payloadcms/ui'
+import type { FC } from 'react'
 import { z } from 'zod'
 
 type ForgotPasswordFormProps = {}

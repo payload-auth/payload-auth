@@ -1,14 +1,16 @@
 import type { Config } from 'payload'
-import type { BetterAuthPluginOptions } from './types.js'
-import { sanitizeBetterAuthOptions } from './lib/sanitize-better-auth-options/index.js'
-import { getRequiredCollectionSlugs } from './lib/get-required-collection-slugs.js'
-import { buildCollections } from './lib/build-collections/index.js'
-import { initBetterAuth } from './lib/init-better-auth.js'
-import { adminRoutes } from './constants.js'
-export * from './types.js'
-export * from './helpers/index.js'
-export { sanitizeBetterAuthOptions } from './lib/sanitize-better-auth-options/index.js'
-export { getPayloadAuth } from './lib/get-payload-auth.js'
+import type { BetterAuthPluginOptions } from './types'
+import { sanitizeBetterAuthOptions } from './lib/sanitize-better-auth-options/index'
+import { getRequiredCollectionSlugs } from './lib/get-required-collection-slugs'
+import { buildCollections } from './lib/build-collections/index'
+import { initBetterAuth } from './lib/init-better-auth'
+import { adminRoutes } from './constants'
+import { setLoginMethods } from './lib/set-login-methods'
+
+export { sanitizeBetterAuthOptions } from './lib/sanitize-better-auth-options/index'
+export { getPayloadAuth } from './lib/get-payload-auth'
+export * from './types'
+export * from './helpers/index'
 
 export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
   return (config: Config): Config => {
@@ -25,6 +27,8 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
       ...config.custom,
       hasBetterAuthPlugin: true
     }
+
+    pluginOptions = setLoginMethods({ pluginOptions })
 
     // Set custom admin components if disableDefaultPayloadAuth is true
     if (pluginOptions.disableDefaultPayloadAuth) {
