@@ -36,7 +36,7 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
             {
               path: 'payload-auth/better-auth/plugin/rsc#RSCRedirect',
               serverProps: {
-                redirectTo: `${config.routes?.admin || '/admin'}${adminRoutes.adminLogin}`
+                redirectTo: `${config.routes?.admin === undefined ? '/admin' : config.routes.admin}${adminRoutes.adminLogin}`
               }
             },
             ...(config.admin?.components?.afterLogin || [])
