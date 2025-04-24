@@ -4,6 +4,7 @@ import { prepareSessionData } from '@/better-auth/plugin/helpers/prepare-session
 
 import type { Config, Payload } from 'payload'
 import type { SanitizedBetterAuthOptions, BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+import { getAuthTables } from 'better-auth/db'
 
 /**
  * Sets up a middleware that enforces the saveToJwt configuration when setting session data.
