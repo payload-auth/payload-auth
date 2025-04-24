@@ -139,18 +139,21 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
             })
             if (doc) docs = [doc]
           } else {
+            const spill = offset % limit
+            const page = Math.floor(offset / limit) + 1
+            const fetchLimit = spill ? limit + spill : limit
             const response = await payload.find({
               collection,
               where: where ? convertWhereClause(where, model, schema) : {},
               select: mapSelectFields(model, undefined, schema),
               showHiddenFields: true,
-              limit,
-              page: Math.floor(offset / limit) + 1,
+              limit: fetchLimit,
+              page,
               sort: sortBy ? `${sortBy.direction === 'desc' ? '-' : ''}${sortBy.field}` : undefined,
               depth: PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({ model, operation: 'findManyByWhere' })
             })
-            docs = response.docs
+            docs = response.docs.slice(spill, spill + limit)
           }
 
           const mappedDocs = docs.map((d) => mapOutputData(model, d, schema)) as T[]
