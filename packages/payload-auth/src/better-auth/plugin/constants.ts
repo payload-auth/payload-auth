@@ -30,6 +30,7 @@ export const loginMethods = [
 ] as const
 
 export const supportedBetterAuthPluginIds = {
+  customSession: 'custom-session',
   harmonyEmail: 'harmony-email',
   harmonyPhoneNumber: 'harmony-phone-number',
   twoFactor: 'two-factor',
