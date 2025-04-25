@@ -1,11 +1,9 @@
 import { prepareSessionData } from '@/better-auth/plugin/helpers/prepare-session-data'
 import { createAuthMiddleware } from 'better-auth/api'
 import { setSessionCookie } from 'better-auth/cookies'
-import { customSession } from 'better-auth/plugins'
 
 import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
 import type { Config, Payload } from 'payload'
-import { getSessionFromCtx } from 'better-auth/api'
 import { baseCollectionSlugs } from '@/better-auth/plugin/constants'
 /**
  * Sets up a middleware that enforces the saveToJwt configuration when setting session data.
