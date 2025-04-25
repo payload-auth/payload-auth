@@ -15,19 +15,13 @@ export function betterAuthStrategy(userSlug?: string): AuthStrategy {
         const payloadAuth = await getPayloadAuth(payload.config)
 
         const res = await payloadAuth.betterAuth.api.getSession({
-          headers,
-          // query: {
-          //   disableCookieCache: true
-          // }
+          headers
         })
-
-        console.log('res', res)
 
         if (!res) {
           return { user: null }
         }
-        const userId =
-          res.user.id ?? res.session.userId ?? ('user' in res.session && typeof res.session.user === 'string' ? res.session.user : null)
+        const userId = res.session.userId ?? res.user.id
         if (!userId) {
           return { user: null }
         }

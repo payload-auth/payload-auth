@@ -29,9 +29,9 @@ export async function prepareUser({
       ...user,
       collection: userCollectionSlug
     }
-  }) as User & Record<string, any>
+  })
 
-  return newUser
+  return newUser as User & Record<string, any>
 }
 
 export async function prepareSession({
@@ -40,15 +40,13 @@ export async function prepareSession({
   payloadConfig,
   collectionSlugs
 }: {
-  user: any
-  session: any
+  user: User & Record<string, any>
+  session: Session & Record<string, any>
   payloadConfig: Payload['config'] | Config | Promise<Payload['config'] | Config>
   collectionSlugs: CollectionSlugs
 }) {
-  if (!session) return null
-
   const awaitedPayloadConfig = await payloadConfig
-  const { sessionCollectionSlug } = collectionSlugs
+  const { sessionCollectionSlug, userCollectionSlug } = collectionSlugs
   const sessionCollection = awaitedPayloadConfig?.collections?.find((c) => c.slug === sessionCollectionSlug)
 
   if (!sessionCollection) return session
@@ -56,17 +54,19 @@ export async function prepareSession({
   const filteredSession = getFieldsToSign({
     collectionConfig: sessionCollection,
     email: user.email,
-    user: session
-  }) as typeof session
+    user: {
+      ...session,
+      collection: sessionCollectionSlug
+    }
+  })
 
   delete filteredSession.email
   delete filteredSession.collection
+  Object.assign(filteredSession, {
+    userId: session.userId
+  })
 
-  if (session.impersonatedBy) {
-    filteredSession.impersonatedBy = session.impersonatedBy
-  }
-
-  return filteredSession
+  return filteredSession as Session & Record<string, any>
 }
 
 /**
@@ -74,26 +74,26 @@ export async function prepareSession({
  * based on the payload configuration's 'saveToJwt' property
  */
 export async function prepareSessionData({
-  session,
+  sessionData,
   payloadConfig,
   collectionSlugs
 }: {
-  session: {
+  sessionData: {
     session: Session & Record<string, any>
     user: User & Record<string, any>
   }
   payloadConfig: Payload['config'] | Config | Promise<Payload['config'] | Config>
   collectionSlugs: CollectionSlugs
 }) {
-  if (!session || !session.user) return null
+  if (!sessionData || !sessionData.user) return null
 
-  const user = await prepareUser({ user: session.user, payloadConfig, collectionSlugs })
-  // const session = await prepareSession({ user: newSession.user, session: newSession.session, payloadConfig, collectionSlugs })
+  const newUser = await prepareUser({ user: sessionData.user, payloadConfig, collectionSlugs })
+  const newSession = await prepareSession({ user: sessionData.user, session: sessionData.session, payloadConfig, collectionSlugs })
 
-  const newSession = {
-    session: session.session,
-    user: user
+  const newSessionData = {
+    session: newSession,
+    user: newUser
   }
 
-  return newSession
+  return newSessionData
 }

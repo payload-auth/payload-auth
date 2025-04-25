@@ -26,25 +26,11 @@ export function saveToJwtMiddleware({
 }) {
   if (typeof sanitizedOptions.hooks !== 'object') sanitizedOptions.hooks = {}
   const originalAfter = sanitizedOptions.hooks.after
-  sanitizedOptions.plugins = sanitizedOptions.plugins ?? []
-  sanitizedOptions.plugins.push(
-    customSession(async ({ user, session }) => {
-      // add additional field to user object (no db calls)
-      const newUser = {
-        ...user,
-        customField: 'test'
-      }
-      return {
-        session,
-        user: newUser
-      }
-    })
-  )
   sanitizedOptions.hooks.after = createAuthMiddleware(async (ctx) => {
-    const session = await getSessionFromCtx(ctx)
-    if (session) {
+    const newSession = ctx.context.newSession
+    if (newSession) {
       const filteredSessionData = await prepareSessionData({
-        session,
+        sessionData: newSession,
         payloadConfig,
         collectionSlugs: {
           userCollectionSlug: pluginOptions.users?.slug ?? baseCollectionSlugs.users,

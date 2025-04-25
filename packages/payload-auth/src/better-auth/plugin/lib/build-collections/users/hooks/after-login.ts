@@ -1,6 +1,6 @@
 import { generateId, Session } from 'better-auth'
 import { createAuthMiddleware } from 'better-auth/api'
-import { setCookieCache } from 'better-auth/cookies'
+import { setCookieCache, setSessionCookie } from 'better-auth/cookies'
 import { parseSetCookie, type ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies'
 import { cookies } from 'next/headers'
 import { CollectionAfterLoginHook } from 'payload'
@@ -47,14 +47,16 @@ export const getAfterLoginHook = (options: AfterLoginOptions): CollectionAfterLo
         ctx.context.authCookies.sessionToken.options
       )
       const filteredSessionData = await prepareSessionData({
-        session: { session, user },
+        sessionData: { session, user },
         payloadConfig: config,
         collectionSlugs: {
           userCollectionSlug: options.usersCollectionSlug,
           sessionCollectionSlug: options.sessionsCollectionSlug
         }
       })
-      await setCookieCache(ctx, filteredSessionData as any)
+      if (filteredSessionData) {
+        await setSessionCookie(ctx, filteredSessionData)
+      }
       if ('responseHeaders' in ctx) {
         return ctx.responseHeaders as Headers
       }
