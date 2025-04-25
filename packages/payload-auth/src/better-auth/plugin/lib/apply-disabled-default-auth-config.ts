@@ -26,7 +26,7 @@ export function applyDisabledDefaultAuthConfig({
         {
           path: 'payload-auth/better-auth/plugin/rsc#RSCRedirect',
           serverProps: {
-            redirectTo: `${config.routes?.admin === undefined ? '/admin' : config.routes.admin}${adminRoutes.adminLogin}`
+            redirectTo: `${config.routes?.admin === undefined ? '/admin' : config.routes.admin.replace(/\/+$/, '')}${adminRoutes.adminLogin}`
           }
         },
         ...(config.admin?.components?.afterLogin || [])
@@ -89,4 +89,4 @@ export function applyDisabledDefaultAuthConfig({
       login: adminRoutes.loginRedirect
     }
   }
-} 
+}
