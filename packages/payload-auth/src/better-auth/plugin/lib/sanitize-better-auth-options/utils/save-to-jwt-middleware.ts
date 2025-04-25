@@ -1,10 +1,10 @@
-import { setCookieCache } from 'better-auth/cookies'
-import { createAuthMiddleware } from 'better-auth/api'
 import { prepareSessionData } from '@/better-auth/plugin/helpers/prepare-session-data'
+import { createAuthMiddleware } from 'better-auth/api'
+import { setSessionCookie } from 'better-auth/cookies'
 
+import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
 import type { Config, Payload } from 'payload'
-import type { SanitizedBetterAuthOptions, BetterAuthPluginOptions } from '@/better-auth/plugin/types'
-
+import { baseCollectionSlugs } from '@/better-auth/plugin/constants'
 /**
  * Sets up a middleware that enforces the saveToJwt configuration when setting session data.
  * This ensures that only fields specified in saveToJwt are included in the cookie cache
@@ -23,27 +23,28 @@ export function saveToJwtMiddleware({
   pluginOptions: BetterAuthPluginOptions
 }) {
   if (typeof sanitizedOptions.hooks !== 'object') sanitizedOptions.hooks = {}
-
   const originalAfter = sanitizedOptions.hooks.after
   sanitizedOptions.hooks.after = createAuthMiddleware(async (ctx) => {
-    const newSession = ctx.context?.session ?? ctx.context?.newSession
-    if (!newSession) return
+    const newSession = ctx.context.newSession
+    if (newSession) {
+      const filteredSessionData = await prepareSessionData({
+        sessionData: newSession,
+        payloadConfig,
+        collectionSlugs: {
+          userCollectionSlug: pluginOptions.users?.slug ?? baseCollectionSlugs.users,
+          sessionCollectionSlug: pluginOptions.sessions?.slug ?? baseCollectionSlugs.sessions
+        }
+      })
 
-    const filteredSessionData = await prepareSessionData({
-      newSession,
-      payloadConfig,
-      collectionSlugs: {
-        userCollectionSlug: pluginOptions.users?.slug ?? 'users',
-        sessionCollectionSlug: pluginOptions.sessions?.slug ?? 'sessions'
+      if (filteredSessionData) {
+        await setSessionCookie(ctx, filteredSessionData)
       }
-    })
-
-    if (filteredSessionData) {
-      await setCookieCache(ctx, filteredSessionData as any)
     }
+
     if (typeof originalAfter === 'function') {
       return originalAfter(ctx)
     }
+
     return
   })
 }

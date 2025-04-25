@@ -102,6 +102,7 @@ export function buildSessionsCollection({
             type: 'relationship',
             relationTo: userSlug,
             required: false,
+            saveToJWT: true,
             label: 'Impersonated By',
             admin: {
               readOnly: true,
@@ -113,6 +114,7 @@ export function buildSessionsCollection({
           sessionCollection.fields.push({
             name: 'activeOrganization',
             type: 'relationship',
+            saveToJWT: true,
             relationTo: betterAuthPluginSlugs.organizations,
             label: 'Active Organization',
             admin: {

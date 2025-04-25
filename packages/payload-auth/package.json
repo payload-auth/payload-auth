@@ -75,9 +75,10 @@
   "scripts": {
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo",
     "build": "pnpm clean && pnpm copyfiles && pnpm build:types && pnpm build:swc",
-    "copyfiles": "copyfiles -u 1 \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist",
+    "copyfiles": "copyfiles -u 1 --exclude \"src/better-auth/adapter/tests/**/*\" \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist",
     "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
-    "build:types": "tsc --project tsconfig.json"
+    "build:types": "tsc --project tsconfig.json",
+    "test": "vitest"
   },
   "peerDependencies": {
     "@payloadcms/ui": "3.35.1",
@@ -88,13 +89,17 @@
     "react-dom": "^19"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.5.0",
+    "payload": "^3.35",
+    "@payloadcms/db-postgres": "3.35.1",
+    "copyfiles": "^2.4.1",
     "@clerk/types": "^4.50.1",
     "@swc/cli": "0.6.0",
     "@swc/core": "1.11.13",
     "@types/node": "^20.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "copyfiles": "^2.4.1",
     "typescript": "5.8.2",
     "vitest": "^1.0.0"
   },

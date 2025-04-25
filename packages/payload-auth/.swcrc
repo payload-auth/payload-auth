@@ -29,5 +29,6 @@
   },
   "module": {
     "type": "es6"
-  }
+  },
+  "exclude": ["src/better-auth/adapter/tests/**/*"]
 }
