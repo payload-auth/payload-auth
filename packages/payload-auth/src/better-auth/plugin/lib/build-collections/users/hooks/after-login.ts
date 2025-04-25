@@ -47,7 +47,7 @@ export const getAfterLoginHook = (options: AfterLoginOptions): CollectionAfterLo
         ctx.context.authCookies.sessionToken.options
       )
       const filteredSessionData = await prepareSessionData({
-        newSession: { session, user },
+        session: { session, user },
         payloadConfig: config,
         collectionSlugs: {
           userCollectionSlug: options.usersCollectionSlug,

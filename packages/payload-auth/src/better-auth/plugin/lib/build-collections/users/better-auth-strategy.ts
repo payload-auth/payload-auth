@@ -13,9 +13,16 @@ export function betterAuthStrategy(userSlug?: string): AuthStrategy {
     authenticate: async ({ payload, headers }) => {
       try {
         const payloadAuth = await getPayloadAuth(payload.config)
+
         const res = await payloadAuth.betterAuth.api.getSession({
-          headers
+          headers,
+          // query: {
+          //   disableCookieCache: true
+          // }
         })
+
+        console.log('res', res)
+
         if (!res) {
           return { user: null }
         }
