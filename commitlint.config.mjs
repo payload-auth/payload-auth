@@ -18,6 +18,7 @@ export default {
   extends: ["@commitlint/config-conventional"],
   plugins: ["commitlint-plugin-function-rules"],
   rules: {
+    "header-max-length": [120], //let me type bruh
     "body-max-line-length": [0],
     "function-rules/body-max-line-length": [
       2,
