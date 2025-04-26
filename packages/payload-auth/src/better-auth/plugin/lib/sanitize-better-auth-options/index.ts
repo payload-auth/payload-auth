@@ -1,19 +1,20 @@
+import { baModelFieldKeys, baModelKey, supportedBAPluginIds } from '@/better-auth/plugin/constants'
 import { configureAdminPlugin } from './admin-plugin'
 import { configureApiKeyPlugin } from './api-key-plugin'
+import { configureOidcPlugin } from './oidc-plugin'
 import { configureOrganizationPlugin } from './organizations-plugin'
 import { configurePasskeyPlugin } from './passkey-plugin'
 import { configureSsoPlugin } from './sso-plugin'
-import { configureOidcPlugin } from './oidc-plugin'
-import { baModelFieldKeys, baseSlugs, supportedBAPluginIds } from '@/better-auth/plugin/constants'
 import { ensurePasswordSetBeforeUserCreate } from './utils/ensure-password-set-before-create'
-import { verifyPassword, hashPassword } from './utils/password'
+import { hashPassword, verifyPassword } from './utils/password'
 import { saveToJwtMiddleware } from './utils/save-to-jwt-middleware'
 
-import type { CollectionConfig } from 'payload'
 import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
-import { requireAdminInviteForSignUpMiddleware } from './utils/require-admin-invite-for-sign-up-middleware'
+import type { CollectionConfig } from 'payload'
 import { getMappedCollection, getMappedField } from '../../helpers/get-collection'
 import { configureTwoFactorPlugin } from './two-factor-plugin'
+import { requireAdminInviteForSignUpMiddleware } from './utils/require-admin-invite-for-sign-up-middleware'
+
 /**
  * Sanitizes the BetterAuth options
  */
@@ -25,10 +26,10 @@ export function sanitizeBetterAuthOptions({
   pluginOptions: BetterAuthPluginOptions
 }): SanitizedBetterAuthOptions {
   const baOptions = pluginOptions.betterAuthOptions || {}
-  const userCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.users })
-  const accountCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.accounts })
-  const sessionCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.sessions })
-  const verificationCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.verifications })
+  const userCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.user })
+  const accountCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.account })
+  const sessionCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.session })
+  const verificationCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.verification })
 
   // Initialize with base configuration
   let res: SanitizedBetterAuthOptions = {
@@ -142,7 +143,8 @@ export function sanitizeBetterAuthOptions({
 
   saveToJwtMiddleware({
     sanitizedOptions: res,
-    collectionMap
+    userCollection,
+    sessionCollection
   })
 
   return res

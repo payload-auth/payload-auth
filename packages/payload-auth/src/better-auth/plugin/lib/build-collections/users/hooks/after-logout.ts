@@ -1,13 +1,15 @@
-import { cookies } from 'next/headers'
-import type { CollectionAfterLogoutHook, CollectionConfig } from 'payload'
-import { getPayloadAuth } from '@/better-auth/plugin/lib/get-payload-auth'
 import { baseSlugs } from '@/better-auth/plugin/constants'
-import { getMappedCollection } from '@/better-auth/plugin/helpers/get-collection'
+import { getMappedCollection, transformCollectionsToCollectionConfigs } from '@/better-auth/plugin/helpers/get-collection'
+import { getPayloadAuth } from '@/better-auth/plugin/lib/get-payload-auth'
+import { cookies } from 'next/headers'
+import type { CollectionAfterLogoutHook } from 'payload'
 
-export function getAfterLogoutHook(collectionMap: Record<string, CollectionConfig>) {
+export function getAfterLogoutHook() {
   const hook: CollectionAfterLogoutHook = async ({ req }) => {
     const cookieStore = await cookies()
     const payload = await getPayloadAuth(req.payload.config)
+    const collections = req.payload.collections
+    const collectionMap = transformCollectionsToCollectionConfigs(collections)
     const securePrefix = '__Secure-'
     const authContext = await payload.betterAuth.$context
     const sessionTokenName = authContext.authCookies.sessionToken.name

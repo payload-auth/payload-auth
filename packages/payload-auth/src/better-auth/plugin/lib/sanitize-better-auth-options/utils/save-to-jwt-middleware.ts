@@ -14,10 +14,12 @@ import type { CollectionConfig } from 'payload'
  */
 export function saveToJwtMiddleware({
   sanitizedOptions,
-  collectionMap
+  userCollection,
+  sessionCollection
 }: {
   sanitizedOptions: SanitizedBetterAuthOptions
-  collectionMap: Record<string, CollectionConfig>
+  userCollection: CollectionConfig
+  sessionCollection: CollectionConfig
 }) {
   if (typeof sanitizedOptions.hooks !== 'object') sanitizedOptions.hooks = {}
   const originalAfter = sanitizedOptions.hooks.after
@@ -26,7 +28,8 @@ export function saveToJwtMiddleware({
     if (newSession) {
       const filteredSessionData = await prepareSessionData({
         sessionData: newSession,
-        collectionMap
+        userCollection,
+        sessionCollection
       })
 
       if (filteredSessionData) {

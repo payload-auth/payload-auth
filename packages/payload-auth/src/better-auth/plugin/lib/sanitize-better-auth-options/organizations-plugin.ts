@@ -1,5 +1,5 @@
 import { baModelKey, baModelFieldKeys } from '@/better-auth/plugin/constants'
-import { CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload'
 import { getMappedCollection, getMappedField } from '../../helpers/get-collection'
 
 export function configureOrganizationPlugin(plugin: any, collectionMap: Record<string, CollectionConfig>): void {

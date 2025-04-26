@@ -8,6 +8,7 @@ export function buildInvitationsCollection({ pluginOptions }: { pluginOptions: B
   const invitationSlug = baPluginSlugs.invitations
   const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
   const organizationSlug = baPluginSlugs.organizations
+  const teamSlug = baPluginSlugs.teams
 
   let invitationCollection: CollectionConfig = {
     slug: invitationSlug,
@@ -50,6 +51,21 @@ export function buildInvitationsCollection({ pluginOptions }: { pluginOptions: B
         },
         custom: {
           betterAuthFieldKey: baModelFieldKeys.invitation.inviterId
+        }
+      },
+      {
+        name: 'teamId',
+        type: 'relationship',
+        relationTo: teamSlug,
+        required: true,
+        index: true,
+        label: 'Team',
+        admin: {
+          description: 'The team that the user is being invited to.',
+          readOnly: true
+        },
+        custom: {
+          betterAuthFieldKey: baModelFieldKeys.invitation.teamId
         }
       },
       {

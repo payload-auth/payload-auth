@@ -1,13 +1,14 @@
 import { baseSlugs } from '@/better-auth/plugin/constants'
-import { getMappedCollection } from '@/better-auth/plugin/helpers/get-collection'
-import { commitTransaction, initTransaction, killTransaction, type CollectionBeforeDeleteHook, type CollectionConfig } from 'payload'
+import { getMappedCollection, transformCollectionsToCollectionConfigs } from '@/better-auth/plugin/helpers/get-collection'
+import { commitTransaction, initTransaction, killTransaction, type CollectionBeforeDeleteHook } from 'payload'
 
-export function getBeforeDeleteHook(collectionMap: Record<string, CollectionConfig>): CollectionBeforeDeleteHook {
-  const accountsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.accounts }).slug
-  const sessionsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.sessions }).slug
-  const verificationsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.verifications }).slug
-
+export function getBeforeDeleteHook(): CollectionBeforeDeleteHook {
   const hook: CollectionBeforeDeleteHook = async ({ req, id }) => {
+    const collections = req.payload.collections
+    const collectionMap = transformCollectionsToCollectionConfigs(collections)
+    const accountsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.accounts }).slug
+    const sessionsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.sessions }).slug
+    const verificationsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.verifications }).slug
     try {
       const { payload } = req
       const userId = id

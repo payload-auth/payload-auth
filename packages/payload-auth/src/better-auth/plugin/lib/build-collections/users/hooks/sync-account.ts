@@ -1,19 +1,21 @@
-import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
 import { BETTER_AUTH_CONTEXT_KEY } from '@/better-auth/adapter'
-import { getMappedCollection } from '@/better-auth/plugin/helpers/get-collection'
-import { baseSlugs } from '@/better-auth/plugin/constants'
+import { baModelKey } from '@/better-auth/plugin/constants'
+import { getMappedCollection, transformCollectionsToCollectionConfigs } from '@/better-auth/plugin/helpers/get-collection'
+import type { CollectionAfterChangeHook } from 'payload'
 
-export function getSyncAccountHook(collectionMap: Record<string, CollectionConfig>): CollectionAfterChangeHook {
+export function getSyncAccountHook(): CollectionAfterChangeHook {
   const hook: CollectionAfterChangeHook = async ({ doc, req, operation, context }) => {
     if (context?.syncPasswordToUser) return doc
 
     if (operation !== 'create' && operation !== 'update') return doc
 
-    const userCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.users })
-    const accountCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.accounts })
+    const collections = req.payload.collections
+    const collectionMap = transformCollectionsToCollectionConfigs(collections)
+    const userSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.user })?.slug
+    const accountSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.account })?.slug
 
     const user = await req.payload.findByID({
-      collection: userCollection.slug,
+      collection: userSlug,
       id: doc.id,
       depth: 0,
       req,
@@ -27,7 +29,7 @@ export function getSyncAccountHook(collectionMap: Record<string, CollectionConfi
     if (operation === 'create' && !(BETTER_AUTH_CONTEXT_KEY in context)) {
       try {
         await req.payload.create({
-          collection: accountCollection.slug,
+          collection: accountSlug,
           data: {
             userId: doc.id,
             accountId: doc.id.toString(),
@@ -45,7 +47,7 @@ export function getSyncAccountHook(collectionMap: Record<string, CollectionConfi
     if (operation === 'update') {
       try {
         const accounts = await req.payload.find({
-          collection: accountCollection.slug,
+          collection: accountSlug,
           where: {
             and: [{ userId: { equals: doc.id } }, { providerId: { equals: 'credential' } }]
           },
@@ -57,7 +59,7 @@ export function getSyncAccountHook(collectionMap: Record<string, CollectionConfi
         const account = accounts.docs.at(0)
         if (account) {
           await req.payload.update({
-            collection: accountCollection.slug,
+            collection: accountSlug,
             id: account.id,
             data: {
               password: passwordValue

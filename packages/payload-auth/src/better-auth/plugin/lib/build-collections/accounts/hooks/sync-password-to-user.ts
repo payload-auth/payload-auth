@@ -1,17 +1,20 @@
-import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
-import { getMappedCollection, getMappedField } from '@/better-auth/plugin/helpers/get-collection'
-import { baModelKey } from '@/better-auth/plugin/constants'
+import type { CollectionAfterChangeHook } from 'payload'
+import { getMappedField } from '@/better-auth/plugin/helpers/get-collection'
+import { baModelKey, baseSlugs } from '@/better-auth/plugin/constants'
+import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+import { getCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
 
-export function getSyncPasswordToUserHook(collectionMap: Record<string, CollectionConfig>): CollectionAfterChangeHook {
+export function getSyncPasswordToUserHook(pluginOptions: BetterAuthPluginOptions): CollectionAfterChangeHook {
   const hook: CollectionAfterChangeHook = async ({ doc, req, operation, context }) => {
     if (context?.syncAccountHook) return doc
 
     if (operation !== 'create' && operation !== 'update') {
       return doc
     }
+    const userSlug = getCollectionSlug({ pluginOptions, modelKey: baModelKey.user })
+    const accountSlug = getCollectionSlug({ pluginOptions, modelKey: baModelKey.account })
+    const accountCollection = req.payload.collections[accountSlug]?.config
 
-    const userSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.user }).slug
-    const accountCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.account })
     const userField = getMappedField({
       collection: accountCollection,
       betterAuthFieldKey: 'userId'
@@ -22,7 +25,7 @@ export function getSyncPasswordToUserHook(collectionMap: Record<string, Collecti
     }
 
     const account = await req.payload.findByID({
-      collection: accountCollection.slug,
+      collection: accountSlug,
       id: doc.id,
       depth: 0,
       req,

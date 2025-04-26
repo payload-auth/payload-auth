@@ -1,18 +1,14 @@
 import { Session, User } from 'better-auth'
+import type { Collection, CollectionConfig } from 'payload'
 import { getFieldsToSign } from 'payload'
-import type { CollectionConfig } from 'payload'
-import { getMappedCollection } from './get-collection'
-import { baseSlugs } from '../constants'
 
 export async function prepareUser({
   user,
-  collectionMap
+  userCollection
 }: {
   user: User & Record<string, any>
-  collectionMap: Record<string, CollectionConfig>
+  userCollection: CollectionConfig
 }) {
-  const userCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.users })
-
   const newUser = getFieldsToSign({
     collectionConfig: userCollection,
     email: user.email,
@@ -27,13 +23,11 @@ export async function prepareUser({
 
 export async function prepareSession({
   session,
-  collectionMap
+  sessionCollection
 }: {
   session: Session & Record<string, any>
-  collectionMap: Record<string, CollectionConfig>
+  sessionCollection: CollectionConfig
 }) {
-  const sessionCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.sessions })
-
   const filteredSession = getFieldsToSign({
     collectionConfig: sessionCollection,
     email: '',
@@ -58,18 +52,20 @@ export async function prepareSession({
  */
 export async function prepareSessionData({
   sessionData,
-  collectionMap
+  userCollection,
+  sessionCollection
 }: {
   sessionData: {
     session: Session & Record<string, any>
     user: User & Record<string, any>
   }
-  collectionMap: Record<string, CollectionConfig>
+  userCollection: CollectionConfig
+  sessionCollection: CollectionConfig
 }) {
   if (!sessionData || !sessionData.user) return null
 
-  const newUser = await prepareUser({ user: sessionData.user, collectionMap })
-  const newSession = await prepareSession({ session: sessionData.session, collectionMap })
+  const newUser = await prepareUser({ user: sessionData.user, userCollection })
+  const newSession = await prepareSession({ session: sessionData.session, sessionCollection })
 
   const newSessionData = {
     session: newSession,

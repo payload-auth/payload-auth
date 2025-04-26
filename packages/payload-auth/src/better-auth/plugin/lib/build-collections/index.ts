@@ -19,22 +19,22 @@ import { buildPasskeysCollection } from './passkeys'
 import { buildSsoProvidersCollection } from './sso-providers'
 import { buildAdminInvitationsCollection } from './admin-invitations'
 import { buildSubscriptionsCollection } from './subscriptions'
+import { getAuthTables } from 'better-auth/db'
+import { getCollectionSlug } from '../../helpers/get-collection-slug'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
  */
 export function buildCollectionMap({
   incomingCollections,
-  requiredCollectionSlugs,
   pluginOptions
 }: {
   incomingCollections: CollectionConfig[]
-  requiredCollectionSlugs: string[]
   pluginOptions: BetterAuthPluginOptions
 }): Record<string, CollectionConfig> {
-  const buildCollectionMap = {
-    [baModelKeyToSlug.user]: () => buildUsersCollection({ incomingCollections, pluginOptions, collectionMap }),
-    [baModelKeyToSlug.account]: () => buildAccountsCollection({ incomingCollections, pluginOptions, collectionMap }),
+  const collectionBuilders = {
+    [baModelKeyToSlug.user]: () => buildUsersCollection({ incomingCollections, pluginOptions }),
+    [baModelKeyToSlug.account]: () => buildAccountsCollection({ incomingCollections, pluginOptions }),
     [baModelKeyToSlug.session]: () => buildSessionsCollection({ incomingCollections, pluginOptions }),
     [baModelKeyToSlug.verification]: () => buildVerificationsCollection({ incomingCollections, pluginOptions }),
     [baseSlugs.adminInvitations]: () => buildAdminInvitationsCollection({ incomingCollections, pluginOptions }),
@@ -53,12 +53,17 @@ export function buildCollectionMap({
     [baModelKeyToSlug.subscription]: () => buildSubscriptionsCollection({ pluginOptions })
   }
 
-  // Build required collections into a map
   const collectionMap: Record<string, CollectionConfig> = {}
+  const betterAuthSchema = getAuthTables(pluginOptions.betterAuthOptions ?? {})
 
-  // First add all required collections
-  requiredCollectionSlugs.forEach((slug) => {
-    collectionMap[slug] = buildCollectionMap[slug as keyof typeof buildCollectionMap]()
+  Object.keys(betterAuthSchema).forEach((model) => {
+    const collectionSlug = getCollectionSlug({
+      pluginOptions,
+      modelKey: model as keyof typeof baModelKeyToSlug
+    }) as keyof typeof collectionBuilders
+    if (collectionBuilders[collectionSlug]) {
+      collectionMap[collectionSlug] = collectionBuilders[collectionSlug]()
+    }
   })
 
   // Then add incoming collections that don't conflict with required ones

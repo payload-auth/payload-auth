@@ -7,12 +7,10 @@ import { getTimestampFields } from '../utils/get-timestamp-fields'
 
 export function buildAccountsCollection({
   incomingCollections,
-  pluginOptions,
-  collectionMap
+  pluginOptions
 }: {
   incomingCollections: CollectionConfig[]
   pluginOptions: BetterAuthPluginOptions
-  collectionMap: Record<string, CollectionConfig>
 }): CollectionConfig {
   const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
   const accountSlug = pluginOptions.accounts?.slug ?? baseSlugs.accounts
@@ -44,7 +42,7 @@ export function buildAccountsCollection({
     hooks: {
       afterChange: [
         ...(existingAccountCollection?.hooks?.afterChange ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [getSyncPasswordToUserHook(collectionMap)])
+        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [getSyncPasswordToUserHook(pluginOptions)])
       ]
     },
     fields: [
