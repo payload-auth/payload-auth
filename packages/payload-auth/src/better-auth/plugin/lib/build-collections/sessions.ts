@@ -1,25 +1,24 @@
 import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../../types'
-import { baseCollectionSlugs, betterAuthPluginSlugs } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
-import { getAdminAccess } from '../../helpers/get-admin-access'
+import { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+import { baseSlugs, baPluginSlugs, baModelKey, baModelFieldKeys } from '@/better-auth/plugin/constants'
+import { getTimestampFields } from '@/better-auth/plugin/lib/build-collections/utils/get-timestamp-fields'
+import { getAdminAccess } from '@/better-auth/plugin/helpers/get-admin-access'
 
 export function buildSessionsCollection({
   incomingCollections,
-  pluginOptions,
-  betterAuthOptions
+  pluginOptions
 }: {
   incomingCollections: CollectionConfig[]
   pluginOptions: BetterAuthPluginOptions
-  betterAuthOptions: SanitizedBetterAuthOptions
-}) {
-  const sessionSlug = pluginOptions.sessions?.slug ?? baseCollectionSlugs.sessions
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
-  const baPlugins = betterAuthOptions.plugins ?? null
+}): CollectionConfig {
+  const sessionSlug = pluginOptions.sessions?.slug ?? baseSlugs.sessions
+  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
+  const betterAuthPlugins = pluginOptions.betterAuthOptions?.plugins ?? []
 
   const existingSessionCollection = incomingCollections.find((collection) => collection.slug === sessionSlug) as
     | CollectionConfig
     | undefined
+
   let sessionCollection: CollectionConfig = {
     slug: sessionSlug,
     admin: {
@@ -30,6 +29,9 @@ export function buildSessionsCollection({
     },
     access: {
       ...getAdminAccess(pluginOptions)
+    },
+    custom: {
+      betterAuthModelKey: baModelKey.session
     },
     fields: [
       ...(existingSessionCollection?.fields ?? []),
@@ -43,6 +45,9 @@ export function buildSessionsCollection({
         admin: {
           readOnly: true,
           description: 'The user that the session belongs to'
+        },
+        custom: {
+          betterAuthFieldKey: baModelFieldKeys.session.userId
         }
       },
       {
@@ -56,6 +61,9 @@ export function buildSessionsCollection({
         admin: {
           description: 'The unique session token',
           readOnly: true
+        },
+        custom: {
+          betterAuthFieldKey: 'token'
         }
       },
       {
@@ -67,6 +75,9 @@ export function buildSessionsCollection({
         admin: {
           description: 'The date and time when the session will expire',
           readOnly: true
+        },
+        custom: {
+          betterAuthFieldKey: 'expiresAt'
         }
       },
       {
@@ -77,6 +88,9 @@ export function buildSessionsCollection({
         admin: {
           description: 'The IP address of the device',
           readOnly: true
+        },
+        custom: {
+          betterAuthFieldKey: 'ipAddress'
         }
       },
       {
@@ -87,14 +101,17 @@ export function buildSessionsCollection({
         admin: {
           description: 'The user agent information of the device',
           readOnly: true
+        },
+        custom: {
+          betterAuthFieldKey: 'userAgent'
         }
       },
       ...getTimestampFields()
     ],
     ...existingSessionCollection
   }
-  if (baPlugins) {
-    baPlugins.forEach((plugin) => {
+  if (betterAuthPlugins) {
+    betterAuthPlugins.forEach((plugin) => {
       switch (plugin.id) {
         case 'admin':
           sessionCollection.fields.push({
@@ -107,6 +124,9 @@ export function buildSessionsCollection({
             admin: {
               readOnly: true,
               description: 'The admin who is impersonating this session'
+            },
+            custom: {
+              betterAuthFieldKey: baModelFieldKeys.session.impersonatedBy
             }
           })
           break
@@ -115,11 +135,14 @@ export function buildSessionsCollection({
             name: 'activeOrganization',
             type: 'relationship',
             saveToJWT: true,
-            relationTo: betterAuthPluginSlugs.organizations,
+            relationTo: baPluginSlugs.organizations,
             label: 'Active Organization',
             admin: {
               readOnly: true,
               description: 'The currently active organization for the session'
+            },
+            custom: {
+              betterAuthFieldKey: baModelFieldKeys.session.activeOrganizationId
             }
           })
           break

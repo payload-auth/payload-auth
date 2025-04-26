@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import { addDataAndFileToRequest, commitTransaction, initTransaction, killTransaction, type Endpoint } from 'payload'
 import { status as httpStatus } from 'http-status'
-import { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
+import { BetterAuthOptions, BetterAuthPluginOptions } from '@/better-auth/plugin/types'
 import { getRequestCollection } from '../../../../helpers/get-requst-collection'
-import { adminEndpoints, baseCollectionSlugs } from '@/better-auth/plugin/constants'
+import { adminEndpoints, baseSlugs } from '@/better-auth/plugin/constants'
 
 const routeParamsSchema = z.object({
   token: z.string(),
@@ -16,7 +16,7 @@ const signupSchema = z.object({
   username: z.string().optional()
 })
 
-export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions, betterAuthOptions: SanitizedBetterAuthOptions): Endpoint => {
+export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions): Endpoint => {
   const endpoint: Endpoint = {
     path: adminEndpoints.signup,
     method: 'post',
@@ -31,7 +31,7 @@ export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions, better
           return Response.json({ message: routeParamsError.message }, { status: httpStatus.BAD_REQUEST })
         }
         const invite = await req.payload.find({
-          collection: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
+          collection: pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
           where: {
             token: {
               equals: routeParamsData.token
@@ -49,8 +49,8 @@ export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions, better
           return Response.json({ message: schema.error.message }, { status: httpStatus.BAD_REQUEST })
         }
         const { email, password, username } = schema.data
-        const baseURL = betterAuthOptions.baseURL
-        const basePath = betterAuthOptions.basePath ?? '/api/auth'
+        const baseURL = pluginOptions.betterAuthOptions?.baseURL
+        const basePath = pluginOptions.betterAuthOptions?.basePath ?? '/api/auth'
         const authApiURL = `${baseURL}${basePath}`
         let url = `${authApiURL}/sign-up/email`
         if (routeParamsData?.token) {
@@ -77,7 +77,7 @@ export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions, better
         const responseData = await result.json()
 
         await req.payload.update({
-          collection: pluginOptions.users?.slug ?? baseCollectionSlugs.users,
+          collection: pluginOptions.users?.slug ?? baseSlugs.users,
           id: responseData.user.id,
           data: {
             role: inviteRole
@@ -86,7 +86,7 @@ export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions, better
           req
         })
         await req.payload.delete({
-          collection: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
+          collection: pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
           where: {
             token: { equals: invite.docs[0].token }
           },
@@ -94,10 +94,10 @@ export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions, better
         })
 
         const requireEmailVerification =
-          (betterAuthOptions.emailAndPassword?.requireEmailVerification || collection.config.auth.verify) &&
+          (pluginOptions.betterAuthOptions?.emailAndPassword?.requireEmailVerification || collection.config.auth.verify) &&
           !responseData.user.emailVerified
 
-        const sentEmailVerification = betterAuthOptions.emailVerification?.sendVerificationEmail !== undefined
+        const sentEmailVerification = pluginOptions.betterAuthOptions?.emailVerification?.sendVerificationEmail !== undefined
 
         let response: Response | null = null
 

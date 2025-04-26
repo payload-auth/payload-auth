@@ -1,15 +1,15 @@
 import { CollectionConfig } from 'payload'
 import { BetterAuthPluginOptions } from '../../types'
-import { betterAuthPluginSlugs, baseCollectionSlugs } from '../../constants'
+import { baPluginSlugs, baseSlugs, baModelKey, baModelFieldKeys } from '../../constants'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 
-export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }) {
-  const oauthAccessTokenSlug = betterAuthPluginSlugs.oauthAccessTokens
-  const oauthApplicationSlug = betterAuthPluginSlugs.oauthApplications
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
+export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+  const oauthAccessTokenSlug = baPluginSlugs.oauthAccessTokens
+  const oauthApplicationSlug = baPluginSlugs.oauthApplications
+  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
 
-  const oauthAccessTokenCollection: CollectionConfig = {
+  let oauthAccessTokenCollection: CollectionConfig = {
     slug: oauthAccessTokenSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
@@ -19,6 +19,9 @@ export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOpti
     },
     access: {
       ...getAdminAccess(pluginOptions)
+    },
+    custom: {
+      betterAuthModelKey: baModelKey.oauthAccessToken
     },
     fields: [
       {
@@ -30,6 +33,9 @@ export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOpti
         admin: {
           readOnly: true,
           description: 'Access token issued to the client'
+        },
+        custom: {
+          betterAuthFieldKey: 'accessToken'
         }
       },
       {
@@ -40,6 +46,9 @@ export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOpti
         admin: {
           readOnly: true,
           description: 'Refresh token issued to the client'
+        },
+        custom: {
+          betterAuthFieldKey: 'refreshToken'
         }
       },
       {
@@ -50,6 +59,9 @@ export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOpti
         admin: {
           readOnly: true,
           description: 'Expiration date of the access token'
+        },
+        custom: {
+          betterAuthFieldKey: 'accessTokenExpiresAt'
         }
       },
       {
@@ -60,6 +72,9 @@ export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOpti
         admin: {
           readOnly: true,
           description: 'Expiration date of the refresh token'
+        },
+        custom: {
+          betterAuthFieldKey: 'refreshTokenExpiresAt'
         }
       },
       {
@@ -71,6 +86,9 @@ export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOpti
         admin: {
           readOnly: true,
           description: 'OAuth application associated with the access token'
+        },
+        custom: {
+          betterAuthFieldKey: baModelFieldKeys.oauthAccessToken.clientId
         }
       },
       {
@@ -82,6 +100,9 @@ export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOpti
         admin: {
           readOnly: true,
           description: 'User associated with the access token'
+        },
+        custom: {
+          betterAuthFieldKey: baModelFieldKeys.oauthAccessToken.userId
         }
       },
       {
@@ -91,10 +112,19 @@ export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOpti
         label: 'Scopes',
         admin: {
           description: 'Comma-separated list of scopes granted'
+        },
+        custom: {
+          betterAuthFieldKey: 'scopes'
         }
       },
       ...getTimestampFields()
     ]
+  }
+
+  if (pluginOptions.pluginCollectionOverrides?.oauthAccessTokens) {
+    oauthAccessTokenCollection = pluginOptions.pluginCollectionOverrides.oauthAccessTokens({
+      collection: oauthAccessTokenCollection
+    })
   }
 
   return oauthAccessTokenCollection

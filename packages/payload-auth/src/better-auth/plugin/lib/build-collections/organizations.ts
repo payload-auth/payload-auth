@@ -1,13 +1,13 @@
 import { CollectionConfig } from 'payload'
 import { BetterAuthPluginOptions } from '../../types'
-import { betterAuthPluginSlugs } from '../../constants'
+import { baPluginSlugs, baModelKey } from '../../constants'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 
 export function buildOrganizationsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
-  const organizationSlug = betterAuthPluginSlugs.organizations
+  const organizationSlug = baPluginSlugs.organizations
 
-  const organizationCollection: CollectionConfig = {
+  let organizationCollection: CollectionConfig = {
     slug: organizationSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
@@ -18,6 +18,9 @@ export function buildOrganizationsCollection({ pluginOptions }: { pluginOptions:
     access: {
       ...getAdminAccess(pluginOptions)
     },
+    custom: {
+      betterAuthModelKey: baModelKey.organization
+    },
     fields: [
       {
         name: 'name',
@@ -26,6 +29,9 @@ export function buildOrganizationsCollection({ pluginOptions }: { pluginOptions:
         label: 'Name',
         admin: {
           description: 'The name of the organization.'
+        },
+        custom: {
+          betterAuthFieldKey: 'name'
         }
       },
       {
@@ -36,6 +42,9 @@ export function buildOrganizationsCollection({ pluginOptions }: { pluginOptions:
         label: 'Slug',
         admin: {
           description: 'The slug of the organization.'
+        },
+        custom: {
+          betterAuthFieldKey: 'slug'
         }
       },
       {
@@ -44,6 +53,9 @@ export function buildOrganizationsCollection({ pluginOptions }: { pluginOptions:
         label: 'Logo',
         admin: {
           description: 'The logo of the organization.'
+        },
+        custom: {
+          betterAuthFieldKey: 'logo'
         }
       },
       {
@@ -52,10 +64,19 @@ export function buildOrganizationsCollection({ pluginOptions }: { pluginOptions:
         label: 'Metadata',
         admin: {
           description: 'Additional metadata for the organization.'
+        },
+        custom: {
+          betterAuthFieldKey: 'metadata'
         }
       },
       ...getTimestampFields()
     ]
+  }
+
+  if (pluginOptions.pluginCollectionOverrides?.organizations) {
+    organizationCollection = pluginOptions.pluginCollectionOverrides.organizations({
+      collection: organizationCollection
+    })
   }
 
   return organizationCollection

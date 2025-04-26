@@ -1,13 +1,13 @@
 import { CollectionConfig } from 'payload'
 import { BetterAuthPluginOptions } from '../../types'
-import { betterAuthPluginSlugs } from '../../constants'
+import { baPluginSlugs, baModelKey } from '../../constants'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 
-export function buildJwksCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }) {
-  const jwksSlug = betterAuthPluginSlugs.jwks
+export function buildJwksCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+  const jwksSlug = baPluginSlugs.jwks
 
-  const jwksCollection: CollectionConfig = {
+  let jwksCollection: CollectionConfig = {
     slug: jwksSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
@@ -18,6 +18,9 @@ export function buildJwksCollection({ pluginOptions }: { pluginOptions: BetterAu
     access: {
       ...getAdminAccess(pluginOptions)
     },
+    custom: {
+      betterAuthModelKey: baModelKey.jwks
+    },
     fields: [
       {
         name: 'publicKey',
@@ -27,6 +30,9 @@ export function buildJwksCollection({ pluginOptions }: { pluginOptions: BetterAu
         label: 'Public Key',
         admin: {
           description: 'The public part of the web key'
+        },
+        custom: {
+          betterAuthFieldKey: 'publicKey'
         }
       },
       {
@@ -36,10 +42,19 @@ export function buildJwksCollection({ pluginOptions }: { pluginOptions: BetterAu
         label: 'Private Key',
         admin: {
           description: 'The private part of the web key'
+        },
+        custom: {
+          betterAuthFieldKey: 'privateKey'
         }
       },
       ...getTimestampFields()
     ]
+  }
+
+  if (pluginOptions.pluginCollectionOverrides?.jwks) {
+    jwksCollection = pluginOptions.pluginCollectionOverrides.jwks({
+      collection: jwksCollection
+    })
   }
 
   return jwksCollection

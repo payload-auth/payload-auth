@@ -2,11 +2,12 @@ import type { Config } from 'payload'
 import type { BetterAuthPluginOptions } from './types'
 import { sanitizeBetterAuthOptions } from './lib/sanitize-better-auth-options/index'
 import { getRequiredCollectionSlugs } from './lib/get-required-collection-slugs'
-import { buildCollections } from './lib/build-collections/index'
+import { buildCollectionMap } from './lib/build-collections/index'
 import { initBetterAuth } from './lib/init-better-auth'
-import { adminRoutes, baseCollectionSlugs, betterAuthPluginSlugs, supportedBetterAuthPluginIds } from './constants'
+import { adminRoutes, baseSlugs, supportedBAPluginIds } from './constants'
 import { setLoginMethods } from './lib/set-login-methods'
-import { checkTwoFactorPlugin } from './helpers/check-two-factor-plugin'
+import { getMappedCollection } from './helpers/get-collection'
+import { checkPluginExists } from './helpers/check-plugin-exists'
 
 export { sanitizeBetterAuthOptions } from './lib/sanitize-better-auth-options/index'
 export { getPayloadAuth } from './lib/get-payload-auth'
@@ -19,17 +20,22 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
       return config
     }
 
-    const betterAuthOptions = sanitizeBetterAuthOptions({
-      config,
-      options: pluginOptions
-    })
-
     config.custom = {
       ...config.custom,
       hasBetterAuthPlugin: true
     }
 
     pluginOptions = setLoginMethods({ pluginOptions })
+
+    // Determine which collections to add based on the options and plugins
+    const requiredCollectionSlugs = getRequiredCollectionSlugs(pluginOptions)
+
+    // Build the collection map
+    const collectionMap = buildCollectionMap({
+      incomingCollections: config.collections ?? [],
+      requiredCollectionSlugs,
+      pluginOptions
+    })
 
     // Set custom admin components if disableDefaultPayloadAuth is true
     if (pluginOptions.disableDefaultPayloadAuth) {
@@ -59,7 +65,7 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
                 path: 'payload-auth/better-auth/plugin/rsc#AdminLogin',
                 serverProps: {
                   pluginOptions: pluginOptions,
-                  betterAuthOptions: betterAuthOptions
+                  adminInvitationsSlug: getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.adminInvitations })?.slug
                 }
               }
             },
@@ -69,17 +75,14 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
                 path: 'payload-auth/better-auth/plugin/rsc#AdminSignup',
                 serverProps: {
                   pluginOptions: pluginOptions,
-                  betterAuthOptions: betterAuthOptions
+                  adminInvitationsSlug: getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.adminInvitations })?.slug
                 }
               }
             },
             forgotPassword: {
               path: adminRoutes.forgotPassword,
               Component: {
-                path: 'payload-auth/better-auth/plugin/rsc#ForgotPassword',
-                serverProps: {
-                  betterAuthOptions: betterAuthOptions
-                }
+                path: 'payload-auth/better-auth/plugin/rsc#ForgotPassword'
               }
             },
             resetPassword: {
@@ -88,16 +91,14 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
                 path: 'payload-auth/better-auth/plugin/rsc#ResetPassword'
               }
             },
-            ...(checkTwoFactorPlugin(betterAuthOptions) && {
+            ...(checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.twoFactor) && {
               twoFactorVerify: {
                 path: adminRoutes.twoFactorVerify,
                 Component: {
                   path: 'payload-auth/better-auth/plugin/rsc#TwoFactorVerify',
                   serverProps: {
-                    payloadConfig: config,
-                    twoFactorOptions:
-                      betterAuthOptions.plugins?.find((plugin) => plugin.id === supportedBetterAuthPluginIds.twoFactor)?.options ?? {},
-                    verificationSlug: pluginOptions.verifications?.slug ?? baseCollectionSlugs.verifications
+                    pluginOptions: pluginOptions,
+                    verificationsSlug: getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.verifications })?.slug
                   }
                 }
               }
@@ -111,23 +112,15 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
       }
     }
 
-    // Determine which collections to add based on the options and plugins
-    const requiredCollectionSlugs = getRequiredCollectionSlugs({
-      logTables: pluginOptions.debug?.logTables ?? false,
-      pluginOptions,
-      betterAuthOptions
-    })
-
     if (!config.collections) {
       config.collections = []
     }
 
-    // Update with the required collections + existing collections
-    config.collections = buildCollections({
-      incomingCollections: config.collections ?? [],
-      requiredCollectionSlugs,
-      pluginOptions,
-      betterAuthOptions
+    config.collections = Object.values(collectionMap)
+
+    const betterAuthOptions = sanitizeBetterAuthOptions({
+      collectionMap,
+      pluginOptions
     })
 
     const incomingOnInit = config.onInit

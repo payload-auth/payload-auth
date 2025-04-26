@@ -3,7 +3,7 @@ import { type Endpoint } from 'payload'
 import { status as httpStatus } from 'http-status'
 import { BetterAuthPluginOptions } from '../../../../types'
 import { getPayloadAuth } from '../../../get-payload-auth'
-import { adminEndpoints, baseCollectionSlugs } from '@/better-auth/plugin/constants'
+import { adminEndpoints, baseSlugs } from '@/better-auth/plugin/constants'
 
 const setAdminRoleSchema = z.object({
   token: z.string().optional(),
@@ -29,7 +29,7 @@ export const getSetAdminRoleEndpoint = (pluginOptions: BetterAuthPluginOptions, 
       }
       const { token, redirect } = schema.data
       const invite = await req.payload.find({
-        collection: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
+        collection: pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
         where: {
           token: { equals: token }
         },
@@ -48,7 +48,7 @@ export const getSetAdminRoleEndpoint = (pluginOptions: BetterAuthPluginOptions, 
         overrideAccess: true
       })
       await req.payload.delete({
-        collection: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
+        collection: pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
         where: {
           token: {
             equals: token

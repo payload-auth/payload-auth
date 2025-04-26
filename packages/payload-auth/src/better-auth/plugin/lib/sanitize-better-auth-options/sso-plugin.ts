@@ -1,15 +1,18 @@
-import { betterAuthPluginSlugs } from '@/better-auth/plugin/constants'
+import { baModelKey, baModelFieldKeys, baPluginSlugs } from '@/better-auth/plugin/constants'
+import { getMappedCollection, getMappedField } from '../../helpers/get-collection'
+import { CollectionConfig } from 'payload'
 
-export function configureSsoPlugin(plugin: any) {
+export function configureSsoPlugin(plugin: any, collectionMap: Record<string, CollectionConfig>): void {
+  const ssoProviderCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.ssoProvider })
   plugin.schema = plugin?.schema ?? {}
   plugin.schema.sso = {
     ...(plugin?.schema?.sso ?? {}),
-    modelName: betterAuthPluginSlugs.ssoProviders,
+    modelName: ssoProviderCollection.slug,
     fields: {
       ...(plugin?.schema?.sso?.fields ?? {}),
       userId: {
         ...(plugin?.schema?.sso?.fields?.userId ?? {}),
-        fieldName: 'user'
+        fieldName: getMappedField({ collection: ssoProviderCollection, betterAuthFieldKey: baModelFieldKeys.ssoProvider.userId }).name
       }
     }
   }

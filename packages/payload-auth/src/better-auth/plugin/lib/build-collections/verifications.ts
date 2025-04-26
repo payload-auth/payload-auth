@@ -1,6 +1,6 @@
 import { CollectionConfig } from 'payload'
 import { BetterAuthPluginOptions } from '../../types'
-import { baseCollectionSlugs } from '../../constants'
+import { baModelKey, baseSlugs } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 
 export function buildVerificationsCollection({
@@ -9,9 +9,10 @@ export function buildVerificationsCollection({
 }: {
   incomingCollections: CollectionConfig[]
   pluginOptions: BetterAuthPluginOptions
-}) {
-  const verificationSlug = pluginOptions.verifications?.slug ?? baseCollectionSlugs.verifications
+}): CollectionConfig {
+  const verificationSlug = pluginOptions.verifications?.slug ?? baseSlugs.verifications
   const existingVerificationCollection = incomingCollections.find((collection) => collection.slug === verificationSlug)
+
   let verificationCollection: CollectionConfig = {
     slug: verificationSlug,
     admin: {
@@ -24,6 +25,9 @@ export function buildVerificationsCollection({
     access: {
       ...getAdminAccess(pluginOptions)
     },
+    custom: {
+      betterAuthModelKey: baModelKey.verification
+    },
     fields: [
       ...(existingVerificationCollection?.fields ?? []),
       {
@@ -35,6 +39,9 @@ export function buildVerificationsCollection({
         admin: {
           description: 'The identifier of the verification request',
           readOnly: true
+        },
+        custom: {
+          betterAuthFieldKey: 'identifier'
         }
       },
       {
@@ -45,6 +52,9 @@ export function buildVerificationsCollection({
         admin: {
           description: 'The value to be verified',
           readOnly: true
+        },
+        custom: {
+          betterAuthFieldKey: 'value'
         }
       },
       {
@@ -55,6 +65,9 @@ export function buildVerificationsCollection({
         admin: {
           description: 'The date and time when the verification request will expire',
           readOnly: true
+        },
+        custom: {
+          betterAuthFieldKey: 'expiresAt'
         }
       }
     ],

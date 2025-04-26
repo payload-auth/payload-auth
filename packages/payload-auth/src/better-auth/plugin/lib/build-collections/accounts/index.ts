@@ -1,20 +1,22 @@
 import { CollectionConfig } from 'payload'
 import { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
-import { baseCollectionSlugs } from '@/better-auth/plugin/constants'
+import { baseSlugs, baModelKey, defaults, baModelFieldKeys } from '@/better-auth/plugin/constants'
 import { getSyncPasswordToUserHook } from './hooks/sync-password-to-user'
 import { isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
 import { getTimestampFields } from '../utils/get-timestamp-fields'
 
 export function buildAccountsCollection({
   incomingCollections,
-  pluginOptions
+  pluginOptions,
+  collectionMap
 }: {
   incomingCollections: CollectionConfig[]
   pluginOptions: BetterAuthPluginOptions
+  collectionMap: Record<string, CollectionConfig>
 }): CollectionConfig {
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
-  const accountSlug = pluginOptions.accounts?.slug ?? baseCollectionSlugs.accounts
-  const adminRoles = pluginOptions.users?.adminRoles ?? ['admin']
+  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
+  const accountSlug = pluginOptions.accounts?.slug ?? baseSlugs.accounts
+  const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
 
   const existingAccountCollection = incomingCollections.find((collection) => collection.slug === accountSlug) as
     | CollectionConfig
@@ -29,25 +31,21 @@ export function buildAccountsCollection({
       ...existingAccountCollection?.admin,
       hidden: pluginOptions.accounts?.hidden
     },
-    hooks: {
-      afterChange: [
-        ...(existingAccountCollection?.hooks?.afterChange ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth
-          ? []
-          : [
-              getSyncPasswordToUserHook({
-                userSlug,
-                accountSlug
-              })
-            ])
-      ]
-    },
     access: {
       create: isAdminWithRoles({ adminRoles }),
       delete: isAdminWithRoles({ adminRoles }),
       read: isAdminOrCurrentUserWithRoles({ adminRoles, idField: 'user' }),
       update: isAdminWithRoles({ adminRoles }),
       ...(existingAccountCollection?.access ?? {})
+    },
+    custom: {
+      betterAuthModelKey: baModelKey.account
+    },
+    hooks: {
+      afterChange: [
+        ...(existingAccountCollection?.hooks?.afterChange ?? []),
+        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [getSyncPasswordToUserHook(collectionMap)])
+      ]
     },
     fields: [
       ...(existingAccountCollection?.fields ?? []),
@@ -61,6 +59,9 @@ export function buildAccountsCollection({
         admin: {
           readOnly: true,
           description: 'The user that the account belongs to'
+        },
+        custom: {
+          betterAuthFieldKey: baModelFieldKeys.account.userId
         }
       },
       {
@@ -72,6 +73,9 @@ export function buildAccountsCollection({
         admin: {
           readOnly: true,
           description: 'The id of the account as provided by the SSO or equal to userId for credential accounts'
+        },
+        custom: {
+          betterAuthFieldKey: 'accountId'
         }
       },
       {
@@ -82,6 +86,9 @@ export function buildAccountsCollection({
         admin: {
           readOnly: true,
           description: 'The id of the provider as provided by the SSO'
+        },
+        custom: {
+          betterAuthFieldKey: 'providerId'
         }
       },
       {
@@ -91,6 +98,9 @@ export function buildAccountsCollection({
         admin: {
           readOnly: true,
           description: 'The access token of the account. Returned by the provider'
+        },
+        custom: {
+          betterAuthFieldKey: 'accessToken'
         }
       },
       {
@@ -100,6 +110,9 @@ export function buildAccountsCollection({
         admin: {
           readOnly: true,
           description: 'The refresh token of the account. Returned by the provider'
+        },
+        custom: {
+          betterAuthFieldKey: 'refreshToken'
         }
       },
       {
@@ -109,6 +122,9 @@ export function buildAccountsCollection({
         admin: {
           readOnly: true,
           description: 'The date and time when the access token will expire'
+        },
+        custom: {
+          betterAuthFieldKey: 'accessTokenExpiresAt'
         }
       },
       {
@@ -118,6 +134,9 @@ export function buildAccountsCollection({
         admin: {
           readOnly: true,
           description: 'The date and time when the refresh token will expire'
+        },
+        custom: {
+          betterAuthFieldKey: 'refreshTokenExpiresAt'
         }
       },
       {
@@ -127,6 +146,9 @@ export function buildAccountsCollection({
         admin: {
           readOnly: true,
           description: 'The scope of the account. Returned by the provider'
+        },
+        custom: {
+          betterAuthFieldKey: 'scope'
         }
       },
       {
@@ -136,6 +158,9 @@ export function buildAccountsCollection({
         admin: {
           readOnly: true,
           description: 'The id token for the account. Returned by the provider'
+        },
+        custom: {
+          betterAuthFieldKey: 'idToken'
         }
       },
       {
@@ -146,16 +171,21 @@ export function buildAccountsCollection({
           readOnly: true,
           hidden: true,
           description: 'The hashed password of the account. Mainly used for email and password authentication'
+        },
+        custom: {
+          betterAuthFieldKey: 'password'
         }
       },
       ...getTimestampFields()
     ],
     ...existingAccountCollection
   }
+
   if (pluginOptions.accounts?.collectionOverrides) {
     accountCollection = pluginOptions.accounts.collectionOverrides({
       collection: accountCollection
     })
   }
+
   return accountCollection
 }

@@ -1,20 +1,19 @@
-import type { CollectionBeforeDeleteHook } from 'payload'
+import { baseSlugs } from '@/better-auth/plugin/constants'
+import { getMappedCollection } from '@/better-auth/plugin/helpers/get-collection'
+import { commitTransaction, initTransaction, killTransaction, type CollectionBeforeDeleteHook, type CollectionConfig } from 'payload'
 
-export const getBeforeDeleteHook = ({
-  accountsSlug,
-  sessionsSlug,
-  verificationsSlug
-}: {
-  accountsSlug: string
-  sessionsSlug: string
-  verificationsSlug: string
-}): CollectionBeforeDeleteHook => {
+export function getBeforeDeleteHook(collectionMap: Record<string, CollectionConfig>): CollectionBeforeDeleteHook {
+  const accountsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.accounts }).slug
+  const sessionsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.sessions }).slug
+  const verificationsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.verifications }).slug
+
   const hook: CollectionBeforeDeleteHook = async ({ req, id }) => {
     try {
       const { payload } = req
       const userId = id
 
-      // Delete accounts
+      const shouldCommit = await initTransaction(req)
+
       await payload.delete({
         collection: accountsSlug,
         where: {
@@ -25,7 +24,6 @@ export const getBeforeDeleteHook = ({
         req
       })
 
-      // Delete sessions
       await payload.delete({
         collection: sessionsSlug,
         where: {
@@ -36,7 +34,6 @@ export const getBeforeDeleteHook = ({
         req
       })
 
-      // Delete any verifications
       await payload.delete({
         collection: verificationsSlug,
         where: {
@@ -47,8 +44,13 @@ export const getBeforeDeleteHook = ({
         req
       })
 
+      if (shouldCommit) {
+        await commitTransaction(req)
+      }
+
       return
     } catch (error) {
+      await killTransaction(req)
       console.error('Error in user afterDelete hook:', error)
       return
     }

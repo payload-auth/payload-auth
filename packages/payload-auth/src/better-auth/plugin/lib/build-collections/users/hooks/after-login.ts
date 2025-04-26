@@ -1,33 +1,31 @@
 import { generateId, Session } from 'better-auth'
 import { createAuthMiddleware } from 'better-auth/api'
-import { setCookieCache, setSessionCookie } from 'better-auth/cookies'
+import { setSessionCookie } from 'better-auth/cookies'
 import { parseSetCookie, type ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies'
 import { cookies } from 'next/headers'
-import { CollectionAfterLoginHook } from 'payload'
+import { CollectionAfterLoginHook, CollectionConfig } from 'payload'
 import { getPayloadAuth } from '@/better-auth/plugin/lib/get-payload-auth'
 import { getIp } from '@/better-auth/plugin/helpers/get-ip'
 import { prepareSessionData } from '@/better-auth/plugin/helpers/prepare-session-data'
-
-type AfterLoginOptions = {
-  usersCollectionSlug: string
-  sessionsCollectionSlug: string
-}
+import { getMappedCollection } from '@/better-auth/plugin/helpers/get-collection'
+import { baseSlugs } from '@/better-auth/plugin/constants'
 
 /**
  * This hook is used to sync the admin login token with better-auth session token
  * It also creates a new session in better-auth
  */
-export const getAfterLoginHook = (options: AfterLoginOptions): CollectionAfterLoginHook => {
+export function getAfterLoginHook(collectionMap: Record<string, CollectionConfig>) {
   const hook: CollectionAfterLoginHook = async ({ collection, context, req, token, user }) => {
     const config = req.payload.config
     const payload = await getPayloadAuth(config)
     const cookieStore = await cookies()
     const authContext = await payload.betterAuth.$context
+    const sessionCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.sessions })
 
     const sessionExpiration = payload.betterAuth.options.session?.expiresIn || 60 * 60 * 24 * 7 // 7 days
     // we can't use internal adapter as we can cause a race condition unless we pass req to the payload.create
     const session = (await payload.create({
-      collection: options.sessionsCollectionSlug,
+      collection: sessionCollection.slug,
       data: {
         ipAddress: getIp(req.headers, payload.betterAuth.options) || '',
         userAgent: req.headers?.get('user-agent') || '',
@@ -48,11 +46,7 @@ export const getAfterLoginHook = (options: AfterLoginOptions): CollectionAfterLo
       )
       const filteredSessionData = await prepareSessionData({
         sessionData: { session, user },
-        payloadConfig: config,
-        collectionSlugs: {
-          userCollectionSlug: options.usersCollectionSlug,
-          sessionCollectionSlug: options.sessionsCollectionSlug
-        }
+        collectionMap
       })
       if (filteredSessionData) {
         await setSessionCookie(ctx, filteredSessionData)

@@ -1,14 +1,14 @@
 import { CollectionConfig } from 'payload'
 import { BetterAuthPluginOptions } from '../../types'
-import { betterAuthPluginSlugs, baseCollectionSlugs } from '../../constants'
+import { baPluginSlugs, baseSlugs, baModelKey, baModelFieldKeys } from '../../constants'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 
-export function buildOauthConsentsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }) {
-  const oauthConsentSlug = betterAuthPluginSlugs.oauthConsents
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
+export function buildOauthConsentsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+  const oauthConsentSlug = baPluginSlugs.oauthConsents
+  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
 
-  const oauthConsentCollection: CollectionConfig = {
+  let oauthConsentCollection: CollectionConfig = {
     slug: oauthConsentSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
@@ -18,16 +18,22 @@ export function buildOauthConsentsCollection({ pluginOptions }: { pluginOptions:
     access: {
       ...getAdminAccess(pluginOptions)
     },
+    custom: {
+      betterAuthModelKey: baModelKey.oauthConsent
+    },
     fields: [
       {
         name: 'client',
         type: 'relationship',
-        relationTo: betterAuthPluginSlugs.oauthApplications,
+        relationTo: baPluginSlugs.oauthApplications,
         required: true,
         label: 'Client',
         admin: {
           readOnly: true,
           description: 'OAuth client associated with the consent'
+        },
+        custom: {
+          betterAuthFieldKey: baModelFieldKeys.oauthConsent.clientId
         }
       },
       {
@@ -39,6 +45,9 @@ export function buildOauthConsentsCollection({ pluginOptions }: { pluginOptions:
         admin: {
           readOnly: true,
           description: 'User associated with the consent'
+        },
+        custom: {
+          betterAuthFieldKey: baModelFieldKeys.oauthConsent.userId
         }
       },
       {
@@ -49,6 +58,9 @@ export function buildOauthConsentsCollection({ pluginOptions }: { pluginOptions:
         admin: {
           readOnly: true,
           description: 'Comma-separated list of scopes consented to'
+        },
+        custom: {
+          betterAuthFieldKey: 'scopes'
         }
       },
       {
@@ -60,10 +72,19 @@ export function buildOauthConsentsCollection({ pluginOptions }: { pluginOptions:
         admin: {
           readOnly: true,
           description: '	Indicates if consent was given'
+        },
+        custom: {
+          betterAuthFieldKey: 'consentGiven'
         }
       },
       ...getTimestampFields()
     ]
+  }
+
+  if (pluginOptions.pluginCollectionOverrides?.oauthConsents) {
+    oauthConsentCollection = pluginOptions.pluginCollectionOverrides.oauthConsents({
+      collection: oauthConsentCollection
+    })
   }
 
   return oauthConsentCollection

@@ -1,15 +1,16 @@
 import { CollectionConfig } from 'payload'
 import { BetterAuthPluginOptions } from '../../types'
-import { betterAuthPluginSlugs, baseCollectionSlugs } from '../../constants'
+import { baPluginSlugs, baseSlugs, baModelKey, baModelFieldKeys } from '../../constants'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 
 export function buildMembersCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
-  const memberSlug = betterAuthPluginSlugs.members
-  const organizationSlug = betterAuthPluginSlugs.organizations
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
-  const teamSlug = betterAuthPluginSlugs.teams
-  const memberCollection: CollectionConfig = {
+  const memberSlug = baPluginSlugs.members
+  const organizationSlug = baPluginSlugs.organizations
+  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
+  const teamSlug = baPluginSlugs.teams
+
+  let memberCollection: CollectionConfig = {
     slug: memberSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
@@ -19,6 +20,9 @@ export function buildMembersCollection({ pluginOptions }: { pluginOptions: Bette
     },
     access: {
       ...getAdminAccess(pluginOptions)
+    },
+    custom: {
+      betterAuthModelKey: baModelKey.member
     },
     fields: [
       {
@@ -31,6 +35,9 @@ export function buildMembersCollection({ pluginOptions }: { pluginOptions: Bette
         admin: {
           readOnly: true,
           description: 'The organization that the member belongs to.'
+        },
+        custom: {
+          betterAuthFieldKey: baModelFieldKeys.member.organizationId
         }
       },
       {
@@ -43,6 +50,9 @@ export function buildMembersCollection({ pluginOptions }: { pluginOptions: Bette
         admin: {
           readOnly: true,
           description: 'The user that is a member of the organization.'
+        },
+        custom: {
+          betterAuthFieldKey: baModelFieldKeys.member.userId
         }
       },
       {
@@ -53,6 +63,9 @@ export function buildMembersCollection({ pluginOptions }: { pluginOptions: Bette
         label: 'Team',
         admin: {
           description: 'The team that the member belongs to.'
+        },
+        custom: {
+          betterAuthFieldKey: baModelFieldKeys.member.teamId
         }
       },
       {
@@ -63,10 +76,19 @@ export function buildMembersCollection({ pluginOptions }: { pluginOptions: Bette
         label: 'Role',
         admin: {
           description: 'The role of the member in the organization.'
+        },
+        custom: {
+          betterAuthFieldKey: 'role'
         }
       },
       ...getTimestampFields()
     ]
+  }
+
+  if (pluginOptions.pluginCollectionOverrides?.members) {
+    memberCollection = pluginOptions.pluginCollectionOverrides.members({
+      collection: memberCollection
+    })
   }
 
   return memberCollection

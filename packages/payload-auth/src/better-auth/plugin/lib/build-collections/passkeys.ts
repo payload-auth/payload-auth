@@ -1,14 +1,14 @@
 import { CollectionConfig } from 'payload'
 import { BetterAuthPluginOptions } from '../../types'
-import { baseCollectionSlugs, betterAuthPluginSlugs } from '../../constants'
+import { baseSlugs, baPluginSlugs, baModelKey, baModelFieldKeys } from '../../constants'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 
-export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }) {
-  const passkeySlug = betterAuthPluginSlugs.passkeys
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
+export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+  const passkeySlug = baPluginSlugs.passkeys
+  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
 
-  const passkeyCollection: CollectionConfig = {
+  let passkeyCollection: CollectionConfig = {
     slug: passkeySlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
@@ -19,6 +19,9 @@ export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: Bett
     access: {
       ...getAdminAccess(pluginOptions)
     },
+    custom: {
+      betterAuthModelKey: baModelKey.passkey
+    },
     fields: [
       {
         name: 'name',
@@ -27,6 +30,9 @@ export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: Bett
         admin: {
           readOnly: true,
           description: 'The name of the passkey'
+        },
+        custom: {
+          betterAuthFieldKey: 'name'
         }
       },
       {
@@ -38,6 +44,9 @@ export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: Bett
         admin: {
           readOnly: true,
           description: 'The public key of the passkey'
+        },
+        custom: {
+          betterAuthFieldKey: 'publicKey'
         }
       },
       {
@@ -50,6 +59,9 @@ export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: Bett
         admin: {
           readOnly: true,
           description: 'The user that the passkey belongs to'
+        },
+        custom: {
+          betterAuthFieldKey: baModelFieldKeys.passkey.userId
         }
       },
       {
@@ -61,6 +73,9 @@ export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: Bett
         admin: {
           readOnly: true,
           description: 'The unique identifier of the registered credential'
+        },
+        custom: {
+          betterAuthFieldKey: 'credentialID'
         }
       },
       {
@@ -71,6 +86,9 @@ export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: Bett
         admin: {
           readOnly: true,
           description: 'The counter of the passkey'
+        },
+        custom: {
+          betterAuthFieldKey: 'counter'
         }
       },
       {
@@ -81,6 +99,9 @@ export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: Bett
         admin: {
           readOnly: true,
           description: 'The type of device used to register the passkey'
+        },
+        custom: {
+          betterAuthFieldKey: 'deviceType'
         }
       },
       {
@@ -91,6 +112,9 @@ export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: Bett
         admin: {
           readOnly: true,
           description: 'Whether the passkey is backed up'
+        },
+        custom: {
+          betterAuthFieldKey: 'backedUp'
         }
       },
       {
@@ -101,10 +125,19 @@ export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: Bett
         admin: {
           readOnly: true,
           description: 'The transports used to register the passkey'
+        },
+        custom: {
+          betterAuthFieldKey: 'transports'
         }
       },
       ...getTimestampFields()
     ]
+  }
+
+  if (pluginOptions.pluginCollectionOverrides?.passkeys) {
+    passkeyCollection = pluginOptions.pluginCollectionOverrides.passkeys({
+      collection: passkeyCollection
+    })
   }
 
   return passkeyCollection

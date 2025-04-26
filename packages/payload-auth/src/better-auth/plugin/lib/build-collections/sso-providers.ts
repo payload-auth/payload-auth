@@ -1,14 +1,14 @@
 import { CollectionConfig } from 'payload'
 import { BetterAuthPluginOptions } from '../../types'
-import { baseCollectionSlugs, betterAuthPluginSlugs } from '../../constants'
+import { baseSlugs, baModelKey, baPluginSlugs, baModelFieldKeys } from '../../constants'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 
-export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }) {
-  const ssoProviderSlug = betterAuthPluginSlugs.ssoProviders
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
+export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+  const ssoProviderSlug = baPluginSlugs.ssoProviders
+  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
 
-  const ssoProviderCollection: CollectionConfig = {
+  let ssoProviderCollection: CollectionConfig = {
     slug: ssoProviderSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
@@ -19,6 +19,9 @@ export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: 
     access: {
       ...getAdminAccess(pluginOptions)
     },
+    custom: {
+      betterAuthModelKey: baModelKey.ssoProvider
+    },
     fields: [
       {
         name: 'issuer',
@@ -28,6 +31,9 @@ export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: 
         label: 'Issuer',
         admin: {
           description: 'The issuer of the SSO provider'
+        },
+        custom: {
+          betterAuthFieldKey: 'issuer'
         }
       },
       {
@@ -37,6 +43,9 @@ export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: 
         label: 'Domain',
         admin: {
           description: 'The domain of the SSO provider'
+        },
+        custom: {
+          betterAuthFieldKey: 'domain'
         }
       },
       {
@@ -46,6 +55,9 @@ export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: 
         label: 'OIDC Config',
         admin: {
           description: 'The OIDC config of the SSO provider'
+        },
+        custom: {
+          betterAuthFieldKey: 'oidcConfig'
         }
       },
       {
@@ -56,6 +68,9 @@ export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: 
         label: 'User',
         admin: {
           description: 'The user associated with the SSO provider'
+        },
+        custom: {
+          betterAuthFieldKey: baModelFieldKeys.ssoProvider.userId
         }
       },
       {
@@ -66,6 +81,9 @@ export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: 
         admin: {
           readOnly: true,
           description: 'The provider id. Used to identify a provider and to generate a redirect url'
+        },
+        custom: {
+          betterAuthFieldKey: 'providerId'
         }
       },
       {
@@ -76,10 +94,19 @@ export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: 
         admin: {
           readOnly: true,
           description: 'The organization Id. If provider is linked to an organization'
+        },
+        custom: {
+          betterAuthFieldKey: 'organizationId'
         }
       },
       ...getTimestampFields()
     ]
+  }
+
+  if (pluginOptions.pluginCollectionOverrides?.ssoProviders) {
+    ssoProviderCollection = pluginOptions.pluginCollectionOverrides.ssoProviders({
+      collection: ssoProviderCollection
+    })
   }
 
   return ssoProviderCollection

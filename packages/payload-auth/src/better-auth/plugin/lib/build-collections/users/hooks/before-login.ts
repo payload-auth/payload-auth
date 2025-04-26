@@ -1,15 +1,11 @@
 import { APIError, CollectionBeforeLoginHook } from 'payload'
-import { getPayloadAuth } from '@/better-auth/plugin/lib/get-payload-auth'
-
+import type { BetterAuthOptions } from '@/better-auth/plugin/types'
 /**
  * This hook blocks login attempts if email verification is required and the user's email is not verified
  */
-export const getBeforeLoginHook = (): CollectionBeforeLoginHook => {
-  const hook: CollectionBeforeLoginHook = async ({ req, user }) => {
-    const config = req.payload.config
-    const payload = await getPayloadAuth(config)
-
-    const requireEmailVerification = payload.betterAuth.options.emailAndPassword?.requireEmailVerification ?? false
+export function getBeforeLoginHook(betterAuthOptions: BetterAuthOptions) {
+  const hook: CollectionBeforeLoginHook = async ({ user }) => {
+    const requireEmailVerification = betterAuthOptions.emailAndPassword?.requireEmailVerification ?? false
 
     if (requireEmailVerification && !user.emailVerified) {
       throw new APIError('Email verification required. Please verify your email before logging in.', 403)

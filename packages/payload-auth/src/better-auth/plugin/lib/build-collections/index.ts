@@ -1,6 +1,6 @@
 import { CollectionConfig } from 'payload'
-import { baseCollectionSlugs, betterAuthPluginSlugs } from '../../constants'
-import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../../types'
+import { baseSlugs, baModelKeyToSlug } from '../../constants'
+import type { BetterAuthPluginOptions } from '../../types'
 import { buildUsersCollection } from './users/index'
 import { buildAccountsCollection } from './accounts/index'
 import { buildSessionsCollection } from './sessions'
@@ -18,66 +18,55 @@ import { buildOauthConsentsCollection } from './oauth-consents'
 import { buildPasskeysCollection } from './passkeys'
 import { buildSsoProvidersCollection } from './sso-providers'
 import { buildAdminInvitationsCollection } from './admin-invitations'
+import { buildSubscriptionsCollection } from './subscriptions'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
  */
-export function buildCollections({
+export function buildCollectionMap({
   incomingCollections,
   requiredCollectionSlugs,
-  pluginOptions,
-  betterAuthOptions
+  pluginOptions
 }: {
   incomingCollections: CollectionConfig[]
-  requiredCollectionSlugs: Set<string>
+  requiredCollectionSlugs: string[]
   pluginOptions: BetterAuthPluginOptions
-  betterAuthOptions: SanitizedBetterAuthOptions
-}): CollectionConfig[] {
+}): Record<string, CollectionConfig> {
   const buildCollectionMap = {
-    [baseCollectionSlugs.users]: () =>
-      buildUsersCollection({
-        incomingCollections,
-        betterAuthOptions,
-        pluginOptions
-      }),
-    [baseCollectionSlugs.accounts]: () => buildAccountsCollection({ incomingCollections, pluginOptions }),
-    [baseCollectionSlugs.sessions]: () =>
-      buildSessionsCollection({
-        incomingCollections,
-        betterAuthOptions,
-        pluginOptions
-      }),
-    [baseCollectionSlugs.verifications]: () => buildVerificationsCollection({ incomingCollections, pluginOptions }),
-    [baseCollectionSlugs.adminInvitations]: () =>
-      buildAdminInvitationsCollection({
-        incomingCollections,
-        pluginOptions
-      }),
-    [betterAuthPluginSlugs.organizations]: () => buildOrganizationsCollection({ pluginOptions }),
-    [betterAuthPluginSlugs.members]: () => buildMembersCollection({ pluginOptions }),
-    [betterAuthPluginSlugs.invitations]: () => buildInvitationsCollection({ pluginOptions }),
-    [betterAuthPluginSlugs.teams]: () => buildTeamsCollection({ pluginOptions }),
-    [betterAuthPluginSlugs.jwks]: () => buildJwksCollection({ pluginOptions }),
-    [betterAuthPluginSlugs.apiKeys]: () => buildApiKeysCollection({ pluginOptions }),
-    [betterAuthPluginSlugs.twoFactors]: () => buildTwoFactorsCollection({ pluginOptions }),
-    [betterAuthPluginSlugs.oauthAccessTokens]: () => buildOauthAccessTokensCollection({ pluginOptions }),
-    [betterAuthPluginSlugs.oauthApplications]: () => buildOauthApplicationsCollection({ pluginOptions }),
-    [betterAuthPluginSlugs.oauthConsents]: () => buildOauthConsentsCollection({ pluginOptions }),
-    [betterAuthPluginSlugs.passkeys]: () => buildPasskeysCollection({ pluginOptions }),
-    [betterAuthPluginSlugs.ssoProviders]: () => buildSsoProvidersCollection({ pluginOptions })
+    [baModelKeyToSlug.user]: () => buildUsersCollection({ incomingCollections, pluginOptions, collectionMap }),
+    [baModelKeyToSlug.account]: () => buildAccountsCollection({ incomingCollections, pluginOptions, collectionMap }),
+    [baModelKeyToSlug.session]: () => buildSessionsCollection({ incomingCollections, pluginOptions }),
+    [baModelKeyToSlug.verification]: () => buildVerificationsCollection({ incomingCollections, pluginOptions }),
+    [baseSlugs.adminInvitations]: () => buildAdminInvitationsCollection({ incomingCollections, pluginOptions }),
+    [baModelKeyToSlug.organization]: () => buildOrganizationsCollection({ pluginOptions }),
+    [baModelKeyToSlug.member]: () => buildMembersCollection({ pluginOptions }),
+    [baModelKeyToSlug.invitation]: () => buildInvitationsCollection({ pluginOptions }),
+    [baModelKeyToSlug.team]: () => buildTeamsCollection({ pluginOptions }),
+    [baModelKeyToSlug.jwks]: () => buildJwksCollection({ pluginOptions }),
+    [baModelKeyToSlug.apikey]: () => buildApiKeysCollection({ pluginOptions }),
+    [baModelKeyToSlug.twoFactor]: () => buildTwoFactorsCollection({ pluginOptions }),
+    [baModelKeyToSlug.oauthAccessToken]: () => buildOauthAccessTokensCollection({ pluginOptions }),
+    [baModelKeyToSlug.oauthApplication]: () => buildOauthApplicationsCollection({ pluginOptions }),
+    [baModelKeyToSlug.oauthConsent]: () => buildOauthConsentsCollection({ pluginOptions }),
+    [baModelKeyToSlug.passkey]: () => buildPasskeysCollection({ pluginOptions }),
+    [baModelKeyToSlug.ssoProvider]: () => buildSsoProvidersCollection({ pluginOptions }),
+    [baModelKeyToSlug.subscription]: () => buildSubscriptionsCollection({ pluginOptions })
   }
 
-  // Build required collections and filter out incoming collections that would conflict
-  const collectionConfigs = Array.from(requiredCollectionSlugs)
-    .map((slug) => {
-      const buildFn = buildCollectionMap[slug as keyof typeof buildCollectionMap]
-      if (!buildFn) return null
-      return buildFn()
-    })
-    .filter((config): config is NonNullable<typeof config> => Boolean(config))
-    .map((config) => ({
-      ...config
-    }))
+  // Build required collections into a map
+  const collectionMap: Record<string, CollectionConfig> = {}
 
-  return [...collectionConfigs, ...incomingCollections.filter((col) => !collectionConfigs.some((config) => config.slug === col.slug))]
+  // First add all required collections
+  requiredCollectionSlugs.forEach((slug) => {
+    collectionMap[slug] = buildCollectionMap[slug as keyof typeof buildCollectionMap]()
+  })
+
+  // Then add incoming collections that don't conflict with required ones
+  incomingCollections.forEach((c) => {
+    if (!collectionMap[c.slug]) {
+      collectionMap[c.slug] = c
+    }
+  })
+
+  return collectionMap
 }

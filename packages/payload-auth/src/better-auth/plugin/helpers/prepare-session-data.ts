@@ -1,33 +1,24 @@
 import { Session, User } from 'better-auth'
 import { getFieldsToSign } from 'payload'
-import type { Config, Payload } from 'payload'
-
-type CollectionSlugs = {
-  userCollectionSlug: string
-  sessionCollectionSlug: string
-}
+import type { CollectionConfig } from 'payload'
+import { getMappedCollection } from './get-collection'
+import { baseSlugs } from '../constants'
 
 export async function prepareUser({
   user,
-  payloadConfig,
-  collectionSlugs
+  collectionMap
 }: {
   user: User & Record<string, any>
-  payloadConfig: Payload['config'] | Config | Promise<Payload['config'] | Config>
-  collectionSlugs: CollectionSlugs
+  collectionMap: Record<string, CollectionConfig>
 }) {
-  const awaitedPayloadConfig = await payloadConfig
-  const { userCollectionSlug } = collectionSlugs
-  const userCollection = awaitedPayloadConfig?.collections?.find((c) => c.slug === userCollectionSlug)
-
-  if (!userCollection) throw new Error(`User collection with slug '${userCollectionSlug}' not found`)
+  const userCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.users })
 
   const newUser = getFieldsToSign({
     collectionConfig: userCollection,
     email: user.email,
     user: {
       ...user,
-      collection: userCollectionSlug
+      collection: userCollection.slug
     }
   })
 
@@ -35,28 +26,20 @@ export async function prepareUser({
 }
 
 export async function prepareSession({
-  user,
   session,
-  payloadConfig,
-  collectionSlugs
+  collectionMap
 }: {
-  user: User & Record<string, any>
   session: Session & Record<string, any>
-  payloadConfig: Payload['config'] | Config | Promise<Payload['config'] | Config>
-  collectionSlugs: CollectionSlugs
+  collectionMap: Record<string, CollectionConfig>
 }) {
-  const awaitedPayloadConfig = await payloadConfig
-  const { sessionCollectionSlug, userCollectionSlug } = collectionSlugs
-  const sessionCollection = awaitedPayloadConfig?.collections?.find((c) => c.slug === sessionCollectionSlug)
-
-  if (!sessionCollection) return session
+  const sessionCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.sessions })
 
   const filteredSession = getFieldsToSign({
     collectionConfig: sessionCollection,
-    email: user.email,
+    email: '',
     user: {
       ...session,
-      collection: sessionCollectionSlug
+      collection: sessionCollection.slug
     }
   })
 
@@ -75,20 +58,18 @@ export async function prepareSession({
  */
 export async function prepareSessionData({
   sessionData,
-  payloadConfig,
-  collectionSlugs
+  collectionMap
 }: {
   sessionData: {
     session: Session & Record<string, any>
     user: User & Record<string, any>
   }
-  payloadConfig: Payload['config'] | Config | Promise<Payload['config'] | Config>
-  collectionSlugs: CollectionSlugs
+  collectionMap: Record<string, CollectionConfig>
 }) {
   if (!sessionData || !sessionData.user) return null
 
-  const newUser = await prepareUser({ user: sessionData.user, payloadConfig, collectionSlugs })
-  const newSession = await prepareSession({ user: sessionData.user, session: sessionData.session, payloadConfig, collectionSlugs })
+  const newUser = await prepareUser({ user: sessionData.user, collectionMap })
+  const newSession = await prepareSession({ session: sessionData.session, collectionMap })
 
   const newSessionData = {
     session: newSession,

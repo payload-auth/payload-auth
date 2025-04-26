@@ -1,9 +1,9 @@
 import { CollectionConfig } from 'payload'
-import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../../../types'
-import { baseCollectionSlugs } from '../../../constants'
+import type { BetterAuthPluginOptions } from '../../../types'
+import { baseSlugs, baModelKey, supportedBAPluginIds } from '../../../constants'
 import { isAdminOrCurrentUserUpdateWithAllowedFields, isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
 import { getRefreshTokenEndpoint } from './endpoints/refresh-token'
-import { onVerifiedChange } from './hooks/on-verified-change'
+import { getOnVerifiedChangeHook } from './hooks/on-verified-change'
 import { getSyncAccountHook } from './hooks/sync-account'
 import { getBeforeLoginHook } from './hooks/before-login'
 import { getAfterLoginHook } from './hooks/after-login'
@@ -16,27 +16,24 @@ import { getSignupEndpoint } from './endpoints/signup'
 import { getSetAdminRoleEndpoint } from './endpoints/set-admin-role'
 import { getGenerateInviteUrlEndpoint } from './endpoints/generate-invite-url'
 import { getSendInviteUrlEndpoint } from './endpoints/send-invite-url'
-import { checkUsernamePlugin } from '../../../helpers/check-username-plugin'
+import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exists'
 
 export function buildUsersCollection({
   incomingCollections,
   pluginOptions,
-  betterAuthOptions
+  collectionMap
 }: {
   incomingCollections: CollectionConfig[]
   pluginOptions: BetterAuthPluginOptions
-  betterAuthOptions: SanitizedBetterAuthOptions
-}) {
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
-  const accountSlug = pluginOptions.accounts?.slug ?? baseCollectionSlugs.accounts
-  const sessionSlug = pluginOptions.sessions?.slug ?? baseCollectionSlugs.sessions
-  const verificationsSlug = pluginOptions.verifications?.slug ?? baseCollectionSlugs.verifications
-  const baPlugins = betterAuthOptions.plugins ?? null
+  collectionMap: Record<string, CollectionConfig>
+}): CollectionConfig {
+  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
   const adminRoles = pluginOptions.users?.adminRoles ?? ['admin']
   const allRoleOptions = getAllRoleOptions(pluginOptions)
-  const hasUsernamePlugin = checkUsernamePlugin(betterAuthOptions)
+  const hasUsernamePlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.username)
   const existingUserCollection = incomingCollections.find((collection) => collection.slug === userSlug) as CollectionConfig | undefined
 
+  // TODO: REVIEW THIS
   const allowedFields = pluginOptions.users?.allowedFields ?? ['name']
 
   let usersCollection: CollectionConfig = {
@@ -67,7 +64,7 @@ export function buildUsersCollection({
                 },
                 condition: () => {
                   // Only show the impersonate button if the admin plugin is enabled
-                  return (baPlugins && baPlugins.some((plugin) => plugin.id === 'admin')) ?? false
+                  return checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.admin)
                 }
               }
             }
@@ -87,6 +84,9 @@ export function buildUsersCollection({
       }),
       ...(existingUserCollection?.access ?? {})
     },
+    custom: {
+      betterAuthModelKey: baModelKey.user
+    },
     endpoints: [
       ...(existingUserCollection?.endpoints ? existingUserCollection.endpoints : []),
       getRefreshTokenEndpoint(userSlug),
@@ -96,48 +96,27 @@ export function buildUsersCollection({
         pluginOptions
       }),
       getSendInviteUrlEndpoint(pluginOptions),
-      getSignupEndpoint(pluginOptions, betterAuthOptions)
+      getSignupEndpoint(pluginOptions)
     ],
     hooks: {
       beforeChange: [
         ...(existingUserCollection?.hooks?.beforeChange ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [onVerifiedChange])
+        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [getOnVerifiedChangeHook()])
       ],
       afterChange: [
         ...(existingUserCollection?.hooks?.afterChange ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth
-          ? []
-          : [
-              getSyncAccountHook({
-                userSlug,
-                accountSlug
-              })
-            ])
+        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [getSyncAccountHook(collectionMap)])
       ],
       beforeLogin: [
         ...(existingUserCollection?.hooks?.beforeLogin ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [getBeforeLoginHook()])
+        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [getBeforeLoginHook(pluginOptions.betterAuthOptions ?? {})])
       ],
       afterLogin: [
         ...(existingUserCollection?.hooks?.afterLogin ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth
-          ? []
-          : [
-              getAfterLoginHook({
-                sessionsCollectionSlug: sessionSlug,
-                usersCollectionSlug: userSlug
-              })
-            ])
+        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [getAfterLoginHook(collectionMap)])
       ],
-      afterLogout: [...(existingUserCollection?.hooks?.afterLogout ?? []), getAfterLogoutHook({ sessionsCollectionSlug: sessionSlug })],
-      beforeDelete: [
-        ...(existingUserCollection?.hooks?.beforeDelete ?? []),
-        getBeforeDeleteHook({
-          accountsSlug: accountSlug,
-          sessionsSlug: sessionSlug,
-          verificationsSlug: verificationsSlug
-        })
-      ]
+      afterLogout: [...(existingUserCollection?.hooks?.afterLogout ?? []), getAfterLogoutHook(collectionMap)],
+      beforeDelete: [...(existingUserCollection?.hooks?.beforeDelete ?? []), getBeforeDeleteHook(collectionMap)]
     },
     auth: {
       ...(existingUserCollection && typeof existingUserCollection.auth === 'object' ? existingUserCollection.auth : {}),
@@ -160,6 +139,9 @@ export function buildUsersCollection({
         saveToJWT: true,
         admin: {
           description: 'Users chosen display name'
+        },
+        custom: {
+          betterAuthFieldKey: 'name'
         }
       },
       {
@@ -171,6 +153,9 @@ export function buildUsersCollection({
         label: 'Email',
         admin: {
           description: 'The email of the user'
+        },
+        custom: {
+          betterAuthFieldKey: 'email'
         }
       },
       {
@@ -182,6 +167,9 @@ export function buildUsersCollection({
         label: 'Email Verified',
         admin: {
           description: 'Whether the email of the user has been verified'
+        },
+        custom: {
+          betterAuthFieldKey: 'emailVerified'
         }
       },
       {
@@ -191,6 +179,9 @@ export function buildUsersCollection({
         saveToJWT: false,
         admin: {
           description: 'The image of the user'
+        },
+        custom: {
+          betterAuthFieldKey: 'image'
         }
       },
       {
@@ -203,6 +194,9 @@ export function buildUsersCollection({
         options: allRoleOptions,
         admin: {
           description: 'The role of the user'
+        },
+        custom: {
+          betterAuthFieldKey: 'role'
         }
       },
       ...getTimestampFields({
@@ -212,8 +206,8 @@ export function buildUsersCollection({
     ]
   }
 
-  if (baPlugins) {
-    baPlugins.forEach((plugin) => {
+  if (pluginOptions.betterAuthOptions?.plugins) {
+    pluginOptions.betterAuthOptions.plugins.forEach((plugin) => {
       switch (plugin.id) {
         case 'two-factor':
           usersCollection.fields.push({
@@ -228,6 +222,9 @@ export function buildUsersCollection({
                   path: 'payload-auth/better-auth/plugin/client#TwoFactorAuth'
                 }
               }
+            },
+            custom: {
+              betterAuthFieldKey: 'twoFactorEnabled'
             }
           })
           break
@@ -241,6 +238,9 @@ export function buildUsersCollection({
               label: 'Username',
               admin: {
                 description: 'The username of the user'
+              },
+              custom: {
+                betterAuthFieldKey: 'username'
               }
             },
             {
@@ -250,6 +250,9 @@ export function buildUsersCollection({
               label: 'Display Username',
               admin: {
                 description: 'The display username of the user'
+              },
+              custom: {
+                betterAuthFieldKey: 'displayUsername'
               }
             }
           )
@@ -262,6 +265,9 @@ export function buildUsersCollection({
             label: 'Is Anonymous',
             admin: {
               description: 'Whether the user is anonymous.'
+            },
+            custom: {
+              betterAuthFieldKey: 'isAnonymous'
             }
           })
           break
@@ -273,6 +279,9 @@ export function buildUsersCollection({
               label: 'Phone Number',
               admin: {
                 description: 'The phone number of the user'
+              },
+              custom: {
+                betterAuthFieldKey: 'phoneNumber'
               }
             },
             {
@@ -282,6 +291,9 @@ export function buildUsersCollection({
               label: 'Phone Number Verified',
               admin: {
                 description: 'Whether the phone number of the user has been verified'
+              },
+              custom: {
+                betterAuthFieldKey: 'phoneNumberVerified'
               }
             }
           )
@@ -295,6 +307,9 @@ export function buildUsersCollection({
               label: 'Banned',
               admin: {
                 description: 'Whether the user is banned from the platform'
+              },
+              custom: {
+                betterAuthFieldKey: 'banned'
               }
             },
             {
@@ -303,6 +318,9 @@ export function buildUsersCollection({
               label: 'Ban Reason',
               admin: {
                 description: 'The reason for the ban'
+              },
+              custom: {
+                betterAuthFieldKey: 'banReason'
               }
             },
             {
@@ -311,6 +329,9 @@ export function buildUsersCollection({
               label: 'Ban Expires',
               admin: {
                 description: 'The date and time when the ban will expire'
+              },
+              custom: {
+                betterAuthFieldKey: 'banExpires'
               }
             }
           )
@@ -324,6 +345,23 @@ export function buildUsersCollection({
             admin: {
               readOnly: true,
               description: 'The normalized email of the user'
+            },
+            custom: {
+              betterAuthFieldKey: 'normalizedEmail'
+            }
+          })
+          break
+        case 'stripe':
+          usersCollection.fields.push({
+            name: 'stripeCustomerId',
+            type: 'text',
+            required: true,
+            label: 'Stripe Customer ID',
+            admin: {
+              description: 'The Stripe customer ID of the user'
+            },
+            custom: {
+              betterAuthFieldKey: 'stripeCustomerId'
             }
           })
           break

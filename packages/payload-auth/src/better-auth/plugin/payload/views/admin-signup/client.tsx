@@ -2,17 +2,15 @@
 
 import { useConfig, toast, useTranslation } from '@payloadcms/ui'
 import React, { useState } from 'react'
-import type { LoginMethod } from '../../../types'
-import { AdminSocialProviderButtons } from '../../components/social-provider-buttons'
-import { getSafeRedirect } from '../../utils/get-safe-redirect'
+import type { LoginMethod } from '@/better-auth/plugin/types'
+import { AdminSocialProviderButtons } from '@/better-auth/plugin/payload/components/social-provider-buttons'
+import { getSafeRedirect } from '@/better-auth/plugin/payload/utils/get-safe-redirect'
 import { adminEndpoints } from '@/better-auth/plugin/constants'
 import type { LoginWithUsernameOptions } from 'payload'
 import { useAppForm } from '@/shared/form'
 import { Form, FormInputWrap } from '@/shared/form/ui'
 import { FormHeader } from '@/shared/form/ui/header'
 import { createSignupSchema } from '@/shared/form/validation'
-import { usernameClient } from 'better-auth/client/plugins'
-import { createAuthClient } from 'better-auth/react'
 import { tryCatch } from '@/shared/utils/try-catch'
 
 type AdminSignupClientProps = {
@@ -73,13 +71,13 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
       if (error) {
         toast.error(error.message)
-        return;
+        return
       }
 
       if (data.requireEmailVerification) {
         setRequireEmailVerification(true)
         toast.success(data.message)
-        return;
+        return
       }
       toast.success(data.message)
       window.location.href = redirectUrl

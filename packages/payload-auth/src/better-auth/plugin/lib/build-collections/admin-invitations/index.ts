@@ -4,6 +4,7 @@ import { isAdminWithRoles } from '../utils/payload-access'
 import { generateAdminInviteUrl } from '../../../payload/utils/generate-admin-invite-url'
 import { getUrlBeforeChangeHook } from './hooks/get-url-before-change'
 import { getAdminInviteUrlAfterReadHook } from './hooks/get-url-after-read'
+import { baseSlugs, defaults } from '@/better-auth/plugin/constants'
 
 export function buildAdminInvitationsCollection({
   incomingCollections,
@@ -11,11 +12,11 @@ export function buildAdminInvitationsCollection({
 }: {
   incomingCollections: CollectionConfig[]
   pluginOptions: BetterAuthPluginOptions
-}) {
+}): CollectionConfig {
   const generateAdminInviteUrlFn = pluginOptions.adminInvitations?.generateInviteUrl ?? generateAdminInviteUrl
-  const adminInvitationSlug = pluginOptions.adminInvitations?.slug ?? 'admin-invitations'
-  const adminRoles = pluginOptions.users?.adminRoles ?? ['admin']
-  const roles = pluginOptions.users?.roles ?? ['user']
+  const adminInvitationSlug = pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations
+  const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
+  const roles = pluginOptions.users?.roles ?? [defaults.userRole]
   const allRoleOptions = [...new Set([...adminRoles, ...roles])].map((role) => ({
     label: role
       .split(/[-_\s]/)
@@ -52,7 +53,7 @@ export function buildAdminInvitationsCollection({
         type: 'select',
         options: allRoleOptions,
         required: true,
-        defaultValue: pluginOptions.users?.defaultAdminRole ?? 'admin'
+        defaultValue: pluginOptions.users?.defaultAdminRole ?? defaults.adminRole
       },
       {
         name: 'token',

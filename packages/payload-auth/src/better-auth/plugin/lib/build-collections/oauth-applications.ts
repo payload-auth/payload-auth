@@ -1,14 +1,14 @@
 import { CollectionConfig } from 'payload'
 import { BetterAuthPluginOptions } from '../../types'
-import { betterAuthPluginSlugs, baseCollectionSlugs } from '../../constants'
+import { baPluginSlugs, baseSlugs, baModelKey, baModelFieldKeys } from '../../constants'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 
-export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }) {
-  const oauthApplicationSlug = betterAuthPluginSlugs.oauthApplications
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
+export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+  const oauthApplicationSlug = baPluginSlugs.oauthApplications
+  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
 
-  const oauthApplicationCollection: CollectionConfig = {
+  let oauthApplicationCollection: CollectionConfig = {
     slug: oauthApplicationSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
@@ -18,6 +18,9 @@ export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOpti
     },
     access: {
       ...getAdminAccess(pluginOptions)
+    },
+    custom: {
+      betterAuthModelKey: baModelKey.oauthApplication
     },
     fields: [
       {
@@ -30,6 +33,9 @@ export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOpti
         admin: {
           readOnly: true,
           description: 'Unique identifier for each OAuth client'
+        },
+        custom: {
+          betterAuthFieldKey: 'clientId'
         }
       },
       {
@@ -40,6 +46,9 @@ export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOpti
         admin: {
           readOnly: true,
           description: 'Secret key for the OAuth client'
+        },
+        custom: {
+          betterAuthFieldKey: 'clientSecret'
         }
       },
       {
@@ -50,6 +59,9 @@ export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOpti
         label: 'Name',
         admin: {
           description: 'Name of the OAuth application'
+        },
+        custom: {
+          betterAuthFieldKey: 'name'
         }
       },
       {
@@ -59,6 +71,9 @@ export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOpti
         label: 'Redirect URLs',
         admin: {
           description: 'Comma-separated list of redirect URLs'
+        },
+        custom: {
+          betterAuthFieldKey: 'redirectURLs'
         }
       },
       {
@@ -67,6 +82,9 @@ export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOpti
         admin: {
           readOnly: true,
           description: 'Additional metadata for the OAuth application'
+        },
+        custom: {
+          betterAuthFieldKey: 'metadata'
         }
       },
       {
@@ -77,6 +95,9 @@ export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOpti
         admin: {
           readOnly: true,
           description: 'Type of OAuth client (e.g., web, mobile)'
+        },
+        custom: {
+          betterAuthFieldKey: 'type'
         }
       },
       {
@@ -87,6 +108,9 @@ export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOpti
         label: 'Disabled',
         admin: {
           description: 'Indicates if the client is disabled'
+        },
+        custom: {
+          betterAuthFieldKey: 'disabled'
         }
       },
       {
@@ -95,6 +119,9 @@ export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOpti
         label: 'Icon',
         admin: {
           description: 'Icon of the OAuth application'
+        },
+        custom: {
+          betterAuthFieldKey: 'icon'
         }
       },
       {
@@ -106,10 +133,19 @@ export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOpti
         admin: {
           readOnly: true,
           description: 'ID of the user who owns the client. (optional)'
+        },
+        custom: {
+          betterAuthFieldKey: baModelFieldKeys.oauthApplication.userId
         }
       },
       ...getTimestampFields()
     ]
+  }
+
+  if (pluginOptions.pluginCollectionOverrides?.oauthApplications) {
+    oauthApplicationCollection = pluginOptions.pluginCollectionOverrides.oauthApplications({
+      collection: oauthApplicationCollection
+    })
   }
 
   return oauthApplicationCollection

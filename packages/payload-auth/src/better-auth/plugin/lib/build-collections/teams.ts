@@ -1,13 +1,14 @@
 import { CollectionConfig } from 'payload'
 import { BetterAuthPluginOptions } from '../../types'
-import { betterAuthPluginSlugs } from '../../constants'
+import { baModelFieldKeys, baModelKey, baPluginSlugs } from '../../constants'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 
-export function buildTeamsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }) {
-  const teamSlug = betterAuthPluginSlugs.teams
-  const organizationSlug = betterAuthPluginSlugs.organizations
-  const teamCollection: CollectionConfig = {
+export function buildTeamsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+  const teamSlug = baPluginSlugs.teams
+  const organizationSlug = baPluginSlugs.organizations
+
+  let teamCollection: CollectionConfig = {
     slug: teamSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
@@ -18,6 +19,9 @@ export function buildTeamsCollection({ pluginOptions }: { pluginOptions: BetterA
     access: {
       ...getAdminAccess(pluginOptions)
     },
+    custom: {
+      betterAuthModelKey: baModelKey.team
+    },
     fields: [
       {
         name: 'name',
@@ -26,6 +30,9 @@ export function buildTeamsCollection({ pluginOptions }: { pluginOptions: BetterA
         label: 'Name',
         admin: {
           description: 'The name of the team.'
+        },
+        custom: {
+          betterAuthFieldKey: 'name'
         }
       },
       {
@@ -37,10 +44,19 @@ export function buildTeamsCollection({ pluginOptions }: { pluginOptions: BetterA
         admin: {
           readOnly: true,
           description: 'The organization that the team belongs to.'
+        },
+        custom: {
+          betterAuthFieldKey: baModelFieldKeys.team.organizationId
         }
       },
       ...getTimestampFields()
     ]
+  }
+
+  if (pluginOptions.pluginCollectionOverrides?.teams) {
+    teamCollection = pluginOptions.pluginCollectionOverrides.teams({
+      collection: teamCollection
+    })
   }
 
   return teamCollection
