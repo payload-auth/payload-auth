@@ -86,11 +86,6 @@ const LoginForm: React.FC<{
     if (canLoginWithUsername && hasUsernamePlugin) return 'username'
     return 'email'
   }, [canLoginWithEmail, canLoginWithUsername, hasUsernamePlugin])
-  const [requireEmailVerification, setRequireEmailVerification] = useState<boolean>(false)
-
-  if (requireEmailVerification) {
-    return <FormHeader heading="Please verify your email" description={t('authentication:emailSent')} style={{ textAlign: 'center' }} />
-  }
 
   const loginSchema = createLoginSchema({ t, loginType, canLoginWithUsername })
 
@@ -126,6 +121,12 @@ const LoginForm: React.FC<{
       onSubmit: loginSchema
     }
   })
+
+  const [requireEmailVerification, setRequireEmailVerification] = useState<boolean>(false)
+
+  if (requireEmailVerification) {
+    return <FormHeader heading="Please verify your email" description={t('authentication:emailSent')} style={{ textAlign: 'center' }} />
+  }
 
   const getLoginTypeLabel = () => {
     const labels = {
