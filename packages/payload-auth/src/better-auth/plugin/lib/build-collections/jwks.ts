@@ -1,11 +1,30 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
-import { baPluginSlugs, baModelKey } from '../../constants'
+import type { BetterAuthPluginOptions } from '../../types'
+import { baModelKey } from '../../constants'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import type { FieldAttribute } from 'better-auth/db'
+import type { Field, CollectionConfig } from 'payload'
 
 export function buildJwksCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
-  const jwksSlug = baPluginSlugs.jwks
+  const jwksSlug = getDeafultCollectionSlug({ modelKey: baModelKey.jwks, pluginOptions })
+
+  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+    publicKey: () => ({
+      index: true,
+      admin: { description: 'The public part of the web key' }
+    }),
+    privateKey: () => ({
+      admin: { description: 'The private part of the web key' }
+    })
+  }
+
+  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+    model: baModelKey.jwks,
+    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    additionalProperties: fieldOverrides
+  })
 
   let jwksCollection: CollectionConfig = {
     slug: jwksSlug,
@@ -21,37 +40,10 @@ export function buildJwksCollection({ pluginOptions }: { pluginOptions: BetterAu
     custom: {
       betterAuthModelKey: baModelKey.jwks
     },
-    fields: [
-      {
-        name: 'publicKey',
-        type: 'text',
-        required: true,
-        index: true,
-        label: 'Public Key',
-        admin: {
-          description: 'The public part of the web key'
-        },
-        custom: {
-          betterAuthFieldKey: 'publicKey'
-        }
-      },
-      {
-        name: 'privateKey',
-        type: 'text',
-        required: true,
-        label: 'Private Key',
-        admin: {
-          description: 'The private part of the web key'
-        },
-        custom: {
-          betterAuthFieldKey: 'privateKey'
-        }
-      },
-      ...getTimestampFields()
-    ]
+    fields: [...collectionFields, ...getTimestampFields()]
   }
 
-  if (pluginOptions.pluginCollectionOverrides?.jwks) {
+  if (typeof pluginOptions.pluginCollectionOverrides?.jwks === 'function') {
     jwksCollection = pluginOptions.pluginCollectionOverrides.jwks({
       collection: jwksCollection
     })

@@ -1,4 +1,4 @@
-import { CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload'
 import { baseSlugs, baModelKeyToSlug } from '../../constants'
 import type { BetterAuthPluginOptions } from '../../types'
 import { buildUsersCollection } from './users/index'
@@ -20,7 +20,7 @@ import { buildSsoProvidersCollection } from './sso-providers'
 import { buildAdminInvitationsCollection } from './admin-invitations'
 import { buildSubscriptionsCollection } from './subscriptions'
 import { getAuthTables } from 'better-auth/db'
-import { getCollectionSlug } from '../../helpers/get-collection-slug'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
@@ -57,7 +57,7 @@ export function buildCollectionMap({
   const betterAuthSchema = getAuthTables(pluginOptions.betterAuthOptions ?? {})
 
   Object.keys(betterAuthSchema).forEach((model) => {
-    const collectionSlug = getCollectionSlug({
+    const collectionSlug = getDeafultCollectionSlug({
       pluginOptions,
       modelKey: model as keyof typeof baModelKeyToSlug
     }) as keyof typeof collectionBuilders

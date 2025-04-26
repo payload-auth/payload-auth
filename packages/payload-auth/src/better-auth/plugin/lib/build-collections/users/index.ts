@@ -1,5 +1,5 @@
 import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exists'
-import { getCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
+import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
 import { CollectionConfig } from 'payload'
 import { baModelKey, supportedBAPluginIds } from '../../../constants'
 import { getAllRoleOptions } from '../../../helpers/get-all-roles'
@@ -7,17 +7,21 @@ import type { BetterAuthPluginOptions } from '../../../types'
 import { isAdminOrCurrentUserUpdateWithAllowedFields, isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
 import { getPayloadFieldsFromBetterAuthSchema } from '../utils/transform-better-auth-field-to-payload-field'
 import { betterAuthStrategy } from './better-auth-strategy'
-import { getGenerateInviteUrlEndpoint } from './endpoints/generate-invite-url'
-import { getRefreshTokenEndpoint } from './endpoints/refresh-token'
-import { getSendInviteUrlEndpoint } from './endpoints/send-invite-url'
-import { getSetAdminRoleEndpoint } from './endpoints/set-admin-role'
-import { getSignupEndpoint } from './endpoints/signup'
-import { getAfterLoginHook } from './hooks/after-login'
-import { getAfterLogoutHook } from './hooks/after-logout'
-import { getBeforeDeleteHook } from './hooks/before-delete'
-import { getBeforeLoginHook } from './hooks/before-login'
-import { getOnVerifiedChangeHook } from './hooks/on-verified-change'
-import { getSyncAccountHook } from './hooks/sync-account'
+import {
+  getGenerateInviteUrlEndpoint,
+  getRefreshTokenEndpoint,
+  getSendInviteUrlEndpoint,
+  getSetAdminRoleEndpoint,
+  getSignupEndpoint
+} from './endpoints'
+import {
+  getSyncAccountHook,
+  getAfterLoginHook,
+  getAfterLogoutHook,
+  getBeforeDeleteHook,
+  getBeforeLoginHook,
+  getOnVerifiedChangeHook
+} from './hooks'
 import type { FieldRule } from '../utils/model-field-transformations'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field } from 'payload'
@@ -29,7 +33,7 @@ export function buildUsersCollection({
   incomingCollections: CollectionConfig[]
   pluginOptions: BetterAuthPluginOptions
 }): CollectionConfig {
-  const userSlug = getCollectionSlug({ modelKey: baModelKey.user, pluginOptions })
+  const userSlug = getDeafultCollectionSlug({ modelKey: baModelKey.user, pluginOptions })
   const adminRoles = pluginOptions.users?.adminRoles ?? ['admin']
   const allRoleOptions = getAllRoleOptions(pluginOptions)
   const hasUsernamePlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.username)
@@ -132,8 +136,8 @@ export function buildUsersCollection({
     })
   }
 
-  const collectionFields = getPayloadFieldsFromBetterAuthSchema({ 
-    model: 'user', 
+  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+    model: 'user',
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
     fieldRules: userFieldRules,
     additionalProperties: fieldOverrides
@@ -233,10 +237,7 @@ export function buildUsersCollection({
       }),
       strategies: [betterAuthStrategy(userSlug)]
     },
-    fields: [
-      ...(existingUserCollection?.fields ?? []),
-      ...collectionFields
-    ]
+    fields: [...(existingUserCollection?.fields ?? []), ...collectionFields]
   }
 
   if (pluginOptions.users?.collectionOverrides) {

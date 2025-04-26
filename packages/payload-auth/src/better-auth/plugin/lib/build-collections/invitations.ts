@@ -1,14 +1,48 @@
-import type { CollectionConfig } from 'payload'
-import type { BetterAuthPluginOptions } from '../../types'
-import { baPluginSlugs, baseSlugs, baModelKey, baModelFieldKeys } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
+import type { FieldAttribute } from 'better-auth/db'
+import type { CollectionConfig, Field } from 'payload'
+import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import type { BetterAuthPluginOptions } from '../../types'
+import { getTimestampFields } from './utils/get-timestamp-fields'
+import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 
 export function buildInvitationsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
-  const invitationSlug = baPluginSlugs.invitations
-  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
-  const organizationSlug = baPluginSlugs.organizations
-  const teamSlug = baPluginSlugs.teams
+  const invitationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.invitation, pluginOptions })
+
+  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+    email: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The email of the user being invited.' }
+    }),
+    inviter: () => ({
+      admin: { readOnly: true, description: 'The user who invited the user.' }
+    }),
+    teamId: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The team that the user is being invited to.' }
+    }),
+    organization: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The organization that the user is being invited to.' }
+    }),
+    role: () => ({
+      admin: { readOnly: true, description: 'The role of the user being invited.' }
+    }),
+    status: () => ({
+      defaultValue: 'pending',
+      admin: { readOnly: true, description: 'The status of the invitation.' }
+    }),
+    expiresAt: () => ({
+      admin: { readOnly: true, description: 'The date and time when the invitation will expire.' }
+    })
+  }
+
+  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+    model: baModelKey.invitation,
+    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    additionalProperties: fieldOverrides
+  })
 
   let invitationCollection: CollectionConfig = {
     slug: invitationSlug,
@@ -24,110 +58,10 @@ export function buildInvitationsCollection({ pluginOptions }: { pluginOptions: B
     custom: {
       betterAuthModelKey: baModelKey.invitation
     },
-    fields: [
-      {
-        name: 'email',
-        type: 'text',
-        required: true,
-        index: true,
-        label: 'Email',
-        admin: {
-          description: 'The email of the user being invited.',
-          readOnly: true
-        },
-        custom: {
-          betterAuthFieldKey: 'email'
-        }
-      },
-      {
-        name: 'inviter',
-        type: 'relationship',
-        relationTo: userSlug,
-        required: true,
-        label: 'Inviter',
-        admin: {
-          description: 'The user who invited the user.',
-          readOnly: true
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.invitation.inviterId
-        }
-      },
-      {
-        name: 'teamId',
-        type: 'relationship',
-        relationTo: teamSlug,
-        required: true,
-        index: true,
-        label: 'Team',
-        admin: {
-          description: 'The team that the user is being invited to.',
-          readOnly: true
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.invitation.teamId
-        }
-      },
-      {
-        name: 'organization',
-        type: 'relationship',
-        relationTo: organizationSlug,
-        required: true,
-        index: true,
-        label: 'Organization',
-        admin: {
-          description: 'The organization that the user is being invited to.',
-          readOnly: true
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.invitation.organizationId
-        }
-      },
-      {
-        name: 'role',
-        type: 'text',
-        required: true,
-        label: 'Role',
-        admin: {
-          description: 'The role of the user being invited.',
-          readOnly: true
-        },
-        custom: {
-          betterAuthFieldKey: 'role'
-        }
-      },
-      {
-        name: 'status',
-        type: 'text',
-        required: true,
-        defaultValue: 'pending',
-        label: 'Status',
-        admin: {
-          description: 'The status of the invitation.',
-          readOnly: true
-        },
-        custom: {
-          betterAuthFieldKey: 'status'
-        }
-      },
-      {
-        name: 'expiresAt',
-        type: 'date',
-        required: true,
-        label: 'Expires At',
-        admin: {
-          description: 'The date and time when the invitation will expire.',
-          readOnly: true
-        },
-        custom: {
-          betterAuthFieldKey: 'expiresAt'
-        }
-      },
-      ...getTimestampFields()
-    ]
+    fields: [...collectionFields, ...getTimestampFields()]
   }
 
-  if (pluginOptions.pluginCollectionOverrides?.invitations) {
+  if (typeof pluginOptions.pluginCollectionOverrides?.invitations === 'function') {
     invitationCollection = pluginOptions.pluginCollectionOverrides.invitations({
       collection: invitationCollection
     })

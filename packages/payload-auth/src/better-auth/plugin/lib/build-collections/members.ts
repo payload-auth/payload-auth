@@ -1,14 +1,38 @@
-import { CollectionConfig } from 'payload'
 import { BetterAuthPluginOptions } from '../../types'
-import { baPluginSlugs, baseSlugs, baModelKey, baModelFieldKeys } from '../../constants'
+import { baModelKey } from '../../constants'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import type { FieldAttribute } from 'better-auth/db'
+import type { Field, CollectionConfig } from 'payload'
 
 export function buildMembersCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
-  const memberSlug = baPluginSlugs.members
-  const organizationSlug = baPluginSlugs.organizations
-  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
-  const teamSlug = baPluginSlugs.teams
+  const memberSlug = getDeafultCollectionSlug({ modelKey: baModelKey.member, pluginOptions })
+
+  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+    organization: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The organization that the member belongs to.' }
+    }),
+    user: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The user that is a member of the organization.' }
+    }),
+    team: () => ({
+      admin: { description: 'The team that the member belongs to.' }
+    }),
+    role: () => ({
+      defaultValue: 'member',
+      admin: { description: 'The role of the member in the organization.' }
+    })
+  }
+
+  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+    model: baModelKey.member,
+    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    additionalProperties: fieldOverrides
+  })
 
   let memberCollection: CollectionConfig = {
     slug: memberSlug,
@@ -24,68 +48,10 @@ export function buildMembersCollection({ pluginOptions }: { pluginOptions: Bette
     custom: {
       betterAuthModelKey: baModelKey.member
     },
-    fields: [
-      {
-        name: 'organization',
-        type: 'relationship',
-        relationTo: organizationSlug,
-        required: true,
-        index: true,
-        label: 'Organization',
-        admin: {
-          readOnly: true,
-          description: 'The organization that the member belongs to.'
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.member.organizationId
-        }
-      },
-      {
-        name: 'user',
-        type: 'relationship',
-        relationTo: userSlug,
-        required: true,
-        index: true,
-        label: 'User',
-        admin: {
-          readOnly: true,
-          description: 'The user that is a member of the organization.'
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.member.userId
-        }
-      },
-      {
-        name: 'team',
-        type: 'relationship',
-        relationTo: teamSlug,
-        required: false,
-        label: 'Team',
-        admin: {
-          description: 'The team that the member belongs to.'
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.member.teamId
-        }
-      },
-      {
-        name: 'role',
-        type: 'text',
-        required: true,
-        defaultValue: 'member',
-        label: 'Role',
-        admin: {
-          description: 'The role of the member in the organization.'
-        },
-        custom: {
-          betterAuthFieldKey: 'role'
-        }
-      },
-      ...getTimestampFields()
-    ]
+    fields: [...collectionFields, ...getTimestampFields()]
   }
 
-  if (pluginOptions.pluginCollectionOverrides?.members) {
+  if (typeof pluginOptions.pluginCollectionOverrides?.members === 'function') {
     memberCollection = pluginOptions.pluginCollectionOverrides.members({
       collection: memberCollection
     })

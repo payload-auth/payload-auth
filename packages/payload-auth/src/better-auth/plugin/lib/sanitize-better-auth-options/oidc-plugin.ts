@@ -1,6 +1,6 @@
 import { baModelFieldKeys, baModelKey } from '@/better-auth/plugin/constants'
 import { getMappedCollection, getMappedField } from '../../helpers/get-collection'
-import { CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload'
 
 export function configureOidcPlugin(plugin: any, collectionMap: Record<string, CollectionConfig>): void {
   const oauthApplicationCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.oauthApplication })

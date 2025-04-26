@@ -7,7 +7,7 @@ import { initBetterAuth } from './lib/init-better-auth'
 import { sanitizeBetterAuthOptions } from './lib/sanitize-better-auth-options/index'
 import { setLoginMethods } from './lib/set-login-methods'
 import type { BetterAuthPluginOptions } from './types'
-import { getCollectionSlug } from './helpers/get-collection-slug'
+import { getDeafultCollectionSlug } from './helpers/get-collection-slug'
 
 export * from './helpers/index'
 export { getPayloadAuth } from './lib/get-payload-auth'
@@ -67,7 +67,7 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
                 path: 'payload-auth/better-auth/plugin/rsc#AdminLogin',
                 serverProps: {
                   pluginOptions: pluginOptions,
-                  adminInvitationsSlug: getCollectionSlug({ modelKey: baseSlugs.adminInvitations, pluginOptions })
+                  adminInvitationsSlug: getDeafultCollectionSlug({ modelKey: baseSlugs.adminInvitations, pluginOptions })
                 }
               }
             },
@@ -77,7 +77,7 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
                 path: 'payload-auth/better-auth/plugin/rsc#AdminSignup',
                 serverProps: {
                   pluginOptions: pluginOptions,
-                  adminInvitationsSlug: getCollectionSlug({ modelKey: baseSlugs.adminInvitations, pluginOptions })
+                  adminInvitationsSlug: getDeafultCollectionSlug({ modelKey: baseSlugs.adminInvitations, pluginOptions })
                 }
               }
             },

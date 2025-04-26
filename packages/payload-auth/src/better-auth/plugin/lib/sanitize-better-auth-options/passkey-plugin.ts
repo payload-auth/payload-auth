@@ -1,6 +1,6 @@
 import { baModelKey, baModelFieldKeys } from '@/better-auth/plugin/constants'
 import { getMappedCollection, getMappedField } from '../../helpers/get-collection'
-import { CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload'
 
 export function configurePasskeyPlugin(plugin: any, collectionMap: Record<string, CollectionConfig>): void {
   const passkeyCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.passkey })

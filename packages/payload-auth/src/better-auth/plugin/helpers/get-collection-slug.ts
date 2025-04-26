@@ -1,7 +1,7 @@
 import type { BetterAuthPluginOptions } from '../types'
 import { baseSlugs, baModelKeyToSlug } from '../constants'
 
-export function getCollectionSlug({
+export function getDeafultCollectionSlug({
   pluginOptions,
   modelKey
 }: {
