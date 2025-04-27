@@ -1,11 +1,61 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
-import { baModelKey, baPluginSlugs } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
+import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { assertAllSchemaFields } from './utils/assert-schema-fields'
 
-export function buildSubscriptionsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
-  const subscriptionsSlug = baPluginSlugs.subscriptions
+import type { CollectionConfig } from 'payload'
+import type { Subscription } from '@/better-auth/generated-types'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+
+export function buildSubscriptionsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+  const subscriptionsSlug = getDeafultCollectionSlug({ modelKey: baModelKey.subscription, pluginOptions })
+
+  const fieldOverrides: FieldOverrides<keyof Subscription> = {
+    plan: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The name of the subscription plan' }
+    }),
+    referenceId: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The ID this subscription is associated with (user ID by default)' }
+    }),
+    stripeCustomerId: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The Stripe customer ID' }
+    }),
+    stripeSubscriptionId: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The Stripe subscription ID' }
+    }),
+    status: () => ({
+      index: true,
+      admin: { description: 'The status of the subscription (active, canceled, etc.)' }
+    }),
+    periodStart: () => ({
+      admin: { description: 'Start date of the current billing period' }
+    }),
+    periodEnd: () => ({
+      admin: { description: 'End date of the current billing period' }
+    }),
+    cancelAtPeriodEnd: () => ({
+      admin: { description: 'Whether the subscription will be canceled at the end of the period' }
+    }),
+    seats: () => ({
+      admin: { description: 'Number of seats for team plans' }
+    }),
+    trialStart: () => ({
+      admin: { description: 'Start date of the trial period' }
+    }),
+    trialEnd: () => ({
+      admin: { description: 'End date of the trial period' }
+    })
+  }
+
+  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+    schema,
+    additionalProperties: fieldOverrides
+  })
 
   let subscriptionsCollection: CollectionConfig = {
     slug: subscriptionsSlug,
@@ -20,145 +70,16 @@ export function buildSubscriptionsCollection({ pluginOptions }: { pluginOptions:
     custom: {
       betterAuthModelKey: baModelKey.subscription
     },
-    fields: [
-      {
-        name: 'plan',
-        type: 'text',
-        required: true,
-        index: true,
-        label: 'Plan',
-        admin: {
-          description: 'The name of the subscription plan'
-        },
-        custom: {
-          betterAuthFieldKey: 'plan'
-        }
-      },
-      {
-        name: 'referenceId',
-        type: 'text',
-        required: true,
-        index: true,
-        label: 'Reference ID',
-        admin: {
-          description: 'The ID this subscription is associated with (user ID by default)'
-        },
-        custom: {
-          betterAuthFieldKey: 'referenceId'
-        }
-      },
-      {
-        name: 'stripeCustomerId',
-        type: 'text',
-        index: true,
-        label: 'Stripe Customer ID',
-        admin: {
-          description: 'The Stripe customer ID'
-        },
-        custom: {
-          betterAuthFieldKey: 'stripeCustomerId'
-        }
-      },
-      {
-        name: 'stripeSubscriptionId',
-        type: 'text',
-        index: true,
-        label: 'Stripe Subscription ID',
-        admin: {
-          description: 'The Stripe subscription ID'
-        },
-        custom: {
-          betterAuthFieldKey: 'stripeSubscriptionId'
-        }
-      },
-      {
-        name: 'status',
-        type: 'text',
-        required: true,
-        index: true,
-        label: 'Status',
-        admin: {
-          description: 'The status of the subscription (active, canceled, etc.)'
-        },
-        custom: {
-          betterAuthFieldKey: 'status'
-        }
-      },
-      {
-        name: 'periodStart',
-        type: 'date',
-        label: 'Period Start',
-        admin: {
-          description: 'Start date of the current billing period'
-        },
-        custom: {
-          betterAuthFieldKey: 'periodStart'
-        }
-      },
-      {
-        name: 'periodEnd',
-        type: 'date',
-        label: 'Period End',
-        admin: {
-          description: 'End date of the current billing period'
-        },
-        custom: {
-          betterAuthFieldKey: 'periodEnd'
-        }
-      },
-      {
-        name: 'cancelAtPeriodEnd',
-        type: 'checkbox',
-        label: 'Cancel At Period End',
-        admin: {
-          description: 'Whether the subscription will be canceled at the end of the period'
-        },
-        custom: {
-          betterAuthFieldKey: 'cancelAtPeriodEnd'
-        }
-      },
-      {
-        name: 'seats',
-        type: 'number',
-        label: 'Seats',
-        admin: {
-          description: 'Number of seats for team plans'
-        },
-        custom: {
-          betterAuthFieldKey: 'seats'
-        }
-      },
-      {
-        name: 'trialStart',
-        type: 'date',
-        label: 'Trial Start',
-        admin: {
-          description: 'Start date of the trial period'
-        },
-        custom: {
-          betterAuthFieldKey: 'trialStart'
-        }
-      },
-      {
-        name: 'trialEnd',
-        type: 'date',
-        label: 'Trial End',
-        admin: {
-          description: 'End date of the trial period'
-        },
-        custom: {
-          betterAuthFieldKey: 'trialEnd'
-        }
-      },
-      ...getTimestampFields()
-    ]
+    fields: [...(collectionFields ?? [])]
   }
 
-  if (pluginOptions.pluginCollectionOverrides?.subscriptions) {
+  if (typeof pluginOptions.pluginCollectionOverrides?.subscriptions === 'function') {
     subscriptionsCollection = pluginOptions.pluginCollectionOverrides.subscriptions({
       collection: subscriptionsCollection
     })
   }
+
+  assertAllSchemaFields(subscriptionsCollection, schema)
 
   return subscriptionsCollection
 }

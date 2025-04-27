@@ -1,26 +1,114 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
-import { baseSlugs, baModelKey, defaults, baModelFieldKeys } from '@/better-auth/plugin/constants'
-import { getSyncPasswordToUserHook } from './hooks/sync-password-to-user'
+import { baModelKey, defaults } from '@/better-auth/plugin/constants'
+import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
 import { isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
-import { getTimestampFields } from '../utils/get-timestamp-fields'
+import { getPayloadFieldsFromBetterAuthSchema } from '../utils/transform-better-auth-field-to-payload-field'
+import { getSyncPasswordToUserHook } from './hooks/sync-password-to-user'
+import { assertAllSchemaFields } from '../utils/assert-schema-fields'
+
+import type { CollectionConfig } from 'payload'
+import type { Account } from '@/better-auth/generated-types'
+import type { FieldRule } from '../utils/model-field-transformations'
+import type { BuildCollectionPropsWithIncoming, FieldOverrides } from '@/better-auth/plugin/types'
 
 export function buildAccountsCollection({
   incomingCollections,
   pluginOptions,
-  collectionMap
-}: {
-  incomingCollections: CollectionConfig[]
-  pluginOptions: BetterAuthPluginOptions
-  collectionMap: Record<string, CollectionConfig>
-}): CollectionConfig {
-  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
-  const accountSlug = pluginOptions.accounts?.slug ?? baseSlugs.accounts
+  schema
+}: BuildCollectionPropsWithIncoming): CollectionConfig {
+  const accountSlug = getDeafultCollectionSlug({ modelKey: baModelKey.account, pluginOptions })
   const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
 
   const existingAccountCollection = incomingCollections.find((collection) => collection.slug === accountSlug) as
     | CollectionConfig
     | undefined
+
+  const accountFieldRules: FieldRule[] = [
+    {
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
+  const fieldOverrides: FieldOverrides<keyof Account> = {
+    userId: () => ({
+      index: true,
+      admin: {
+        readOnly: true,
+        description: 'The user that the account belongs to'
+      }
+    }),
+    accountId: () => ({
+      index: true,
+      admin: {
+        readOnly: true,
+        description: 'The id of the account as provided by the SSO or equal to userId for credential accounts'
+      }
+    }),
+    providerId: () => ({
+      admin: {
+        readOnly: true,
+        description: 'The id of the provider as provided by the SSO'
+      }
+    }),
+    accessToken: () => ({
+      admin: {
+        readOnly: true,
+        description: 'The access token of the account. Returned by the provider'
+      }
+    }),
+    refreshToken: () => ({
+      admin: {
+        readOnly: true,
+        description: 'The refresh token of the account. Returned by the provider'
+      }
+    }),
+    accessTokenExpiresAt: () => ({
+      admin: {
+        readOnly: true,
+        description: 'The date and time when the access token will expire'
+      }
+    }),
+    refreshTokenExpiresAt: () => ({
+      admin: {
+        readOnly: true,
+        description: 'The date and time when the refresh token will expire'
+      }
+    }),
+    scope: () => ({
+      admin: {
+        readOnly: true,
+        description: 'The scope of the account. Returned by the provider'
+      }
+    }),
+    idToken: () => ({
+      admin: {
+        readOnly: true,
+        description: 'The id token for the account. Returned by the provider'
+      }
+    }),
+    password: () => ({
+      admin: {
+        readOnly: true,
+        hidden: true,
+        description: 'The hashed password of the account. Mainly used for email and password authentication'
+      }
+    })
+  }
+
+  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+    schema,
+    fieldRules: accountFieldRules,
+    additionalProperties: fieldOverrides
+  })
 
   let accountCollection: CollectionConfig = {
     slug: accountSlug,
@@ -44,148 +132,20 @@ export function buildAccountsCollection({
     hooks: {
       afterChange: [
         ...(existingAccountCollection?.hooks?.afterChange ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [getSyncPasswordToUserHook(collectionMap)])
+        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [getSyncPasswordToUserHook(pluginOptions)])
       ]
     },
-    fields: [
-      ...(existingAccountCollection?.fields ?? []),
-      {
-        name: 'user',
-        type: 'relationship',
-        relationTo: userSlug,
-        required: true,
-        index: true,
-        label: 'User',
-        admin: {
-          readOnly: true,
-          description: 'The user that the account belongs to'
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.account.userId
-        }
-      },
-      {
-        name: 'accountId',
-        type: 'text',
-        label: 'Account ID',
-        required: true,
-        index: true,
-        admin: {
-          readOnly: true,
-          description: 'The id of the account as provided by the SSO or equal to userId for credential accounts'
-        },
-        custom: {
-          betterAuthFieldKey: 'accountId'
-        }
-      },
-      {
-        name: 'providerId',
-        type: 'text',
-        required: true,
-        label: 'Provider ID',
-        admin: {
-          readOnly: true,
-          description: 'The id of the provider as provided by the SSO'
-        },
-        custom: {
-          betterAuthFieldKey: 'providerId'
-        }
-      },
-      {
-        name: 'accessToken',
-        type: 'text',
-        label: 'Access Token',
-        admin: {
-          readOnly: true,
-          description: 'The access token of the account. Returned by the provider'
-        },
-        custom: {
-          betterAuthFieldKey: 'accessToken'
-        }
-      },
-      {
-        name: 'refreshToken',
-        type: 'text',
-        label: 'Refresh Token',
-        admin: {
-          readOnly: true,
-          description: 'The refresh token of the account. Returned by the provider'
-        },
-        custom: {
-          betterAuthFieldKey: 'refreshToken'
-        }
-      },
-      {
-        name: 'accessTokenExpiresAt',
-        type: 'date',
-        label: 'Access Token Expires At',
-        admin: {
-          readOnly: true,
-          description: 'The date and time when the access token will expire'
-        },
-        custom: {
-          betterAuthFieldKey: 'accessTokenExpiresAt'
-        }
-      },
-      {
-        name: 'refreshTokenExpiresAt',
-        type: 'date',
-        label: 'Refresh Token Expires At',
-        admin: {
-          readOnly: true,
-          description: 'The date and time when the refresh token will expire'
-        },
-        custom: {
-          betterAuthFieldKey: 'refreshTokenExpiresAt'
-        }
-      },
-      {
-        name: 'scope',
-        type: 'text',
-        label: 'Scope',
-        admin: {
-          readOnly: true,
-          description: 'The scope of the account. Returned by the provider'
-        },
-        custom: {
-          betterAuthFieldKey: 'scope'
-        }
-      },
-      {
-        name: 'idToken',
-        type: 'text',
-        label: 'ID Token',
-        admin: {
-          readOnly: true,
-          description: 'The id token for the account. Returned by the provider'
-        },
-        custom: {
-          betterAuthFieldKey: 'idToken'
-        }
-      },
-      {
-        name: 'password',
-        type: 'text',
-        label: 'Password',
-        admin: {
-          readOnly: true,
-          hidden: true,
-          description: 'The hashed password of the account. Mainly used for email and password authentication'
-        },
-        custom: {
-          betterAuthFieldKey: 'password'
-        }
-      },
-      ...getTimestampFields()
-    ],
+    fields: [...(existingAccountCollection?.fields ?? []), ...(collectionFields ?? [])],
     ...existingAccountCollection
   }
 
-  if (pluginOptions.accounts?.collectionOverrides) {
+  if (typeof pluginOptions.accounts?.collectionOverrides === 'function') {
     accountCollection = pluginOptions.accounts.collectionOverrides({
       collection: accountCollection
     })
   }
+
+  assertAllSchemaFields(accountCollection, schema)
 
   return accountCollection
 }

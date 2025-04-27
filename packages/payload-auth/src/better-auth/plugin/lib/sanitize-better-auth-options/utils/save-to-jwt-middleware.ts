@@ -3,7 +3,10 @@ import { createAuthMiddleware } from 'better-auth/api'
 import { setSessionCookie } from 'better-auth/cookies'
 
 import type { SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Config, Payload } from 'payload'
+import type { CollectionSchemaMap } from '@/better-auth/plugin/helpers/get-collection-schema-map'
+import { baModelKey } from '@/better-auth/plugin/constants'
+
 /**
  * Sets up a middleware that enforces the saveToJwt configuration when setting session data.
  * This ensures that only fields specified in saveToJwt are included in the cookie cache
@@ -14,19 +17,29 @@ import type { CollectionConfig } from 'payload'
  */
 export function saveToJwtMiddleware({
   sanitizedOptions,
-  collectionMap
+  config,
+  collectionSchemaMap
 }: {
   sanitizedOptions: SanitizedBetterAuthOptions
-  collectionMap: Record<string, CollectionConfig>
+  config: Payload['config'] | Config | Promise<Payload['config'] | Config>
+  collectionSchemaMap: CollectionSchemaMap
 }) {
   if (typeof sanitizedOptions.hooks !== 'object') sanitizedOptions.hooks = {}
   const originalAfter = sanitizedOptions.hooks.after
   sanitizedOptions.hooks.after = createAuthMiddleware(async (ctx) => {
     const newSession = ctx.context.newSession
     if (newSession) {
+      const awaitedPayloadConfig = await config
+      const usersCollection = awaitedPayloadConfig?.collections?.find((c) => c.slug === collectionSchemaMap[baModelKey.user].collectionSlug)
+      const sessionsCollection = awaitedPayloadConfig?.collections?.find(
+        (c) => c.slug === collectionSchemaMap[baModelKey.session].collectionSlug
+      )
+      if (!usersCollection || !sessionsCollection) return null
+
       const filteredSessionData = await prepareSessionData({
         sessionData: newSession,
-        collectionMap
+        usersCollection: usersCollection,
+        sessionsCollection: sessionsCollection
       })
 
       if (filteredSessionData) {

@@ -1,12 +1,50 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
-import { baModelFieldKeys, baModelKey, baPluginSlugs } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
+import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { assertAllSchemaFields } from './utils/assert-schema-fields'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 
-export function buildTeamsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
-  const teamSlug = baPluginSlugs.teams
-  const organizationSlug = baPluginSlugs.organizations
+import type { CollectionConfig } from 'payload'
+import type { Team } from '@/better-auth/generated-types'
+import type { FieldRule } from './utils/model-field-transformations'
+import type { BuildCollectionProps, FieldOverrides } from '../../types'
+
+export function buildTeamsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+  const teamSlug = getDeafultCollectionSlug({ modelKey: baModelKey.team, pluginOptions })
+
+  const fieldOverrides: FieldOverrides<keyof Team> = {
+    name: () => ({
+      admin: { description: 'The name of the team.' }
+    }),
+    organization: () => ({
+      admin: {
+        readOnly: true,
+        description: 'The organization that the team belongs to.'
+      }
+    })
+  }
+
+  const teamFieldRules: FieldRule[] = [
+    {
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
+  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+    schema,
+    fieldRules: teamFieldRules,
+    additionalProperties: fieldOverrides
+  })
 
   let teamCollection: CollectionConfig = {
     slug: teamSlug,
@@ -22,42 +60,16 @@ export function buildTeamsCollection({ pluginOptions }: { pluginOptions: BetterA
     custom: {
       betterAuthModelKey: baModelKey.team
     },
-    fields: [
-      {
-        name: 'name',
-        type: 'text',
-        required: true,
-        label: 'Name',
-        admin: {
-          description: 'The name of the team.'
-        },
-        custom: {
-          betterAuthFieldKey: 'name'
-        }
-      },
-      {
-        name: 'organization',
-        type: 'relationship',
-        relationTo: organizationSlug,
-        required: true,
-        label: 'Organization',
-        admin: {
-          readOnly: true,
-          description: 'The organization that the team belongs to.'
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.team.organizationId
-        }
-      },
-      ...getTimestampFields()
-    ]
+    fields: [...(collectionFields ?? [])]
   }
 
-  if (pluginOptions.pluginCollectionOverrides?.teams) {
+  if (typeof pluginOptions.pluginCollectionOverrides?.teams === 'function') {
     teamCollection = pluginOptions.pluginCollectionOverrides.teams({
       collection: teamCollection
     })
   }
+
+  assertAllSchemaFields(teamCollection, schema)
 
   return teamCollection
 }

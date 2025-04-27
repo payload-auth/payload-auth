@@ -1,12 +1,7 @@
 import { baModelFieldKeys, baModelKey } from '@/better-auth/plugin/constants'
-import { getMappedCollection, getMappedField } from '../../helpers/get-collection'
-import { CollectionConfig } from 'payload'
+import { CollectionSchemaMap } from '../../helpers/get-collection-schema-map'
 
-export function configureOidcPlugin(plugin: any, collectionMap: Record<string, CollectionConfig>): void {
-  const oauthApplicationCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.oauthApplication })
-  const oauthAccessTokenCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.oauthAccessToken })
-  const oauthConsentCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.oauthConsent })
-
+export function configureOidcPlugin(plugin: any, collectionSchemaMap: CollectionSchemaMap): void {
   plugin.schema = plugin?.schema ?? {}
 
   // Initialize missing schema objects
@@ -18,54 +13,42 @@ export function configureOidcPlugin(plugin: any, collectionMap: Record<string, C
     ...plugin?.schema,
     oauthApplication: {
       ...plugin?.schema?.oauthApplication,
-      modelName: oauthApplicationCollection.slug,
+      modelName: collectionSchemaMap[baModelKey.oauthApplication].collectionSlug,
       fields: {
         ...(plugin?.schema?.oauthApplication?.fields ?? {}),
         userId: {
           ...(plugin?.schema?.oauthApplication?.fields?.userId ?? {}),
-          fieldName: getMappedField({
-            collection: oauthApplicationCollection,
-            betterAuthFieldKey: baModelFieldKeys.oauthApplication.userId
-          }).name
+          fieldName: collectionSchemaMap[baModelKey.oauthApplication].fields[baModelFieldKeys.oauthApplication.userId]
         }
       }
     },
     oauthAccessToken: {
       ...plugin?.schema?.oauthAccessToken,
-      modelName: oauthAccessTokenCollection.slug,
+      modelName: collectionSchemaMap[baModelKey.oauthAccessToken].collectionSlug,
       fields: {
         ...(plugin?.schema?.oauthAccessToken?.fields ?? {}),
         userId: {
           ...(plugin?.schema?.oauthAccessToken?.fields?.userId ?? {}),
-          fieldName: getMappedField({
-            collection: oauthAccessTokenCollection,
-            betterAuthFieldKey: baModelFieldKeys.oauthAccessToken.userId
-          }).name
+          fieldName: collectionSchemaMap[baModelKey.oauthAccessToken].fields[baModelFieldKeys.oauthAccessToken.userId]
         },
         clientId: {
           ...(plugin?.schema?.oauthAccessToken?.fields?.clientId ?? {}),
-          fieldName: getMappedField({
-            collection: oauthAccessTokenCollection,
-            betterAuthFieldKey: baModelFieldKeys.oauthAccessToken.clientId
-          }).name
+          fieldName: collectionSchemaMap[baModelKey.oauthAccessToken].fields[baModelFieldKeys.oauthAccessToken.clientId]
         }
       }
     },
     oauthConsent: {
       ...plugin?.schema?.oauthConsent,
-      modelName: oauthConsentCollection.slug,
+      modelName: collectionSchemaMap[baModelKey.oauthConsent].collectionSlug,
       fields: {
         ...(plugin?.schema?.oauthConsent?.fields ?? {}),
         userId: {
           ...(plugin?.schema?.oauthConsent?.fields?.userId ?? {}),
-          fieldName: getMappedField({ collection: oauthConsentCollection, betterAuthFieldKey: baModelFieldKeys.oauthConsent.userId }).name
+          fieldName: collectionSchemaMap[baModelKey.oauthConsent].fields[baModelFieldKeys.oauthConsent.userId]
         },
         clientId: {
           ...(plugin?.schema?.oauthConsent?.fields?.clientId ?? {}),
-          fieldName: getMappedField({
-            collection: oauthConsentCollection,
-            betterAuthFieldKey: baModelFieldKeys.oauthConsent.clientId
-          }).name
+          fieldName: collectionSchemaMap[baModelKey.oauthConsent].fields[baModelFieldKeys.oauthConsent.clientId]
         }
       }
     }

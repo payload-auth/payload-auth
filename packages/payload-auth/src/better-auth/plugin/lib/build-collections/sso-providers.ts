@@ -1,12 +1,48 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
-import { baseSlugs, baModelKey, baPluginSlugs, baModelFieldKeys } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
+import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { assertAllSchemaFields } from './utils/assert-schema-fields'
 
-export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
-  const ssoProviderSlug = baPluginSlugs.ssoProviders
-  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
+import type { CollectionConfig } from 'payload'
+import type { SsoProvider } from '@/better-auth/generated-types'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+
+export function buildSsoProvidersCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+  const ssoProviderSlug = getDeafultCollectionSlug({ modelKey: baModelKey.ssoProvider, pluginOptions })
+
+  const fieldOverrides: FieldOverrides<keyof SsoProvider> = {
+    issuer: () => ({
+      index: true,
+      admin: { description: 'The issuer of the SSO provider' }
+    }),
+    domain: () => ({
+      admin: { description: 'The domain of the SSO provider' }
+    }),
+    oidcConfig: () => ({
+      admin: { description: 'The OIDC config of the SSO provider' }
+    }),
+    userId: () => ({
+      admin: { description: 'The user associated with the SSO provider' }
+    }),
+    providerId: () => ({
+      admin: {
+        readOnly: true,
+        description: 'The provider id. Used to identify a provider and to generate a redirect url'
+      }
+    }),
+    organizationId: () => ({
+      admin: {
+        readOnly: true,
+        description: 'The organization Id. If provider is linked to an organization'
+      }
+    })
+  }
+
+  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+    schema,
+    additionalProperties: fieldOverrides
+  })
 
   let ssoProviderCollection: CollectionConfig = {
     slug: ssoProviderSlug,
@@ -22,92 +58,16 @@ export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: 
     custom: {
       betterAuthModelKey: baModelKey.ssoProvider
     },
-    fields: [
-      {
-        name: 'issuer',
-        type: 'text',
-        required: true,
-        index: true,
-        label: 'Issuer',
-        admin: {
-          description: 'The issuer of the SSO provider'
-        },
-        custom: {
-          betterAuthFieldKey: 'issuer'
-        }
-      },
-      {
-        name: 'domain',
-        type: 'text',
-        required: true,
-        label: 'Domain',
-        admin: {
-          description: 'The domain of the SSO provider'
-        },
-        custom: {
-          betterAuthFieldKey: 'domain'
-        }
-      },
-      {
-        name: 'oidcConfig',
-        type: 'text',
-        required: true,
-        label: 'OIDC Config',
-        admin: {
-          description: 'The OIDC config of the SSO provider'
-        },
-        custom: {
-          betterAuthFieldKey: 'oidcConfig'
-        }
-      },
-      {
-        name: 'user',
-        type: 'relationship',
-        relationTo: userSlug,
-        required: true,
-        label: 'User',
-        admin: {
-          description: 'The user associated with the SSO provider'
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.ssoProvider.userId
-        }
-      },
-      {
-        name: 'providerId',
-        type: 'text',
-        required: true,
-        label: 'Provider ID',
-        admin: {
-          readOnly: true,
-          description: 'The provider id. Used to identify a provider and to generate a redirect url'
-        },
-        custom: {
-          betterAuthFieldKey: 'providerId'
-        }
-      },
-      {
-        name: 'organizationId',
-        type: 'text',
-        required: true,
-        label: 'Organization ID',
-        admin: {
-          readOnly: true,
-          description: 'The organization Id. If provider is linked to an organization'
-        },
-        custom: {
-          betterAuthFieldKey: 'organizationId'
-        }
-      },
-      ...getTimestampFields()
-    ]
+    fields: [...(collectionFields ?? [])]
   }
 
-  if (pluginOptions.pluginCollectionOverrides?.ssoProviders) {
+  if (typeof pluginOptions.pluginCollectionOverrides?.ssoProviders === 'function') {
     ssoProviderCollection = pluginOptions.pluginCollectionOverrides.ssoProviders({
       collection: ssoProviderCollection
     })
   }
+
+  assertAllSchemaFields(ssoProviderCollection, schema)
 
   return ssoProviderCollection
 }

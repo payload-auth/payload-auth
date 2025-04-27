@@ -1,13 +1,15 @@
-import { cookies } from 'next/headers'
-import type { CollectionAfterLogoutHook, CollectionConfig } from 'payload'
-import { getPayloadAuth } from '@/better-auth/plugin/lib/get-payload-auth'
 import { baseSlugs } from '@/better-auth/plugin/constants'
-import { getMappedCollection } from '@/better-auth/plugin/helpers/get-collection'
+import { getMappedCollection, transformCollectionsToCollectionConfigs } from '@/better-auth/plugin/helpers/get-collection'
+import { getPayloadAuth } from '@/better-auth/plugin/lib/get-payload-auth'
+import { cookies } from 'next/headers'
+import type { CollectionAfterLogoutHook } from 'payload'
 
-export function getAfterLogoutHook(collectionMap: Record<string, CollectionConfig>) {
+export function getAfterLogoutHook() {
   const hook: CollectionAfterLogoutHook = async ({ req }) => {
     const cookieStore = await cookies()
     const payload = await getPayloadAuth(req.payload.config)
+    const collections = req.payload.collections
+    const collectionMap = transformCollectionsToCollectionConfigs(collections)
     const securePrefix = '__Secure-'
     const authContext = await payload.betterAuth.$context
     const sessionTokenName = authContext.authCookies.sessionToken.name
@@ -58,6 +60,7 @@ export function getAfterLogoutHook(collectionMap: Record<string, CollectionConfi
     } catch (error) {
       console.error('Error afterLogoutHook:', error)
     }
+    
     //This is a hacky wat to delete the admin session cookie (BETTER AUTH HARDCODED THIS)
     // see https://github.com/better-auth/better-auth/blob/25e82669eed83ba6da063c167e8ae5b7da84ef9f/packages/better-auth/src/plugins/admin/admin.ts#L917C7-L917C23
     cookieStore.delete('admin_session')

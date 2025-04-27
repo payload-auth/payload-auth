@@ -146,7 +146,7 @@ export const betterAuthPluginOptions: BetterAuthPluginOptions = {
   disabled: false,
   debug: {
     logTables: false,
-    enableDebugLogs: false
+    enableDebugLogs: true
   },
   disableDefaultPayloadAuth: true,
   hidePluginCollections: true,

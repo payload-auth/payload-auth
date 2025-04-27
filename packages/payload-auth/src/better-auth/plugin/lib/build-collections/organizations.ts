@@ -1,11 +1,37 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
-import { baPluginSlugs, baModelKey } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
+import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { assertAllSchemaFields } from './utils/assert-schema-fields'
 
-export function buildOrganizationsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
-  const organizationSlug = baPluginSlugs.organizations
+import type { CollectionConfig } from 'payload'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import type { Organization } from '@/better-auth/generated-types'
+
+export function buildOrganizationsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+  const organizationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.organization, pluginOptions })
+
+  const fieldOverrides: FieldOverrides<keyof Organization> = {
+    name: () => ({
+      admin: { description: 'The name of the organization.' }
+    }),
+    slug: () => ({
+      unique: true,
+      index: true,
+      admin: { description: 'The slug of the organization.' }
+    }),
+    logo: () => ({
+      admin: { description: 'The logo of the organization.' }
+    }),
+    metadata: () => ({
+      admin: { description: 'Additional metadata for the organization.' }
+    })
+  }
+
+  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+    schema,
+    additionalProperties: fieldOverrides
+  })
 
   let organizationCollection: CollectionConfig = {
     slug: organizationSlug,
@@ -21,63 +47,16 @@ export function buildOrganizationsCollection({ pluginOptions }: { pluginOptions:
     custom: {
       betterAuthModelKey: baModelKey.organization
     },
-    fields: [
-      {
-        name: 'name',
-        type: 'text',
-        required: true,
-        label: 'Name',
-        admin: {
-          description: 'The name of the organization.'
-        },
-        custom: {
-          betterAuthFieldKey: 'name'
-        }
-      },
-      {
-        name: 'slug',
-        type: 'text',
-        unique: true,
-        index: true,
-        label: 'Slug',
-        admin: {
-          description: 'The slug of the organization.'
-        },
-        custom: {
-          betterAuthFieldKey: 'slug'
-        }
-      },
-      {
-        name: 'logo',
-        type: 'text',
-        label: 'Logo',
-        admin: {
-          description: 'The logo of the organization.'
-        },
-        custom: {
-          betterAuthFieldKey: 'logo'
-        }
-      },
-      {
-        name: 'metadata',
-        type: 'json',
-        label: 'Metadata',
-        admin: {
-          description: 'Additional metadata for the organization.'
-        },
-        custom: {
-          betterAuthFieldKey: 'metadata'
-        }
-      },
-      ...getTimestampFields()
-    ]
+    fields: [...(collectionFields ?? [])]
   }
 
-  if (pluginOptions.pluginCollectionOverrides?.organizations) {
+  if (typeof pluginOptions.pluginCollectionOverrides?.organizations === 'function') {
     organizationCollection = pluginOptions.pluginCollectionOverrides.organizations({
       collection: organizationCollection
     })
   }
+
+  assertAllSchemaFields(organizationCollection, schema)
 
   return organizationCollection
 }

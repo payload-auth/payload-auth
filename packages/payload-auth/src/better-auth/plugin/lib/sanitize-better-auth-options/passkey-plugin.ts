@@ -1,18 +1,16 @@
-import { baModelKey, baModelFieldKeys } from '@/better-auth/plugin/constants'
-import { getMappedCollection, getMappedField } from '../../helpers/get-collection'
-import { CollectionConfig } from 'payload'
+import { baModelFieldKeys, baModelKey } from '@/better-auth/plugin/constants'
+import { CollectionSchemaMap } from '../../helpers/get-collection-schema-map'
 
-export function configurePasskeyPlugin(plugin: any, collectionMap: Record<string, CollectionConfig>): void {
-  const passkeyCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.passkey })
+export function configurePasskeyPlugin(plugin: any, collectionSchemaMap: CollectionSchemaMap): void {
   plugin.schema = plugin?.schema ?? {}
   plugin.schema.passkey = {
     ...(plugin?.schema?.passkey ?? {}),
-    modelName: passkeyCollection.slug,
+    modelName: collectionSchemaMap[baModelKey.passkey].collectionSlug,
     fields: {
       ...(plugin?.schema?.passkey?.fields ?? {}),
       userId: {
         ...(plugin?.schema?.passkey?.fields?.userId ?? {}),
-        fieldName: getMappedField({ collection: passkeyCollection, betterAuthFieldKey: baModelFieldKeys.passkey.userId }).name
+        fieldName: collectionSchemaMap[baModelKey.passkey].fields[baModelFieldKeys.passkey.userId]
       }
     }
   }

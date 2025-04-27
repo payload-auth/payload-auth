@@ -1,12 +1,54 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
-import { baPluginSlugs, baseSlugs, baModelKey, baModelFieldKeys } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
+import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { assertAllSchemaFields } from './utils/assert-schema-fields'
 
-export function buildOauthConsentsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
-  const oauthConsentSlug = baPluginSlugs.oauthConsents
-  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
+import type { CollectionConfig } from 'payload'
+import type { OauthConsent } from '@/better-auth/generated-types'
+import type { FieldRule } from './utils/model-field-transformations'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+
+export function buildOauthConsentsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+  const oauthConsentSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthConsent, pluginOptions })
+
+  const fieldOverrides: FieldOverrides<keyof OauthConsent> = {
+    clientId: () => ({
+      admin: { readOnly: true, description: 'OAuth client associated with the consent' }
+    }),
+    userId: () => ({
+      admin: { readOnly: true, description: 'User associated with the consent' }
+    }),
+    scopes: () => ({
+      admin: { readOnly: true, description: 'Comma-separated list of scopes consented to' }
+    }),
+    consentGiven: () => ({
+      defaultValue: false,
+      admin: { readOnly: true, description: 'Indicates if consent was given' }
+    })
+  }
+
+  const oauthConsentFieldRules: FieldRule[] = [
+    {
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
+  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+    schema,
+    fieldRules: oauthConsentFieldRules,
+    additionalProperties: fieldOverrides
+  })
 
   let oauthConsentCollection: CollectionConfig = {
     slug: oauthConsentSlug,
@@ -21,71 +63,16 @@ export function buildOauthConsentsCollection({ pluginOptions }: { pluginOptions:
     custom: {
       betterAuthModelKey: baModelKey.oauthConsent
     },
-    fields: [
-      {
-        name: 'client',
-        type: 'relationship',
-        relationTo: baPluginSlugs.oauthApplications,
-        required: true,
-        label: 'Client',
-        admin: {
-          readOnly: true,
-          description: 'OAuth client associated with the consent'
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.oauthConsent.clientId
-        }
-      },
-      {
-        name: 'user',
-        type: 'relationship',
-        relationTo: userSlug,
-        required: true,
-        label: 'User',
-        admin: {
-          readOnly: true,
-          description: 'User associated with the consent'
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.oauthConsent.userId
-        }
-      },
-      {
-        name: 'scopes',
-        type: 'text',
-        required: true,
-        label: 'Scopes',
-        admin: {
-          readOnly: true,
-          description: 'Comma-separated list of scopes consented to'
-        },
-        custom: {
-          betterAuthFieldKey: 'scopes'
-        }
-      },
-      {
-        name: 'consentGiven',
-        type: 'checkbox',
-        defaultValue: false,
-        required: true,
-        label: 'Consent Given',
-        admin: {
-          readOnly: true,
-          description: '	Indicates if consent was given'
-        },
-        custom: {
-          betterAuthFieldKey: 'consentGiven'
-        }
-      },
-      ...getTimestampFields()
-    ]
+    fields: [...(collectionFields ?? [])]
   }
 
-  if (pluginOptions.pluginCollectionOverrides?.oauthConsents) {
+  if (typeof pluginOptions.pluginCollectionOverrides?.oauthConsents === 'function') {
     oauthConsentCollection = pluginOptions.pluginCollectionOverrides.oauthConsents({
       collection: oauthConsentCollection
     })
   }
+
+  assertAllSchemaFields(oauthConsentCollection, schema)
 
   return oauthConsentCollection
 }

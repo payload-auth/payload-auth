@@ -1,4 +1,4 @@
-import { CollectionConfig, Field } from 'payload'
+import type { Collection, CollectionConfig, Field } from 'payload'
 
 /**
  * Retrieves a collection from the collection map based on its Better Auth model key
@@ -20,11 +20,15 @@ export function getMappedCollection({
   betterAuthModelKey: string
 }): CollectionConfig {
   // Find the collection that has the matching betterAuthModelKey in its custom properties
-  const collection = Object.values(collectionMap).find((c) => c.custom?.betterAuthModelKey === betterAuthModelKey)
+  const collection = Object.values(collectionMap).find((c) => {
+    return c.custom?.betterAuthModelKey === betterAuthModelKey
+  })
 
   // Throw an error if no matching collection is found
   if (!collection) {
-    throw new Error(`Collection with key ${betterAuthModelKey} not found`)
+    const error = new Error(`Collection with key ${betterAuthModelKey} not found`)
+    Error.captureStackTrace(error, getMappedCollection)
+    throw error
   }
 
   return collection
@@ -73,4 +77,10 @@ export function getMappedField({
     default:
       return field as MappedField
   }
+}
+
+export function transformCollectionsToCollectionConfigs(collections: Record<string, Collection>): Record<string, CollectionConfig> {
+  return Object.fromEntries(
+    Object.entries(collections).map(([slug, collection]) => [slug, collection.config])
+  )
 }

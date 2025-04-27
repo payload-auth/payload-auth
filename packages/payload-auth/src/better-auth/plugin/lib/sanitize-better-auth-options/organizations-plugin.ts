@@ -1,14 +1,9 @@
 import { baModelKey, baModelFieldKeys } from '@/better-auth/plugin/constants'
-import { CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload'
 import { getMappedCollection, getMappedField } from '../../helpers/get-collection'
+import { CollectionSchemaMap } from '../../helpers/get-collection-schema-map'
 
-export function configureOrganizationPlugin(plugin: any, collectionMap: Record<string, CollectionConfig>): void {
-  const organizationCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.organization })
-  const memberCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.member })
-  const invitationCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.invitation })
-  const teamCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.team })
-  const sessionCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.session })
-
+export function configureOrganizationPlugin(plugin: any, collectionSchemaMap: CollectionSchemaMap): void {
   plugin.schema = plugin?.schema ?? {}
 
   // Initialize missing schema objects
@@ -20,90 +15,66 @@ export function configureOrganizationPlugin(plugin: any, collectionMap: Record<s
     ...plugin?.schema,
     organization: {
       ...plugin?.schema?.organization,
-      modelName: organizationCollection.slug,
+      modelName: collectionSchemaMap[baModelKey.organization].collectionSlug,
       fields: { ...(plugin?.schema?.organization?.fields ?? {}) }
     },
     member: {
       ...plugin?.schema?.member,
-      modelName: memberCollection.slug,
+      modelName: collectionSchemaMap[baModelKey.member].collectionSlug,
       fields: {
         ...(plugin?.schema?.member?.fields ?? {}),
         organizationId: {
           ...(plugin?.schema?.member?.fields?.organizationId ?? {}),
-          fieldName: getMappedField({
-            collection: memberCollection,
-            betterAuthFieldKey: baModelFieldKeys.member.organizationId
-          }).name
+          fieldName: collectionSchemaMap[baModelKey.member].fields[baModelFieldKeys.member.organizationId]
         },
         userId: {
           ...(plugin?.schema?.member?.fields?.userId ?? {}),
-          fieldName: getMappedField({
-            collection: memberCollection,
-            betterAuthFieldKey: baModelFieldKeys.member.userId
-          }).name
+          fieldName: collectionSchemaMap[baModelKey.member].fields[baModelFieldKeys.member.userId]
         },
         teamId: {
           ...(plugin?.schema?.member?.fields?.teamId ?? {}),
-          fieldName: getMappedField({
-            collection: memberCollection,
-            betterAuthFieldKey: baModelFieldKeys.member.teamId
-          }).name
+          fieldName: collectionSchemaMap[baModelKey.member].fields[baModelFieldKeys.member.teamId]
         }
       }
     },
     invitation: {
       ...plugin.schema.invitation,
-      modelName: invitationCollection.slug,
+      modelName: collectionSchemaMap[baModelKey.invitation].collectionSlug,
       fields: {
         ...(plugin?.schema?.invitation?.fields ?? {}),
         organizationId: {
           ...(plugin?.schema?.invitation?.fields?.organizationId ?? {}),
-          fieldName: getMappedField({
-            collection: invitationCollection,
-            betterAuthFieldKey: baModelFieldKeys.invitation.organizationId
-          }).name
+          fieldName: collectionSchemaMap[baModelKey.invitation].fields[baModelFieldKeys.invitation.organizationId]
         },
         inviterId: {
           ...(plugin?.schema?.invitation?.fields?.inviterId ?? {}),
-          fieldName: getMappedField({
-            collection: invitationCollection,
-            betterAuthFieldKey: baModelFieldKeys.invitation.inviterId
-          }).name
+          fieldName: collectionSchemaMap[baModelKey.invitation].fields[baModelFieldKeys.invitation.inviterId]
         },
         teamId: {
           ...(plugin?.schema?.invitation?.fields?.teamId ?? {}),
-          fieldName: getMappedField({
-            collection: invitationCollection,
-            betterAuthFieldKey: baModelFieldKeys.invitation.teamId
-          }).name
+          fieldName: collectionSchemaMap[baModelKey.invitation].fields[baModelFieldKeys.invitation.teamId]
         }
       }
     },
     team: {
       ...plugin.schema.team,
-      modelName: teamCollection.slug,
+      modelName: collectionSchemaMap[baModelKey.team].collectionSlug,
       fields: {
         ...(plugin?.schema?.team?.fields ?? {}),
         organizationId: {
           ...(plugin?.schema?.team?.fields?.organizationId ?? {}),
-          fieldName: getMappedField({
-            collection: teamCollection,
-            betterAuthFieldKey: baModelFieldKeys.team.organizationId
-          }).name
+          fieldName: collectionSchemaMap[baModelKey.team].fields[baModelFieldKeys.team.organizationId]
         }
       }
     },
     session: {
       ...plugin?.schema?.session,
-      modelName: sessionCollection.slug,
+      modelName: collectionSchemaMap[baModelKey.session].collectionSlug,
       fields: {
         ...(plugin?.schema?.session?.fields ?? {}),
         activeOrganizationId: {
           ...(plugin?.schema?.session?.fields?.activeOrganizationId ?? {}),
-          fieldName: getMappedField({
-            collection: sessionCollection,
-            betterAuthFieldKey: baModelFieldKeys.session.activeOrganizationId
-          }).name
+          fieldName: collectionSchemaMap[baModelKey.session].fields[baModelFieldKeys.session.activeOrganizationId]
         }
       }
     }

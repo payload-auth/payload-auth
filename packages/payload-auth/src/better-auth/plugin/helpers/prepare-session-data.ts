@@ -1,18 +1,10 @@
 import { Session, User } from 'better-auth'
+import type { Collection, CollectionConfig, Config, Payload } from 'payload'
 import { getFieldsToSign } from 'payload'
-import type { CollectionConfig } from 'payload'
-import { getMappedCollection } from './get-collection'
-import { baseSlugs } from '../constants'
+import { baModelKey } from '../constants'
+import { CollectionSchemaMap } from './get-collection-schema-map'
 
-export async function prepareUser({
-  user,
-  collectionMap
-}: {
-  user: User & Record<string, any>
-  collectionMap: Record<string, CollectionConfig>
-}) {
-  const userCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.users })
-
+export async function prepareUser({ user, userCollection }: { user: User & Record<string, any>; userCollection: CollectionConfig }) {
   const newUser = getFieldsToSign({
     collectionConfig: userCollection,
     email: user.email,
@@ -27,13 +19,11 @@ export async function prepareUser({
 
 export async function prepareSession({
   session,
-  collectionMap
+  sessionCollection
 }: {
   session: Session & Record<string, any>
-  collectionMap: Record<string, CollectionConfig>
+  sessionCollection: CollectionConfig
 }) {
-  const sessionCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.sessions })
-
   const filteredSession = getFieldsToSign({
     collectionConfig: sessionCollection,
     email: '',
@@ -58,18 +48,20 @@ export async function prepareSession({
  */
 export async function prepareSessionData({
   sessionData,
-  collectionMap
+  usersCollection,
+  sessionsCollection
 }: {
   sessionData: {
     session: Session & Record<string, any>
     user: User & Record<string, any>
   }
-  collectionMap: Record<string, CollectionConfig>
+  usersCollection: CollectionConfig
+  sessionsCollection: CollectionConfig
 }) {
   if (!sessionData || !sessionData.user) return null
 
-  const newUser = await prepareUser({ user: sessionData.user, collectionMap })
-  const newSession = await prepareSession({ session: sessionData.session, collectionMap })
+  const newUser = await prepareUser({ user: sessionData.user, userCollection: usersCollection })
+  const newSession = await prepareSession({ session: sessionData.session, sessionCollection: sessionsCollection })
 
   const newSessionData = {
     session: newSession,

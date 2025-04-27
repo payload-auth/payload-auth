@@ -1,14 +1,38 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
-import { baPluginSlugs, baseSlugs, baModelKey, baModelFieldKeys } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
+import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { assertAllSchemaFields } from './utils/assert-schema-fields'
 
-export function buildMembersCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
-  const memberSlug = baPluginSlugs.members
-  const organizationSlug = baPluginSlugs.organizations
-  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
-  const teamSlug = baPluginSlugs.teams
+import type { CollectionConfig } from 'payload'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import type { Member } from '@/better-auth/generated-types'
+
+export function buildMembersCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+  const memberSlug = getDeafultCollectionSlug({ modelKey: baModelKey.member, pluginOptions })
+
+  const fieldOverrides: FieldOverrides<keyof Member> = {
+    organizationId: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The organization that the member belongs to.' }
+    }),
+    userId: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The user that is a member of the organization.' }
+    }),
+    teamId: () => ({
+      admin: { description: 'The team that the member belongs to.' }
+    }),
+    role: () => ({
+      defaultValue: 'member',
+      admin: { description: 'The role of the member in the organization.' }
+    })
+  }
+
+  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+    schema,
+    additionalProperties: fieldOverrides
+  })
 
   let memberCollection: CollectionConfig = {
     slug: memberSlug,
@@ -24,72 +48,16 @@ export function buildMembersCollection({ pluginOptions }: { pluginOptions: Bette
     custom: {
       betterAuthModelKey: baModelKey.member
     },
-    fields: [
-      {
-        name: 'organization',
-        type: 'relationship',
-        relationTo: organizationSlug,
-        required: true,
-        index: true,
-        label: 'Organization',
-        admin: {
-          readOnly: true,
-          description: 'The organization that the member belongs to.'
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.member.organizationId
-        }
-      },
-      {
-        name: 'user',
-        type: 'relationship',
-        relationTo: userSlug,
-        required: true,
-        index: true,
-        label: 'User',
-        admin: {
-          readOnly: true,
-          description: 'The user that is a member of the organization.'
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.member.userId
-        }
-      },
-      {
-        name: 'team',
-        type: 'relationship',
-        relationTo: teamSlug,
-        required: false,
-        label: 'Team',
-        admin: {
-          description: 'The team that the member belongs to.'
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.member.teamId
-        }
-      },
-      {
-        name: 'role',
-        type: 'text',
-        required: true,
-        defaultValue: 'member',
-        label: 'Role',
-        admin: {
-          description: 'The role of the member in the organization.'
-        },
-        custom: {
-          betterAuthFieldKey: 'role'
-        }
-      },
-      ...getTimestampFields()
-    ]
+    fields: [...(collectionFields ?? [])]
   }
 
-  if (pluginOptions.pluginCollectionOverrides?.members) {
+  if (typeof pluginOptions.pluginCollectionOverrides?.members === 'function') {
     memberCollection = pluginOptions.pluginCollectionOverrides.members({
       collection: memberCollection
     })
   }
+
+  assertAllSchemaFields(memberCollection, schema)
 
   return memberCollection
 }

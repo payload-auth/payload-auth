@@ -1,65 +1,155 @@
-import { CollectionConfig } from 'payload'
-import { baseSlugs, baModelKeyToSlug } from '../../constants'
+import type { CollectionConfig } from 'payload'
+import { baModelKey, baseSlugs } from '../../constants'
+import { getBetterAuthSchema } from '../../helpers/get-better-auth-schema'
+import { CollectionSchemaMap } from '../../helpers/get-collection-schema-map'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { BetterAuthPluginOptions } from '../../types'
-import { buildUsersCollection } from './users/index'
 import { buildAccountsCollection } from './accounts/index'
-import { buildSessionsCollection } from './sessions'
-import { buildVerificationsCollection } from './verifications'
-import { buildOrganizationsCollection } from './organizations'
-import { buildMembersCollection } from './members'
-import { buildInvitationsCollection } from './invitations'
-import { buildTeamsCollection } from './teams'
-import { buildJwksCollection } from './jwks'
-import { buildApiKeysCollection } from './api-keys'
-import { buildTwoFactorsCollection } from './two-factors'
-import { buildOauthApplicationsCollection } from './oauth-applications'
-import { buildOauthAccessTokensCollection } from './oauth-access-tokens'
-import { buildOauthConsentsCollection } from './oauth-consents'
-import { buildPasskeysCollection } from './passkeys'
-import { buildSsoProvidersCollection } from './sso-providers'
 import { buildAdminInvitationsCollection } from './admin-invitations'
+import { buildApiKeysCollection } from './api-keys'
+import { buildInvitationsCollection } from './invitations'
+import { buildJwksCollection } from './jwks'
+import { buildMembersCollection } from './members'
+import { buildOauthAccessTokensCollection } from './oauth-access-tokens'
+import { buildOauthApplicationsCollection } from './oauth-applications'
+import { buildOauthConsentsCollection } from './oauth-consents'
+import { buildOrganizationsCollection } from './organizations'
+import { buildPasskeysCollection } from './passkeys'
+import { buildSessionsCollection } from './sessions'
+import { buildSsoProvidersCollection } from './sso-providers'
 import { buildSubscriptionsCollection } from './subscriptions'
+import { buildTeamsCollection } from './teams'
+import { buildTwoFactorsCollection } from './two-factors'
+import { buildUsersCollection } from './users/index'
+import { buildVerificationsCollection } from './verifications'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
  */
 export function buildCollectionMap({
+  collectionSchemaMap,
   incomingCollections,
-  requiredCollectionSlugs,
   pluginOptions
 }: {
+  collectionSchemaMap: CollectionSchemaMap
   incomingCollections: CollectionConfig[]
-  requiredCollectionSlugs: string[]
   pluginOptions: BetterAuthPluginOptions
 }): Record<string, CollectionConfig> {
-  const buildCollectionMap = {
-    [baModelKeyToSlug.user]: () => buildUsersCollection({ incomingCollections, pluginOptions, collectionMap }),
-    [baModelKeyToSlug.account]: () => buildAccountsCollection({ incomingCollections, pluginOptions, collectionMap }),
-    [baModelKeyToSlug.session]: () => buildSessionsCollection({ incomingCollections, pluginOptions }),
-    [baModelKeyToSlug.verification]: () => buildVerificationsCollection({ incomingCollections, pluginOptions }),
-    [baseSlugs.adminInvitations]: () => buildAdminInvitationsCollection({ incomingCollections, pluginOptions }),
-    [baModelKeyToSlug.organization]: () => buildOrganizationsCollection({ pluginOptions }),
-    [baModelKeyToSlug.member]: () => buildMembersCollection({ pluginOptions }),
-    [baModelKeyToSlug.invitation]: () => buildInvitationsCollection({ pluginOptions }),
-    [baModelKeyToSlug.team]: () => buildTeamsCollection({ pluginOptions }),
-    [baModelKeyToSlug.jwks]: () => buildJwksCollection({ pluginOptions }),
-    [baModelKeyToSlug.apikey]: () => buildApiKeysCollection({ pluginOptions }),
-    [baModelKeyToSlug.twoFactor]: () => buildTwoFactorsCollection({ pluginOptions }),
-    [baModelKeyToSlug.oauthAccessToken]: () => buildOauthAccessTokensCollection({ pluginOptions }),
-    [baModelKeyToSlug.oauthApplication]: () => buildOauthApplicationsCollection({ pluginOptions }),
-    [baModelKeyToSlug.oauthConsent]: () => buildOauthConsentsCollection({ pluginOptions }),
-    [baModelKeyToSlug.passkey]: () => buildPasskeysCollection({ pluginOptions }),
-    [baModelKeyToSlug.ssoProvider]: () => buildSsoProvidersCollection({ pluginOptions }),
-    [baModelKeyToSlug.subscription]: () => buildSubscriptionsCollection({ pluginOptions })
+  const schema = getBetterAuthSchema(pluginOptions.betterAuthOptions ?? {})
+
+  const getModelSchema = (modelKey: string) => schema[collectionSchemaMap[modelKey as keyof CollectionSchemaMap]?.collectionSlug]
+
+  const collectionBuilders = {
+    [baModelKey.user]: () =>
+      buildUsersCollection({
+        incomingCollections,
+        pluginOptions,
+        schema: getModelSchema(baModelKey.user)
+      }),
+    [baModelKey.account]: () =>
+      buildAccountsCollection({
+        incomingCollections,
+        pluginOptions,
+        schema: getModelSchema(baModelKey.account)
+      }),
+    [baModelKey.session]: () =>
+      buildSessionsCollection({
+        incomingCollections,
+        pluginOptions,
+        schema: getModelSchema(baModelKey.session)
+      }),
+    [baModelKey.verification]: () =>
+      buildVerificationsCollection({
+        incomingCollections,
+        pluginOptions,
+        schema: getModelSchema(baModelKey.verification)
+      }),
+    [baseSlugs.adminInvitations]: () =>
+      buildAdminInvitationsCollection({
+        incomingCollections,
+        pluginOptions
+      }),
+    [baModelKey.organization]: () =>
+      buildOrganizationsCollection({
+        pluginOptions,
+        schema: getModelSchema(baModelKey.organization)
+      }),
+    [baModelKey.member]: () =>
+      buildMembersCollection({
+        pluginOptions,
+        schema: getModelSchema(baModelKey.member)
+      }),
+    [baModelKey.invitation]: () =>
+      buildInvitationsCollection({
+        pluginOptions,
+        schema: getModelSchema(baModelKey.invitation)
+      }),
+    [baModelKey.team]: () =>
+      buildTeamsCollection({
+        pluginOptions,
+        schema: getModelSchema(baModelKey.team)
+      }),
+    [baModelKey.jwks]: () =>
+      buildJwksCollection({
+        pluginOptions,
+        schema: getModelSchema(baModelKey.jwks)
+      }),
+    [baModelKey.apikey]: () =>
+      buildApiKeysCollection({
+        pluginOptions,
+        schema: getModelSchema(baModelKey.apikey)
+      }),
+    [baModelKey.twoFactor]: () =>
+      buildTwoFactorsCollection({
+        pluginOptions,
+        schema: getModelSchema(baModelKey.twoFactor)
+      }),
+    [baModelKey.oauthAccessToken]: () =>
+      buildOauthAccessTokensCollection({
+        pluginOptions,
+        schema: getModelSchema(baModelKey.oauthAccessToken)
+      }),
+    [baModelKey.oauthApplication]: () =>
+      buildOauthApplicationsCollection({
+        pluginOptions,
+        schema: getModelSchema(baModelKey.oauthApplication)
+      }),
+    [baModelKey.oauthConsent]: () =>
+      buildOauthConsentsCollection({
+        pluginOptions,
+        schema: getModelSchema(baModelKey.oauthConsent)
+      }),
+    [baModelKey.passkey]: () =>
+      buildPasskeysCollection({
+        pluginOptions,
+        schema: getModelSchema(baModelKey.passkey)
+      }),
+    [baModelKey.ssoProvider]: () =>
+      buildSsoProvidersCollection({
+        pluginOptions,
+        schema: getModelSchema(baModelKey.ssoProvider)
+      }),
+    [baModelKey.subscription]: () =>
+      buildSubscriptionsCollection({
+        pluginOptions,
+        schema: getModelSchema(baModelKey.subscription)
+      })
   }
 
-  // Build required collections into a map
   const collectionMap: Record<string, CollectionConfig> = {}
-
-  // First add all required collections
-  requiredCollectionSlugs.forEach((slug) => {
-    collectionMap[slug] = buildCollectionMap[slug as keyof typeof buildCollectionMap]()
+  Object.entries(collectionSchemaMap).forEach(([modelKey, { collectionSlug }]) => {
+    const builder = collectionBuilders[modelKey as keyof typeof collectionBuilders]
+    if (builder) {
+      collectionMap[collectionSlug] = builder()
+    }
   })
+
+  // Add adminInvitations collection as it's not in the collectionSchemaMap
+  const adminInvitationsSlug = getDeafultCollectionSlug({
+    modelKey: baseSlugs.adminInvitations,
+    pluginOptions
+  })
+  collectionMap[adminInvitationsSlug] = collectionBuilders[baseSlugs.adminInvitations]()
 
   // Then add incoming collections that don't conflict with required ones
   incomingCollections.forEach((c) => {

@@ -1,12 +1,42 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
-import { baModelFieldKeys, baModelKey, baPluginSlugs, baseSlugs } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
+import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { assertAllSchemaFields } from './utils/assert-schema-fields'
 
-export function buildTwoFactorsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
-  const twoFactorSlug = baPluginSlugs.twoFactors
-  const userSlug = pluginOptions.users?.slug ?? baseSlugs.users
+import type { CollectionConfig } from 'payload'
+import type { TwoFactor } from '@/better-auth/generated-types'
+import type { BuildCollectionProps, FieldOverrides } from '../../types'
+
+export function buildTwoFactorsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+  const twoFactorSlug = getDeafultCollectionSlug({ modelKey: baModelKey.twoFactor, pluginOptions })
+
+  const fieldOverrides: FieldOverrides<keyof TwoFactor> = {
+    userId: () => ({
+      admin: {
+        readOnly: true,
+        description: 'The user that the two factor authentication secret belongs to'
+      }
+    }),
+    secret: () => ({
+      index: true,
+      admin: {
+        readOnly: true,
+        description: 'The secret used to generate the TOTP code.'
+      }
+    }),
+    backupCodes: () => ({
+      admin: {
+        readOnly: true,
+        description: 'The backup codes used to recover access to the account if the user loses access to their phone or email'
+      }
+    })
+  }
+
+  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+    schema,
+    additionalProperties: fieldOverrides
+  })
 
   let twoFactorCollection: CollectionConfig = {
     slug: twoFactorSlug,
@@ -22,56 +52,16 @@ export function buildTwoFactorsCollection({ pluginOptions }: { pluginOptions: Be
     custom: {
       betterAuthModelKey: baModelKey.twoFactor
     },
-    fields: [
-      {
-        name: 'user',
-        type: 'relationship',
-        relationTo: userSlug,
-        required: true,
-        label: 'User',
-        admin: {
-          readOnly: true,
-          description: 'The user that the two factor authentication secret belongs to'
-        },
-        custom: {
-          betterAuthFieldKey: baModelFieldKeys.twoFactor.userId
-        }
-      },
-      {
-        name: 'secret',
-        type: 'text',
-        label: 'Secret',
-        index: true,
-        admin: {
-          readOnly: true,
-          description: 'The secret used to generate the TOTP code.'
-        },
-        custom: {
-          betterAuthFieldKey: 'secret'
-        }
-      },
-      {
-        name: 'backupCodes',
-        type: 'text',
-        required: true,
-        label: 'Backup Codes',
-        admin: {
-          readOnly: true,
-          description: 'The backup codes used to recover access to the account if the user loses access to their phone or email'
-        },
-        custom: {
-          betterAuthFieldKey: 'backupCodes'
-        }
-      },
-      ...getTimestampFields()
-    ]
+    fields: [...(collectionFields ?? [])]
   }
 
-  if (pluginOptions.pluginCollectionOverrides?.twoFactors) {
+  if (typeof pluginOptions.pluginCollectionOverrides?.twoFactors === 'function') {
     twoFactorCollection = pluginOptions.pluginCollectionOverrides.twoFactors({
       collection: twoFactorCollection
     })
   }
+
+  assertAllSchemaFields(twoFactorCollection, schema)
 
   return twoFactorCollection
 }
