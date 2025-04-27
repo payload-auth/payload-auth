@@ -1,6 +1,6 @@
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
-import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import { assertAllSchemaFields } from './utils/assert-schema-fields'
 
@@ -48,7 +48,7 @@ export function buildPasskeysCollection({ incomingCollections, pluginOptions, sc
     })
   }
 
-  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+  const collectionFields = getCollectionFields({
     schema,
     additionalProperties: fieldOverrides
   })

@@ -156,7 +156,7 @@ export interface User {
   /**
    * Users chosen display name
    */
-  name: string;
+  name?: string | null;
   /**
    * The email of the user
    */
@@ -242,12 +242,45 @@ export interface Session {
    * The user agent information of the device
    */
   userAgent?: string | null;
+  /**
+   * The user that the session belongs to
+   */
   user: number | User;
   /**
    * The admin who is impersonating this session
    */
   impersonatedBy?: (number | null) | User;
-  activeOrganization?: string | null;
+  /**
+   * The currently active organization for the session
+   */
+  activeOrganization?: (number | null) | Organization;
+}
+/**
+ * Organizations are groups of users that share access to certain resources.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: number;
+  /**
+   * The name of the organization.
+   */
+  name: string;
+  /**
+   * The slug of the organization.
+   */
+  slug?: string | null;
+  /**
+   * The logo of the organization.
+   */
+  logo?: string | null;
+  createdAt: string;
+  /**
+   * Additional metadata for the organization.
+   */
+  metadata?: string | null;
+  updatedAt: string;
 }
 /**
  * Accounts are used to store user accounts for authentication providers
@@ -265,6 +298,9 @@ export interface Account {
    * The id of the provider as provided by the SSO
    */
   providerId: string;
+  /**
+   * The user that the account belongs to
+   */
   user: number | User;
   /**
    * The access token of the account. Returned by the provider
@@ -359,9 +395,6 @@ export interface Passkey {
    * The public key of the passkey
    */
   publicKey: string;
-  /**
-   * The user that the passkey belongs to
-   */
   user: number | User;
   /**
    * The unique identifier of the registered credential
@@ -478,33 +511,6 @@ export interface ApiKey {
     | null;
 }
 /**
- * Organizations are groups of users that share access to certain resources.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organizations".
- */
-export interface Organization {
-  id: number;
-  /**
-   * The name of the organization.
-   */
-  name: string;
-  /**
-   * The slug of the organization.
-   */
-  slug?: string | null;
-  /**
-   * The logo of the organization.
-   */
-  logo?: string | null;
-  createdAt: string;
-  /**
-   * Additional metadata for the organization.
-   */
-  metadata?: string | null;
-  updatedAt: string;
-}
-/**
  * Members of an organization.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -551,6 +557,9 @@ export interface Invitation {
    * The role of the user being invited.
    */
   role?: string | null;
+  /**
+   * The team that the user is being invited to.
+   */
   team?: string | null;
   /**
    * The status of the invitation.
@@ -579,9 +588,6 @@ export interface Team {
    * The name of the team.
    */
   name: string;
-  /**
-   * The organization that the team belongs to.
-   */
   organization: number | Organization;
   createdAt: string;
   updatedAt: string;

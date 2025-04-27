@@ -1,6 +1,6 @@
 import { baModelKey, baModelKeyToSlug, baseSlugs } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
-import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import { assertAllSchemaFields } from './utils/assert-schema-fields'
 
@@ -18,7 +18,6 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, sc
 
   const fieldOverrides: FieldOverrides<keyof Session> = {
     userId: () => ({
-      name: baModelKeyToSlug.user,
       saveToJWT: true,
       admin: { readOnly: true, description: 'The user that the session belongs to' },
       relationTo: getDeafultCollectionSlug({ modelKey: baModelKey.user, pluginOptions })
@@ -41,7 +40,6 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, sc
       admin: { readOnly: true, description: 'The user agent information of the device' }
     }),
     impersonatedBy: () => ({
-      name: 'impersonatedBy',
       type: 'relationship',
       relationTo: pluginOptions.users?.slug ?? baseSlugs.users,
       required: false,
@@ -52,7 +50,6 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, sc
       }
     }),
     activeOrganizationId: () => ({
-      name: 'activeOrganization',
       type: 'relationship',
       saveToJWT: true,
       relationTo: getDeafultCollectionSlug({ modelKey: baModelKey.organization, pluginOptions }),
@@ -79,7 +76,7 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, sc
     }
   ]
 
-  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+  const collectionFields = getCollectionFields({
     schema,
     fieldRules: sessionFieldRules,
     additionalProperties: fieldOverrides

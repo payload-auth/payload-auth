@@ -1,7 +1,7 @@
 import { baModelKey, defaults } from '@/better-auth/plugin/constants'
 import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
 import { isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
-import { getPayloadFieldsFromBetterAuthSchema } from '../utils/transform-better-auth-field-to-payload-field'
+import { getCollectionFields } from '../utils/transform-schema-fields-to-payload'
 import { getSyncPasswordToUserHook } from './hooks/sync-password-to-user'
 import { assertAllSchemaFields } from '../utils/assert-schema-fields'
 
@@ -100,7 +100,7 @@ export function buildAccountsCollection({ incomingCollections, pluginOptions, sc
     })
   }
 
-  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+  const collectionFields = getCollectionFields({
     schema,
     fieldRules: accountFieldRules,
     additionalProperties: fieldOverrides

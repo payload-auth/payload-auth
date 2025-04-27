@@ -62,7 +62,7 @@ export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions): Endpo
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            name: '',
+            name: 'New User',
             email: email,
             password: password,
             ...(username ? { username: username } : {}),

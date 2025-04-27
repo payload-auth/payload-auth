@@ -1,5 +1,5 @@
 {
-  "id": "1ecbd000-47d0-4c86-9591-25a25b622a0e",
+  "id": "aa1b8734-5f2f-4064-8059-3cd62b1c6076",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -18,7 +18,7 @@
           "name": "name",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "email": {
           "name": "email",
@@ -299,29 +299,14 @@
           "primaryKey": false,
           "notNull": false
         },
-        "active_organization": {
-          "name": "active_organization",
-          "type": "varchar",
+        "active_organization_id": {
+          "name": "active_organization_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         }
       },
       "indexes": {
-        "sessions_expires_at_idx": {
-          "name": "sessions_expires_at_idx",
-          "columns": [
-            {
-              "expression": "expires_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "sessions_token_idx": {
           "name": "sessions_token_idx",
           "columns": [
@@ -396,6 +381,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "sessions_active_organization_idx": {
+          "name": "sessions_active_organization_idx",
+          "columns": [
+            {
+              "expression": "active_organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -418,6 +418,19 @@
           "tableTo": "users",
           "columnsFrom": [
             "impersonated_by_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "sessions_active_organization_id_organizations_id_fk": {
+          "name": "sessions_active_organization_id_organizations_id_fk",
+          "tableFrom": "sessions",
+          "tableTo": "organizations",
+          "columnsFrom": [
+            "active_organization_id"
           ],
           "columnsTo": [
             "id"
@@ -1566,6 +1579,21 @@
           "columns": [
             {
               "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "invitations_team_idx": {
+          "name": "invitations_team_idx",
+          "columns": [
+            {
+              "expression": "team",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

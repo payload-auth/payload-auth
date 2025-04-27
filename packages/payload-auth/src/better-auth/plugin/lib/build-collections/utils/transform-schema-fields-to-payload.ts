@@ -4,7 +4,7 @@ import type { Field, RelationshipField } from 'payload'
 import type { FieldRule } from './model-field-transformations'
 import { getAdditionalFieldProperties } from './model-field-transformations'
 
-export function getPayloadFieldsFromBetterAuthSchema({
+export function getCollectionFields({
   schema,
   fieldRules = [],
   additionalProperties = {}
@@ -14,13 +14,13 @@ export function getPayloadFieldsFromBetterAuthSchema({
   additionalProperties?: Record<string, (field: FieldAttribute) => Partial<Field>>
 }): Field[] | null {
   const payloadFields = Object.entries(schema.fields).map(([fieldKey, field]) => {
-    return convertBetterAuthFieldToPayloadField({ field, fieldKey, fieldRules, additionalProperties })
+    return convertSchemaFieldToPayload({ field, fieldKey, fieldRules, additionalProperties })
   })
 
   return payloadFields
 }
 
-export function convertBetterAuthFieldToPayloadField({
+export function convertSchemaFieldToPayload({
   field,
   fieldKey,
   fieldRules = [],
@@ -31,7 +31,7 @@ export function convertBetterAuthFieldToPayloadField({
   fieldRules?: FieldRule[]
   additionalProperties?: Record<string, (field: FieldAttribute) => Partial<Field>>
 }): Field {
-  const { type, hasMany } = getPayloadFieldPropertiesFromBetterAuthField({ field })
+  const { type, hasMany } = getPayloadFieldProperties({ field })
   const additionalFieldProperties = getAdditionalFieldProperties({ field, fieldKey, fieldRules, additionalProperties })
   const baseField = {
     name: field.fieldName ?? fieldKey,
@@ -57,7 +57,7 @@ export function convertBetterAuthFieldToPayloadField({
   return baseField
 }
 
-export function getPayloadFieldPropertiesFromBetterAuthField({ field }: { field: FieldAttribute }): {
+export function getPayloadFieldProperties({ field }: { field: FieldAttribute }): {
   type: Field['type']
   hasMany?: boolean
 } {

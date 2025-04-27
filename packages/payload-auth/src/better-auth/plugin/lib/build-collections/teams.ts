@@ -2,7 +2,7 @@ import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { assertAllSchemaFields } from './utils/assert-schema-fields'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 
 import type { CollectionConfig } from 'payload'
 import type { Team } from '@/better-auth/generated-types'
@@ -42,7 +42,7 @@ export function buildTeamsCollection({ incomingCollections, pluginOptions, schem
     }
   ]
 
-  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+  const collectionFields = getCollectionFields({
     schema,
     fieldRules: teamFieldRules,
     additionalProperties: fieldOverrides

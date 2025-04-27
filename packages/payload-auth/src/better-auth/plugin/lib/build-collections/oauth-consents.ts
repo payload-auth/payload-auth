@@ -1,7 +1,7 @@
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 import { assertAllSchemaFields } from './utils/assert-schema-fields'
 
 import type { CollectionConfig } from 'payload'
@@ -48,7 +48,7 @@ export function buildOauthConsentsCollection({ incomingCollections, pluginOption
     }
   ]
 
-  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+  const collectionFields = getCollectionFields({
     schema,
     fieldRules: oauthConsentFieldRules,
     additionalProperties: fieldOverrides

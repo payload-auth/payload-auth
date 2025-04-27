@@ -4,7 +4,7 @@ import { baModelKey, defaults, supportedBAPluginIds } from '../../../constants'
 import { getAllRoleOptions } from '../../../helpers/get-all-roles'
 import { assertAllSchemaFields } from '../utils/assert-schema-fields'
 import { isAdminOrCurrentUserUpdateWithAllowedFields, isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
-import { getPayloadFieldsFromBetterAuthSchema } from '../utils/transform-better-auth-field-to-payload-field'
+import { getCollectionFields } from '../utils/transform-schema-fields-to-payload'
 import { betterAuthStrategy } from './better-auth-strategy'
 import {
   getGenerateInviteUrlEndpoint,
@@ -71,6 +71,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, schem
       admin: { description: 'Whether the email of the user has been verified' }
     }),
     name: () => ({
+      required: false,
       saveToJWT: true,
       admin: { description: 'Users chosen display name' }
     }),
@@ -130,7 +131,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, schem
     })
   }
 
-  const collectionFields = getPayloadFieldsFromBetterAuthSchema({
+  const collectionFields = getCollectionFields({
     schema,
     fieldRules: userFieldRules,
     additionalProperties: fieldOverrides
