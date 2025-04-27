@@ -1,19 +1,16 @@
 import { baModelFieldKeys, baModelKey } from '@/better-auth/plugin/constants'
-import type { CollectionConfig } from 'payload'
-import { getMappedCollection, getMappedField } from '../../helpers/get-collection'
+import { CollectionSchemaMap } from '../../helpers/get-collection-schema-map'
 
-export function configureApiKeyPlugin(plugin: any, collectionMap: Record<string, CollectionConfig>): void {
-  const apiKeyCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.apikey })
-
+export function configureApiKeyPlugin(plugin: any, collectionSchemaMap: CollectionSchemaMap): void {
   plugin.schema = plugin?.schema ?? {}
   plugin.schema.apikey = {
     ...(plugin?.schema?.apikey ?? {}),
-    modelName: apiKeyCollection.slug,
+    modelName: collectionSchemaMap[baModelKey.apikey].collectionSlug,
     fields: {
       ...(plugin?.schema?.apikey?.fields ?? {}),
       userId: {
         ...(plugin?.schema?.apikey?.fields?.userId ?? {}),
-        fieldName: getMappedField({ collection: apiKeyCollection, betterAuthFieldKey: baModelFieldKeys.apikey.userId }).name
+        fieldName: collectionSchemaMap[baModelKey.apikey].fields[baModelFieldKeys.apikey.userId]
       }
     }
   }

@@ -6,6 +6,7 @@ import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-a
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field, CollectionConfig } from 'payload'
+import { FieldRule } from './utils/model-field-transformations'
 
 export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
   const oauthApplicationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthApplication, pluginOptions })
@@ -44,9 +45,27 @@ export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOpti
     })
   }
 
+  const oauthApplicationFieldRules: FieldRule[] = [
+    {
+      model: baModelKey.oauthApplication,
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
     model: baModelKey.oauthApplication,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    fieldRules: oauthApplicationFieldRules,
     additionalProperties: fieldOverrides
   })
 
@@ -64,7 +83,7 @@ export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOpti
     custom: {
       betterAuthModelKey: baModelKey.oauthApplication
     },
-    fields: [...collectionFields, ...getTimestampFields()]
+    fields: [...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.oauthApplications === 'function') {

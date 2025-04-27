@@ -5,6 +5,7 @@ import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-a
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field, CollectionConfig } from 'payload'
+import { FieldRule } from './utils/model-field-transformations'
 
 export function buildVerificationsCollection({
   incomingCollections,
@@ -19,28 +20,46 @@ export function buildVerificationsCollection({
   const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
     identifier: () => ({
       index: true,
-      admin: { 
-        readOnly: true, 
-        description: 'The identifier of the verification request' 
+      admin: {
+        readOnly: true,
+        description: 'The identifier of the verification request'
       }
     }),
     value: () => ({
-      admin: { 
-        readOnly: true, 
-        description: 'The value to be verified' 
+      admin: {
+        readOnly: true,
+        description: 'The value to be verified'
       }
     }),
     expiresAt: () => ({
-      admin: { 
-        readOnly: true, 
-        description: 'The date and time when the verification request will expire' 
+      admin: {
+        readOnly: true,
+        description: 'The date and time when the verification request will expire'
       }
     })
   }
 
+  const verificationFieldRules: FieldRule[] = [
+    {
+      model: baModelKey.verification,
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
     model: baModelKey.verification,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    fieldRules: verificationFieldRules,
     additionalProperties: fieldOverrides
   })
 
@@ -59,8 +78,7 @@ export function buildVerificationsCollection({
     custom: {
       betterAuthModelKey: baModelKey.verification
     },
-    fields: [...(existingVerificationCollection?.fields ?? []), ...collectionFields],
-    timestamps: true,
+    fields: [...(existingVerificationCollection?.fields ?? []), ...(collectionFields ?? [])],
     ...existingVerificationCollection
   }
 

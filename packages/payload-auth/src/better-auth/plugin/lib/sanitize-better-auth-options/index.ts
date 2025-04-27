@@ -1,4 +1,4 @@
-import { baModelFieldKeys, baModelKey, supportedBAPluginIds } from '@/better-auth/plugin/constants'
+import { baModelFieldKeys, baModelKey, defaults, supportedBAPluginIds } from '@/better-auth/plugin/constants'
 import { configureAdminPlugin } from './admin-plugin'
 import { configureApiKeyPlugin } from './api-key-plugin'
 import { configureOidcPlugin } from './oidc-plugin'
@@ -10,47 +10,56 @@ import { hashPassword, verifyPassword } from './utils/password'
 import { saveToJwtMiddleware } from './utils/save-to-jwt-middleware'
 
 import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Config, Payload } from 'payload'
 import { getMappedCollection, getMappedField } from '../../helpers/get-collection'
 import { configureTwoFactorPlugin } from './two-factor-plugin'
 import { requireAdminInviteForSignUpMiddleware } from './utils/require-admin-invite-for-sign-up-middleware'
+import { CollectionSchemaMap } from '../../helpers/get-collection-schema-map'
 
 /**
  * Sanitizes the BetterAuth options
  */
 export function sanitizeBetterAuthOptions({
-  collectionMap,
+  config,
+  collectionSchemaMap,
   pluginOptions
 }: {
-  collectionMap: Record<string, CollectionConfig>
+  config: Payload['config'] | Config | Promise<Payload['config'] | Config>
+  collectionSchemaMap: CollectionSchemaMap
   pluginOptions: BetterAuthPluginOptions
 }): SanitizedBetterAuthOptions {
   const baOptions = pluginOptions.betterAuthOptions || {}
-  const userCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.user })
-  const accountCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.account })
-  const sessionCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.session })
-  const verificationCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.verification })
 
   // Initialize with base configuration
   let res: SanitizedBetterAuthOptions = {
     ...baOptions,
     user: {
       ...(baOptions.user || {}),
-      modelName: userCollection.slug
+      modelName: collectionSchemaMap[baModelKey.user].collectionSlug,
+      additionalFields: {
+        ...(baOptions.user?.additionalFields || {}),
+        role: {
+          type: 'string',
+          defaultValue: pluginOptions.users?.defaultRole || defaults.userRole,
+          input: false
+        }
+      }
     },
     account: {
       ...(baOptions.account || {}),
-      modelName: accountCollection.slug,
-      fields: { userId: getMappedField({ collection: accountCollection, betterAuthFieldKey: baModelFieldKeys.account.userId }).name }
+      modelName: collectionSchemaMap[baModelKey.account].collectionSlug,
+      fields: {
+        userId: collectionSchemaMap[baModelKey.account].fields[baModelFieldKeys.account.userId]
+      }
     },
     session: {
       ...(baOptions.session || {}),
-      modelName: sessionCollection.slug,
-      fields: { userId: getMappedField({ collection: sessionCollection, betterAuthFieldKey: baModelFieldKeys.session.userId }).name }
+      modelName: collectionSchemaMap[baModelKey.session].collectionSlug,
+      fields: { userId: collectionSchemaMap[baModelKey.session].fields[baModelFieldKeys.session.userId] }
     },
     verification: {
       ...(baOptions.verification || {}),
-      modelName: verificationCollection.slug
+      modelName: collectionSchemaMap[baModelKey.verification].collectionSlug
     },
     emailAndPassword: {
       ...(baOptions.emailAndPassword || {}),
@@ -122,12 +131,12 @@ export function sanitizeBetterAuthOptions({
       // Configure plugins by type
       const pluginConfigurators = {
         [supportedBAPluginIds.admin]: (p: any) => configureAdminPlugin(p, pluginOptions),
-        [supportedBAPluginIds.apiKey]: (p: any) => configureApiKeyPlugin(p, collectionMap),
-        [supportedBAPluginIds.passkey]: (p: any) => configurePasskeyPlugin(p, collectionMap),
-        [supportedBAPluginIds.organization]: (p: any) => configureOrganizationPlugin(p, collectionMap),
-        [supportedBAPluginIds.sso]: (p: any) => configureSsoPlugin(p, collectionMap),
-        [supportedBAPluginIds.oidc]: (p: any) => configureOidcPlugin(p, collectionMap),
-        [supportedBAPluginIds.twoFactor]: (p: any) => configureTwoFactorPlugin(p, collectionMap)
+        [supportedBAPluginIds.apiKey]: (p: any) => configureApiKeyPlugin(p, collectionSchemaMap),
+        [supportedBAPluginIds.passkey]: (p: any) => configurePasskeyPlugin(p, collectionSchemaMap),
+        [supportedBAPluginIds.organization]: (p: any) => configureOrganizationPlugin(p, collectionSchemaMap),
+        [supportedBAPluginIds.sso]: (p: any) => configureSsoPlugin(p, collectionSchemaMap),
+        [supportedBAPluginIds.oidc]: (p: any) => configureOidcPlugin(p, collectionSchemaMap),
+        [supportedBAPluginIds.twoFactor]: (p: any) => configureTwoFactorPlugin(p, collectionSchemaMap)
       }
 
       supportedPlugins.forEach((plugin) => {
@@ -143,8 +152,8 @@ export function sanitizeBetterAuthOptions({
 
   saveToJwtMiddleware({
     sanitizedOptions: res,
-    userCollection,
-    sessionCollection
+    config,
+    collectionSchemaMap
   })
 
   return res

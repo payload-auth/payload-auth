@@ -7,6 +7,7 @@ import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-a
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field } from 'payload'
+import { FieldRule } from './utils/model-field-transformations'
 
 export function buildTeamsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
   const teamSlug = getDeafultCollectionSlug({ modelKey: baModelKey.team, pluginOptions })
@@ -16,16 +17,34 @@ export function buildTeamsCollection({ pluginOptions }: { pluginOptions: BetterA
       admin: { description: 'The name of the team.' }
     }),
     organization: () => ({
-      admin: { 
-        readOnly: true, 
-        description: 'The organization that the team belongs to.' 
+      admin: {
+        readOnly: true,
+        description: 'The organization that the team belongs to.'
       }
     })
   }
 
+  const teamFieldRules: FieldRule[] = [
+    {
+      model: baModelKey.team,
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
     model: baModelKey.team,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    fieldRules: teamFieldRules,
     additionalProperties: fieldOverrides
   })
 
@@ -43,7 +62,7 @@ export function buildTeamsCollection({ pluginOptions }: { pluginOptions: BetterA
     custom: {
       betterAuthModelKey: baModelKey.team
     },
-    fields: [...collectionFields, ...getTimestampFields()]
+    fields: [...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.teams === 'function') {

@@ -6,6 +6,7 @@ import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-a
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field, CollectionConfig } from 'payload'
+import { FieldRule } from './utils/model-field-transformations'
 
 export function buildOrganizationsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
   const organizationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.organization, pluginOptions })
@@ -27,9 +28,27 @@ export function buildOrganizationsCollection({ pluginOptions }: { pluginOptions:
     })
   }
 
+  const organizationFieldRules: FieldRule[] = [
+    {
+      model: baModelKey.organization,
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
     model: baModelKey.organization,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    fieldRules: organizationFieldRules,
     additionalProperties: fieldOverrides
   })
 
@@ -47,7 +66,7 @@ export function buildOrganizationsCollection({ pluginOptions }: { pluginOptions:
     custom: {
       betterAuthModelKey: baModelKey.organization
     },
-    fields: [...collectionFields, ...getTimestampFields()]
+    fields: [...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.organizations === 'function') {

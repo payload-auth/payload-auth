@@ -6,6 +6,7 @@ import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { BetterAuthPluginOptions } from '../../types'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { FieldRule } from './utils/model-field-transformations'
 
 export function buildApiKeysCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
   const apiKeySlug = getDeafultCollectionSlug({ modelKey: baModelKey.apikey, pluginOptions })
@@ -70,9 +71,27 @@ export function buildApiKeysCollection({ pluginOptions }: { pluginOptions: Bette
     })
   }
 
+  const apiKeyFieldRules: FieldRule[] = [
+    {
+      model: baModelKey.apikey,
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
     model: baModelKey.apikey,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    fieldRules: apiKeyFieldRules,
     additionalProperties: fieldOverrides
   })
 
@@ -90,7 +109,7 @@ export function buildApiKeysCollection({ pluginOptions }: { pluginOptions: Bette
     custom: {
       betterAuthModelKey: baModelKey.apikey
     },
-    fields: [...collectionFields, ...getTimestampFields()]
+    fields: [...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.apiKeys === 'function') {

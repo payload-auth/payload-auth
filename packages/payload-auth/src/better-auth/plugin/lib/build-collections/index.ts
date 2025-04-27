@@ -1,5 +1,5 @@
-import type { CollectionConfig } from 'payload'
-import { baseSlugs, baModelKeyToSlug } from '../../constants'
+import type { CollectionConfig, FlattenedField } from 'payload'
+import { baseSlugs, baModelKeyToSlug, baModelKey } from '../../constants'
 import type { BetterAuthPluginOptions } from '../../types'
 import { buildUsersCollection } from './users/index'
 import { buildAccountsCollection } from './accounts/index'
@@ -21,55 +21,95 @@ import { buildAdminInvitationsCollection } from './admin-invitations'
 import { buildSubscriptionsCollection } from './subscriptions'
 import { getAuthTables } from 'better-auth/db'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { CollectionSchemaMap } from '../../helpers/get-collection-schema-map'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
  */
 export function buildCollectionMap({
+  collectionSchemaMap,
   incomingCollections,
   pluginOptions
 }: {
+  collectionSchemaMap: CollectionSchemaMap
   incomingCollections: CollectionConfig[]
   pluginOptions: BetterAuthPluginOptions
 }): Record<string, CollectionConfig> {
+  const tables = getAuthTables(pluginOptions.betterAuthOptions ?? {})
+
+  // Log the tables model names and field names with their keys
+  console.log('BetterAuth Tables:')
+  Object.entries(tables).forEach(([modelName, model]) => {
+    console.log(`Model: ${modelName}`)
+    if (model.fields) {
+      console.log('  Fields:')
+      Object.entries(model.fields).forEach(([fieldKey, field]) => {
+        console.log(`    ${fieldKey}: ${field.fieldName}`)
+      })
+    }
+  })
+
   const collectionBuilders = {
-    [baModelKeyToSlug.user]: () => buildUsersCollection({ incomingCollections, pluginOptions }),
-    [baModelKeyToSlug.account]: () => buildAccountsCollection({ incomingCollections, pluginOptions }),
-    [baModelKeyToSlug.session]: () => buildSessionsCollection({ incomingCollections, pluginOptions }),
-    [baModelKeyToSlug.verification]: () => buildVerificationsCollection({ incomingCollections, pluginOptions }),
+    [baModelKey.user]: () => buildUsersCollection({ incomingCollections, pluginOptions }),
+    [baModelKey.account]: () => buildAccountsCollection({ incomingCollections, pluginOptions }),
+    [baModelKey.session]: () => buildSessionsCollection({ incomingCollections, pluginOptions }),
+    [baModelKey.verification]: () => buildVerificationsCollection({ incomingCollections, pluginOptions }),
     [baseSlugs.adminInvitations]: () => buildAdminInvitationsCollection({ incomingCollections, pluginOptions }),
-    [baModelKeyToSlug.organization]: () => buildOrganizationsCollection({ pluginOptions }),
-    [baModelKeyToSlug.member]: () => buildMembersCollection({ pluginOptions }),
-    [baModelKeyToSlug.invitation]: () => buildInvitationsCollection({ pluginOptions }),
-    [baModelKeyToSlug.team]: () => buildTeamsCollection({ pluginOptions }),
-    [baModelKeyToSlug.jwks]: () => buildJwksCollection({ pluginOptions }),
-    [baModelKeyToSlug.apikey]: () => buildApiKeysCollection({ pluginOptions }),
-    [baModelKeyToSlug.twoFactor]: () => buildTwoFactorsCollection({ pluginOptions }),
-    [baModelKeyToSlug.oauthAccessToken]: () => buildOauthAccessTokensCollection({ pluginOptions }),
-    [baModelKeyToSlug.oauthApplication]: () => buildOauthApplicationsCollection({ pluginOptions }),
-    [baModelKeyToSlug.oauthConsent]: () => buildOauthConsentsCollection({ pluginOptions }),
-    [baModelKeyToSlug.passkey]: () => buildPasskeysCollection({ pluginOptions }),
-    [baModelKeyToSlug.ssoProvider]: () => buildSsoProvidersCollection({ pluginOptions }),
-    [baModelKeyToSlug.subscription]: () => buildSubscriptionsCollection({ pluginOptions })
+    [baModelKey.organization]: () => buildOrganizationsCollection({ pluginOptions }),
+    [baModelKey.member]: () => buildMembersCollection({ pluginOptions }),
+    [baModelKey.invitation]: () => buildInvitationsCollection({ pluginOptions }),
+    [baModelKey.team]: () => buildTeamsCollection({ pluginOptions }),
+    [baModelKey.jwks]: () => buildJwksCollection({ pluginOptions }),
+    [baModelKey.apikey]: () => buildApiKeysCollection({ pluginOptions }),
+    [baModelKey.twoFactor]: () => buildTwoFactorsCollection({ pluginOptions }),
+    [baModelKey.oauthAccessToken]: () => buildOauthAccessTokensCollection({ pluginOptions }),
+    [baModelKey.oauthApplication]: () => buildOauthApplicationsCollection({ pluginOptions }),
+    [baModelKey.oauthConsent]: () => buildOauthConsentsCollection({ pluginOptions }),
+    [baModelKey.passkey]: () => buildPasskeysCollection({ pluginOptions }),
+    [baModelKey.ssoProvider]: () => buildSsoProvidersCollection({ pluginOptions }),
+    [baModelKey.subscription]: () => buildSubscriptionsCollection({ pluginOptions })
   }
 
   const collectionMap: Record<string, CollectionConfig> = {}
-  const betterAuthSchema = getAuthTables(pluginOptions.betterAuthOptions ?? {})
 
-  Object.keys(betterAuthSchema).forEach((model) => {
-    const collectionSlug = getDeafultCollectionSlug({
-      pluginOptions,
-      modelKey: model as keyof typeof baModelKeyToSlug
-    }) as keyof typeof collectionBuilders
-    if (collectionBuilders[collectionSlug]) {
-      collectionMap[collectionSlug] = collectionBuilders[collectionSlug]()
+  Object.entries(collectionSchemaMap).forEach(([modelKey, { collectionSlug, fields }]) => {
+    if (collectionBuilders[modelKey as keyof typeof collectionBuilders]) {
+      collectionMap[collectionSlug] = collectionBuilders[modelKey as keyof typeof collectionBuilders]()
     }
   })
+
+  // Add adminInvitations collection as it's not in the collectionSchemaMap
+  const adminInvitationsSlug = getDeafultCollectionSlug({
+    modelKey: baseSlugs.adminInvitations,
+    pluginOptions
+  })
+  collectionMap[adminInvitationsSlug] = collectionBuilders[baseSlugs.adminInvitations]()
 
   // Then add incoming collections that don't conflict with required ones
   incomingCollections.forEach((c) => {
     if (!collectionMap[c.slug]) {
       collectionMap[c.slug] = c
+    }
+  })
+
+  console.log('Collection Map:')
+  Object.entries(collectionMap).forEach(([slug, collection]) => {
+    const relationshipFields = collection.fields?.filter(
+      (field) =>
+        field.type === 'relationship' || (field.type === 'array' && field.fields?.some((subField) => subField.type === 'relationship'))
+    )
+
+    if (relationshipFields && relationshipFields.length > 0) {
+      console.log(`Collection ${slug} has relationship fields:`)
+      relationshipFields.forEach((field: any) => {
+        console.log(
+          `  - ${field.name}: ${
+            field.type === 'relationship'
+              ? `relationTo: ${Array.isArray(field.relationTo) ? field.relationTo.join(', ') : field.relationTo}`
+              : 'array with relationship fields'
+          }`
+        )
+      })
     }
   })
 

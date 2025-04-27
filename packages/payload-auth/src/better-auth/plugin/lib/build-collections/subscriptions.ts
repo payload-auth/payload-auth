@@ -6,6 +6,7 @@ import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-a
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field, CollectionConfig } from 'payload'
+import { FieldRule } from './utils/model-field-transformations'
 
 export function buildSubscriptionsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
   const subscriptionsSlug = getDeafultCollectionSlug({ modelKey: baModelKey.subscription, pluginOptions })
@@ -51,9 +52,27 @@ export function buildSubscriptionsCollection({ pluginOptions }: { pluginOptions:
     })
   }
 
+  const subscriptionFieldRules: FieldRule[] = [
+    {
+      model: baModelKey.subscription,
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
     model: baModelKey.subscription,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    fieldRules: subscriptionFieldRules,
     additionalProperties: fieldOverrides
   })
 
@@ -70,7 +89,7 @@ export function buildSubscriptionsCollection({ pluginOptions }: { pluginOptions:
     custom: {
       betterAuthModelKey: baModelKey.subscription
     },
-    fields: [...collectionFields, ...getTimestampFields()]
+    fields: [...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.subscriptions === 'function') {

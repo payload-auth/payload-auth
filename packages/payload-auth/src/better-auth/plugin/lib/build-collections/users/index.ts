@@ -1,7 +1,7 @@
 import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exists'
 import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
 import { CollectionConfig } from 'payload'
-import { baModelKey, supportedBAPluginIds } from '../../../constants'
+import { baModelKey, defaults, supportedBAPluginIds } from '../../../constants'
 import { getAllRoleOptions } from '../../../helpers/get-all-roles'
 import type { BetterAuthPluginOptions } from '../../../types'
 import { isAdminOrCurrentUserUpdateWithAllowedFields, isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
@@ -34,7 +34,7 @@ export function buildUsersCollection({
   pluginOptions: BetterAuthPluginOptions
 }): CollectionConfig {
   const userSlug = getDeafultCollectionSlug({ modelKey: baModelKey.user, pluginOptions })
-  const adminRoles = pluginOptions.users?.adminRoles ?? ['admin']
+  const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
   const allRoleOptions = getAllRoleOptions(pluginOptions)
   const hasUsernamePlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.username)
   const existingUserCollection = incomingCollections.find((collection) => collection.slug === userSlug) as CollectionConfig | undefined
@@ -44,7 +44,7 @@ export function buildUsersCollection({
 
   const userFieldRules: FieldRule[] = [
     {
-      model: 'user',
+      model: baModelKey.user,
       condition: (field) => field.type === 'date',
       transform: (field) => ({
         ...field,
@@ -63,7 +63,7 @@ export function buildUsersCollection({
     role: (field) => ({
       type: 'select',
       options: allRoleOptions,
-      defaultValue: field.defaultValue ?? 'user',
+      defaultValue: field.defaultValue ?? defaults.userRole,
       saveToJWT: true,
       admin: { description: 'The role of the user' }
     }),
@@ -137,7 +137,7 @@ export function buildUsersCollection({
   }
 
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: 'user',
+    model: baModelKey.user,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
     fieldRules: userFieldRules,
     additionalProperties: fieldOverrides
@@ -237,7 +237,7 @@ export function buildUsersCollection({
       }),
       strategies: [betterAuthStrategy(userSlug)]
     },
-    fields: [...(existingUserCollection?.fields ?? []), ...collectionFields]
+    fields: [...(existingUserCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (pluginOptions.users?.collectionOverrides) {

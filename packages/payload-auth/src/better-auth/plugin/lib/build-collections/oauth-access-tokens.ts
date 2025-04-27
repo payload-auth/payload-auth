@@ -6,6 +6,7 @@ import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-a
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field, CollectionConfig } from 'payload'
+import { FieldRule } from './utils/model-field-transformations'
 
 export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
   const oauthAccessTokenSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthAccessToken, pluginOptions })
@@ -35,9 +36,27 @@ export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOpti
     })
   }
 
+  const oauthAccessTokenFieldRules: FieldRule[] = [
+    {
+      model: baModelKey.oauthAccessToken,
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
     model: baModelKey.oauthAccessToken,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    fieldRules: oauthAccessTokenFieldRules,
     additionalProperties: fieldOverrides
   })
 
@@ -55,7 +74,7 @@ export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOpti
     custom: {
       betterAuthModelKey: baModelKey.oauthAccessToken
     },
-    fields: [...collectionFields, ...getTimestampFields()]
+    fields: [...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.oauthAccessTokens === 'function') {

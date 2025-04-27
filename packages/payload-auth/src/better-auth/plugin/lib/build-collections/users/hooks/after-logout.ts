@@ -60,6 +60,7 @@ export function getAfterLogoutHook() {
     } catch (error) {
       console.error('Error afterLogoutHook:', error)
     }
+    
     //This is a hacky wat to delete the admin session cookie (BETTER AUTH HARDCODED THIS)
     // see https://github.com/better-auth/better-auth/blob/25e82669eed83ba6da063c167e8ae5b7da84ef9f/packages/better-auth/src/plugins/admin/admin.ts#L917C7-L917C23
     cookieStore.delete('admin_session')

@@ -8,6 +8,7 @@ import { getPayloadFieldsFromBetterAuthSchema } from '../utils/transform-better-
 import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field } from 'payload'
+import { FieldRule } from '../utils/model-field-transformations'
 
 export function buildAccountsCollection({
   incomingCollections,
@@ -23,68 +24,85 @@ export function buildAccountsCollection({
     | CollectionConfig
     | undefined
 
+  const accountFieldRules: FieldRule[] = [
+    {
+      model: baModelKey.account,
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
   const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
     user: () => ({
       index: true,
-      admin: { 
-        readOnly: true, 
-        description: 'The user that the account belongs to' 
+      admin: {
+        readOnly: true,
+        description: 'The user that the account belongs to'
       }
     }),
     accountId: () => ({
       index: true,
-      admin: { 
-        readOnly: true, 
-        description: 'The id of the account as provided by the SSO or equal to userId for credential accounts' 
+      admin: {
+        readOnly: true,
+        description: 'The id of the account as provided by the SSO or equal to userId for credential accounts'
       }
     }),
     providerId: () => ({
-      admin: { 
-        readOnly: true, 
-        description: 'The id of the provider as provided by the SSO' 
+      admin: {
+        readOnly: true,
+        description: 'The id of the provider as provided by the SSO'
       }
     }),
     accessToken: () => ({
-      admin: { 
-        readOnly: true, 
-        description: 'The access token of the account. Returned by the provider' 
+      admin: {
+        readOnly: true,
+        description: 'The access token of the account. Returned by the provider'
       }
     }),
     refreshToken: () => ({
-      admin: { 
-        readOnly: true, 
-        description: 'The refresh token of the account. Returned by the provider' 
+      admin: {
+        readOnly: true,
+        description: 'The refresh token of the account. Returned by the provider'
       }
     }),
     accessTokenExpiresAt: () => ({
-      admin: { 
-        readOnly: true, 
-        description: 'The date and time when the access token will expire' 
+      admin: {
+        readOnly: true,
+        description: 'The date and time when the access token will expire'
       }
     }),
     refreshTokenExpiresAt: () => ({
-      admin: { 
-        readOnly: true, 
-        description: 'The date and time when the refresh token will expire' 
+      admin: {
+        readOnly: true,
+        description: 'The date and time when the refresh token will expire'
       }
     }),
     scope: () => ({
-      admin: { 
-        readOnly: true, 
-        description: 'The scope of the account. Returned by the provider' 
+      admin: {
+        readOnly: true,
+        description: 'The scope of the account. Returned by the provider'
       }
     }),
     idToken: () => ({
-      admin: { 
-        readOnly: true, 
-        description: 'The id token for the account. Returned by the provider' 
+      admin: {
+        readOnly: true,
+        description: 'The id token for the account. Returned by the provider'
       }
     }),
     password: () => ({
-      admin: { 
-        readOnly: true, 
-        hidden: true, 
-        description: 'The hashed password of the account. Mainly used for email and password authentication' 
+      admin: {
+        readOnly: true,
+        hidden: true,
+        description: 'The hashed password of the account. Mainly used for email and password authentication'
       }
     })
   }
@@ -92,6 +110,7 @@ export function buildAccountsCollection({
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
     model: baModelKey.account,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    fieldRules: accountFieldRules,
     additionalProperties: fieldOverrides
   })
 
@@ -120,7 +139,7 @@ export function buildAccountsCollection({
         ...(pluginOptions.disableDefaultPayloadAuth ? [] : [getSyncPasswordToUserHook(pluginOptions)])
       ]
     },
-    fields: [...(existingAccountCollection?.fields ?? []), ...collectionFields, ...getTimestampFields()],
+    fields: [...(existingAccountCollection?.fields ?? []), ...(collectionFields ?? [])],
     ...existingAccountCollection
   }
 

@@ -6,6 +6,7 @@ import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-a
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field, CollectionConfig } from 'payload'
+import { FieldRule } from './utils/model-field-transformations'
 
 export function buildJwksCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
   const jwksSlug = getDeafultCollectionSlug({ modelKey: baModelKey.jwks, pluginOptions })
@@ -20,9 +21,27 @@ export function buildJwksCollection({ pluginOptions }: { pluginOptions: BetterAu
     })
   }
 
+  const jwksFieldRules: FieldRule[] = [
+    {
+      model: baModelKey.jwks,
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
     model: baModelKey.jwks,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    fieldRules: jwksFieldRules,
     additionalProperties: fieldOverrides
   })
 
@@ -40,7 +59,7 @@ export function buildJwksCollection({ pluginOptions }: { pluginOptions: BetterAu
     custom: {
       betterAuthModelKey: baModelKey.jwks
     },
-    fields: [...collectionFields, ...getTimestampFields()]
+    fields: [...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.jwks === 'function') {

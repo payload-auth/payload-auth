@@ -48,8 +48,8 @@ export function getAfterLoginHook() {
       )
       const filteredSessionData = await prepareSessionData({
         sessionData: { session, user },
-        userCollection,
-        sessionCollection
+        usersCollection: userCollection,
+        sessionsCollection: sessionCollection
       })
       if (filteredSessionData) {
         await setSessionCookie(ctx, filteredSessionData)

@@ -15,18 +15,21 @@ export function getPayloadFieldsFromBetterAuthSchema({
   betterAuthOptions: BetterAuthOptions
   fieldRules?: FieldRule[]
   additionalProperties?: Record<string, (field: FieldAttribute) => Partial<Field>>
-}): any {
+}): Field[] | null {
   const schema = getAuthTables(betterAuthOptions)
 
-  const collection = Object.values(schema).find((collection) => collection.modelName === model)
+  const collection = schema[model]
 
   if (!collection) {
+    console.error(`Collection ${model} not found in BetterAuth schema`)
     return null
   }
 
-  return Object.entries(collection.fields).map(([fieldKey, field]) => {
+  const payloadFields = Object.entries(collection.fields).map(([fieldKey, field]) => {
     return convertBetterAuthFieldToPayloadField({ model, field, fieldKey, fieldRules, additionalProperties })
   })
+
+  return payloadFields
 }
 
 export function convertBetterAuthFieldToPayloadField({

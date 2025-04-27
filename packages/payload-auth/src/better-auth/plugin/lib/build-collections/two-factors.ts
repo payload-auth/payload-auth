@@ -6,35 +6,54 @@ import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-a
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field, CollectionConfig } from 'payload'
+import { FieldRule } from './utils/model-field-transformations'
 
 export function buildTwoFactorsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
   const twoFactorSlug = getDeafultCollectionSlug({ modelKey: baModelKey.twoFactor, pluginOptions })
 
   const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
     user: () => ({
-      admin: { 
-        readOnly: true, 
-        description: 'The user that the two factor authentication secret belongs to' 
+      admin: {
+        readOnly: true,
+        description: 'The user that the two factor authentication secret belongs to'
       }
     }),
     secret: () => ({
       index: true,
-      admin: { 
-        readOnly: true, 
-        description: 'The secret used to generate the TOTP code.' 
+      admin: {
+        readOnly: true,
+        description: 'The secret used to generate the TOTP code.'
       }
     }),
     backupCodes: () => ({
-      admin: { 
-        readOnly: true, 
-        description: 'The backup codes used to recover access to the account if the user loses access to their phone or email' 
+      admin: {
+        readOnly: true,
+        description: 'The backup codes used to recover access to the account if the user loses access to their phone or email'
       }
     })
   }
 
+  const twoFactorFieldRules: FieldRule[] = [
+    {
+      model: baModelKey.twoFactor,
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
     model: baModelKey.twoFactor,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    fieldRules: twoFactorFieldRules,
     additionalProperties: fieldOverrides
   })
 
@@ -52,7 +71,7 @@ export function buildTwoFactorsCollection({ pluginOptions }: { pluginOptions: Be
     custom: {
       betterAuthModelKey: baModelKey.twoFactor
     },
-    fields: [...collectionFields, ...getTimestampFields()]
+    fields: [...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.twoFactors === 'function') {

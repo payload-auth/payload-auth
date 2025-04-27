@@ -6,6 +6,7 @@ import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-a
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field, CollectionConfig } from 'payload'
+import { FieldRule } from './utils/model-field-transformations'
 
 export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
   const ssoProviderSlug = getDeafultCollectionSlug({ modelKey: baModelKey.ssoProvider, pluginOptions })
@@ -25,22 +26,40 @@ export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: 
       admin: { description: 'The user associated with the SSO provider' }
     }),
     providerId: () => ({
-      admin: { 
-        readOnly: true, 
-        description: 'The provider id. Used to identify a provider and to generate a redirect url' 
+      admin: {
+        readOnly: true,
+        description: 'The provider id. Used to identify a provider and to generate a redirect url'
       }
     }),
     organizationId: () => ({
-      admin: { 
-        readOnly: true, 
-        description: 'The organization Id. If provider is linked to an organization' 
+      admin: {
+        readOnly: true,
+        description: 'The organization Id. If provider is linked to an organization'
       }
     })
   }
 
+  const ssoProviderFieldRules: FieldRule[] = [
+    {
+      model: baModelKey.ssoProvider,
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
     model: baModelKey.ssoProvider,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    fieldRules: ssoProviderFieldRules,
     additionalProperties: fieldOverrides
   })
 
@@ -58,7 +77,7 @@ export function buildSsoProvidersCollection({ pluginOptions }: { pluginOptions: 
     custom: {
       betterAuthModelKey: baModelKey.ssoProvider
     },
-    fields: [...collectionFields, ...getTimestampFields()]
+    fields: [...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.ssoProviders === 'function') {

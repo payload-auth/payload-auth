@@ -1,5 +1,5 @@
-import type { Config } from 'payload'
-import { adminRoutes, baModelKey, baModelKeyToSlug, baseSlugs, supportedBAPluginIds } from './constants'
+import { flattenAllFields, FlattenedField, type CollectionConfig, type Config, type Field } from 'payload'
+import { adminRoutes, baModelFieldKeys, baModelKey, baModelKeyToSlug, baseSlugs, supportedBAPluginIds } from './constants'
 import { checkPluginExists } from './helpers/check-plugin-exists'
 import { getMappedCollection } from './helpers/get-collection'
 import { buildCollectionMap } from './lib/build-collections/index'
@@ -8,6 +8,7 @@ import { sanitizeBetterAuthOptions } from './lib/sanitize-better-auth-options/in
 import { setLoginMethods } from './lib/set-login-methods'
 import type { BetterAuthPluginOptions } from './types'
 import { getDeafultCollectionSlug } from './helpers/get-collection-slug'
+import { buildCollectionSchemaMap, getDefaultCollectionSchemaMap } from './helpers/get-collection-schema-map'
 
 export * from './helpers/index'
 export { getPayloadAuth } from './lib/get-payload-auth'
@@ -27,17 +28,32 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
 
     pluginOptions = setLoginMethods({ pluginOptions })
 
-    // Build the collection map
-    const collectionMap = buildCollectionMap({
-      incomingCollections: config.collections ?? [],
+    // note we dont have adminInviations in here because it has no relation to better auth
+    const collectionOverrides = {
+      users: pluginOptions.users?.collectionOverrides,
+      accounts: pluginOptions.accounts?.collectionOverrides,
+      sessions: pluginOptions.sessions?.collectionOverrides,
+      verifications: pluginOptions.verifications?.collectionOverrides,
+      ...pluginOptions.pluginCollectionOverrides
+    }
+
+    const defaultCollectionSchemaMap = getDefaultCollectionSchemaMap(pluginOptions)
+    const collectionSchemaMap = buildCollectionSchemaMap(collectionOverrides, defaultCollectionSchemaMap)
+
+    const sanitizedBetterAuthOptions = sanitizeBetterAuthOptions({
+      config,
+      collectionSchemaMap,
       pluginOptions
     })
 
-    const betterAuthOptions = sanitizeBetterAuthOptions({
-      collectionMap,
+    pluginOptions.betterAuthOptions = sanitizedBetterAuthOptions
+
+    // Build the collection map
+    const collectionMap = buildCollectionMap({
+      collectionSchemaMap,
+      incomingCollections: config.collections ?? [],
       pluginOptions
     })
-    pluginOptions.betterAuthOptions = betterAuthOptions
 
     // Set custom admin components if disableDefaultPayloadAuth is true
     if (pluginOptions.disableDefaultPayloadAuth) {
@@ -93,14 +109,14 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
                 path: 'payload-auth/better-auth/plugin/rsc#ResetPassword'
               }
             },
-            ...(checkPluginExists(betterAuthOptions ?? {}, supportedBAPluginIds.twoFactor) && {
+            ...(checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.twoFactor) && {
               twoFactorVerify: {
                 path: adminRoutes.twoFactorVerify,
                 Component: {
                   path: 'payload-auth/better-auth/plugin/rsc#TwoFactorVerify',
                   serverProps: {
                     pluginOptions: pluginOptions,
-                    verificationsSlug: getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.verification })?.slug
+                    verificationsSlug: collectionSchemaMap[baModelKey.verification].collectionSlug
                   }
                 }
               }
@@ -127,13 +143,13 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
         }
 
         // Initialize and set the betterAuth instance
-        const auth = initBetterAuth<NonNullable<typeof betterAuthOptions.plugins>>({
+        const auth = initBetterAuth<NonNullable<typeof sanitizedBetterAuthOptions.plugins>>({
           payload,
           idType: payload.db.defaultIDType,
           options: {
-            ...betterAuthOptions,
+            ...sanitizedBetterAuthOptions,
             enableDebugLogs: pluginOptions.debug?.enableDebugLogs ?? false,
-            plugins: [...(betterAuthOptions.plugins ?? [])]
+            plugins: [...(sanitizedBetterAuthOptions.plugins ?? [])]
           }
         })
 

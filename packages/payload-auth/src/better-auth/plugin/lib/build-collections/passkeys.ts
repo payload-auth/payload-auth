@@ -6,6 +6,7 @@ import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-a
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field, CollectionConfig } from 'payload'
+import { FieldRule } from './utils/model-field-transformations'
 
 export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
   const passkeySlug = getDeafultCollectionSlug({ modelKey: baModelKey.passkey, pluginOptions })
@@ -43,9 +44,27 @@ export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: Bett
     })
   }
 
+  const passkeyFieldRules: FieldRule[] = [
+    {
+      model: baModelKey.passkey,
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
     model: baModelKey.passkey,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    fieldRules: passkeyFieldRules,
     additionalProperties: fieldOverrides
   })
 
@@ -63,7 +82,7 @@ export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: Bett
     custom: {
       betterAuthModelKey: baModelKey.passkey
     },
-    fields: [...collectionFields, ...getTimestampFields()]
+    fields: [...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.passkeys === 'function') {

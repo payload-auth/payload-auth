@@ -1,11 +1,8 @@
 import { baModelFieldKeys, baModelKey } from '@/better-auth/plugin/constants'
-import type { CollectionConfig } from 'payload'
-import { getMappedCollection, getMappedField } from '../../helpers/get-collection'
+import { CollectionSchemaMap } from '../../helpers/get-collection-schema-map'
+import { getMappedField } from '../../helpers/get-collection'
 
-export function configureTwoFactorPlugin(plugin: any, collectionMap: Record<string, CollectionConfig>): void {
-  const twoFactorCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.twoFactor })
-  const userCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.account })
-  
+export function configureTwoFactorPlugin(plugin: any, collectionSchemaMap: CollectionSchemaMap): void {
   plugin.schema = plugin?.schema ?? {}
 
   Array.from([baModelKey.twoFactor, baModelKey.user]).forEach((key) => {
@@ -14,25 +11,26 @@ export function configureTwoFactorPlugin(plugin: any, collectionMap: Record<stri
 
   plugin.schema = {
     ...plugin?.schema,
-    user: {
-      ...plugin?.schema?.user,
-      modelName: userCollection.slug,
-      fields: {
-        ...(plugin?.schema?.user?.fields ?? {}),
-        userId: {
-          ...(plugin?.schema?.user?.fields?.userId ?? {}),
-          fieldName: getMappedField({ collection: userCollection, betterAuthFieldKey: baModelFieldKeys.twoFactor.userId }).name
-        }
-      }
-    },
+    //TODO: NOT SURE IF THIS IS NEEDED
+    // user: {
+    //   ...plugin?.schema?.user,
+    //   modelName: collectionSchemaMap[baModelKey.user].collectionSlug,
+    //   fields: {
+    //     ...(plugin?.schema?.user?.fields ?? {}),
+    //     userId: {
+    //       ...(plugin?.schema?.user?.fields?.userId ?? {}),
+    //       fieldName: collectionSchemaMap[baModelKey.twoFactor].fields[baModelFieldKeys.twoFactor.userId]
+    //     }
+    //   }
+    // },
     twoFactor: {
       ...(plugin?.schema?.twoFactor ?? {}),
-      modelName: twoFactorCollection.slug,
+      modelName: collectionSchemaMap[baModelKey.twoFactor].collectionSlug,
       fields: {
-      ...(plugin?.schema?.twoFactor?.fields ?? {}),
-      userId: {
-        ...(plugin?.schema?.twoFactor?.fields?.userId ?? {}),
-          fieldName: getMappedField({ collection: twoFactorCollection, betterAuthFieldKey: baModelFieldKeys.twoFactor.userId }).name
+        ...(plugin?.schema?.twoFactor?.fields ?? {}),
+        userId: {
+          ...(plugin?.schema?.twoFactor?.fields?.userId ?? {}),
+          fieldName: collectionSchemaMap[baModelKey.twoFactor].fields[baModelFieldKeys.twoFactor.userId]
         }
       }
     }

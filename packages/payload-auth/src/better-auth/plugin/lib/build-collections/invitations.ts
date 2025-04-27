@@ -6,6 +6,7 @@ import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { BetterAuthPluginOptions } from '../../types'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { FieldRule } from './utils/model-field-transformations'
 
 export function buildInvitationsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
   const invitationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.invitation, pluginOptions })
@@ -38,9 +39,27 @@ export function buildInvitationsCollection({ pluginOptions }: { pluginOptions: B
     })
   }
 
+  const invitationFieldRules: FieldRule[] = [
+    {
+      model: baModelKey.invitation,
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
     model: baModelKey.invitation,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    fieldRules: invitationFieldRules,
     additionalProperties: fieldOverrides
   })
 
@@ -58,7 +77,7 @@ export function buildInvitationsCollection({ pluginOptions }: { pluginOptions: B
     custom: {
       betterAuthModelKey: baModelKey.invitation
     },
-    fields: [...collectionFields, ...getTimestampFields()]
+    fields: [...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.invitations === 'function') {

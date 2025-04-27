@@ -105,6 +105,55 @@ export const baModelKey = {
   jwks: 'jwks'
 } as const
 
+export const baModelFieldKeysToFieldNames = {
+  user: {
+    role: 'role'
+  },
+  account: {
+    userId: 'user'
+  },
+  session: {
+    userId: 'user',
+    activeOrganizationId: 'activeOrganization',
+  },
+  member: {
+    organizationId: 'organization',
+    userId: 'user',
+    teamId: 'team'
+  },
+  invitation: {
+    organizationId: 'organization',
+    inviterId: 'inviter',
+    teamId: 'team'
+  },
+  team: {
+    organizationId: 'organization'
+  },
+  apikey: {
+    userId: 'user'
+  },
+  twoFactor: {
+    userId: 'user'
+  },
+  passkey: {
+    userId: 'user'
+  },
+  ssoProvider: {
+    userId: 'user'
+  },
+  oauthApplication: {
+    userId: 'user'
+  },
+  oauthAccessToken: {
+    userId: 'user',
+    clientId: 'client'
+  },
+  oauthConsent: {
+    userId: 'user',
+    clientId: 'client'
+  }
+} as const
+
 export const baModelFieldKeys = {
   account: {
     userId: 'userId'

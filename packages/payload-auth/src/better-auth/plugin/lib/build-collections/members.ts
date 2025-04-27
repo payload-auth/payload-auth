@@ -6,7 +6,7 @@ import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-a
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field, CollectionConfig } from 'payload'
-
+import { FieldRule } from './utils/model-field-transformations'
 export function buildMembersCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
   const memberSlug = getDeafultCollectionSlug({ modelKey: baModelKey.member, pluginOptions })
 
@@ -28,9 +28,27 @@ export function buildMembersCollection({ pluginOptions }: { pluginOptions: Bette
     })
   }
 
+  const memberFieldRules: FieldRule[] = [
+    {
+      model: baModelKey.member,
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
     model: baModelKey.member,
     betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    fieldRules: memberFieldRules,
     additionalProperties: fieldOverrides
   })
 
@@ -48,7 +66,7 @@ export function buildMembersCollection({ pluginOptions }: { pluginOptions: Bette
     custom: {
       betterAuthModelKey: baModelKey.member
     },
-    fields: [...collectionFields, ...getTimestampFields()]
+    fields: [...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.members === 'function') {
