@@ -1,10 +1,8 @@
-import { getAuthTables, getSchema, type FieldAttribute } from 'better-auth/db'
-import type { BetterAuthOptions, Models } from 'better-auth'
-import type { Field, RelationshipField, TextField, CheckboxField, NumberField, DateField } from 'payload'
-import { getAdditionalFieldProperties } from './model-field-transformations'
-import type { baModelKey } from '../../../constants'
-import type { FieldRule } from './model-field-transformations'
 import { BuildSchema } from '@/better-auth/plugin/types'
+import { type FieldAttribute } from 'better-auth/db'
+import type { Field, RelationshipField } from 'payload'
+import type { FieldRule } from './model-field-transformations'
+import { getAdditionalFieldProperties } from './model-field-transformations'
 
 export function getPayloadFieldsFromBetterAuthSchema({
   schema,
@@ -34,13 +32,14 @@ export function convertBetterAuthFieldToPayloadField({
   additionalProperties?: Record<string, (field: FieldAttribute) => Partial<Field>>
 }): Field {
   const { type, hasMany } = getPayloadFieldPropertiesFromBetterAuthField({ field })
+  const additionalFieldProperties = getAdditionalFieldProperties({ field, fieldKey, fieldRules, additionalProperties })
   const baseField = {
     name: field.fieldName ?? fieldKey,
     type,
     ...(hasMany && { hasMany }),
     ...(field.required && { required: true }),
     ...(field.unique && { unique: true }),
-    ...getAdditionalFieldProperties({ field, fieldKey, fieldRules, additionalProperties }),
+    ...additionalFieldProperties,
     custom: {
       betterAuthFieldKey: fieldKey
     }
@@ -49,7 +48,9 @@ export function convertBetterAuthFieldToPayloadField({
   if (field.references) {
     return {
       ...baseField,
-      relationTo: field.references.model
+      ...('relationTo' in additionalFieldProperties
+        ? { relationTo: additionalFieldProperties.relationTo }
+        : { relationTo: field.references.model })
     } as RelationshipField
   }
 
