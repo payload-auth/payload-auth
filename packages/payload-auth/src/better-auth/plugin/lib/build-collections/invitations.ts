@@ -4,23 +4,24 @@ import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import type { Invitation } from '@/better-auth/generated-types'
 
 export function buildInvitationsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const invitationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.invitation, pluginOptions })
 
-  const fieldOverrides: FieldOverrides = {
+  const fieldOverrides: FieldOverrides<keyof Invitation> = {
     email: () => ({
       index: true,
       admin: { readOnly: true, description: 'The email of the user being invited.' }
     }),
-    inviter: () => ({
+    inviterId: () => ({
       admin: { readOnly: true, description: 'The user who invited the user.' }
     }),
     teamId: () => ({
       index: true,
       admin: { readOnly: true, description: 'The team that the user is being invited to.' }
     }),
-    organization: () => ({
+    organizationId: () => ({
       index: true,
       admin: { readOnly: true, description: 'The organization that the user is being invited to.' }
     }),

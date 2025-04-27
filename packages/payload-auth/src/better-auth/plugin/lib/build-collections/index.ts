@@ -1,27 +1,27 @@
-import type { CollectionConfig, FlattenedField } from 'payload'
-import { baseSlugs, baModelKeyToSlug, baModelKey } from '../../constants'
-import type { BetterAuthPluginOptions } from '../../types'
-import { buildUsersCollection } from './users/index'
-import { buildAccountsCollection } from './accounts/index'
-import { buildSessionsCollection } from './sessions'
-import { buildVerificationsCollection } from './verifications'
-import { buildOrganizationsCollection } from './organizations'
-import { buildMembersCollection } from './members'
-import { buildInvitationsCollection } from './invitations'
-import { buildTeamsCollection } from './teams'
-import { buildJwksCollection } from './jwks'
-import { buildApiKeysCollection } from './api-keys'
-import { buildTwoFactorsCollection } from './two-factors'
-import { buildOauthApplicationsCollection } from './oauth-applications'
-import { buildOauthAccessTokensCollection } from './oauth-access-tokens'
-import { buildOauthConsentsCollection } from './oauth-consents'
-import { buildPasskeysCollection } from './passkeys'
-import { buildSsoProvidersCollection } from './sso-providers'
-import { buildAdminInvitationsCollection } from './admin-invitations'
-import { buildSubscriptionsCollection } from './subscriptions'
-import { getSchema } from 'better-auth/db'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import type { CollectionConfig } from 'payload'
+import { baModelKey, baseSlugs } from '../../constants'
+import { getBetterAuthSchema } from '../../helpers/get-better-auth-schema'
 import { CollectionSchemaMap } from '../../helpers/get-collection-schema-map'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import type { BetterAuthPluginOptions } from '../../types'
+import { buildAccountsCollection } from './accounts/index'
+import { buildAdminInvitationsCollection } from './admin-invitations'
+import { buildApiKeysCollection } from './api-keys'
+import { buildInvitationsCollection } from './invitations'
+import { buildJwksCollection } from './jwks'
+import { buildMembersCollection } from './members'
+import { buildOauthAccessTokensCollection } from './oauth-access-tokens'
+import { buildOauthApplicationsCollection } from './oauth-applications'
+import { buildOauthConsentsCollection } from './oauth-consents'
+import { buildOrganizationsCollection } from './organizations'
+import { buildPasskeysCollection } from './passkeys'
+import { buildSessionsCollection } from './sessions'
+import { buildSsoProvidersCollection } from './sso-providers'
+import { buildSubscriptionsCollection } from './subscriptions'
+import { buildTeamsCollection } from './teams'
+import { buildTwoFactorsCollection } from './two-factors'
+import { buildUsersCollection } from './users/index'
+import { buildVerificationsCollection } from './verifications'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
@@ -35,7 +35,7 @@ export function buildCollectionMap({
   incomingCollections: CollectionConfig[]
   pluginOptions: BetterAuthPluginOptions
 }): Record<string, CollectionConfig> {
-  const schema = getSchema(pluginOptions.betterAuthOptions ?? {})
+  const schema = getBetterAuthSchema(pluginOptions.betterAuthOptions ?? {})
 
   const userSchema = schema[collectionSchemaMap[baModelKey.user]?.collectionSlug]
   const accountSchema = schema[collectionSchemaMap[baModelKey.account]?.collectionSlug]

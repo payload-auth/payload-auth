@@ -8,6 +8,7 @@ import type {
 import type { BasePayload, CollectionConfig, Config, Endpoint, Field, Payload, PayloadRequest } from 'payload'
 import { adminRoutes, baPluginSlugs, loginMethods, socialProviders, supportedBAPluginIds } from './constants'
 import { FieldAttribute } from 'better-auth/db'
+import { CollectionSchemaMap } from './helpers/get-collection-schema-map'
 
 /**
  * BetterAuth options with the following caveats:
@@ -412,6 +413,8 @@ export interface BuildCollectionPropsWithIncoming extends BuildCollectionProps {
   incomingCollections: CollectionConfig[]
 }
 
-export interface FieldOverrides {
-  [key: string]: (field: FieldAttribute) => Partial<Field>
+export type FieldOverrides<K extends string = string> = {
+  [Key in K]?: (field: FieldAttribute) => Partial<Field>
+} & {
+  [key: string]: ((field: FieldAttribute) => Partial<Field>)
 }

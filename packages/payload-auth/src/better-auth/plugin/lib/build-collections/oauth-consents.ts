@@ -1,22 +1,20 @@
-import type { BetterAuthPluginOptions } from '../../types'
-import { baModelKey } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
-import { getAdminAccess } from '../../helpers/get-admin-access'
-import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { FieldAttribute } from 'better-auth/db'
-import type { Field, CollectionConfig } from 'payload'
-import { FieldRule } from './utils/model-field-transformations'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import type { CollectionConfig } from 'payload'
+import { baModelKey } from '../../constants'
+import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { FieldRule } from './utils/model-field-transformations'
+import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { OauthConsent } from '@/better-auth/generated-types'
 
 export function buildOauthConsentsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const oauthConsentSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthConsent, pluginOptions })
 
-  const fieldOverrides: FieldOverrides = {
-    client: () => ({
+  const fieldOverrides: FieldOverrides<keyof OauthConsent> = {
+    clientId: () => ({
       admin: { readOnly: true, description: 'OAuth client associated with the consent' }
     }),
-    user: () => ({
+    userId: () => ({
       admin: { readOnly: true, description: 'User associated with the consent' }
     }),
     scopes: () => ({

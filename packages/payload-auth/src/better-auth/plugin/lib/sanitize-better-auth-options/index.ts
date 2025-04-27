@@ -10,25 +10,34 @@ import { hashPassword, verifyPassword } from './utils/password'
 import { saveToJwtMiddleware } from './utils/save-to-jwt-middleware'
 
 import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
-import type { CollectionConfig, Config, Payload } from 'payload'
-import { getMappedCollection, getMappedField } from '../../helpers/get-collection'
+import type { Config, Payload } from 'payload'
+import { buildCollectionSchemaMap, getDefaultCollectionSchemaMap } from '../../helpers/get-collection-schema-map'
 import { configureTwoFactorPlugin } from './two-factor-plugin'
 import { requireAdminInviteForSignUpMiddleware } from './utils/require-admin-invite-for-sign-up-middleware'
-import { CollectionSchemaMap } from '../../helpers/get-collection-schema-map'
 
 /**
  * Sanitizes the BetterAuth options
  */
 export function sanitizeBetterAuthOptions({
   config,
-  collectionSchemaMap,
   pluginOptions
 }: {
   config: Payload['config'] | Config | Promise<Payload['config'] | Config>
-  collectionSchemaMap: CollectionSchemaMap
   pluginOptions: BetterAuthPluginOptions
 }): SanitizedBetterAuthOptions {
   const baOptions = pluginOptions.betterAuthOptions || {}
+
+  // note we dont have adminInviations in here because it has no relation to better auth
+  const collectionOverrides = {
+    users: pluginOptions.users?.collectionOverrides,
+    accounts: pluginOptions.accounts?.collectionOverrides,
+    sessions: pluginOptions.sessions?.collectionOverrides,
+    verifications: pluginOptions.verifications?.collectionOverrides,
+    ...pluginOptions.pluginCollectionOverrides
+  }
+
+  const defaultCollectionSchemaMap = getDefaultCollectionSchemaMap(pluginOptions)
+  const collectionSchemaMap = buildCollectionSchemaMap(collectionOverrides, defaultCollectionSchemaMap)
 
   // Initialize with base configuration
   let res: SanitizedBetterAuthOptions = {

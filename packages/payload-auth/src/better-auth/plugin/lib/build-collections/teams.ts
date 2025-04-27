@@ -1,18 +1,16 @@
+import type { Team } from '@/better-auth/generated-types'
 import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions, BuildCollectionProps, FieldOverrides } from '../../types'
 import { baModelKey } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
-import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { FieldAttribute } from 'better-auth/db'
-import type { Field } from 'payload'
+import { BuildCollectionProps, FieldOverrides } from '../../types'
 import { FieldRule } from './utils/model-field-transformations'
+import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 
 export function buildTeamsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const teamSlug = getDeafultCollectionSlug({ modelKey: baModelKey.team, pluginOptions })
 
-  const fieldOverrides: FieldOverrides = {
+  const fieldOverrides: FieldOverrides<keyof Team> = {
     name: () => ({
       admin: { description: 'The name of the team.' }
     }),

@@ -4,12 +4,13 @@ import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { CollectionConfig } from 'payload'
+import type { TwoFactor } from '@/better-auth/generated-types'
 
 export function buildTwoFactorsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const twoFactorSlug = getDeafultCollectionSlug({ modelKey: baModelKey.twoFactor, pluginOptions })
 
-  const fieldOverrides: FieldOverrides = {
-    user: () => ({
+  const fieldOverrides: FieldOverrides<keyof TwoFactor> = {
+    userId: () => ({
       admin: {
         readOnly: true,
         description: 'The user that the two factor authentication secret belongs to'

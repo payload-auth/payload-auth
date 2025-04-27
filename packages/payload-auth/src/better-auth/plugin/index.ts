@@ -42,7 +42,6 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
 
     const sanitizedBetterAuthOptions = sanitizeBetterAuthOptions({
       config,
-      collectionSchemaMap,
       pluginOptions
     })
 

@@ -1,15 +1,14 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
 import { baModelKey, defaults } from '@/better-auth/plugin/constants'
-import { getSyncPasswordToUserHook } from './hooks/sync-password-to-user'
-import { isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
-import { getTimestampFields } from '../utils/get-timestamp-fields'
-import { getPayloadFieldsFromBetterAuthSchema } from '../utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
+import type { BuildCollectionPropsWithIncoming, FieldOverrides } from '@/better-auth/plugin/types'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field } from 'payload'
+import { CollectionConfig } from 'payload'
 import { FieldRule } from '../utils/model-field-transformations'
-import type { BuildCollectionPropsWithIncoming } from '@/better-auth/plugin/types'
+import { isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
+import { getPayloadFieldsFromBetterAuthSchema } from '../utils/transform-better-auth-field-to-payload-field'
+import { getSyncPasswordToUserHook } from './hooks/sync-password-to-user'
+import { Account } from '@/better-auth/generated-types'
 
 export function buildAccountsCollection({
   incomingCollections,
@@ -39,7 +38,7 @@ export function buildAccountsCollection({
     }
   ]
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides<keyof Account> = {
     userId: () => ({
       index: true,
       admin: {

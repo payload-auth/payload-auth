@@ -1,18 +1,17 @@
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 import type { FieldAttribute } from 'better-auth/db'
-import type { Field, CollectionConfig } from 'payload'
+import type { CollectionConfig, Field } from 'payload'
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { BetterAuthPluginOptions } from '../../types'
-import { getTimestampFields } from './utils/get-timestamp-fields'
-import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { FieldRule } from './utils/model-field-transformations'
-import type { BuildCollectionProps } from '@/better-auth/plugin/types'
+import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import type { Apikey } from '@/better-auth/generated-types'
 
 export function buildApiKeysCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const apiKeySlug = getDeafultCollectionSlug({ modelKey: baModelKey.apikey, pluginOptions })
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides<keyof Apikey> = {
     name: () => ({
       admin: { readOnly: true, description: 'The name of the API key.' }
     }),
@@ -25,7 +24,7 @@ export function buildApiKeysCollection({ pluginOptions, schema }: BuildCollectio
     key: () => ({
       admin: { readOnly: true, description: 'The hashed API key itself.' }
     }),
-    user: () => ({
+    userId: () => ({
       admin: { readOnly: true, description: 'The user associated with the API key.' }
     }),
     refillInterval: () => ({

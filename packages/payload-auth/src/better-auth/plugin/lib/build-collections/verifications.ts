@@ -5,6 +5,7 @@ import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { BuildCollectionPropsWithIncoming, FieldOverrides } from '../../types'
 import type { CollectionConfig } from 'payload'
 import { FieldRule } from './utils/model-field-transformations'
+import type { Verification } from '@/better-auth/generated-types'
 
 export function buildVerificationsCollection({
   incomingCollections,
@@ -14,7 +15,7 @@ export function buildVerificationsCollection({
   const verificationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.verification, pluginOptions })
   const existingVerificationCollection = incomingCollections.find((collection) => collection.slug === verificationSlug)
 
-  const fieldOverrides: FieldOverrides = {
+  const fieldOverrides: FieldOverrides<keyof Verification> = {
     identifier: () => ({
       index: true,
       admin: {

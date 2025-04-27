@@ -4,11 +4,12 @@ import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-a
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { CollectionConfig } from 'payload'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import { Subscription } from '@/better-auth/generated-types'
 
 export function buildSubscriptionsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const subscriptionsSlug = getDeafultCollectionSlug({ modelKey: baModelKey.subscription, pluginOptions })
 
-  const fieldOverrides: FieldOverrides = {
+  const fieldOverrides: FieldOverrides<keyof Subscription> = {
     plan: () => ({
       index: true,
       admin: { readOnly: true, description: 'The name of the subscription plan' }

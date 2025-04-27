@@ -4,11 +4,12 @@ import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-a
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { CollectionConfig } from 'payload'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import type { Jwks } from '@/better-auth/generated-types'
 
 export function buildJwksCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const jwksSlug = getDeafultCollectionSlug({ modelKey: baModelKey.jwks, pluginOptions })
 
-  const fieldOverrides: FieldOverrides = {
+  const fieldOverrides: FieldOverrides<keyof Jwks> = {
     publicKey: () => ({
       index: true,
       admin: { description: 'The public part of the web key' }

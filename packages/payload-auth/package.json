@@ -77,8 +77,9 @@
     "build": "pnpm clean && pnpm copyfiles && pnpm build:types && pnpm build:swc",
     "copyfiles": "copyfiles -u 1 --exclude \"src/better-auth/adapter/tests/**/*\" \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist",
     "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
-    "build:types": "tsc --project tsconfig.json",
-    "test": "vitest"
+    "build:types": "pnpm generate:better-auth-types && tsc --project tsconfig.json",
+    "test": "vitest",
+    "generate:better-auth-types": "rm -rf src/better-auth/generated-types.ts && tsx src/better-auth/scripts/generate-types.ts"
   },
   "peerDependencies": {
     "@payloadcms/ui": "3.35.1",
@@ -101,7 +102,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "typescript": "5.8.2",
-    "vitest": "^1.0.0"
+    "vitest": "^1.0.0",
+    "tsx": "^3.12.7"
   },
   "dependencies": {
     "@better-auth/stripe": "1.2.7",

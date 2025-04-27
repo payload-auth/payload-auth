@@ -5,11 +5,12 @@ import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { CollectionConfig } from 'payload'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 import type { FieldRule } from './utils/model-field-transformations'
+import type { OauthAccessToken } from '@/better-auth/generated-types'
 
 export function buildOauthAccessTokensCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const oauthAccessTokenSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthAccessToken, pluginOptions })
 
-  const fieldOverrides: FieldOverrides = {
+  const fieldOverrides: FieldOverrides<keyof OauthAccessToken> = {
     accessToken: () => ({
       index: true,
       admin: { readOnly: true, description: 'Access token issued to the client' }
@@ -23,10 +24,10 @@ export function buildOauthAccessTokensCollection({ pluginOptions, schema }: Buil
     refreshTokenExpiresAt: () => ({
       admin: { readOnly: true, description: 'Expiration date of the refresh token' }
     }),
-    client: () => ({
+    clientId: () => ({
       admin: { readOnly: true, description: 'OAuth application associated with the access token' }
     }),
-    user: () => ({
+    userId: () => ({
       admin: { readOnly: true, description: 'User associated with the access token' }
     }),
     scopes: () => ({

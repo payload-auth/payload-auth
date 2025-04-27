@@ -5,6 +5,7 @@ import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-a
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import { FieldRule } from './utils/model-field-transformations'
 import type { BuildCollectionPropsWithIncoming, FieldOverrides } from '@/better-auth/plugin/types'
+import { Session } from '@/better-auth/generated-types'
 
 export function buildSessionsCollection({
   incomingCollections,
@@ -17,7 +18,7 @@ export function buildSessionsCollection({
     | CollectionConfig
     | undefined
 
-  const fieldOverrides: FieldOverrides = {
+  const fieldOverrides: FieldOverrides<keyof Session> = {
     userId: () => ({
       name: baModelKeyToSlug.user,
       saveToJWT: true,
@@ -66,7 +67,7 @@ export function buildSessionsCollection({
 
   const sessionFieldRules: FieldRule[] = [
     {
-      condition: (field) => field.type === 'date',
+      condition: (field) => field.fieldName === 'updatedAt' || field.fieldName === 'createdAt',
       transform: (field) => ({
         ...field,
         saveToJWT: false,
