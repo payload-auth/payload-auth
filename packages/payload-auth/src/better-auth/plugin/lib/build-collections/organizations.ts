@@ -8,8 +8,12 @@ import type { CollectionConfig } from 'payload'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 import type { Organization } from '@/better-auth/generated-types'
 
-export function buildOrganizationsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+export function buildOrganizationsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const organizationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.organization, pluginOptions })
+
+  const existingOrganizationCollection = incomingCollections.find((collection) => collection.slug === organizationSlug) as
+    | CollectionConfig
+    | undefined
 
   const fieldOverrides: FieldOverrides<keyof Organization> = {
     name: () => ({
@@ -34,20 +38,24 @@ export function buildOrganizationsCollection({ pluginOptions, schema }: BuildCol
   })
 
   let organizationCollection: CollectionConfig = {
+    ...existingOrganizationCollection,
     slug: organizationSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: 'name',
       description: 'Organizations are groups of users that share access to certain resources.',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingOrganizationCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingOrganizationCollection?.access ?? {})
     },
     custom: {
+      ...(existingOrganizationCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.organization
     },
-    fields: [...(collectionFields ?? [])]
+    fields: [...(existingOrganizationCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.organizations === 'function') {

@@ -8,8 +8,12 @@ import type { CollectionConfig } from 'payload'
 import type { Invitation } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildInvitationsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+export function buildInvitationsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const invitationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.invitation, pluginOptions })
+
+  const existingInvitationCollection = incomingCollections.find((collection) => collection.slug === invitationSlug) as
+    | CollectionConfig
+    | undefined
 
   const fieldOverrides: FieldOverrides<keyof Invitation> = {
     email: () => ({
@@ -45,20 +49,24 @@ export function buildInvitationsCollection({ pluginOptions, schema }: BuildColle
   })
 
   let invitationCollection: CollectionConfig = {
+    ...existingInvitationCollection,
     slug: invitationSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: 'email',
       description: 'Invitations to join an organization',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingInvitationCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingInvitationCollection?.access ?? {})
     },
     custom: {
+      ...(existingInvitationCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.invitation
     },
-    fields: [...(collectionFields ?? [])]
+    fields: [...(existingInvitationCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.invitations === 'function') {

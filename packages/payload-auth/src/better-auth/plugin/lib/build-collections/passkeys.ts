@@ -8,8 +8,12 @@ import type { CollectionConfig } from 'payload'
 import type { Passkey } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildPasskeysCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+export function buildPasskeysCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const passkeySlug = getDeafultCollectionSlug({ modelKey: baModelKey.passkey, pluginOptions })
+
+  const existingPasskeyCollection = incomingCollections.find((collection) => collection.slug === passkeySlug) as
+    | CollectionConfig
+    | undefined
 
   const fieldOverrides: FieldOverrides<keyof Passkey> = {
     name: () => ({
@@ -50,20 +54,24 @@ export function buildPasskeysCollection({ pluginOptions, schema }: BuildCollecti
   })
 
   let passkeyCollection: CollectionConfig = {
+    ...existingPasskeyCollection,
     slug: passkeySlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: 'name',
       description: 'Passkeys are used to authenticate users',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingPasskeyCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingPasskeyCollection?.access ?? {})
     },
     custom: {
+      ...(existingPasskeyCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.passkey
     },
-    fields: [...(collectionFields ?? [])]
+    fields: [...(existingPasskeyCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.passkeys === 'function') {

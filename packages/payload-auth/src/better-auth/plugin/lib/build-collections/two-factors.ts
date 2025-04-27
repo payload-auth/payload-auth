@@ -8,8 +8,12 @@ import type { CollectionConfig } from 'payload'
 import type { TwoFactor } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '../../types'
 
-export function buildTwoFactorsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+export function buildTwoFactorsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const twoFactorSlug = getDeafultCollectionSlug({ modelKey: baModelKey.twoFactor, pluginOptions })
+
+  const existingTwoFactorCollection = incomingCollections.find((collection) => collection.slug === twoFactorSlug) as
+    | CollectionConfig
+    | undefined
 
   const fieldOverrides: FieldOverrides<keyof TwoFactor> = {
     userId: () => ({
@@ -39,20 +43,24 @@ export function buildTwoFactorsCollection({ pluginOptions, schema }: BuildCollec
   })
 
   let twoFactorCollection: CollectionConfig = {
+    ...existingTwoFactorCollection,
     slug: twoFactorSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: 'secret',
       description: 'Two factor authentication secrets',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingTwoFactorCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingTwoFactorCollection?.access ?? {})
     },
     custom: {
+      ...(existingTwoFactorCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.twoFactor
     },
-    fields: [...(collectionFields ?? [])]
+    fields: [...(existingTwoFactorCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.twoFactors === 'function') {

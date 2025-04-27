@@ -72,7 +72,7 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
                 path: 'payload-auth/better-auth/plugin/rsc#AdminLogin',
                 serverProps: {
                   pluginOptions: pluginOptions,
-                  adminInvitationsSlug: getDeafultCollectionSlug({ modelKey: baseSlugs.adminInvitations, pluginOptions })
+                  adminInvitationsSlug: collectionMap[baseSlugs.adminInvitations].slug
                 }
               }
             },
@@ -82,7 +82,7 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
                 path: 'payload-auth/better-auth/plugin/rsc#AdminSignup',
                 serverProps: {
                   pluginOptions: pluginOptions,
-                  adminInvitationsSlug: getDeafultCollectionSlug({ modelKey: baseSlugs.adminInvitations, pluginOptions })
+                  adminInvitationsSlug: collectionMap[baseSlugs.adminInvitations].slug
                 }
               }
             },

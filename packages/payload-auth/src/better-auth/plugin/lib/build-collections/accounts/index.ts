@@ -8,13 +8,9 @@ import { assertAllSchemaFields } from '../utils/assert-schema-fields'
 import type { CollectionConfig } from 'payload'
 import type { Account } from '@/better-auth/generated-types'
 import type { FieldRule } from '../utils/model-field-transformations'
-import type { BuildCollectionPropsWithIncoming, FieldOverrides } from '@/better-auth/plugin/types'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildAccountsCollection({
-  incomingCollections,
-  pluginOptions,
-  schema
-}: BuildCollectionPropsWithIncoming): CollectionConfig {
+export function buildAccountsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const accountSlug = getDeafultCollectionSlug({ modelKey: baModelKey.account, pluginOptions })
   const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
 
@@ -127,6 +123,7 @@ export function buildAccountsCollection({
       ...(existingAccountCollection?.access ?? {})
     },
     custom: {
+      ...(existingAccountCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.account
     },
     hooks: {

@@ -1,16 +1,18 @@
-import type { BuildCollectionProps, BuildSchema, FieldOverrides } from '@/better-auth/plugin/types'
-import type { FieldAttribute } from 'better-auth/db'
-import { flattenAllFields, type CollectionConfig, type Field } from 'payload'
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import { FieldRule } from './utils/model-field-transformations'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
-import type { Apikey } from '@/better-auth/generated-types'
 import { assertAllSchemaFields } from './utils/assert-schema-fields'
 
-export function buildApiKeysCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+import { type CollectionConfig } from 'payload'
+import type { Apikey } from '@/better-auth/generated-types'
+import type { FieldRule } from './utils/model-field-transformations'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+
+export function buildApiKeysCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const apiKeySlug = getDeafultCollectionSlug({ modelKey: baModelKey.apikey, pluginOptions })
+
+  const existingApiKeyCollection = incomingCollections.find((collection) => collection.slug === apiKeySlug) as CollectionConfig | undefined
 
   const fieldOverrides: FieldOverrides<keyof Apikey> = {
     name: () => ({
@@ -95,20 +97,24 @@ export function buildApiKeysCollection({ pluginOptions, schema }: BuildCollectio
   })
 
   let apiKeyCollection: CollectionConfig = {
+    ...existingApiKeyCollection,
     slug: apiKeySlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: 'name',
       description: 'API keys are used to authenticate requests to the API.',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingApiKeyCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingApiKeyCollection?.access ?? {})
     },
     custom: {
+      ...(existingApiKeyCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.apikey
     },
-    fields: [...(collectionFields ?? [])]
+    fields: [...(existingApiKeyCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.apiKeys === 'function') {

@@ -7,15 +7,14 @@ import { assertAllSchemaFields } from './utils/assert-schema-fields'
 import type { CollectionConfig } from 'payload'
 import type { Verification } from '@/better-auth/generated-types'
 import type { FieldRule } from './utils/model-field-transformations'
-import type { BuildCollectionPropsWithIncoming, FieldOverrides } from '../../types'
+import type { BuildCollectionProps, FieldOverrides } from '../../types'
 
-export function buildVerificationsCollection({
-  incomingCollections,
-  pluginOptions,
-  schema
-}: BuildCollectionPropsWithIncoming): CollectionConfig {
+export function buildVerificationsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const verificationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.verification, pluginOptions })
-  const existingVerificationCollection = incomingCollections.find((collection) => collection.slug === verificationSlug)
+
+  const existingVerificationCollection = incomingCollections.find((collection) => collection.slug === verificationSlug) as
+    | CollectionConfig
+    | undefined
 
   const fieldOverrides: FieldOverrides<keyof Verification> = {
     identifier: () => ({
@@ -62,6 +61,7 @@ export function buildVerificationsCollection({
   })
 
   let verificationCollection: CollectionConfig = {
+    ...existingVerificationCollection,
     slug: verificationSlug,
     admin: {
       useAsTitle: 'identifier',
@@ -71,13 +71,14 @@ export function buildVerificationsCollection({
       hidden: pluginOptions.verifications?.hidden
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingVerificationCollection?.access ?? {})
     },
     custom: {
+      ...(existingVerificationCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.verification
     },
-    fields: [...(existingVerificationCollection?.fields ?? []), ...(collectionFields ?? [])],
-    ...existingVerificationCollection
+    fields: [...(existingVerificationCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.verifications?.collectionOverrides === 'function') {

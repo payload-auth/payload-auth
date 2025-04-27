@@ -8,8 +8,12 @@ import type { CollectionConfig } from 'payload'
 import type { SsoProvider } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildSsoProvidersCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+export function buildSsoProvidersCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const ssoProviderSlug = getDeafultCollectionSlug({ modelKey: baModelKey.ssoProvider, pluginOptions })
+
+  const existingSsoProviderCollection = incomingCollections.find((collection) => collection.slug === ssoProviderSlug) as
+    | CollectionConfig
+    | undefined
 
   const fieldOverrides: FieldOverrides<keyof SsoProvider> = {
     issuer: () => ({
@@ -45,20 +49,24 @@ export function buildSsoProvidersCollection({ pluginOptions, schema }: BuildColl
   })
 
   let ssoProviderCollection: CollectionConfig = {
+    ...existingSsoProviderCollection,
     slug: ssoProviderSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: 'issuer',
       description: 'SSO providers are used to authenticate users with an external provider',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingSsoProviderCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingSsoProviderCollection?.access ?? {})
     },
     custom: {
+      ...(existingSsoProviderCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.ssoProvider
     },
-    fields: [...(collectionFields ?? [])]
+    fields: [...(existingSsoProviderCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.ssoProviders === 'function') {

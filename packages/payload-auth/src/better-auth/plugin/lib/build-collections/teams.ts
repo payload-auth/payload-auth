@@ -9,8 +9,10 @@ import type { Team } from '@/better-auth/generated-types'
 import type { FieldRule } from './utils/model-field-transformations'
 import type { BuildCollectionProps, FieldOverrides } from '../../types'
 
-export function buildTeamsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+export function buildTeamsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const teamSlug = getDeafultCollectionSlug({ modelKey: baModelKey.team, pluginOptions })
+
+  const existingTeamCollection = incomingCollections.find((collection) => collection.slug === teamSlug) as CollectionConfig | undefined
 
   const fieldOverrides: FieldOverrides<keyof Team> = {
     name: () => ({
@@ -47,20 +49,24 @@ export function buildTeamsCollection({ pluginOptions, schema }: BuildCollectionP
   })
 
   let teamCollection: CollectionConfig = {
+    ...existingTeamCollection,
     slug: teamSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: 'name',
       description: 'Teams are groups of users that share access to certain resources.',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingTeamCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingTeamCollection?.access ?? {})
     },
     custom: {
+      ...(existingTeamCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.team
     },
-    fields: [...(collectionFields ?? [])]
+    fields: [...(existingTeamCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.teams === 'function') {

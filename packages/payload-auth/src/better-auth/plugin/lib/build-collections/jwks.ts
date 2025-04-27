@@ -8,8 +8,10 @@ import type { CollectionConfig } from 'payload'
 import type { Jwks } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildJwksCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+export function buildJwksCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const jwksSlug = getDeafultCollectionSlug({ modelKey: baModelKey.jwks, pluginOptions })
+
+  const existingJwksCollection = incomingCollections.find((collection) => collection.slug === jwksSlug) as CollectionConfig | undefined
 
   const fieldOverrides: FieldOverrides<keyof Jwks> = {
     publicKey: () => ({
@@ -27,20 +29,24 @@ export function buildJwksCollection({ pluginOptions, schema }: BuildCollectionPr
   })
 
   let jwksCollection: CollectionConfig = {
+    ...existingJwksCollection,
     slug: jwksSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: 'publicKey',
       description: 'JWKS are used to verify the signature of the JWT token',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingJwksCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingJwksCollection?.access ?? {})
     },
     custom: {
+      ...(existingJwksCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.jwks
     },
-    fields: [...(collectionFields ?? [])]
+    fields: [...(existingJwksCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.jwks === 'function') {

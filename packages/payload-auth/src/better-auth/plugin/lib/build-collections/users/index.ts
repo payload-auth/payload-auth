@@ -24,10 +24,10 @@ import {
 
 import type { CollectionConfig } from 'payload'
 import type { FieldRule } from '../utils/model-field-transformations'
-import type { BuildCollectionPropsWithIncoming, FieldOverrides } from '../../../types'
+import type { BuildCollectionProps, FieldOverrides } from '../../../types'
 import type { User } from '@/better-auth/generated-types'
 
-export function buildUsersCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionPropsWithIncoming): CollectionConfig {
+export function buildUsersCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const userSlug = getDeafultCollectionSlug({ modelKey: baModelKey.user, pluginOptions })
   const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
   const allRoleOptions = getAllRoleOptions(pluginOptions)
@@ -185,6 +185,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, schem
       ...(existingUserCollection?.access ?? {})
     },
     custom: {
+      ...(existingUserCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.user
     },
     endpoints: [

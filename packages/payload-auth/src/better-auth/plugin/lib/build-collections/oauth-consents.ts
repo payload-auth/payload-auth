@@ -9,8 +9,12 @@ import type { OauthConsent } from '@/better-auth/generated-types'
 import type { FieldRule } from './utils/model-field-transformations'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildOauthConsentsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+export function buildOauthConsentsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const oauthConsentSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthConsent, pluginOptions })
+
+  const existingOauthConsentCollection = incomingCollections.find((collection) => collection.slug === oauthConsentSlug) as
+    | CollectionConfig
+    | undefined
 
   const fieldOverrides: FieldOverrides<keyof OauthConsent> = {
     clientId: () => ({
@@ -51,19 +55,23 @@ export function buildOauthConsentsCollection({ pluginOptions, schema }: BuildCol
   })
 
   let oauthConsentCollection: CollectionConfig = {
+    ...existingOauthConsentCollection,
     slug: oauthConsentSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       description: 'OAuth consents are used to store user consents for OAuth clients',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingOauthConsentCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingOauthConsentCollection?.access ?? {})
     },
     custom: {
+      ...(existingOauthConsentCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.oauthConsent
     },
-    fields: [...(collectionFields ?? [])]
+    fields: [...(existingOauthConsentCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.oauthConsents === 'function') {

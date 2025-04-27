@@ -407,14 +407,11 @@ export interface BuildSchema {
 export interface BuildCollectionProps {
   schema: BuildSchema
   pluginOptions: BetterAuthPluginOptions
-}
-
-export interface BuildCollectionPropsWithIncoming extends BuildCollectionProps {
   incomingCollections: CollectionConfig[]
 }
 
 export type FieldOverrides<K extends string = string> = {
   [Key in K]?: (field: FieldAttribute) => Partial<Field>
 } & {
-  [key: string]: ((field: FieldAttribute) => Partial<Field>)
+  [key: string]: (field: FieldAttribute) => Partial<Field>
 }

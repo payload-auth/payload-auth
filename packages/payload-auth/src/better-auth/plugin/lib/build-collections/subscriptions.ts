@@ -8,8 +8,12 @@ import type { CollectionConfig } from 'payload'
 import type { Subscription } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildSubscriptionsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+export function buildSubscriptionsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const subscriptionsSlug = getDeafultCollectionSlug({ modelKey: baModelKey.subscription, pluginOptions })
+
+  const existingSubscriptionCollection = incomingCollections.find((collection) => collection.slug === subscriptionsSlug) as
+    | CollectionConfig
+    | undefined
 
   const fieldOverrides: FieldOverrides<keyof Subscription> = {
     plan: () => ({
@@ -58,19 +62,23 @@ export function buildSubscriptionsCollection({ pluginOptions, schema }: BuildCol
   })
 
   let subscriptionsCollection: CollectionConfig = {
+    ...existingSubscriptionCollection,
     slug: subscriptionsSlug,
     admin: {
       useAsTitle: 'plan',
       description: 'Subscriptions are used to manage the subscriptions of the users',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingSubscriptionCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingSubscriptionCollection?.access ?? {})
     },
     custom: {
+      ...(existingSubscriptionCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.subscription
     },
-    fields: [...(collectionFields ?? [])]
+    fields: [...(existingSubscriptionCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.subscriptions === 'function') {

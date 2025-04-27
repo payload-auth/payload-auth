@@ -9,8 +9,12 @@ import type { OauthApplication } from '@/better-auth/generated-types'
 import type { FieldRule } from './utils/model-field-transformations'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildOauthApplicationsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+export function buildOauthApplicationsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const oauthApplicationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthApplication, pluginOptions })
+
+  const existingOauthApplicationCollection = incomingCollections.find((collection) => collection.slug === oauthApplicationSlug) as
+    | CollectionConfig
+    | undefined
 
   const fieldOverrides: FieldOverrides<keyof OauthApplication> = {
     clientId: () => ({
@@ -69,20 +73,24 @@ export function buildOauthApplicationsCollection({ pluginOptions, schema }: Buil
   })
 
   let oauthApplicationCollection: CollectionConfig = {
+    ...existingOauthApplicationCollection,
     slug: oauthApplicationSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: 'name',
       description: 'OAuth applications are custom OAuth clients',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingOauthApplicationCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingOauthApplicationCollection?.access ?? {})
     },
     custom: {
+      ...(existingOauthApplicationCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.oauthApplication
     },
-    fields: [...(collectionFields ?? [])]
+    fields: [...(existingOauthApplicationCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.oauthApplications === 'function') {

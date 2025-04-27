@@ -7,13 +7,9 @@ import { assertAllSchemaFields } from './utils/assert-schema-fields'
 import type { CollectionConfig } from 'payload'
 import type { Session } from '@/better-auth/generated-types'
 import type { FieldRule } from './utils/model-field-transformations'
-import type { BuildCollectionPropsWithIncoming, FieldOverrides } from '@/better-auth/plugin/types'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildSessionsCollection({
-  incomingCollections,
-  pluginOptions,
-  schema
-}: BuildCollectionPropsWithIncoming): CollectionConfig {
+export function buildSessionsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const sessionSlug = getDeafultCollectionSlug({ modelKey: baModelKey.session, pluginOptions })
 
   const existingSessionCollection = incomingCollections.find((collection) => collection.slug === sessionSlug) as
@@ -90,21 +86,23 @@ export function buildSessionsCollection({
   })
 
   let sessionCollection: CollectionConfig = {
+    ...existingSessionCollection,
     slug: sessionSlug,
     admin: {
-      ...existingSessionCollection?.admin,
       hidden: pluginOptions.sessions?.hidden,
       description: 'Sessions are active sessions for users. They are used to authenticate users with a session token',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingSessionCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingSessionCollection?.access ?? {})
     },
     custom: {
+      ...(existingSessionCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.session
     },
-    fields: [...(existingSessionCollection?.fields ?? []), ...(collectionFields ?? [])],
-    ...existingSessionCollection
+    fields: [...(existingSessionCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.sessions?.collectionOverrides === 'function') {

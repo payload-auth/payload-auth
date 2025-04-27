@@ -9,8 +9,12 @@ import type { FieldRule } from './utils/model-field-transformations'
 import type { OauthAccessToken } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildOauthAccessTokensCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+export function buildOauthAccessTokensCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const oauthAccessTokenSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthAccessToken, pluginOptions })
+
+  const existingOauthAccessTokenCollection = incomingCollections.find((collection) => collection.slug === oauthAccessTokenSlug) as
+    | CollectionConfig
+    | undefined
 
   const fieldOverrides: FieldOverrides<keyof OauthAccessToken> = {
     accessToken: () => ({
@@ -60,20 +64,24 @@ export function buildOauthAccessTokensCollection({ pluginOptions, schema }: Buil
   })
 
   let oauthAccessTokenCollection: CollectionConfig = {
+    ...existingOauthAccessTokenCollection,
     slug: oauthAccessTokenSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: 'accessToken',
       description: 'OAuth access tokens for custom OAuth clients',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingOauthAccessTokenCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingOauthAccessTokenCollection?.access ?? {})
     },
     custom: {
+      ...(existingOauthAccessTokenCollection?.custom ?? {}),
       betterAuthModelKey: baModelKey.oauthAccessToken
     },
-    fields: [...(collectionFields ?? [])]
+    fields: [...(existingOauthAccessTokenCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
   if (typeof pluginOptions.pluginCollectionOverrides?.oauthAccessTokens === 'function') {
