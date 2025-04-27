@@ -1,23 +1,20 @@
-import { BetterAuthPluginOptions } from '../../types'
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { FieldAttribute } from 'better-auth/db'
-import type { Field, CollectionConfig } from 'payload'
+import type { BuildCollectionPropsWithIncoming, FieldOverrides } from '../../types'
+import type { CollectionConfig } from 'payload'
 import { FieldRule } from './utils/model-field-transformations'
 
 export function buildVerificationsCollection({
   incomingCollections,
-  pluginOptions
-}: {
-  incomingCollections: CollectionConfig[]
-  pluginOptions: BetterAuthPluginOptions
-}): CollectionConfig {
+  pluginOptions,
+  schema
+}: BuildCollectionPropsWithIncoming): CollectionConfig {
   const verificationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.verification, pluginOptions })
   const existingVerificationCollection = incomingCollections.find((collection) => collection.slug === verificationSlug)
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides = {
     identifier: () => ({
       index: true,
       admin: {
@@ -41,7 +38,6 @@ export function buildVerificationsCollection({
 
   const verificationFieldRules: FieldRule[] = [
     {
-      model: baModelKey.verification,
       condition: (field) => field.type === 'date',
       transform: (field) => ({
         ...field,
@@ -57,8 +53,7 @@ export function buildVerificationsCollection({
   ]
 
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.verification,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    schema,
     fieldRules: verificationFieldRules,
     additionalProperties: fieldOverrides
   })

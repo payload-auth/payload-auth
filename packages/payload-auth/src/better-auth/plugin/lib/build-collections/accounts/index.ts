@@ -9,14 +9,13 @@ import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-colle
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field } from 'payload'
 import { FieldRule } from '../utils/model-field-transformations'
+import type { BuildCollectionPropsWithIncoming } from '@/better-auth/plugin/types'
 
 export function buildAccountsCollection({
   incomingCollections,
-  pluginOptions
-}: {
-  incomingCollections: CollectionConfig[]
-  pluginOptions: BetterAuthPluginOptions
-}): CollectionConfig {
+  pluginOptions,
+  schema
+}: BuildCollectionPropsWithIncoming): CollectionConfig {
   const accountSlug = getDeafultCollectionSlug({ modelKey: baModelKey.account, pluginOptions })
   const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
 
@@ -26,7 +25,6 @@ export function buildAccountsCollection({
 
   const accountFieldRules: FieldRule[] = [
     {
-      model: baModelKey.account,
       condition: (field) => field.type === 'date',
       transform: (field) => ({
         ...field,
@@ -42,7 +40,7 @@ export function buildAccountsCollection({
   ]
 
   const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
-    user: () => ({
+    userId: () => ({
       index: true,
       admin: {
         readOnly: true,
@@ -108,8 +106,7 @@ export function buildAccountsCollection({
   }
 
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.account,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    schema,
     fieldRules: accountFieldRules,
     additionalProperties: fieldOverrides
   })

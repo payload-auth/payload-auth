@@ -1,5 +1,5 @@
 import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
+import { BetterAuthPluginOptions, BuildCollectionProps, FieldOverrides } from '../../types'
 import { baModelKey } from '../../constants'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
@@ -9,10 +9,10 @@ import type { FieldAttribute } from 'better-auth/db'
 import type { Field } from 'payload'
 import { FieldRule } from './utils/model-field-transformations'
 
-export function buildTeamsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+export function buildTeamsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const teamSlug = getDeafultCollectionSlug({ modelKey: baModelKey.team, pluginOptions })
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides = {
     name: () => ({
       admin: { description: 'The name of the team.' }
     }),
@@ -26,7 +26,6 @@ export function buildTeamsCollection({ pluginOptions }: { pluginOptions: BetterA
 
   const teamFieldRules: FieldRule[] = [
     {
-      model: baModelKey.team,
       condition: (field) => field.type === 'date',
       transform: (field) => ({
         ...field,
@@ -42,8 +41,7 @@ export function buildTeamsCollection({ pluginOptions }: { pluginOptions: BetterA
   ]
 
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.team,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    schema,
     fieldRules: teamFieldRules,
     additionalProperties: fieldOverrides
   })

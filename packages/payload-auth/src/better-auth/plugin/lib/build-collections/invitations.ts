@@ -1,17 +1,14 @@
-import type { FieldAttribute } from 'better-auth/db'
-import type { CollectionConfig, Field } from 'payload'
+import type { CollectionConfig } from 'payload'
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { BetterAuthPluginOptions } from '../../types'
-import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
-import { FieldRule } from './utils/model-field-transformations'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildInvitationsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+export function buildInvitationsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const invitationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.invitation, pluginOptions })
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides = {
     email: () => ({
       index: true,
       admin: { readOnly: true, description: 'The email of the user being invited.' }
@@ -39,27 +36,8 @@ export function buildInvitationsCollection({ pluginOptions }: { pluginOptions: B
     })
   }
 
-  const invitationFieldRules: FieldRule[] = [
-    {
-      model: baModelKey.invitation,
-      condition: (field) => field.type === 'date',
-      transform: (field) => ({
-        ...field,
-        saveToJWT: false,
-        admin: {
-          disableBulkEdit: true,
-          hidden: true
-        },
-        index: true,
-        label: ({ t }: any) => t('general:updatedAt')
-      })
-    }
-  ]
-
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.invitation,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
-    fieldRules: invitationFieldRules,
+    schema,
     additionalProperties: fieldOverrides
   })
 

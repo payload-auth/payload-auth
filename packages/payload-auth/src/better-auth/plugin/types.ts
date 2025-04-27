@@ -5,8 +5,9 @@ import type {
   InferAPI,
   InferPluginTypes
 } from 'better-auth/types'
-import type { BasePayload, CollectionConfig, Config, Endpoint, Payload, PayloadRequest } from 'payload'
+import type { BasePayload, CollectionConfig, Config, Endpoint, Field, Payload, PayloadRequest } from 'payload'
 import { adminRoutes, baPluginSlugs, loginMethods, socialProviders, supportedBAPluginIds } from './constants'
+import { FieldAttribute } from 'better-auth/db'
 
 /**
  * BetterAuth options with the following caveats:
@@ -395,4 +396,22 @@ export type BetterAuthReturn<T extends TPlugins> = Omit<ReturnType<typeof better
 export type BetterAuthFunctionOptions<P extends TPlugins> = Omit<BetterAuthOptions, 'database' | 'plugins'> & {
   enableDebugLogs?: boolean
   plugins: P
+}
+
+export interface BuildSchema {
+  fields: Record<string, FieldAttribute>
+  order: number
+}
+
+export interface BuildCollectionProps {
+  schema: BuildSchema
+  pluginOptions: BetterAuthPluginOptions
+}
+
+export interface BuildCollectionPropsWithIncoming extends BuildCollectionProps {
+  incomingCollections: CollectionConfig[]
+}
+
+export interface FieldOverrides {
+  [key: string]: (field: FieldAttribute) => Partial<Field>
 }

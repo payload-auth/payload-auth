@@ -7,11 +7,12 @@ import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field, CollectionConfig } from 'payload'
 import { FieldRule } from './utils/model-field-transformations'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildOauthConsentsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+export function buildOauthConsentsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const oauthConsentSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthConsent, pluginOptions })
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides = {
     client: () => ({
       admin: { readOnly: true, description: 'OAuth client associated with the consent' }
     }),
@@ -29,7 +30,6 @@ export function buildOauthConsentsCollection({ pluginOptions }: { pluginOptions:
 
   const oauthConsentFieldRules: FieldRule[] = [
     {
-      model: baModelKey.oauthConsent,
       condition: (field) => field.type === 'date',
       transform: (field) => ({
         ...field,
@@ -45,8 +45,7 @@ export function buildOauthConsentsCollection({ pluginOptions }: { pluginOptions:
   ]
 
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.oauthConsent,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    schema,
     fieldRules: oauthConsentFieldRules,
     additionalProperties: fieldOverrides
   })

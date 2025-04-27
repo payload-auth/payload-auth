@@ -1,17 +1,14 @@
-import type { BetterAuthPluginOptions } from '../../types'
 import { baModelKey } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { FieldAttribute } from 'better-auth/db'
-import type { Field, CollectionConfig } from 'payload'
-import { FieldRule } from './utils/model-field-transformations'
+import type { CollectionConfig } from 'payload'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildOrganizationsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+export function buildOrganizationsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const organizationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.organization, pluginOptions })
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides = {
     name: () => ({
       admin: { description: 'The name of the organization.' }
     }),
@@ -28,27 +25,8 @@ export function buildOrganizationsCollection({ pluginOptions }: { pluginOptions:
     })
   }
 
-  const organizationFieldRules: FieldRule[] = [
-    {
-      model: baModelKey.organization,
-      condition: (field) => field.type === 'date',
-      transform: (field) => ({
-        ...field,
-        saveToJWT: false,
-        admin: {
-          disableBulkEdit: true,
-          hidden: true
-        },
-        index: true,
-        label: ({ t }: any) => t('general:updatedAt')
-      })
-    }
-  ]
-
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.organization,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
-    fieldRules: organizationFieldRules,
+    schema,
     additionalProperties: fieldOverrides
   })
 

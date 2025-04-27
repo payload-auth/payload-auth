@@ -1,17 +1,14 @@
-import type { BetterAuthPluginOptions } from '../../types'
+import type { BuildCollectionProps, FieldOverrides } from '../../types'
 import { baModelKey } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { FieldAttribute } from 'better-auth/db'
-import type { Field, CollectionConfig } from 'payload'
-import { FieldRule } from './utils/model-field-transformations'
+import type { CollectionConfig } from 'payload'
 
-export function buildTwoFactorsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+export function buildTwoFactorsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const twoFactorSlug = getDeafultCollectionSlug({ modelKey: baModelKey.twoFactor, pluginOptions })
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides = {
     user: () => ({
       admin: {
         readOnly: true,
@@ -33,27 +30,8 @@ export function buildTwoFactorsCollection({ pluginOptions }: { pluginOptions: Be
     })
   }
 
-  const twoFactorFieldRules: FieldRule[] = [
-    {
-      model: baModelKey.twoFactor,
-      condition: (field) => field.type === 'date',
-      transform: (field) => ({
-        ...field,
-        saveToJWT: false,
-        admin: {
-          disableBulkEdit: true,
-          hidden: true
-        },
-        index: true,
-        label: ({ t }: any) => t('general:updatedAt')
-      })
-    }
-  ]
-
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.twoFactor,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
-    fieldRules: twoFactorFieldRules,
+    schema,
     additionalProperties: fieldOverrides
   })
 

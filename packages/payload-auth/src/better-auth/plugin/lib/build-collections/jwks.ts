@@ -1,17 +1,14 @@
-import type { BetterAuthPluginOptions } from '../../types'
 import { baModelKey } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { FieldAttribute } from 'better-auth/db'
-import type { Field, CollectionConfig } from 'payload'
-import { FieldRule } from './utils/model-field-transformations'
+import type { CollectionConfig } from 'payload'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildJwksCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+export function buildJwksCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const jwksSlug = getDeafultCollectionSlug({ modelKey: baModelKey.jwks, pluginOptions })
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides = {
     publicKey: () => ({
       index: true,
       admin: { description: 'The public part of the web key' }
@@ -21,27 +18,8 @@ export function buildJwksCollection({ pluginOptions }: { pluginOptions: BetterAu
     })
   }
 
-  const jwksFieldRules: FieldRule[] = [
-    {
-      model: baModelKey.jwks,
-      condition: (field) => field.type === 'date',
-      transform: (field) => ({
-        ...field,
-        saveToJWT: false,
-        admin: {
-          disableBulkEdit: true,
-          hidden: true
-        },
-        index: true,
-        label: ({ t }: any) => t('general:updatedAt')
-      })
-    }
-  ]
-
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.jwks,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
-    fieldRules: jwksFieldRules,
+    schema,
     additionalProperties: fieldOverrides
   })
 

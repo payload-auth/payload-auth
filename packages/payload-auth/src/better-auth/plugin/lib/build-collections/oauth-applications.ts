@@ -5,13 +5,14 @@ import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import type { FieldAttribute } from 'better-auth/db'
-import type { Field, CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 import { FieldRule } from './utils/model-field-transformations'
 
-export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+export function buildOauthApplicationsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const oauthApplicationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthApplication, pluginOptions })
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides = {
     clientId: () => ({
       unique: true,
       index: true,
@@ -47,7 +48,6 @@ export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOpti
 
   const oauthApplicationFieldRules: FieldRule[] = [
     {
-      model: baModelKey.oauthApplication,
       condition: (field) => field.type === 'date',
       transform: (field) => ({
         ...field,
@@ -63,8 +63,7 @@ export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOpti
   ]
 
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.oauthApplication,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    schema,
     fieldRules: oauthApplicationFieldRules,
     additionalProperties: fieldOverrides
   })

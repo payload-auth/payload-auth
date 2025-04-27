@@ -3,7 +3,7 @@ import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-colle
 import { CollectionConfig } from 'payload'
 import { baModelKey, defaults, supportedBAPluginIds } from '../../../constants'
 import { getAllRoleOptions } from '../../../helpers/get-all-roles'
-import type { BetterAuthPluginOptions } from '../../../types'
+import type { BetterAuthPluginOptions, BuildCollectionPropsWithIncoming, FieldOverrides } from '../../../types'
 import { isAdminOrCurrentUserUpdateWithAllowedFields, isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
 import { getPayloadFieldsFromBetterAuthSchema } from '../utils/transform-better-auth-field-to-payload-field'
 import { betterAuthStrategy } from './better-auth-strategy'
@@ -26,13 +26,7 @@ import type { FieldRule } from '../utils/model-field-transformations'
 import type { FieldAttribute } from 'better-auth/db'
 import type { Field } from 'payload'
 
-export function buildUsersCollection({
-  incomingCollections,
-  pluginOptions
-}: {
-  incomingCollections: CollectionConfig[]
-  pluginOptions: BetterAuthPluginOptions
-}): CollectionConfig {
+export function buildUsersCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionPropsWithIncoming): CollectionConfig {
   const userSlug = getDeafultCollectionSlug({ modelKey: baModelKey.user, pluginOptions })
   const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
   const allRoleOptions = getAllRoleOptions(pluginOptions)
@@ -44,7 +38,6 @@ export function buildUsersCollection({
 
   const userFieldRules: FieldRule[] = [
     {
-      model: baModelKey.user,
       condition: (field) => field.type === 'date',
       transform: (field) => ({
         ...field,
@@ -59,7 +52,7 @@ export function buildUsersCollection({
     }
   ]
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides = {
     role: (field) => ({
       type: 'select',
       options: allRoleOptions,
@@ -137,8 +130,7 @@ export function buildUsersCollection({
   }
 
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.user,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    schema,
     fieldRules: userFieldRules,
     additionalProperties: fieldOverrides
   })

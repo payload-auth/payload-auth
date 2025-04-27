@@ -1,17 +1,14 @@
-import type { BetterAuthPluginOptions } from '../../types'
 import { baModelKey } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { FieldAttribute } from 'better-auth/db'
-import type { Field, CollectionConfig } from 'payload'
-import { FieldRule } from './utils/model-field-transformations'
+import type { CollectionConfig } from 'payload'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+export function buildPasskeysCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const passkeySlug = getDeafultCollectionSlug({ modelKey: baModelKey.passkey, pluginOptions })
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides = {
     name: () => ({
       admin: { readOnly: true, description: 'The name of the passkey' }
     }),
@@ -44,27 +41,8 @@ export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: Bett
     })
   }
 
-  const passkeyFieldRules: FieldRule[] = [
-    {
-      model: baModelKey.passkey,
-      condition: (field) => field.type === 'date',
-      transform: (field) => ({
-        ...field,
-        saveToJWT: false,
-        admin: {
-          disableBulkEdit: true,
-          hidden: true
-        },
-        index: true,
-        label: ({ t }: any) => t('general:updatedAt')
-      })
-    }
-  ]
-
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.passkey,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
-    fieldRules: passkeyFieldRules,
+    schema,
     additionalProperties: fieldOverrides
   })
 

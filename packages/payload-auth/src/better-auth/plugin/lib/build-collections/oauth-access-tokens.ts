@@ -1,17 +1,15 @@
-import type { BetterAuthPluginOptions } from '../../types'
 import { baModelKey } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { FieldAttribute } from 'better-auth/db'
-import type { Field, CollectionConfig } from 'payload'
-import { FieldRule } from './utils/model-field-transformations'
+import type { CollectionConfig } from 'payload'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import type { FieldRule } from './utils/model-field-transformations'
 
-export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+export function buildOauthAccessTokensCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const oauthAccessTokenSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthAccessToken, pluginOptions })
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides = {
     accessToken: () => ({
       index: true,
       admin: { readOnly: true, description: 'Access token issued to the client' }
@@ -38,7 +36,6 @@ export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOpti
 
   const oauthAccessTokenFieldRules: FieldRule[] = [
     {
-      model: baModelKey.oauthAccessToken,
       condition: (field) => field.type === 'date',
       transform: (field) => ({
         ...field,
@@ -54,8 +51,7 @@ export function buildOauthAccessTokensCollection({ pluginOptions }: { pluginOpti
   ]
 
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.oauthAccessToken,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    schema,
     fieldRules: oauthAccessTokenFieldRules,
     additionalProperties: fieldOverrides
   })

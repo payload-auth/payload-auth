@@ -7,8 +7,9 @@ import type { BetterAuthPluginOptions } from '../../types'
 import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { FieldRule } from './utils/model-field-transformations'
+import type { BuildCollectionProps } from '@/better-auth/plugin/types'
 
-export function buildApiKeysCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+export function buildApiKeysCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const apiKeySlug = getDeafultCollectionSlug({ modelKey: baModelKey.apikey, pluginOptions })
 
   const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
@@ -73,7 +74,6 @@ export function buildApiKeysCollection({ pluginOptions }: { pluginOptions: Bette
 
   const apiKeyFieldRules: FieldRule[] = [
     {
-      model: baModelKey.apikey,
       condition: (field) => field.type === 'date',
       transform: (field) => ({
         ...field,
@@ -89,8 +89,7 @@ export function buildApiKeysCollection({ pluginOptions }: { pluginOptions: Bette
   ]
 
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.apikey,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    schema,
     fieldRules: apiKeyFieldRules,
     additionalProperties: fieldOverrides
   })

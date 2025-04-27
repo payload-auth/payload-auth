@@ -1,45 +1,33 @@
-import { getAuthTables, type FieldAttribute } from 'better-auth/db'
+import { getAuthTables, getSchema, type FieldAttribute } from 'better-auth/db'
 import type { BetterAuthOptions, Models } from 'better-auth'
 import type { Field, RelationshipField, TextField, CheckboxField, NumberField, DateField } from 'payload'
 import { getAdditionalFieldProperties } from './model-field-transformations'
 import type { baModelKey } from '../../../constants'
 import type { FieldRule } from './model-field-transformations'
+import { BuildSchema } from '@/better-auth/plugin/types'
 
 export function getPayloadFieldsFromBetterAuthSchema({
-  model,
-  betterAuthOptions,
+  schema,
   fieldRules = [],
   additionalProperties = {}
 }: {
-  model: keyof typeof baModelKey
-  betterAuthOptions: BetterAuthOptions
+  schema: BuildSchema
   fieldRules?: FieldRule[]
   additionalProperties?: Record<string, (field: FieldAttribute) => Partial<Field>>
 }): Field[] | null {
-  const schema = getAuthTables(betterAuthOptions)
-
-  const collection = schema[model]
-
-  if (!collection) {
-    console.error(`Collection ${model} not found in BetterAuth schema`)
-    return null
-  }
-
-  const payloadFields = Object.entries(collection.fields).map(([fieldKey, field]) => {
-    return convertBetterAuthFieldToPayloadField({ model, field, fieldKey, fieldRules, additionalProperties })
+  const payloadFields = Object.entries(schema.fields).map(([fieldKey, field]) => {
+    return convertBetterAuthFieldToPayloadField({ field, fieldKey, fieldRules, additionalProperties })
   })
 
   return payloadFields
 }
 
 export function convertBetterAuthFieldToPayloadField({
-  model,
   field,
   fieldKey,
   fieldRules = [],
   additionalProperties = {}
 }: {
-  model: keyof typeof baModelKey
   field: FieldAttribute
   fieldKey: string
   fieldRules?: FieldRule[]
@@ -52,7 +40,7 @@ export function convertBetterAuthFieldToPayloadField({
     ...(hasMany && { hasMany }),
     ...(field.required && { required: true }),
     ...(field.unique && { unique: true }),
-    ...getAdditionalFieldProperties({ field, model, fieldKey, fieldRules, additionalProperties }),
+    ...getAdditionalFieldProperties({ field, fieldKey, fieldRules, additionalProperties }),
     custom: {
       betterAuthFieldKey: fieldKey
     }

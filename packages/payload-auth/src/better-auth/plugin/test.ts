@@ -1,4 +1,4 @@
-import type { BetterAuthOptions, BetterAuthPluginOptions } from 'payload-auth/better-auth'
+import type { BetterAuthPluginOptions } from 'payload-auth/better-auth'
 import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
 import { nextCookies } from 'better-auth/next-js'
 import {
@@ -17,12 +17,12 @@ import {
   username
 } from 'better-auth/plugins'
 import { passkey } from 'better-auth/plugins/passkey'
-import { getAuthTables } from 'better-auth/db'
+import { getAuthTables, getSchema } from 'better-auth/db'
 import { stripe } from '@better-auth/stripe'
 import { sso } from 'better-auth/plugins/sso'
 import { baModelFieldKeys, baModelFieldKeysToFieldNames, baModelKeyToSlug } from './constants'
 import { getDefaultCollectionSchemaMap } from './helpers/get-collection-schema-map'
-
+import type { BetterAuthOptions } from 'better-auth'
 export const betterAuthPlugins = [
   username(),
   emailHarmony(),
@@ -116,6 +116,7 @@ export const betterAuthOptions: BetterAuthOptions = {
   },
   plugins: betterAuthPlugins,
   user: {
+    modelName: 'users',
     changeEmail: {
       enabled: true,
       sendChangeEmailVerification: async ({ user, newEmail, url, token }) => {
@@ -150,11 +151,25 @@ export const betterAuthOptions: BetterAuthOptions = {
 }
 
 function test() {
-  const collectionSchemaMap = getDefaultCollectionSchemaMap({ betterAuthOptions })
-  console.log(collectionSchemaMap)
+  //   const collectionSchemaMap = getDefaultCollectionSchemaMap({ betterAuthOptions })
+  //   console.log(collectionSchemaMap)
+
+  const foo = getSchema(betterAuthOptions)
+  // Find all schemas that have createdAt and updatedAt field keys
+  Object.entries(foo).forEach(([schemaName, schema]) => {
+    const fields = schema.fields || {}
+    
+    // Find all fields that have a relationTo property
+    Object.entries(fields).forEach(([fieldName, fieldConfig]) => {
+      if ('references' in fieldConfig) {
+        console.log(`Schema: ${schemaName}, Field: ${fieldName}, RelationTo:`, fieldConfig.references)
+        console.log('Full field configuration:', JSON.stringify(fieldConfig, null, 2))
+      }
+    })
+  })
 }
 
-// test()
+test()
 
 // baModelFieldKeys[key as keyof typeof baModelFieldKeys][
 //   field as keyof (typeof baModelFieldKeys)[keyof typeof baModelFieldKeys]

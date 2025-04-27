@@ -1,17 +1,14 @@
-import { BetterAuthPluginOptions } from '../../types'
 import { baModelKey } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { FieldAttribute } from 'better-auth/db'
-import type { Field, CollectionConfig } from 'payload'
-import { FieldRule } from './utils/model-field-transformations'
+import type { CollectionConfig } from 'payload'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildSubscriptionsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
+export function buildSubscriptionsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const subscriptionsSlug = getDeafultCollectionSlug({ modelKey: baModelKey.subscription, pluginOptions })
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides = {
     plan: () => ({
       index: true,
       admin: { readOnly: true, description: 'The name of the subscription plan' }
@@ -52,27 +49,8 @@ export function buildSubscriptionsCollection({ pluginOptions }: { pluginOptions:
     })
   }
 
-  const subscriptionFieldRules: FieldRule[] = [
-    {
-      model: baModelKey.subscription,
-      condition: (field) => field.type === 'date',
-      transform: (field) => ({
-        ...field,
-        saveToJWT: false,
-        admin: {
-          disableBulkEdit: true,
-          hidden: true
-        },
-        index: true,
-        label: ({ t }: any) => t('general:updatedAt')
-      })
-    }
-  ]
-
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.subscription,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
-    fieldRules: subscriptionFieldRules,
+    schema,
     additionalProperties: fieldOverrides
   })
 

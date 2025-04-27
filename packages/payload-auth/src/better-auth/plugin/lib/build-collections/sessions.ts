@@ -1,29 +1,23 @@
 import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
-import { baModelKey, baModelKeyToSlug } from '../../constants'
+import { baModelKey, baModelKeyToSlug, baseSlugs } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { FieldAttribute } from 'better-auth/db'
-import type { Field } from 'payload'
-import type { Session } from 'better-auth'
 import { FieldRule } from './utils/model-field-transformations'
+import type { BuildCollectionPropsWithIncoming, FieldOverrides } from '@/better-auth/plugin/types'
 
 export function buildSessionsCollection({
   incomingCollections,
-  pluginOptions
-}: {
-  incomingCollections: CollectionConfig[]
-  pluginOptions: BetterAuthPluginOptions
-}): CollectionConfig {
+  pluginOptions,
+  schema
+}: BuildCollectionPropsWithIncoming): CollectionConfig {
   const sessionSlug = getDeafultCollectionSlug({ modelKey: baModelKey.session, pluginOptions })
-  const betterAuthPlugins = pluginOptions.betterAuthOptions?.plugins ?? []
 
   const existingSessionCollection = incomingCollections.find((collection) => collection.slug === sessionSlug) as
     | CollectionConfig
     | undefined
 
-  const fieldOverrides: Partial<Record<keyof Session, (field: FieldAttribute) => Partial<Field>>> = {
+  const fieldOverrides: FieldOverrides = {
     userId: () => ({
       name: baModelKeyToSlug.user,
       saveToJWT: true,
@@ -46,12 +40,32 @@ export function buildSessionsCollection({
     userAgent: () => ({
       saveToJWT: true,
       admin: { readOnly: true, description: 'The user agent information of the device' }
+    }),
+    impersonatedBy: () => ({
+      name: 'impersonatedBy',
+      type: 'relationship',
+      relationTo: pluginOptions.users?.slug ?? baseSlugs.users,
+      required: false,
+      saveToJWT: true,
+      admin: {
+        readOnly: true,
+        description: 'The admin who is impersonating this session'
+      }
+    }),
+    activeOrganizationId: () => ({
+      name: 'activeOrganization',
+      type: 'relationship',
+      saveToJWT: true,
+      relationTo: getDeafultCollectionSlug({ modelKey: baModelKey.organization, pluginOptions }),
+      admin: {
+        readOnly: true,
+        description: 'The currently active organization for the session'
+      }
     })
   }
 
   const sessionFieldRules: FieldRule[] = [
     {
-      model: baModelKey.session,
       condition: (field) => field.type === 'date',
       transform: (field) => ({
         ...field,
@@ -67,8 +81,7 @@ export function buildSessionsCollection({
   ]
 
   const collectionFields = getPayloadFieldsFromBetterAuthSchema({
-    model: baModelKey.session,
-    betterAuthOptions: pluginOptions.betterAuthOptions ?? {},
+    schema,
     fieldRules: sessionFieldRules,
     additionalProperties: fieldOverrides
   })
