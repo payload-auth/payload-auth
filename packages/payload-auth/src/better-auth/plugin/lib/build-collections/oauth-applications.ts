@@ -1,18 +1,18 @@
-import type { BetterAuthPluginOptions } from '../../types'
 import { baModelKey } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
 import { getAdminAccess } from '../../helpers/get-admin-access'
-import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { FieldAttribute } from 'better-auth/db'
+import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
+import { assertAllSchemaFields } from './utils/assert-schema-fields'
+
 import type { CollectionConfig } from 'payload'
+import type { OauthApplication } from '@/better-auth/generated-types'
+import type { FieldRule } from './utils/model-field-transformations'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
-import { FieldRule } from './utils/model-field-transformations'
 
 export function buildOauthApplicationsCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const oauthApplicationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthApplication, pluginOptions })
 
-  const fieldOverrides: FieldOverrides = {
+  const fieldOverrides: FieldOverrides<keyof OauthApplication> = {
     clientId: () => ({
       unique: true,
       index: true,
@@ -90,6 +90,8 @@ export function buildOauthApplicationsCollection({ pluginOptions, schema }: Buil
       collection: oauthApplicationCollection
     })
   }
+
+  assertAllSchemaFields(oauthApplicationCollection, schema)
 
   return oauthApplicationCollection
 }

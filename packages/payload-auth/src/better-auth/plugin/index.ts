@@ -28,21 +28,11 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
 
     pluginOptions = setLoginMethods({ pluginOptions })
 
-    // note we dont have adminInviations in here because it has no relation to better auth
-    const collectionOverrides = {
-      users: pluginOptions.users?.collectionOverrides,
-      accounts: pluginOptions.accounts?.collectionOverrides,
-      sessions: pluginOptions.sessions?.collectionOverrides,
-      verifications: pluginOptions.verifications?.collectionOverrides,
-      ...pluginOptions.pluginCollectionOverrides
-    }
-
-    const defaultCollectionSchemaMap = getDefaultCollectionSchemaMap(pluginOptions)
-    const collectionSchemaMap = buildCollectionSchemaMap(collectionOverrides, defaultCollectionSchemaMap)
-
+    const collectionSchemaMap = buildCollectionSchemaMap(pluginOptions)
     const sanitizedBetterAuthOptions = sanitizeBetterAuthOptions({
       config,
-      pluginOptions
+      pluginOptions,
+      collectionSchemaMap
     })
 
     pluginOptions.betterAuthOptions = sanitizedBetterAuthOptions

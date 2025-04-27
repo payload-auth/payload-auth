@@ -1,9 +1,8 @@
 import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exists'
 import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
-import { CollectionConfig } from 'payload'
 import { baModelKey, defaults, supportedBAPluginIds } from '../../../constants'
 import { getAllRoleOptions } from '../../../helpers/get-all-roles'
-import type { BetterAuthPluginOptions, BuildCollectionPropsWithIncoming, FieldOverrides } from '../../../types'
+import { assertAllSchemaFields } from '../utils/assert-schema-fields'
 import { isAdminOrCurrentUserUpdateWithAllowedFields, isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
 import { getPayloadFieldsFromBetterAuthSchema } from '../utils/transform-better-auth-field-to-payload-field'
 import { betterAuthStrategy } from './better-auth-strategy'
@@ -22,9 +21,11 @@ import {
   getBeforeLoginHook,
   getOnVerifiedChangeHook
 } from './hooks'
+
+import type { CollectionConfig } from 'payload'
 import type { FieldRule } from '../utils/model-field-transformations'
-import type { FieldAttribute } from 'better-auth/db'
-import type { Field } from 'payload'
+import type { BuildCollectionPropsWithIncoming, FieldOverrides } from '../../../types'
+import type { User } from '@/better-auth/generated-types'
 
 export function buildUsersCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionPropsWithIncoming): CollectionConfig {
   const userSlug = getDeafultCollectionSlug({ modelKey: baModelKey.user, pluginOptions })
@@ -52,7 +53,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, schem
     }
   ]
 
-  const fieldOverrides: FieldOverrides = {
+  const fieldOverrides: FieldOverrides<keyof User> = {
     role: (field) => ({
       type: 'select',
       options: allRoleOptions,
@@ -237,6 +238,8 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, schem
       collection: usersCollection
     })
   }
+
+  assertAllSchemaFields(usersCollection, schema)
 
   return usersCollection
 }

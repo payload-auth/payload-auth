@@ -64,10 +64,17 @@ type CollectionOverrides = Record<string, CollectionOverride>
  * @param collectionOverrides - Collection override functions provided in plugin options
  * @returns A collection schema map with default values merged with any overrides
  */
-export function buildCollectionSchemaMap(
-  collectionOverrides: CollectionOverrides,
-  defaultCollectionSchemaMap: CollectionSchemaMap
-): CollectionSchemaMap {
+export function buildCollectionSchemaMap(pluginOptions: BetterAuthPluginOptions): CollectionSchemaMap {
+  const collectionOverrides = {
+    users: pluginOptions.users?.collectionOverrides,
+    accounts: pluginOptions.accounts?.collectionOverrides,
+    sessions: pluginOptions.sessions?.collectionOverrides,
+    verifications: pluginOptions.verifications?.collectionOverrides,
+    ...pluginOptions.pluginCollectionOverrides
+  }
+
+  const defaultCollectionSchemaMap = getDefaultCollectionSchemaMap(pluginOptions)
+
   if (!collectionOverrides || Object.keys(collectionOverrides).length === 0) {
     return { ...defaultCollectionSchemaMap }
   }

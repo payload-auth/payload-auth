@@ -1,15 +1,14 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
 import { baModelKey, defaults } from '@/better-auth/plugin/constants'
-import { getSyncPasswordToUserHook } from './hooks/sync-password-to-user'
-import { isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
-import { getTimestampFields } from '../utils/get-timestamp-fields'
-import { getPayloadFieldsFromBetterAuthSchema } from '../utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
-import type { FieldAttribute } from 'better-auth/db'
-import type { Field } from 'payload'
-import { FieldRule } from '../utils/model-field-transformations'
-import type { BuildCollectionPropsWithIncoming } from '@/better-auth/plugin/types'
+import { isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
+import { getPayloadFieldsFromBetterAuthSchema } from '../utils/transform-better-auth-field-to-payload-field'
+import { getSyncPasswordToUserHook } from './hooks/sync-password-to-user'
+import { assertAllSchemaFields } from '../utils/assert-schema-fields'
+
+import type { CollectionConfig } from 'payload'
+import type { Account } from '@/better-auth/generated-types'
+import type { FieldRule } from '../utils/model-field-transformations'
+import type { BuildCollectionPropsWithIncoming, FieldOverrides } from '@/better-auth/plugin/types'
 
 export function buildAccountsCollection({
   incomingCollections,
@@ -39,7 +38,7 @@ export function buildAccountsCollection({
     }
   ]
 
-  const fieldOverrides: Record<string, (field: FieldAttribute) => Partial<Field>> = {
+  const fieldOverrides: FieldOverrides<keyof Account> = {
     userId: () => ({
       index: true,
       admin: {
@@ -145,6 +144,8 @@ export function buildAccountsCollection({
       collection: accountCollection
     })
   }
+
+  assertAllSchemaFields(accountCollection, schema)
 
   return accountCollection
 }

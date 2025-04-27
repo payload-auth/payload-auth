@@ -2,13 +2,16 @@ import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import { assertAllSchemaFields } from './utils/assert-schema-fields'
+
 import type { CollectionConfig } from 'payload'
+import type { SsoProvider } from '@/better-auth/generated-types'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
 export function buildSsoProvidersCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const ssoProviderSlug = getDeafultCollectionSlug({ modelKey: baModelKey.ssoProvider, pluginOptions })
 
-  const fieldOverrides: FieldOverrides = {
+  const fieldOverrides: FieldOverrides<keyof SsoProvider> = {
     issuer: () => ({
       index: true,
       admin: { description: 'The issuer of the SSO provider' }
@@ -19,7 +22,7 @@ export function buildSsoProvidersCollection({ pluginOptions, schema }: BuildColl
     oidcConfig: () => ({
       admin: { description: 'The OIDC config of the SSO provider' }
     }),
-    user: () => ({
+    userId: () => ({
       admin: { description: 'The user associated with the SSO provider' }
     }),
     providerId: () => ({
@@ -63,6 +66,8 @@ export function buildSsoProvidersCollection({ pluginOptions, schema }: BuildColl
       collection: ssoProviderCollection
     })
   }
+
+  assertAllSchemaFields(ssoProviderCollection, schema)
 
   return ssoProviderCollection
 }

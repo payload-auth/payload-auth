@@ -2,13 +2,16 @@ import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { assertAllSchemaFields } from './utils/assert-schema-fields'
+
 import type { CollectionConfig } from 'payload'
+import type { Jwks } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
 export function buildJwksCollection({ pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const jwksSlug = getDeafultCollectionSlug({ modelKey: baModelKey.jwks, pluginOptions })
 
-  const fieldOverrides: FieldOverrides = {
+  const fieldOverrides: FieldOverrides<keyof Jwks> = {
     publicKey: () => ({
       index: true,
       admin: { description: 'The public part of the web key' }
@@ -45,6 +48,8 @@ export function buildJwksCollection({ pluginOptions, schema }: BuildCollectionPr
       collection: jwksCollection
     })
   }
+
+  assertAllSchemaFields(jwksCollection, schema)
 
   return jwksCollection
 }

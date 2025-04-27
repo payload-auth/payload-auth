@@ -2,9 +2,12 @@ import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getPayloadFieldsFromBetterAuthSchema } from './utils/transform-better-auth-field-to-payload-field'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { BuildCollectionPropsWithIncoming, FieldOverrides } from '../../types'
+import { assertAllSchemaFields } from './utils/assert-schema-fields'
+
 import type { CollectionConfig } from 'payload'
-import { FieldRule } from './utils/model-field-transformations'
+import type { Verification } from '@/better-auth/generated-types'
+import type { FieldRule } from './utils/model-field-transformations'
+import type { BuildCollectionPropsWithIncoming, FieldOverrides } from '../../types'
 
 export function buildVerificationsCollection({
   incomingCollections,
@@ -14,7 +17,7 @@ export function buildVerificationsCollection({
   const verificationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.verification, pluginOptions })
   const existingVerificationCollection = incomingCollections.find((collection) => collection.slug === verificationSlug)
 
-  const fieldOverrides: FieldOverrides = {
+  const fieldOverrides: FieldOverrides<keyof Verification> = {
     identifier: () => ({
       index: true,
       admin: {
@@ -82,6 +85,8 @@ export function buildVerificationsCollection({
       collection: verificationCollection
     })
   }
+
+  assertAllSchemaFields(verificationCollection, schema)
 
   return verificationCollection
 }

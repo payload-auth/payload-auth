@@ -127,6 +127,47 @@ export type PasskeyFields = {
 
 export type Passkey = PasskeyFields
 
+export type OauthApplicationFields = {
+  name?: string
+  icon?: string
+  metadata?: string
+  clientId?: string
+  clientSecret?: string
+  redirectURLs?: string
+  type?: string
+  disabled?: boolean
+  userId?: string
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+export type OauthApplication = OauthApplicationFields
+
+export type OauthAccessTokenFields = {
+  accessToken?: string
+  refreshToken?: string
+  accessTokenExpiresAt?: Date
+  refreshTokenExpiresAt?: Date
+  clientId?: string
+  userId?: string
+  scopes?: string
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+export type OauthAccessToken = OauthAccessTokenFields
+
+export type OauthConsentFields = {
+  clientId?: string
+  userId?: string
+  scopes?: string
+  createdAt?: Date
+  updatedAt?: Date
+  consentGiven?: boolean
+}
+
+export type OauthConsent = OauthConsentFields
+
 export type SsoProviderFields = {
   issuer: string
   oidcConfig?: string
@@ -195,4 +236,18 @@ export type TwoFactorFields = {
 }
 
 export type TwoFactor = TwoFactorFields
+
+export type SubscriptionFields = {
+  plan: string
+  referenceId: string
+  stripeCustomerId?: string
+  stripeSubscriptionId?: string
+  status?: string
+  periodStart?: Date
+  periodEnd?: Date
+  cancelAtPeriodEnd?: boolean
+  seats?: number
+}
+
+export type Subscription = SubscriptionFields
 

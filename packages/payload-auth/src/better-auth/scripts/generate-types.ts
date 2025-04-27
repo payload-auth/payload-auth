@@ -16,6 +16,7 @@ import {
   oneTimeToken,
   openAPI,
   organization,
+  oidcProvider,
   phoneNumber,
   twoFactor,
   username
@@ -42,6 +43,7 @@ const plugins = [
   anonymous(),
   multiSession(),
   oneTimeToken(),
+  oidcProvider({ loginPage: '' }),
   sso(),
   genericOAuth({ config: [{ providerId: 'typescript', clientId: 'typescript', clientSecret: 'typescript' }] }),
   openAPI(),
@@ -49,7 +51,18 @@ const plugins = [
   jwt(),
   twoFactor(),
   phoneNumber(),
-  stripe({ stripeClient: { apiKey: 'typescript' }, stripeWebhookSecret: 'typescript' })
+  stripe({
+    stripeClient: { apiKey: 'typescript' },
+    stripeWebhookSecret: 'typescript',
+    subscription: {
+      enabled: true,
+      plans: [
+        { id: 'basic', name: 'Basic', price: 1000, interval: 'month', currency: 'usd' },
+        { id: 'pro', name: 'Pro', price: 2000, interval: 'month', currency: 'usd' },
+        { id: 'enterprise', name: 'Enterprise', price: 3000, interval: 'month', currency: 'usd' }
+      ]
+    }
+  })
 ]
 
 const betterAuthConfig: SanitizedBetterAuthOptions = {
