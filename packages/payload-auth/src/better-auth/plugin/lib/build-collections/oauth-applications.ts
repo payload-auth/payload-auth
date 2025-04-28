@@ -45,7 +45,7 @@ export function buildOauthApplicationsCollection({ incomingCollections, pluginOp
     icon: () => ({
       admin: { description: 'Icon of the OAuth application' }
     }),
-    user: () => ({
+    userId: () => ({
       admin: { readOnly: true, description: 'ID of the user who owns the client. (optional)' }
     })
   }

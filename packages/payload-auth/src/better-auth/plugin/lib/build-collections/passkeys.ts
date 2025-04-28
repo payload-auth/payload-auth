@@ -23,7 +23,7 @@ export function buildPasskeysCollection({ incomingCollections, pluginOptions, sc
       index: true,
       admin: { readOnly: true, description: 'The public key of the passkey' }
     }),
-    user: () => ({
+    userId: () => ({
       index: true,
       admin: { readOnly: true, description: 'The user that the passkey belongs to' }
     }),

@@ -18,7 +18,7 @@ export function buildTeamsCollection({ incomingCollections, pluginOptions, schem
     name: () => ({
       admin: { description: 'The name of the team.' }
     }),
-    organization: () => ({
+    organizationId: () => ({
       admin: {
         readOnly: true,
         description: 'The organization that the team belongs to.'
