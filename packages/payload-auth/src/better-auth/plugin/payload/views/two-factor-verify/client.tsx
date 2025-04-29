@@ -10,10 +10,20 @@ import { toast, useTranslation } from '@payloadcms/ui'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
 
-export const TwoFactorVerifyForm = ({ redirect, twoFactorDigits = 6 }: { redirect: string; twoFactorDigits?: number }) => {
+export const TwoFactorVerifyForm = ({
+  redirect,
+  twoFactorDigits = 6,
+  baseURL,
+  basePath
+}: {
+  redirect: string
+  twoFactorDigits?: number
+  baseURL?: string
+  basePath?: string
+}) => {
   const { t } = useTranslation()
   const router = useRouter()
-  const authClient = useMemo(() => createAuthClient({ plugins: [twoFactorClient()] }), [])
+  const authClient = useMemo(() => createAuthClient({ baseURL, basePath, plugins: [twoFactorClient()] }), [])
 
   const otpSchema = z.object({
     code: z

@@ -26,6 +26,8 @@ type AdminLoginClientProps = {
   prefillUsername?: string
   searchParams: { [key: string]: string | string[] | undefined }
   loginWithUsername: false | LoginWithUsernameOptions
+  baseURL?: string
+  basePath?: string
 }
 
 const baseClass = 'login__form'
@@ -38,7 +40,19 @@ const LoginForm: React.FC<{
   prefillUsername?: string
   searchParams: { [key: string]: string | string[] | undefined }
   loginWithUsername: false | LoginWithUsernameOptions
-}> = ({ hasUsernamePlugin, hasPasskeyPlugin, prefillEmail, prefillPassword, prefillUsername, searchParams, loginWithUsername }) => {
+  baseURL?: string
+  basePath?: string
+}> = ({
+  hasUsernamePlugin,
+  hasPasskeyPlugin,
+  prefillEmail,
+  prefillPassword,
+  prefillUsername,
+  searchParams,
+  loginWithUsername,
+  baseURL,
+  basePath
+}) => {
   const { config } = useConfig()
   const router = useRouter()
   const adminRoute = valueOrDefaultString(config?.routes?.admin, '/admin')
@@ -53,6 +67,8 @@ const LoginForm: React.FC<{
   const authClient = useMemo(
     () =>
       createAuthClient({
+        baseURL,
+        basePath,
         plugins: [
           usernameClient(),
           twoFactorClient({
@@ -132,12 +148,24 @@ const LoginForm: React.FC<{
         <FormInputWrap className={baseClass}>
           <form.AppField
             name="login"
-            children={(field) => <field.TextField type="text" className="email" autoComplete={`email${hasPasskeyPlugin ? ' webauthn' : ''}`} label={getLoginTypeLabel()} />}
+            children={(field) => (
+              <field.TextField
+                type="text"
+                className="email"
+                autoComplete={`email${hasPasskeyPlugin ? ' webauthn' : ''}`}
+                label={getLoginTypeLabel()}
+              />
+            )}
           />
           <form.AppField
             name="password"
             children={(field) => (
-              <field.TextField type="password" className="password" autoComplete={`password${hasPasskeyPlugin ? ' webauthn' : ''}`} label={t('general:password')} />
+              <field.TextField
+                type="password"
+                className="password"
+                autoComplete={`password${hasPasskeyPlugin ? ' webauthn' : ''}`}
+                label={t('general:password')}
+              />
             )}
           />
         </FormInputWrap>
@@ -159,7 +187,9 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
   prefillPassword,
   prefillUsername,
   searchParams,
-  loginWithUsername
+  loginWithUsername,
+  baseURL,
+  basePath
 }) => {
   return (
     <>
@@ -172,6 +202,8 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
           prefillUsername={prefillUsername}
           searchParams={searchParams}
           loginWithUsername={loginWithUsername}
+          baseURL={baseURL}
+          basePath={basePath}
         />
       )}
       <AdminSocialProviderButtons
@@ -179,6 +211,8 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
         loginMethods={loginMethods}
         setLoading={() => {}}
         redirectUrl={getSafeRedirect(searchParams?.redirect as string, useConfig().config.routes.admin)}
+        baseURL={baseURL}
+        basePath={basePath}
       />
     </>
   )

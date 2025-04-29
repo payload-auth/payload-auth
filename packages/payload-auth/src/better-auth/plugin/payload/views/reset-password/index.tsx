@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { FormHeader } from '@/shared/form/ui/header'
 import { PasswordResetForm } from './client'
 import { adminRoutes } from '@/better-auth/plugin/constants'
+import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
 
 const resetPasswordParamsSchema = z.object({
   token: z.string()
@@ -16,7 +17,11 @@ const resetPasswordParamsSchema = z.object({
 
 const resetPasswordBaseClass = 'reset-password'
 
-const ResetPassword: React.FC<AdminViewServerProps> = ({ initPageResult, searchParams }) => {
+type ResetPasswordProps = AdminViewServerProps & {
+  pluginOptions: BetterAuthPluginOptions
+}
+
+const ResetPassword: React.FC<ResetPasswordProps> = ({ pluginOptions, initPageResult, searchParams }) => {
   const {
     req: {
       user,
@@ -45,8 +50,7 @@ const ResetPassword: React.FC<AdminViewServerProps> = ({ initPageResult, searchP
                       adminRoute,
                       path: accountRoute
                     })}
-                    prefetch={false}
-                  >
+                    prefetch={false}>
                     {children}
                   </Link>
                 )
@@ -73,14 +77,17 @@ const ResetPassword: React.FC<AdminViewServerProps> = ({ initPageResult, searchP
   return (
     <MinimalTemplate className={`${resetPasswordBaseClass}`}>
       <FormHeader heading={t('authentication:resetPassword')} />
-      <PasswordResetForm token={token} />
+      <PasswordResetForm
+        token={token}
+        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        basePath={pluginOptions.betterAuthOptions?.basePath}
+      />
       <Link
         href={formatAdminURL({
           adminRoute,
           path: adminRoutes.adminLogin as `/${string}`
         })}
-        prefetch={false}
-      >
+        prefetch={false}>
         {t('authentication:backToLogin')}
       </Link>
     </MinimalTemplate>

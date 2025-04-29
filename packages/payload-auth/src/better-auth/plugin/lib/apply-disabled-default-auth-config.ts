@@ -26,6 +26,7 @@ export function applyDisabledDefaultAuthConfig({
         {
           path: 'payload-auth/better-auth/plugin/rsc#RSCRedirect',
           serverProps: {
+            pluginOptions,
             redirectTo: `${config.routes?.admin === undefined ? '/admin' : config.routes.admin.replace(/\/+$/, '')}${adminRoutes.adminLogin}`
           }
         },
@@ -43,7 +44,7 @@ export function applyDisabledDefaultAuthConfig({
           Component: {
             path: 'payload-auth/better-auth/plugin/rsc#AdminLogin',
             serverProps: {
-              pluginOptions: pluginOptions,
+              pluginOptions,
               adminInvitationsSlug: collectionMap[baseSlugs.adminInvitations].slug
             }
           }
@@ -53,7 +54,7 @@ export function applyDisabledDefaultAuthConfig({
           Component: {
             path: 'payload-auth/better-auth/plugin/rsc#AdminSignup',
             serverProps: {
-              pluginOptions: pluginOptions,
+              pluginOptions,
               adminInvitationsSlug: collectionMap[baseSlugs.adminInvitations].slug
             }
           }
@@ -61,13 +62,19 @@ export function applyDisabledDefaultAuthConfig({
         forgotPassword: {
           path: adminRoutes.forgotPassword,
           Component: {
-            path: 'payload-auth/better-auth/plugin/rsc#ForgotPassword'
+            path: 'payload-auth/better-auth/plugin/rsc#ForgotPassword',
+            serverProps: {
+              pluginOptions
+            }
           }
         },
         resetPassword: {
           path: adminRoutes.resetPassword,
           Component: {
-            path: 'payload-auth/better-auth/plugin/rsc#ResetPassword'
+            path: 'payload-auth/better-auth/plugin/rsc#ResetPassword',
+            serverProps: {
+              pluginOptions
+            }
           }
         },
         ...(checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.twoFactor) && {
