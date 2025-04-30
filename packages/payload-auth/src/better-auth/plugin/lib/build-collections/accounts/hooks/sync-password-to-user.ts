@@ -1,8 +1,8 @@
-import type { CollectionAfterChangeHook } from 'payload'
+import { baModelKey } from '@/better-auth/plugin/constants'
 import { getMappedField } from '@/better-auth/plugin/helpers/get-collection'
-import { baModelKey, baseSlugs } from '@/better-auth/plugin/constants'
-import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
 import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
+import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+import type { CollectionAfterChangeHook } from 'payload'
 
 export function getSyncPasswordToUserHook(pluginOptions: BetterAuthPluginOptions): CollectionAfterChangeHook {
   const hook: CollectionAfterChangeHook = async ({ doc, req, operation, context }) => {

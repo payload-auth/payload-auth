@@ -8,10 +8,12 @@ import { configureSsoPlugin } from './sso-plugin'
 import { ensurePasswordSetBeforeUserCreate } from './utils/ensure-password-set-before-create'
 import { hashPassword, verifyPassword } from './utils/password'
 import { saveToJwtMiddleware } from './utils/save-to-jwt-middleware'
+import { set } from '../../utils/set'
+import { getSchemaCollectionSlug, getSchemaFieldName } from '../build-collections/utils/collection-schema'
 
 import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
 import type { Config, Payload } from 'payload'
-import { buildCollectionSchemaMap, CollectionSchemaMap, getDefaultCollectionSchemaMap } from '../../helpers/get-collection-schema-map'
+import type { CollectionSchemaMap } from '../../helpers/get-collection-schema-map'
 import { configureTwoFactorPlugin } from './two-factor-plugin'
 import { requireAdminInviteForSignUpMiddleware } from './utils/require-admin-invite-for-sign-up-middleware'
 
@@ -27,49 +29,29 @@ export function sanitizeBetterAuthOptions({
   pluginOptions: BetterAuthPluginOptions
   collectionSchemaMap: CollectionSchemaMap
 }): SanitizedBetterAuthOptions {
-  const baOptions = pluginOptions.betterAuthOptions || {}
 
-  // Initialize with base configuration
-  let res: SanitizedBetterAuthOptions = {
-    ...baOptions,
-    user: {
-      ...(baOptions.user || {}),
-      modelName: collectionSchemaMap[baModelKey.user].collectionSlug,
-      additionalFields: {
-        ...(baOptions.user?.additionalFields || {}),
-        role: {
-          type: 'string',
-          defaultValue: pluginOptions.users?.defaultRole || defaults.userRole,
-          input: false
-        }
-      }
-    },
-    account: {
-      ...(baOptions.account || {}),
-      modelName: collectionSchemaMap[baModelKey.account].collectionSlug,
-      fields: {
-        userId: collectionSchemaMap[baModelKey.account].fields[baModelFieldKeys.account.userId]
-      }
-    },
-    session: {
-      ...(baOptions.session || {}),
-      modelName: collectionSchemaMap[baModelKey.session].collectionSlug,
-      fields: { userId: collectionSchemaMap[baModelKey.session].fields[baModelFieldKeys.session.userId] }
-    },
-    verification: {
-      ...(baOptions.verification || {}),
-      modelName: collectionSchemaMap[baModelKey.verification].collectionSlug
-    },
-    emailAndPassword: {
-      ...(baOptions.emailAndPassword || {}),
-      enabled: baOptions.emailAndPassword?.enabled ?? true
-    }
-  }
+  const betterAuthOptions: SanitizedBetterAuthOptions = { ...(pluginOptions.betterAuthOptions ?? {}) }
+
+  set(betterAuthOptions, `${baModelKey.user}.modelName`, getSchemaCollectionSlug(collectionSchemaMap, baModelKey.user))
+  set(betterAuthOptions, `${baModelKey.user}.additionalFields.role`, {
+    type: 'string',
+    defaultValue: pluginOptions.users?.defaultRole || defaults.userRole,
+    input: false,
+  })
+  
+  const baseModels = [baModelKey.account, baModelKey.session, baModelKey.verification] as const
+  baseModels.forEach((model) =>
+    set(betterAuthOptions, `${model}.modelName`, getSchemaCollectionSlug(collectionSchemaMap, model))
+  )
+  set(betterAuthOptions, `${baModelKey.account}.fields.userId`, getSchemaFieldName(collectionSchemaMap, baModelKey.account, baModelFieldKeys.account.userId))
+  set(betterAuthOptions, `${baModelKey.session}.fields.userId`, getSchemaFieldName(collectionSchemaMap, baModelKey.session, baModelFieldKeys.session.userId))
+
+  set(betterAuthOptions, `emailAndPassword.enabled`, betterAuthOptions.emailAndPassword?.enabled ?? true)
 
   // Configure password handling
-  if (res.emailAndPassword?.enabled && !pluginOptions.disableDefaultPayloadAuth) {
-    res.emailAndPassword.password = {
-      ...(res.emailAndPassword.password || {}),
+  if (betterAuthOptions.emailAndPassword?.enabled && !pluginOptions.disableDefaultPayloadAuth) {
+    betterAuthOptions.emailAndPassword.password = {
+      ...(betterAuthOptions.emailAndPassword.password || {}),
       verify: ({ hash, password }) => verifyPassword({ hash, password }),
       hash: (password) => hashPassword(password)
     }
@@ -77,22 +59,22 @@ export function sanitizeBetterAuthOptions({
 
   // Handle admin invite for sign up
   if (pluginOptions.requireAdminInviteForSignUp) {
-    res.socialProviders = res.socialProviders || {}
-    res.socialProviders = Object.fromEntries(
-      Object.entries(res.socialProviders).map(([provider, config]) => [provider, { ...config, disableImplicitSignUp: true }])
+    betterAuthOptions.socialProviders = betterAuthOptions.socialProviders || {}
+    betterAuthOptions.socialProviders = Object.fromEntries(
+      Object.entries(betterAuthOptions.socialProviders).map(([provider, config]) => [provider, { ...config, disableImplicitSignUp: true }])
     )
     requireAdminInviteForSignUpMiddleware({
-      options: res,
+      options: betterAuthOptions,
       pluginOptions
     })
   }
 
   // Handle verification email blocking
   if (pluginOptions.users?.blockFirstBetterAuthVerificationEmail && !pluginOptions.disableDefaultPayloadAuth) {
-    const originalSendEmail = baOptions?.emailVerification?.sendVerificationEmail
+    const originalSendEmail = betterAuthOptions?.emailVerification?.sendVerificationEmail
     if (typeof originalSendEmail === 'function') {
-      res.emailVerification = res.emailVerification || {}
-      res.emailVerification.sendVerificationEmail = async (data, request) => {
+      betterAuthOptions.emailVerification = betterAuthOptions.emailVerification || {}
+      betterAuthOptions.emailVerification.sendVerificationEmail = async (data, request) => {
         try {
           const timeSinceCreation = new Date().getTime() - new Date(data.user.createdAt).getTime()
           // Skip if user was created less than a minute ago (rely on Payload's email)
@@ -108,18 +90,18 @@ export function sanitizeBetterAuthOptions({
 
   // Ensure password is set before user creation
   if (!pluginOptions.disableDefaultPayloadAuth) {
-    ensurePasswordSetBeforeUserCreate(res)
+    ensurePasswordSetBeforeUserCreate(betterAuthOptions)
   }
 
   // Process plugins
-  if (res.plugins?.length) {
+  if (betterAuthOptions.plugins?.length) {
     try {
       // Filter to only supported plugins
-      const supportedPlugins = res.plugins.filter((plugin) => Object.values(supportedBAPluginIds).includes(plugin.id as any))
+      const supportedPlugins = betterAuthOptions.plugins.filter((plugin) => Object.values(supportedBAPluginIds).includes(plugin.id as any))
 
       // Log warning for unsupported plugins
-      if (supportedPlugins.length !== res.plugins.length) {
-        const unsupportedIds = res.plugins
+      if (supportedPlugins.length !== betterAuthOptions.plugins.length) {
+        const unsupportedIds = betterAuthOptions.plugins
           .filter((p) => !Object.values(supportedBAPluginIds).includes(p.id as any))
           .map((p) => p.id)
           .join(', ')
@@ -143,17 +125,17 @@ export function sanitizeBetterAuthOptions({
         if (configurator) configurator(plugin as any)
       })
 
-      res.plugins = supportedPlugins
+      betterAuthOptions.plugins = supportedPlugins
     } catch (error) {
       throw new Error(`Error sanitizing BetterAuth plugins: ${error}`)
     }
   }
 
   saveToJwtMiddleware({
-    sanitizedOptions: res,
+    sanitizedOptions: betterAuthOptions,
     config,
     collectionSchemaMap
   })
 
-  return res
+  return betterAuthOptions
 }

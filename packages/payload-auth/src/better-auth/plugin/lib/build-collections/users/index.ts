@@ -2,7 +2,7 @@ import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exi
 import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
 import { baModelKey, defaults, supportedBAPluginIds } from '../../../constants'
 import { getAllRoleOptions } from '../../../helpers/get-all-roles'
-import { assertAllSchemaFields } from '../utils/assert-schema-fields'
+import { assertAllSchemaFields } from '../utils/collection-schema'
 import { isAdminOrCurrentUserUpdateWithAllowedFields, isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
 import { getCollectionFields } from '../utils/transform-schema-fields-to-payload'
 import { betterAuthStrategy } from './better-auth-strategy'
@@ -71,7 +71,6 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, schem
       admin: { description: 'Whether the email of the user has been verified' }
     }),
     name: () => ({
-      required: false,
       saveToJWT: true,
       admin: { description: 'Users chosen display name' }
     }),

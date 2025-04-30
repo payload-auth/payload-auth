@@ -1,4 +1,4 @@
-import { baseSlugs } from '@/better-auth/plugin/constants'
+import { baModelKey } from '@/better-auth/plugin/constants'
 import { getMappedCollection, transformCollectionsToCollectionConfigs } from '@/better-auth/plugin/helpers/get-collection'
 import { getPayloadAuth } from '@/better-auth/plugin/lib/get-payload-auth'
 import { cookies } from 'next/headers'
@@ -15,7 +15,7 @@ export function getAfterLogoutHook() {
     const sessionTokenName = authContext.authCookies.sessionToken.name
     const sessionDataName = authContext.authCookies.sessionData.name
     const dontRememberTokenName = authContext.authCookies.dontRememberToken.name
-    const sessionsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baseSlugs.sessions }).slug
+    const sessionsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.session }).slug
 
     try {
       const sessionCookieValue = cookieStore.get(sessionTokenName)?.value

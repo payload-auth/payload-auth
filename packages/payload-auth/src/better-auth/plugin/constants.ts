@@ -66,7 +66,7 @@ export const baseSlugs = {
   sessions: 'sessions',
   accounts: 'accounts',
   verifications: 'verifications',
-  adminInvitations: 'adminInvitations'
+  adminInvitations: 'admin-invitations'
 } as const
 
 export const baPluginSlugs = {

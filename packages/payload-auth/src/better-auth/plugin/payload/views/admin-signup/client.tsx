@@ -50,27 +50,33 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
   const requireUsername = Boolean(loginWithUsername && typeof loginWithUsername === 'object' && loginWithUsername.requireUsername)
 
-  const signupSchema = createSignupSchema({ t, requireUsername })
+  const signupSchema = createSignupSchema({ t, requireUsername, requireConfirmPassword: true })
+  const requireConfirmPassword = true
 
   const form = useAppForm({
     defaultValues: {
+      name: '',
       email: '',
       password: '',
-      confirmPassword: '',
+      ...(requireConfirmPassword ? { confirmPassword: '' } : {}),
       ...(loginWithUsername ? { username: '' } : {})
     },
     onSubmit: async ({ value }) => {
-      const { email, username, password } = value
-      const { data, error } = await tryCatch(
+      const { name, email, username, password } = value
+      let { data, error } = await tryCatch(
         fetch(`${serverURL}${apiRoute}/${userSlug}${adminEndpoints.signup}?token=${adminInviteToken}&redirect=${redirectUrl}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, username, password, adminInviteToken })
+          body: JSON.stringify({ name, email, username, password, adminInviteToken })
         }).then((res) => res.json())
       )
 
       if (error) {
-        toast.error(error.message)
+        toast.error(error?.message || 'An error occurred')
+        return
+      }
+      if (data.error) {
+        toast.error(data?.error?.message?.at(0) || 'An error occurred')
         return
       }
 
@@ -80,7 +86,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
         return
       }
       toast.success(data.message)
-      window.location.href = redirectUrl
+      //window.location.href = redirectUrl
     },
     validators: {
       onSubmit: signupSchema
@@ -105,6 +111,10 @@ const SignupForm: React.FC<SignupFormProps> = ({
         void form.handleSubmit()
       }}>
       <FormInputWrap className="login__form">
+        <form.AppField
+          name="name"
+          children={(field) => <field.TextField type="name" className="text" autoComplete="name" label="Name" required />}
+        />
         <form.AppField
           name="email"
           children={(field) => <field.TextField type="email" className="email" autoComplete="email" label={t('general:email')} required />}

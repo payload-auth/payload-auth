@@ -1,8 +1,14 @@
-import { BuildSchema } from '@/better-auth/plugin/types'
+import type { CollectionSchemaMap } from "@/better-auth/plugin/helpers/get-collection-schema-map";
+import { BuildSchema } from "@/better-auth/types";
+import { CollectionConfig, flattenAllFields } from "payload";
 
-import { flattenAllFields } from 'payload'
+export function getSchemaCollectionSlug(collectionSchemaMap: CollectionSchemaMap, model: string): string {
+  return collectionSchemaMap?.[model as keyof CollectionSchemaMap]?.collectionSlug ?? model;
+}
 
-import { CollectionConfig } from 'payload'
+export function getSchemaFieldName(collectionSchemaMap: CollectionSchemaMap, model: string, fieldName: string): string {
+  return collectionSchemaMap?.[model as keyof CollectionSchemaMap]?.fields[fieldName] ?? fieldName;
+}
 
 /**
  * Asserts that all field keys that exist in the schema exist in the collection
@@ -13,6 +19,7 @@ import { CollectionConfig } from 'payload'
  * @param schema - The schema object containing field definitions
  * @throws {Error} If any required field is missing from the schema
  */
+
 export function assertAllSchemaFields(collection: CollectionConfig, schema: BuildSchema) {
   const missingFields: string[] = []
   const schemaFieldKeys = Object.keys(schema.fields)
@@ -31,3 +38,4 @@ export function assertAllSchemaFields(collection: CollectionConfig, schema: Buil
     throw new Error(`Missing required custom.betterAuthFieldKeys in collection: ${collection.slug} [${missingFields.join(', ')}]`)
   }
 }
+

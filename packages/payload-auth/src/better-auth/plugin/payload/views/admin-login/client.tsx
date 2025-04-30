@@ -55,7 +55,7 @@ const LoginForm: React.FC<{
           usernameClient(),
           twoFactorClient({
             onTwoFactorRedirect() {
-              router.push(`${adminRoute}/two-factor-verify?redirect=${redirectUrl}`)
+              router.push(`${adminRoute}${adminRoutes.twoFactorVerify}?redirect=${redirectUrl}`)
             }
           })
         ]

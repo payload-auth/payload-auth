@@ -3,7 +3,7 @@ import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-colle
 import { isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
 import { getCollectionFields } from '../utils/transform-schema-fields-to-payload'
 import { getSyncPasswordToUserHook } from './hooks/sync-password-to-user'
-import { assertAllSchemaFields } from '../utils/assert-schema-fields'
+import { assertAllSchemaFields } from '../utils/collection-schema'
 
 import type { CollectionConfig } from 'payload'
 import type { Account } from '@/better-auth/generated-types'
