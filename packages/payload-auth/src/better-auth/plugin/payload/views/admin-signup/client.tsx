@@ -12,6 +12,8 @@ import { Form, FormInputWrap } from '@/shared/form/ui'
 import { FormHeader } from '@/shared/form/ui/header'
 import { createSignupSchema } from '@/shared/form/validation'
 import { tryCatch } from '@/shared/utils/try-catch'
+import { createAuthClient } from 'better-auth/react'
+import { usernameClient } from 'better-auth/client/plugins'
 
 type AdminSignupClientProps = {
   adminInviteToken: string
@@ -47,11 +49,12 @@ const SignupForm: React.FC<SignupFormProps> = ({
   } = useConfig()
   const { t } = useTranslation()
   const redirectUrl = getSafeRedirect(searchParams?.redirect as string, adminRoute)
+  const authClient = createAuthClient({ plugins: [usernameClient()] })
 
   const requireUsername = Boolean(loginWithUsername && typeof loginWithUsername === 'object' && loginWithUsername.requireUsername)
 
-  const signupSchema = createSignupSchema({ t, requireUsername, requireConfirmPassword: true })
   const requireConfirmPassword = true
+  const signupSchema = createSignupSchema({ t, requireUsername, requireConfirmPassword })
 
   const form = useAppForm({
     defaultValues: {
@@ -63,30 +66,30 @@ const SignupForm: React.FC<SignupFormProps> = ({
     },
     onSubmit: async ({ value }) => {
       const { name, email, username, password } = value
-      let { data, error } = await tryCatch(
-        fetch(`${serverURL}${apiRoute}/${userSlug}${adminEndpoints.signup}?token=${adminInviteToken}&redirect=${redirectUrl}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, username, password, adminInviteToken })
-        }).then((res) => res.json())
-      )
+      
+      const { data, error } = await authClient.signUp.email({
+        name,
+        email,
+        password,
+        callbackURL: redirectUrl,
+        ...(loginWithUsername && username ? { username } : {}),
+        fetchOptions: {
+          query: {
+            adminInviteToken
+          }
+        }
+      })
+
+      if((error && error.code === 'EMAIL_NOT_VERIFIED') || (!error && !data.token && !data?.user.emailVerified)) {
+        setRequireEmailVerification(true)
+        toast.success('Check your email for a verification link')
+        return
+      }
 
       if (error) {
-        toast.error(error?.message || 'An error occurred')
+        toast.error(error.message)
         return
       }
-      if (data.error) {
-        toast.error(data?.error?.message?.at(0) || 'An error occurred')
-        return
-      }
-
-      if (data.requireEmailVerification) {
-        setRequireEmailVerification(true)
-        toast.success(data.message)
-        return
-      }
-      toast.success(data.message)
-      //window.location.href = redirectUrl
     },
     validators: {
       onSubmit: signupSchema

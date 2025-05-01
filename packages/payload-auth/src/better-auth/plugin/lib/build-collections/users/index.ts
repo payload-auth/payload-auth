@@ -10,8 +10,7 @@ import {
   getGenerateInviteUrlEndpoint,
   getRefreshTokenEndpoint,
   getSendInviteUrlEndpoint,
-  getSetAdminRoleEndpoint,
-  getSignupEndpoint
+  getSetAdminRoleEndpoint
 } from './endpoints'
 import {
   getSyncAccountHook,
@@ -196,8 +195,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, schem
         roles: allRoleOptions,
         pluginOptions
       }),
-      getSendInviteUrlEndpoint(pluginOptions),
-      getSignupEndpoint(pluginOptions)
+      getSendInviteUrlEndpoint(pluginOptions)
     ],
     hooks: {
       beforeChange: [
