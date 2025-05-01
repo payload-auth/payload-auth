@@ -1,79 +1,21 @@
-import { baseCollectionSlugs, betterAuthPluginSlugs } from '@/better-auth/plugin/constants'
+import { baModelKey, baModelFieldKeys } from '@/better-auth/plugin/constants'
+import { CollectionSchemaMap } from '../../helpers/get-collection-schema-map'
+import { set } from '../../utils/set'
+import { getSchemaCollectionSlug, getSchemaFieldName } from '../build-collections/utils/collection-schema'
 
-export function configureOrganizationPlugin(plugin: any) {
-  plugin.schema = plugin?.schema ?? {}
+export function configureOrganizationPlugin(plugin: any, collectionSchemaMap: CollectionSchemaMap): void {
+  const models = [baModelKey.organization, baModelKey.member, baModelKey.invitation, baModelKey.team, baModelKey.session] as const
+  models.forEach((model) => set(plugin, `schema.${model}.modelName`, getSchemaCollectionSlug(collectionSchemaMap, model)))
 
-  // Initialize missing schema objects
-  ;['organization', 'member', 'invitation', 'team', 'session'].forEach((key) => {
-    if (!plugin.schema[key]) plugin.schema[key] = {}
-  })
+  set(plugin, `schema.${baModelKey.member}.fields.organizationId.fieldName`, getSchemaFieldName(collectionSchemaMap, baModelKey.member, baModelFieldKeys.member.organizationId))
+  set(plugin, `schema.${baModelKey.member}.fields.userId.fieldName`, getSchemaFieldName(collectionSchemaMap, baModelKey.member, baModelFieldKeys.member.userId))
+  set(plugin, `schema.${baModelKey.member}.fields.teamId.fieldName`, getSchemaFieldName(collectionSchemaMap, baModelKey.member, baModelFieldKeys.member.teamId))
 
-  plugin.schema = {
-    ...plugin?.schema,
-    organization: {
-      ...plugin?.schema?.organization,
-      modelName: betterAuthPluginSlugs.organizations,
-      fields: { ...(plugin?.schema?.organization?.fields ?? {}) }
-    },
-    member: {
-      ...plugin?.schema?.member,
-      modelName: betterAuthPluginSlugs.members,
-      fields: {
-        ...(plugin?.schema?.member?.fields ?? {}),
-        organizationId: {
-          ...(plugin?.schema?.member?.fields?.organizationId ?? {}),
-          fieldName: 'organization'
-        },
-        userId: {
-          ...(plugin?.schema?.member?.fields?.userId ?? {}),
-          fieldName: 'user'
-        },
-        teamId: {
-          ...(plugin?.schema?.member?.fields?.teamId ?? {}),
-          fieldName: 'team'
-        }
-      }
-    },
-    invitation: {
-      ...plugin.schema.invitation,
-      modelName: betterAuthPluginSlugs.invitations,
-      fields: {
-        ...(plugin?.schema?.invitation?.fields ?? {}),
-        organizationId: {
-          ...(plugin?.schema?.invitation?.fields?.organizationId ?? {}),
-          fieldName: 'organization'
-        },
-        inviterId: {
-          ...(plugin?.schema?.invitation?.fields?.inviterId ?? {}),
-          fieldName: 'inviter'
-        },
-        teamId: {
-          ...(plugin?.schema?.invitation?.fields?.teamId ?? {}),
-          fieldName: 'team'
-        }
-      }
-    },
-    team: {
-      ...plugin.schema.team,
-      modelName: betterAuthPluginSlugs.teams,
-      fields: {
-        ...(plugin?.schema?.team?.fields ?? {}),
-        organizationId: {
-          ...(plugin?.schema?.team?.fields?.organizationId ?? {}),
-          fieldName: 'organization'
-        }
-      }
-    },
-    session: {
-      ...plugin?.schema?.session,
-      modelName: baseCollectionSlugs.sessions,
-      fields: {
-        ...(plugin?.schema?.session?.fields ?? {}),
-        activeOrganizationId: {
-          ...(plugin?.schema?.session?.fields?.activeOrganizationId ?? {}),
-          fieldName: 'activeOrganization'
-        }
-      }
-    }
-  }
+  set(plugin, `schema.${baModelKey.invitation}.fields.organizationId.fieldName`, getSchemaFieldName(collectionSchemaMap, baModelKey.invitation, baModelFieldKeys.invitation.organizationId))
+  set(plugin, `schema.${baModelKey.invitation}.fields.inviterId.fieldName`, getSchemaFieldName(collectionSchemaMap, baModelKey.invitation, baModelFieldKeys.invitation.inviterId))
+  set(plugin, `schema.${baModelKey.invitation}.fields.teamId.fieldName`, getSchemaFieldName(collectionSchemaMap, baModelKey.invitation, baModelFieldKeys.invitation.teamId))
+
+  set(plugin, `schema.${baModelKey.team}.fields.organizationId.fieldName`, getSchemaFieldName(collectionSchemaMap, baModelKey.team, baModelFieldKeys.team.organizationId))
+
+  set(plugin, `schema.${baModelKey.session}.fields.activeOrganizationId.fieldName`, getSchemaFieldName(collectionSchemaMap, baModelKey.session, baModelFieldKeys.session.activeOrganizationId))
 }

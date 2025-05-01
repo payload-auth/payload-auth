@@ -1,6 +1,4 @@
-// import { expo } from '@better-auth/expo'
-import { generateVerifyEmailUrl } from 'payload-auth/better-auth/plugin'
-import type { BetterAuthReturn, BetterAuthOptions, BetterAuthPluginOptions } from 'payload-auth/better-auth'
+import type { BetterAuthOptions, BetterAuthPluginOptions } from 'payload-auth/better-auth'
 import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
 import { nextCookies } from 'better-auth/next-js'
 import {
@@ -17,7 +15,6 @@ import {
   username
 } from 'better-auth/plugins'
 import { passkey } from 'better-auth/plugins/passkey'
-import type { CollectionConfig } from 'payload'
 
 export const betterAuthPlugins = [
   username(),
@@ -26,20 +23,6 @@ export const betterAuthPlugins = [
     defaultCountry: 'CA'
   }),
   twoFactor({
-    schema: {
-      user: {
-        modelName: 'users',
-        fields: {
-          userId: 'user'
-        }
-      },
-      twoFactor: {
-        modelName: 'twoFactors',
-        fields: {
-          userId: 'user'
-        }
-      }
-    },
     issuer: 'payload-better-auth',
     otpOptions: {
       async sendOTP({ user, otp }) {
@@ -87,7 +70,6 @@ export const betterAuthPlugins = [
   }),
   multiSession(),
   openAPI(),
-  // expo(),
   nextCookies()
 ]
 
@@ -164,12 +146,12 @@ export const betterAuthPluginOptions: BetterAuthPluginOptions = {
   disabled: false,
   debug: {
     logTables: false,
-    enableDebugLogs: false
+    enableDebugLogs: true
   },
   disableDefaultPayloadAuth: true,
   hidePluginCollections: true,
   users: {
-    slug: 'users',
+    slug: 'users', // not required, this is the default anyways
     hidden: false,
     adminRoles: ['admin'],
     allowedFields: ['name']

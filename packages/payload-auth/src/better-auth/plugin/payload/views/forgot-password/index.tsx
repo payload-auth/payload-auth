@@ -4,16 +4,11 @@ import { Button, Translation } from '@payloadcms/ui'
 import Link from 'next/link'
 import type { AdminViewServerProps } from 'payload'
 import { formatAdminURL } from 'payload/shared'
-import type { SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
 import { FormHeader } from '@/shared/form/ui/header'
 import { ForgotPasswordForm } from './client'
 import { adminRoutes } from '@/better-auth/plugin/constants'
 
-type ForgotPasswordProps = AdminViewServerProps & {
-  betterAuthOptions: SanitizedBetterAuthOptions
-}
-
-const ForgotPassword: React.FC<ForgotPasswordProps> = ({ initPageResult }) => {
+const ForgotPassword: React.FC<AdminViewServerProps> = ({ initPageResult }) => {
   const {
     req: {
       payload: {
@@ -42,8 +37,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ initPageResult }) => {
                       adminRoute,
                       path: accountRoute
                     })}
-                    prefetch={false}
-                  >
+                    prefetch={false}>
                     {children}
                   </Link>
                 )
@@ -69,8 +63,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ initPageResult }) => {
           adminRoute,
           path: adminRoutes.adminLogin as `/${string}`
         })}
-        prefetch={false}
-      >
+        prefetch={false}>
         {i18n.t('authentication:backToLogin')}
       </Link>
     </MinimalTemplate>

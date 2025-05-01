@@ -1,22 +1,40 @@
-import { z } from 'zod'
-import { addDataAndFileToRequest, commitTransaction, initTransaction, killTransaction, type Endpoint } from 'payload'
+import { adminEndpoints, baseSlugs, supportedBAPluginIds } from '@/better-auth/plugin/constants'
+import { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
 import { status as httpStatus } from 'http-status'
-import { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
+import { addDataAndFileToRequest, commitTransaction, initTransaction, killTransaction, type Endpoint } from 'payload'
+import { z } from 'zod'
 import { getRequestCollection } from '../../../../helpers/get-requst-collection'
-import { adminEndpoints, baseCollectionSlugs } from '@/better-auth/plugin/constants'
+import { createSignupSchema } from '@/shared/form/validation'
+import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exists'
+
+const sendJSON = (data: unknown, status: number): Response =>
+  new Response(JSON.stringify(data), {
+    headers: { 'Content-Type': 'application/json' },
+    status
+  })
+
+const forwardCookies = (from: Response, to: Response): void => {
+  const setCookieHeader = from.headers.get('set-cookie')
+  if (!setCookieHeader) return
+  setCookieHeader.split(',').forEach((c) => to.headers.append('Set-Cookie', c.trim()))
+}
 
 const routeParamsSchema = z.object({
   token: z.string(),
   redirect: z.string().optional()
 })
 
-const signupSchema = z.object({
-  password: z.string(),
-  email: z.string().email(),
-  username: z.string().optional()
-})
+export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions): Endpoint => {
+  const { betterAuthOptions = {}, adminInvitations, users } = pluginOptions
+  const { baseURL = '', basePath = '/api/auth', emailVerification, emailAndPassword } = betterAuthOptions
 
-export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions, betterAuthOptions: SanitizedBetterAuthOptions): Endpoint => {
+  if (!baseURL) {
+    throw new Error('betterAuthOptions.baseURL is required for server‑side authentication calls')
+  }
+
+  const adminInvitationsSlug = adminInvitations?.slug ?? baseSlugs.adminInvitations
+  const usersSlug = users?.slug ?? baseSlugs.users
+
   const endpoint: Endpoint = {
     path: adminEndpoints.signup,
     method: 'post',
@@ -24,131 +42,113 @@ export const getSignupEndpoint = (pluginOptions: BetterAuthPluginOptions, better
       await addDataAndFileToRequest(req)
       const collection = getRequestCollection(req)
       const { t } = req
+
+      const shouldCommit = await initTransaction(req)
+
       try {
-        const shouldCommit = await initTransaction(req)
         const { success: routeParamsSuccess, data: routeParamsData, error: routeParamsError } = routeParamsSchema.safeParse(req.query)
+
         if (!routeParamsSuccess) {
-          return Response.json({ message: routeParamsError.message }, { status: httpStatus.BAD_REQUEST })
+          await killTransaction(req)
+          return sendJSON({ error: 'INVALID_PARAMS', message: routeParamsError.message }, httpStatus.BAD_REQUEST)
         }
-        const invite = await req.payload.find({
-          collection: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
-          where: {
-            token: {
-              equals: routeParamsData.token
-            }
-          },
+
+        const inviteResult = await req.payload.find({
+          collection: adminInvitationsSlug,
+          where: { token: { equals: routeParamsData.token } },
           limit: 1,
           req
         })
-        if (invite.docs.length === 0) {
-          return Response.json({ message: 'Invalid token' }, { status: httpStatus.UNAUTHORIZED })
+
+        const inviteDoc = inviteResult.docs.at(0)
+
+        if (!inviteDoc) {
+          await killTransaction(req)
+          return sendJSON({ error: 'INVALID_TOKEN', message: 'Invalid token' }, httpStatus.UNAUTHORIZED)
         }
-        const inviteRole = invite.docs[0].role as string
-        const schema = signupSchema.safeParse(req.data)
-        if (!schema.success) {
-          return Response.json({ message: schema.error.message }, { status: httpStatus.BAD_REQUEST })
+
+        const hasUsernamePlugin = checkPluginExists(betterAuthOptions, supportedBAPluginIds.username)
+        const supportsLoginWithUsername = hasUsernamePlugin && collection.config?.auth?.loginWithUsername
+        const requireUsername =
+          hasUsernamePlugin &&
+          typeof collection.config?.auth?.loginWithUsername === 'object' &&
+          !!collection.config?.auth?.loginWithUsername?.requireUsername
+
+        const signupSchema = createSignupSchema({ t, requireUsername, requireConfirmPassword: false })
+        const parsedBody = signupSchema.safeParse(req.data)
+
+        if (!parsedBody.success) {
+          await killTransaction(req)
+          const messages = parsedBody.error.issues.map((issue) => issue.message)
+          return sendJSON({ error: { message: messages } }, httpStatus.BAD_REQUEST)
         }
-        const { email, password, username } = schema.data
-        const baseURL = betterAuthOptions.baseURL
-        const basePath = betterAuthOptions.basePath ?? '/api/auth'
+
+        const { name, email, password, username } = parsedBody.data
+
         const authApiURL = `${baseURL}${basePath}`
-        let url = `${authApiURL}/sign-up/email`
-        if (routeParamsData?.token) {
-          url += `?adminInviteToken=${routeParamsData.token}`
+        const url = new URL(`${authApiURL}/sign-up/email`)
+        url.searchParams.set('callbackURL', routeParamsData.redirect ?? `${baseURL}${req.payload.config.routes.admin}`)
+        if (routeParamsData.token) {
+          url.searchParams.set('adminInviteToken', routeParamsData.token)
         }
-        const result = await fetch(url, {
+
+        const apiResponse = await fetch(url.toString(), {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            name: '',
-            email: email,
-            password: password,
-            ...(username ? { username: username } : {}),
-            callbackURL: routeParamsData.redirect ?? `${baseURL}${req.payload.config.routes.admin}`
+            name,
+            email,
+            password,
+            ...(supportsLoginWithUsername && username && { username })
           })
         })
-        const ok = result.ok
 
-        if (!ok) {
-          throw new Error(result.statusText)
+        if (!apiResponse.ok) {
+          throw new Error(apiResponse.statusText)
         }
-        const responseData = await result.json()
+
+        const responseData = await apiResponse.json()
 
         await req.payload.update({
-          collection: pluginOptions.users?.slug ?? baseCollectionSlugs.users,
+          collection: usersSlug,
           id: responseData.user.id,
-          data: {
-            role: inviteRole
-          },
+          data: { role: inviteDoc.role },
           overrideAccess: true,
           req
         })
+
         await req.payload.delete({
-          collection: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
-          where: {
-            token: { equals: invite.docs[0].token }
-          },
+          collection: adminInvitationsSlug,
+          where: { token: { equals: inviteDoc.token } },
           req
         })
 
         const requireEmailVerification =
-          (betterAuthOptions.emailAndPassword?.requireEmailVerification || collection.config.auth.verify) &&
-          !responseData.user.emailVerified
+          (emailAndPassword?.requireEmailVerification || collection.config.auth.verify) && !responseData.user.emailVerified
 
-        const sentEmailVerification = betterAuthOptions.emailVerification?.sendVerificationEmail !== undefined
-
-        let response: Response | null = null
+        const sentEmailVerification = emailVerification?.sendVerificationEmail !== undefined
 
         if (requireEmailVerification) {
-          if (sentEmailVerification) {
-            response = new Response(
-              JSON.stringify({
-                message: t('authentication:verifyYourEmail'),
-                sentEmailVerification,
-                requireEmailVerification
-              }),
-              { status: httpStatus.UNAUTHORIZED }
-            )
-          } else {
-            response = new Response(
-              JSON.stringify({
-                message: t('authentication:verifyYourEmail'),
-                sentEmailVerification,
-                requireEmailVerification
-              }),
-              { status: httpStatus.UNAUTHORIZED }
-            )
-          }
-        } else {
-          response = new Response(
-            JSON.stringify({
-              message: t('authentication:passed'),
-              ...responseData
-            }),
+          const res = sendJSON(
             {
-              status: 200
-            }
+              message: t('authentication:verifyYourEmail'),
+              sentEmailVerification,
+              requireEmailVerification
+            },
+            httpStatus.UNAUTHORIZED
           )
+          forwardCookies(apiResponse, res)
+          if (shouldCommit) await commitTransaction(req)
+          return res
         }
 
-        // Forward all Set-Cookie headers from the original response to our response
-        const setCookieHeader = result.headers.get('set-cookie')
-        if (setCookieHeader) {
-          // Set-Cookie headers are typically returned as a single string with multiple cookies separated by commas
-          const cookies = setCookieHeader.split(',')
-          cookies.forEach((cookie) => {
-            response.headers.append('Set-Cookie', cookie.trim())
-          })
-        }
-        if (shouldCommit) {
-          await commitTransaction(req)
-        }
-        return response
+        const successRes = sendJSON({ message: t('authentication:passed'), ...responseData }, httpStatus.OK)
+        forwardCookies(apiResponse, successRes)
+        if (shouldCommit) await commitTransaction(req)
+        return successRes
       } catch (error: any) {
         await killTransaction(req)
-        return Response.json({ message: error.message }, { status: httpStatus.INTERNAL_SERVER_ERROR })
+        return sendJSON({ message: error.message }, httpStatus.INTERNAL_SERVER_ERROR)
       }
     }
   }

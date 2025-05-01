@@ -1,62 +1,70 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
-import { betterAuthPluginSlugs } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
+import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { assertAllSchemaFields } from './utils/collection-schema'
 
-export function buildOrganizationsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
-  const organizationSlug = betterAuthPluginSlugs.organizations
+import type { CollectionConfig } from 'payload'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import type { Organization } from '@/better-auth/generated-types'
 
-  const organizationCollection: CollectionConfig = {
+export function buildOrganizationsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+  const organizationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.organization, pluginOptions })
+
+  const existingOrganizationCollection = incomingCollections.find((collection) => collection.slug === organizationSlug) as
+    | CollectionConfig
+    | undefined
+
+  const fieldOverrides: FieldOverrides<keyof Organization> = {
+    name: () => ({
+      admin: { description: 'The name of the organization.' }
+    }),
+    slug: () => ({
+      unique: true,
+      index: true,
+      admin: { description: 'The slug of the organization.' }
+    }),
+    logo: () => ({
+      admin: { description: 'The logo of the organization.' }
+    }),
+    metadata: () => ({
+      admin: { description: 'Additional metadata for the organization.' }
+    })
+  }
+
+  const collectionFields = getCollectionFields({
+    schema,
+    additionalProperties: fieldOverrides
+  })
+
+  let organizationCollection: CollectionConfig = {
+    ...existingOrganizationCollection,
     slug: organizationSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: 'name',
       description: 'Organizations are groups of users that share access to certain resources.',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingOrganizationCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingOrganizationCollection?.access ?? {})
     },
-    fields: [
-      {
-        name: 'name',
-        type: 'text',
-        required: true,
-        label: 'Name',
-        admin: {
-          description: 'The name of the organization.'
-        }
-      },
-      {
-        name: 'slug',
-        type: 'text',
-        unique: true,
-        index: true,
-        label: 'Slug',
-        admin: {
-          description: 'The slug of the organization.'
-        }
-      },
-      {
-        name: 'logo',
-        type: 'text',
-        label: 'Logo',
-        admin: {
-          description: 'The logo of the organization.'
-        }
-      },
-      {
-        name: 'metadata',
-        type: 'json',
-        label: 'Metadata',
-        admin: {
-          description: 'Additional metadata for the organization.'
-        }
-      },
-      ...getTimestampFields()
-    ]
+    custom: {
+      ...(existingOrganizationCollection?.custom ?? {}),
+      betterAuthModelKey: baModelKey.organization
+    },
+    fields: [...(existingOrganizationCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
+
+  if (typeof pluginOptions.pluginCollectionOverrides?.organizations === 'function') {
+    organizationCollection = pluginOptions.pluginCollectionOverrides.organizations({
+      collection: organizationCollection
+    })
+  }
+
+  assertAllSchemaFields(organizationCollection, schema)
 
   return organizationCollection
 }

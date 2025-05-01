@@ -1,29 +1,31 @@
+import { baModelKey } from '@/better-auth/plugin/constants'
+import { getMappedField } from '@/better-auth/plugin/helpers/get-collection'
+import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
+import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
 import type { CollectionAfterChangeHook } from 'payload'
-import type { CollectionHookWithBetterAuth } from '@/better-auth/plugin/types'
 
-type CollectionAfterChangeHookWithBetterAuth = CollectionHookWithBetterAuth<CollectionAfterChangeHook>
-
-type SyncPasswordToUserOptions = {
-  userSlug: string
-  accountSlug: string
-}
-
-export const getSyncPasswordToUserHook = (options: SyncPasswordToUserOptions): CollectionAfterChangeHook => {
-  const hook: CollectionAfterChangeHookWithBetterAuth = async ({ doc, req, operation, context }) => {
+export function getSyncPasswordToUserHook(pluginOptions: BetterAuthPluginOptions): CollectionAfterChangeHook {
+  const hook: CollectionAfterChangeHook = async ({ doc, req, operation, context }) => {
     if (context?.syncAccountHook) return doc
 
     if (operation !== 'create' && operation !== 'update') {
       return doc
     }
+    const userSlug = getDeafultCollectionSlug({ pluginOptions, modelKey: baModelKey.user })
+    const accountSlug = getDeafultCollectionSlug({ pluginOptions, modelKey: baModelKey.account })
+    const accountCollection = req.payload.collections[accountSlug]?.config
 
-    const userField = req.payload.betterAuth.options.account?.fields?.userId || 'userId'
+    const userField = getMappedField({
+      collection: accountCollection,
+      betterAuthFieldKey: 'userId'
+    }).name
 
     if (!doc[userField]) {
       return doc
     }
 
     const account = await req.payload.findByID({
-      collection: options.accountSlug,
+      collection: accountSlug,
       id: doc.id,
       depth: 0,
       req,
@@ -40,11 +42,11 @@ export const getSyncPasswordToUserHook = (options: SyncPasswordToUserOptions): C
       return doc
     }
 
-    const userId = typeof doc[userField] === 'string' ? doc[userField] : doc[userField]?.id
+    const userId = typeof doc[userField] === 'object' ? doc[userField]?.id : doc[userField]
 
     try {
       await req.payload.update({
-        collection: options.userSlug,
+        collection: userSlug,
         id: userId,
         data: {
           salt,

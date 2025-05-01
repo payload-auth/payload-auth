@@ -1,15 +1,15 @@
 import React from 'react'
 
 import { z } from 'zod'
-import { Logo } from '../../../../../shared/components/logo'
+import { Logo } from '@/shared/components/logo'
 import { MinimalTemplate } from '@payloadcms/next/templates'
 import { AdminSignupClient } from './client'
-import { FormHeader } from '../../../../../shared/form/ui/header'
-import { baseCollectionSlugs } from '../../../constants'
-import { checkUsernamePlugin } from '../../../helpers/check-username-plugin'
+import { FormHeader } from '@/shared/form/ui/header'
+import { supportedBAPluginIds } from '@/better-auth/plugin/constants'
 
 import type { AdminViewServerProps } from 'payload'
-import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '../../../types'
+import type { BetterAuthPluginOptions } from '../../../types'
+import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exists'
 
 //  Avoid the need for custom styles
 const baseClass = 'login'
@@ -18,10 +18,9 @@ const searchParamsSchema = z.object({
   token: z.string()
 })
 
-type AdminSignupProps = AdminViewServerProps & {
-  defaultAdminRole: string
+interface AdminSignupProps extends AdminViewServerProps {
+  adminInvitationsSlug: string
   pluginOptions: BetterAuthPluginOptions
-  betterAuthOptions: SanitizedBetterAuthOptions
 }
 
 const AdminSignup: React.FC<AdminSignupProps> = async ({
@@ -29,7 +28,7 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
   params,
   searchParams,
   pluginOptions,
-  betterAuthOptions
+  adminInvitationsSlug
 }: AdminSignupProps) => {
   const {
     locale,
@@ -54,7 +53,7 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
     hasInvalidToken = true
   } else {
     const { totalDocs: isValidInvite } = await req.payload.count({
-      collection: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
+      collection: adminInvitationsSlug,
       where: { token: { equals: data.token } }
     })
     if (!isValidInvite) {
@@ -63,7 +62,7 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
   }
 
   const loginMethods = pluginOptions.admin?.loginMethods ?? []
-  const hasUsernamePlugin = checkUsernamePlugin(betterAuthOptions)
+  const hasUsernamePlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.username)
   const loginWithUsername = collections?.[userSlug]?.config.auth.loginWithUsername
   const canLoginWithUsername = (hasUsernamePlugin && loginWithUsername) ?? false
 

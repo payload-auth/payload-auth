@@ -2,17 +2,15 @@
 
 import { useConfig, toast, useTranslation } from '@payloadcms/ui'
 import React, { useState } from 'react'
-import type { LoginMethod } from '../../../types'
-import { AdminSocialProviderButtons } from '../../components/social-provider-buttons'
-import { getSafeRedirect } from '../../utils/get-safe-redirect'
+import type { LoginMethod } from '@/better-auth/plugin/types'
+import { AdminSocialProviderButtons } from '@/better-auth/plugin/payload/components/social-provider-buttons'
+import { getSafeRedirect } from '@/better-auth/plugin/payload/utils/get-safe-redirect'
 import { adminEndpoints } from '@/better-auth/plugin/constants'
 import type { LoginWithUsernameOptions } from 'payload'
 import { useAppForm } from '@/shared/form'
 import { Form, FormInputWrap } from '@/shared/form/ui'
 import { FormHeader } from '@/shared/form/ui/header'
 import { createSignupSchema } from '@/shared/form/validation'
-import { usernameClient } from 'better-auth/client/plugins'
-import { createAuthClient } from 'better-auth/react'
 import { tryCatch } from '@/shared/utils/try-catch'
 
 type AdminSignupClientProps = {
@@ -52,37 +50,43 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
   const requireUsername = Boolean(loginWithUsername && typeof loginWithUsername === 'object' && loginWithUsername.requireUsername)
 
-  const signupSchema = createSignupSchema({ t, requireUsername })
+  const signupSchema = createSignupSchema({ t, requireUsername, requireConfirmPassword: true })
+  const requireConfirmPassword = true
 
   const form = useAppForm({
     defaultValues: {
+      name: '',
       email: '',
       password: '',
-      confirmPassword: '',
+      ...(requireConfirmPassword ? { confirmPassword: '' } : {}),
       ...(loginWithUsername ? { username: '' } : {})
     },
     onSubmit: async ({ value }) => {
-      const { email, username, password } = value
-      const { data, error } = await tryCatch(
+      const { name, email, username, password } = value
+      let { data, error } = await tryCatch(
         fetch(`${serverURL}${apiRoute}/${userSlug}${adminEndpoints.signup}?token=${adminInviteToken}&redirect=${redirectUrl}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, username, password, adminInviteToken })
+          body: JSON.stringify({ name, email, username, password, adminInviteToken })
         }).then((res) => res.json())
       )
 
       if (error) {
-        toast.error(error.message)
-        return;
+        toast.error(error?.message || 'An error occurred')
+        return
+      }
+      if (data.error) {
+        toast.error(data?.error?.message?.at(0) || 'An error occurred')
+        return
       }
 
       if (data.requireEmailVerification) {
         setRequireEmailVerification(true)
         toast.success(data.message)
-        return;
+        return
       }
       toast.success(data.message)
-      window.location.href = redirectUrl
+      //window.location.href = redirectUrl
     },
     validators: {
       onSubmit: signupSchema
@@ -107,6 +111,10 @@ const SignupForm: React.FC<SignupFormProps> = ({
         void form.handleSubmit()
       }}>
       <FormInputWrap className="login__form">
+        <form.AppField
+          name="name"
+          children={(field) => <field.TextField type="name" className="text" autoComplete="name" label="Name" required />}
+        />
         <form.AppField
           name="email"
           children={(field) => <field.TextField type="email" className="email" autoComplete="email" label={t('general:email')} required />}

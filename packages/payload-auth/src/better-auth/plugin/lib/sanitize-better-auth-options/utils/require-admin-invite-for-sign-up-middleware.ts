@@ -1,10 +1,10 @@
-import { baseCollectionSlugs } from "@/better-auth/plugin/constants"
-import { BetterAuthPluginOptions } from "@/better-auth/types"
-import { createAuthMiddleware } from "better-auth/api"
-import type { Where } from "better-auth"
-import type { SanitizedBetterAuthOptions } from "@/better-auth/plugin/types"
-import { APIError } from "better-auth/api"
-import { z } from "zod"
+import { baseSlugs } from '@/better-auth/plugin/constants'
+import { BetterAuthPluginOptions } from '@/better-auth/types'
+import { createAuthMiddleware } from 'better-auth/api'
+import type { Where } from 'better-auth'
+import type { SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
+import { APIError } from 'better-auth/api'
+import { z } from 'zod'
 
 const throwUnauthorizedError = () => {
   throw new APIError('UNAUTHORIZED', {
@@ -17,7 +17,7 @@ const throwUnauthorizedError = () => {
  */
 export const requireAdminInviteForSignUpMiddleware = async ({
   options,
-  pluginOptions,
+  pluginOptions
 }: {
   options: SanitizedBetterAuthOptions
   pluginOptions: BetterAuthPluginOptions
@@ -28,11 +28,12 @@ export const requireAdminInviteForSignUpMiddleware = async ({
     if (
       ctx.path !== '/sign-up/email' && // not an email sign-up request
       !(ctx.path === '/sign-in/social' && ctx.body?.requestSignUp) // not a social sign-in request with sign-up intent
-    ) return;
+    )
+      return
     const adminInviteToken = ctx?.query?.adminInviteToken ?? ctx.body.adminInviteToken
-    if(!!pluginOptions.requireAdminInviteForSignUp && !z.string().uuid().safeParse(adminInviteToken).success) {
+    if (!!pluginOptions.requireAdminInviteForSignUp && !z.string().uuid().safeParse(adminInviteToken).success) {
       throwUnauthorizedError()
-      return;
+      return
     }
     const query: Where = {
       field: 'token',
@@ -40,12 +41,12 @@ export const requireAdminInviteForSignUpMiddleware = async ({
       operator: 'eq'
     }
     const isValidAdminInvitation = await ctx.context.adapter.count({
-      model: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
+      model: pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
       where: [query]
     })
-    if(isValidAdminInvitation) {
-      if(originalBefore) return originalBefore(ctx)
-      return ctx;
+    if (isValidAdminInvitation) {
+      if (originalBefore) return originalBefore(ctx)
+      return ctx
     }
     throwUnauthorizedError()
   })

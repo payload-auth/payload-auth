@@ -129,15 +129,19 @@ export const createLoginSchema = ({
     password: passwordField({ t })
   })
 
-export const createSignupSchema = ({ t, requireUsername = false }: { t: Translate; requireUsername?: boolean }) =>
-  z
-    .object({
-      email: emailField({ t }),
-      username: usernameField({ t, required: requireUsername }).optional(),
-      password: passwordField({ t }),
-      confirmPassword: confirmPasswordField({ t })
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-      path: ['confirmPassword'],
-      message: t('fields:passwordsDoNotMatch') || 'Passwords do not match'
-    })
+export const createSignupSchema = ({ t, requireUsername = false, requireConfirmPassword = false }: { t: Translate; requireUsername?: boolean; requireConfirmPassword?: boolean }) => {
+  const schema = z.object({
+    name: z.string({ message: 'Name is required' }).min(1),
+    email: emailField({ t }),
+    username: usernameField({ t, required: requireUsername }).optional(),
+    password: passwordField({ t }),
+    confirmPassword: confirmPasswordField({ t, required: requireConfirmPassword }).optional()
+  })
+
+  if (!requireConfirmPassword) return schema
+
+  return schema.refine((data) => data.password === data.confirmPassword, {
+    path: ['confirmPassword'],
+    message: t('fields:passwordsDoNotMatch') || 'Passwords do not match'
+  })
+}

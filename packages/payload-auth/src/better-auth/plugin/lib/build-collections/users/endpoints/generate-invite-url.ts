@@ -4,7 +4,7 @@ import { addDataAndFileToRequest } from 'payload'
 import { generateAdminInviteUrl } from '@/better-auth/plugin/payload/utils/generate-admin-invite-url'
 
 import { type Endpoint } from 'payload'
-import { adminEndpoints, baseCollectionSlugs } from '@/better-auth/plugin/constants'
+import { adminEndpoints, baseSlugs } from '@/better-auth/plugin/constants'
 
 type InviteEndpointProps = {
   roles: { label: string; value: string }[]
@@ -39,7 +39,7 @@ export const getGenerateInviteUrlEndpoint = ({ roles, pluginOptions }: InviteEnd
 
       try {
         await req.payload.create({
-          collection: pluginOptions.adminInvitations?.slug ?? baseCollectionSlugs.adminInvitations,
+          collection: pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
           data: {
             token,
             role: body.role.value,

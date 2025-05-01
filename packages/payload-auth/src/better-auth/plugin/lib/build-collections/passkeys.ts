@@ -1,111 +1,86 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
-import { baseCollectionSlugs, betterAuthPluginSlugs } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
+import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { assertAllSchemaFields } from './utils/collection-schema'
 
-export function buildPasskeysCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }) {
-  const passkeySlug = betterAuthPluginSlugs.passkeys
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
+import type { CollectionConfig } from 'payload'
+import type { Passkey } from '@/better-auth/generated-types'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-  const passkeyCollection: CollectionConfig = {
+export function buildPasskeysCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+  const passkeySlug = getDeafultCollectionSlug({ modelKey: baModelKey.passkey, pluginOptions })
+
+  const existingPasskeyCollection = incomingCollections.find((collection) => collection.slug === passkeySlug) as
+    | CollectionConfig
+    | undefined
+
+  const fieldOverrides: FieldOverrides<keyof Passkey> = {
+    name: () => ({
+      admin: { readOnly: true, description: 'The name of the passkey' }
+    }),
+    publicKey: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The public key of the passkey' }
+    }),
+    userId: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The user that the passkey belongs to' }
+    }),
+    credentialID: () => ({
+      admin: { readOnly: true, description: 'The unique identifier of the registered credential' }
+    }),
+    counter: () => ({
+      required: true,
+      admin: { readOnly: true, description: 'The counter of the passkey' }
+    }),
+    deviceType: () => ({
+      required: true,
+      admin: { readOnly: true, description: 'The type of device used to register the passkey' }
+    }),
+    backedUp: () => ({
+      required: true,
+      admin: { readOnly: true, description: 'Whether the passkey is backed up' }
+    }),
+    transports: () => ({
+      required: true,
+      admin: { readOnly: true, description: 'The transports used to register the passkey' }
+    })
+  }
+
+  const collectionFields = getCollectionFields({
+    schema,
+    additionalProperties: fieldOverrides
+  })
+
+  let passkeyCollection: CollectionConfig = {
+    ...existingPasskeyCollection,
     slug: passkeySlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: 'name',
       description: 'Passkeys are used to authenticate users',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingPasskeyCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingPasskeyCollection?.access ?? {})
     },
-    fields: [
-      {
-        name: 'name',
-        type: 'text',
-        label: 'Name',
-        admin: {
-          readOnly: true,
-          description: 'The name of the passkey'
-        }
-      },
-      {
-        name: 'publicKey',
-        type: 'text',
-        required: true,
-        index: true,
-        label: 'Public Key',
-        admin: {
-          readOnly: true,
-          description: 'The public key of the passkey'
-        }
-      },
-      {
-        name: 'user',
-        type: 'relationship',
-        relationTo: userSlug,
-        required: true,
-        index: true,
-        label: 'User',
-        admin: {
-          readOnly: true,
-          description: 'The user that the passkey belongs to'
-        }
-      },
-      {
-        name: 'credentialID',
-        type: 'text',
-        required: true,
-        unique: true,
-        label: 'Credential ID',
-        admin: {
-          readOnly: true,
-          description: 'The unique identifier of the registered credential'
-        }
-      },
-      {
-        name: 'counter',
-        type: 'number',
-        required: true,
-        label: 'Counter',
-        admin: {
-          readOnly: true,
-          description: 'The counter of the passkey'
-        }
-      },
-      {
-        name: 'deviceType',
-        type: 'text',
-        required: true,
-        label: 'Device Type',
-        admin: {
-          readOnly: true,
-          description: 'The type of device used to register the passkey'
-        }
-      },
-      {
-        name: 'backedUp',
-        type: 'checkbox',
-        required: true,
-        label: 'Backed Up',
-        admin: {
-          readOnly: true,
-          description: 'Whether the passkey is backed up'
-        }
-      },
-      {
-        name: 'transports',
-        type: 'text',
-        required: true,
-        label: 'Transports',
-        admin: {
-          readOnly: true,
-          description: 'The transports used to register the passkey'
-        }
-      },
-      ...getTimestampFields()
-    ]
+    custom: {
+      ...(existingPasskeyCollection?.custom ?? {}),
+      betterAuthModelKey: baModelKey.passkey
+    },
+    fields: [...(existingPasskeyCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
+
+  if (typeof pluginOptions.pluginCollectionOverrides?.passkeys === 'function') {
+    passkeyCollection = pluginOptions.pluginCollectionOverrides.passkeys({
+      collection: passkeyCollection
+    })
+  }
+
+  assertAllSchemaFields(passkeyCollection, schema)
 
   return passkeyCollection
 }
