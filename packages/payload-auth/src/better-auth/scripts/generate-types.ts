@@ -23,10 +23,17 @@ import {
 } from 'better-auth/plugins'
 import { passkey } from 'better-auth/plugins/passkey'
 import { sso } from 'better-auth/plugins/sso'
+import { polar } from '@polar-sh/better-auth'
+import { Polar } from '@polar-sh/sdk'
 import type { SanitizedBetterAuthOptions } from '../types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+const client = new Polar({
+  accessToken: 'pk_test_1234567890',
+  server: 'sandbox'
+});
 
 const plugins = [
   username(),
@@ -60,6 +67,18 @@ const plugins = [
         { id: 'basic', name: 'Basic', price: 1000, interval: 'month', currency: 'usd' },
         { id: 'pro', name: 'Pro', price: 2000, interval: 'month', currency: 'usd' },
         { id: 'enterprise', name: 'Enterprise', price: 3000, interval: 'month', currency: 'usd' }
+      ]
+    }
+  }),
+  // As of writing this, Polar don't create schema fields, but just in case in the future we leave this here.
+  polar({
+    client,
+    checkout: {
+      enabled: true,
+      products: [
+        { productId: 'basic', slug: 'basic' },
+        { productId: 'pro', slug: 'pro' },
+        { productId: 'enterprise', slug: 'enterprise' }
       ]
     }
   })
