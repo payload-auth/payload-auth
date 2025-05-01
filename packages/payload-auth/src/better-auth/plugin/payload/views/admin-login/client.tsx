@@ -12,7 +12,7 @@ import { Form, FormError, FormInputWrap } from '@/shared/form/ui'
 import { FormHeader } from '@/shared/form/ui/header'
 import { createLoginSchema, isValidEmail } from '@/shared/form/validation'
 import { createAuthClient } from 'better-auth/client'
-import { usernameClient, twoFactorClient } from 'better-auth/client/plugins'
+import { usernameClient, twoFactorClient, passkeyClient } from 'better-auth/client/plugins'
 import { formatAdminURL, getLoginOptions } from 'payload/shared'
 import { useRouter } from 'next/navigation'
 import { valueOrDefaultString } from '@/shared/utils/value-or-default'
@@ -20,6 +20,7 @@ import { valueOrDefaultString } from '@/shared/utils/value-or-default'
 type AdminLoginClientProps = {
   loginMethods: LoginMethod[]
   hasUsernamePlugin: boolean
+  hasPasskeyPlugin: boolean
   prefillEmail?: string
   prefillPassword?: string
   prefillUsername?: string
@@ -31,12 +32,13 @@ const baseClass = 'login__form'
 
 const LoginForm: React.FC<{
   hasUsernamePlugin: boolean
+  hasPasskeyPlugin: boolean
   prefillEmail?: string
   prefillPassword?: string
   prefillUsername?: string
   searchParams: { [key: string]: string | string[] | undefined }
   loginWithUsername: false | LoginWithUsernameOptions
-}> = ({ hasUsernamePlugin, prefillEmail, prefillPassword, prefillUsername, searchParams, loginWithUsername }) => {
+}> = ({ hasUsernamePlugin, hasPasskeyPlugin, prefillEmail, prefillPassword, prefillUsername, searchParams, loginWithUsername }) => {
   const { config } = useConfig()
   const router = useRouter()
   const adminRoute = valueOrDefaultString(config?.routes?.admin, '/admin')
@@ -57,7 +59,8 @@ const LoginForm: React.FC<{
             onTwoFactorRedirect() {
               router.push(`${adminRoute}${adminRoutes.twoFactorVerify}?redirect=${redirectUrl}`)
             }
-          })
+          }),
+          ...(hasPasskeyPlugin ? [passkeyClient()] : [])
         ]
       }),
     []
@@ -129,12 +132,12 @@ const LoginForm: React.FC<{
         <FormInputWrap className={baseClass}>
           <form.AppField
             name="login"
-            children={(field) => <field.TextField type="text" className="email" autoComplete="email" label={getLoginTypeLabel()} />}
+            children={(field) => <field.TextField type="text" className="email" autoComplete={`email${hasPasskeyPlugin ? ' webauthn' : ''}`} label={getLoginTypeLabel()} />}
           />
           <form.AppField
             name="password"
             children={(field) => (
-              <field.TextField type="password" className="password" autoComplete="password" label={t('general:password')} />
+              <field.TextField type="password" className="password" autoComplete={`password${hasPasskeyPlugin ? ' webauthn' : ''}`} label={t('general:password')} />
             )}
           />
         </FormInputWrap>
@@ -150,6 +153,7 @@ const LoginForm: React.FC<{
 export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
   loginMethods,
   hasUsernamePlugin,
+  hasPasskeyPlugin,
   prefillEmail,
   prefillPassword,
   prefillUsername,
@@ -161,6 +165,7 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
       {loginMethods.includes('emailPassword') && (
         <LoginForm
           hasUsernamePlugin={hasUsernamePlugin}
+          hasPasskeyPlugin={hasPasskeyPlugin}
           prefillEmail={prefillEmail}
           prefillPassword={prefillPassword}
           prefillUsername={prefillUsername}
