@@ -24,20 +24,10 @@ export const emailField = ({ t, required = true }: { t: Translate; required?: bo
   })
 }
 
-export const usernameField = ({
-  t,
-  required = true,
-  minLength = 5,
-  maxLength = 128
-}: {
-  t: Translate
-  required?: boolean
-  minLength?: number
-  maxLength?: number
-}) => {
+export const usernameField = ({ t, required = true }: { t: Translate; required?: boolean }) => {
   let schema = z.string()
   if (required) schema = schema.min(1, t('validation:required'))
-  return schema.refine((val) => usernameRegex.test(val) && val.length >= minLength && val.length <= maxLength, {
+  return schema.refine((val) => usernameRegex.test(val), {
     message: t('authentication:usernameNotValid') || 'Username is not valid'
   })
 }

@@ -1,4 +1,4 @@
-import { baModelFieldKeys, baModelKey, defaults, supportedBAPluginIds } from '@/better-auth/plugin/constants'
+import { baModelFieldKeys, baModelKey, baseSlugs, defaults, supportedBAPluginIds } from '@/better-auth/plugin/constants'
 import { configureAdminPlugin } from './admin-plugin'
 import { configureApiKeyPlugin } from './api-key-plugin'
 import { configureOidcPlugin } from './oidc-plugin'
@@ -16,6 +16,7 @@ import type { Config, Payload } from 'payload'
 import type { CollectionSchemaMap } from '../../helpers/get-collection-schema-map'
 import { configureTwoFactorPlugin } from './two-factor-plugin'
 import { requireAdminInviteForSignUpMiddleware } from './utils/require-admin-invite-for-sign-up-middleware'
+import { useAdminInviteAfterEmailSignUpMiddleware } from './utils/use-admin-invite-after-email-sign-up-middleware'
 
 /**
  * Sanitizes the BetterAuth options
@@ -32,7 +33,10 @@ export function sanitizeBetterAuthOptions({
 
   const betterAuthOptions: SanitizedBetterAuthOptions = { ...(pluginOptions.betterAuthOptions ?? {}) }
 
-  set(betterAuthOptions, `${baModelKey.user}.modelName`, getSchemaCollectionSlug(collectionSchemaMap, baModelKey.user))
+  const userCollectionSlug = getSchemaCollectionSlug(collectionSchemaMap, baModelKey.user);
+  const adminInvitationCollectionSlug = pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations;
+
+  set(betterAuthOptions, `${baModelKey.user}.modelName`, userCollectionSlug)
   set(betterAuthOptions, `${baModelKey.user}.additionalFields.role`, {
     type: 'string',
     defaultValue: pluginOptions.users?.defaultRole || defaults.userRole,
@@ -67,7 +71,13 @@ export function sanitizeBetterAuthOptions({
       options: betterAuthOptions,
       pluginOptions
     })
+    
   }
+  useAdminInviteAfterEmailSignUpMiddleware({
+    options: betterAuthOptions,
+    adminInvitationCollectionSlug,
+    userCollectionSlug
+  })
 
   // Handle verification email blocking
   if (pluginOptions.users?.blockFirstBetterAuthVerificationEmail && !pluginOptions.disableDefaultPayloadAuth) {
