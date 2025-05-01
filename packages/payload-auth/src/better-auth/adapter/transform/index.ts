@@ -304,7 +304,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
     idType: 'number' | 'text'
   }): Record<string, any> {
     const transformedData: Record<string, any> = {}
-    const schemaFields = schema[model].fields
+    const schemaFields = schema?.[model]?.fields ?? {}
 
     // Process each field in the input data
     Object.entries(data).forEach(([key, value]) => {
@@ -359,7 +359,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
     if (!doc || typeof doc !== 'object') return doc
 
     const result = { ...doc }
-    const schemaFields = schema[model].fields
+    const schemaFields = schema?.[model]?.fields ?? {}
 
     // Identify relationship fields with custom field name mappings
     const relationshipFields = Object.fromEntries(Object.entries(schemaFields).filter(([key]) => isRelationshipField(key, schemaFields)))

@@ -1,93 +1,81 @@
-import type { CollectionConfig } from 'payload'
-import type { BetterAuthPluginOptions } from '../../types'
-import { betterAuthPluginSlugs, baseCollectionSlugs } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
+import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
+import { assertAllSchemaFields } from './utils/collection-schema'
 
-export function buildInvitationsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }): CollectionConfig {
-  const invitationSlug = betterAuthPluginSlugs.invitations
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
-  const organizationSlug = betterAuthPluginSlugs.organizations
-  const invitationCollection: CollectionConfig = {
+import type { CollectionConfig } from 'payload'
+import type { Invitation } from '@/better-auth/generated-types'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+
+export function buildInvitationsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+  const invitationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.invitation, pluginOptions })
+
+  const existingInvitationCollection = incomingCollections.find((collection) => collection.slug === invitationSlug) as
+    | CollectionConfig
+    | undefined
+
+  const fieldOverrides: FieldOverrides<keyof Invitation> = {
+    email: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The email of the user being invited.' }
+    }),
+    inviterId: () => ({
+      admin: { readOnly: true, description: 'The user who invited the user.' }
+    }),
+    teamId: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The team that the user is being invited to.' }
+    }),
+    organizationId: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The organization that the user is being invited to.' }
+    }),
+    role: () => ({
+      admin: { readOnly: true, description: 'The role of the user being invited.' }
+    }),
+    status: () => ({
+      defaultValue: 'pending',
+      admin: { readOnly: true, description: 'The status of the invitation.' }
+    }),
+    expiresAt: () => ({
+      admin: { readOnly: true, description: 'The date and time when the invitation will expire.' }
+    })
+  }
+
+  const collectionFields = getCollectionFields({
+    schema,
+    additionalProperties: fieldOverrides
+  })
+
+  let invitationCollection: CollectionConfig = {
+    ...existingInvitationCollection,
     slug: invitationSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: 'email',
       description: 'Invitations to join an organization',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingInvitationCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingInvitationCollection?.access ?? {})
     },
-    fields: [
-      {
-        name: 'email',
-        type: 'text',
-        required: true,
-        index: true,
-        label: 'Email',
-        admin: {
-          description: 'The email of the user being invited.',
-          readOnly: true
-        }
-      },
-      {
-        name: 'inviter',
-        type: 'relationship',
-        relationTo: userSlug,
-        required: true,
-        label: 'Inviter',
-        admin: {
-          description: 'The user who invited the user.',
-          readOnly: true
-        }
-      },
-      {
-        name: 'organization',
-        type: 'relationship',
-        relationTo: organizationSlug,
-        required: true,
-        index: true,
-        label: 'Organization',
-        admin: {
-          description: 'The organization that the user is being invited to.',
-          readOnly: true
-        }
-      },
-      {
-        name: 'role',
-        type: 'text',
-        required: true,
-        label: 'Role',
-        admin: {
-          description: 'The role of the user being invited.',
-          readOnly: true
-        }
-      },
-      {
-        name: 'status',
-        type: 'text',
-        required: true,
-        defaultValue: 'pending',
-        label: 'Status',
-        admin: {
-          description: 'The status of the invitation.',
-          readOnly: true
-        }
-      },
-      {
-        name: 'expiresAt',
-        type: 'date',
-        required: true,
-        label: 'Expires At',
-        admin: {
-          description: 'The date and time when the invitation will expire.',
-          readOnly: true
-        }
-      },
-      ...getTimestampFields()
-    ]
+    custom: {
+      ...(existingInvitationCollection?.custom ?? {}),
+      betterAuthModelKey: baModelKey.invitation
+    },
+    fields: [...(existingInvitationCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
+
+  if (typeof pluginOptions.pluginCollectionOverrides?.invitations === 'function') {
+    invitationCollection = pluginOptions.pluginCollectionOverrides.invitations({
+      collection: invitationCollection
+    })
+  }
+
+  assertAllSchemaFields(invitationCollection, schema)
 
   return invitationCollection
 }

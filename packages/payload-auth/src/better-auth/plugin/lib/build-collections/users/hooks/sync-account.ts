@@ -1,22 +1,21 @@
-import type { CollectionAfterChangeHook } from 'payload'
-import type { CollectionHookWithBetterAuth } from '@/better-auth/plugin/types'
 import { BETTER_AUTH_CONTEXT_KEY } from '@/better-auth/adapter'
+import { baModelKey } from '@/better-auth/plugin/constants'
+import { getMappedCollection, transformCollectionsToCollectionConfigs } from '@/better-auth/plugin/helpers/get-collection'
+import type { CollectionAfterChangeHook } from 'payload'
 
-type CollectionAfterChangeHookWithBetterAuth = CollectionHookWithBetterAuth<CollectionAfterChangeHook>
-
-type SyncAccountOptions = {
-  userSlug: string
-  accountSlug: string
-}
-
-export const getSyncAccountHook = (options: SyncAccountOptions): CollectionAfterChangeHook => {
-  const hook: CollectionAfterChangeHookWithBetterAuth = async ({ doc, req, operation, context }) => {
+export function getSyncAccountHook(): CollectionAfterChangeHook {
+  const hook: CollectionAfterChangeHook = async ({ doc, req, operation, context }) => {
     if (context?.syncPasswordToUser) return doc
 
     if (operation !== 'create' && operation !== 'update') return doc
 
+    const collections = req.payload.collections
+    const collectionMap = transformCollectionsToCollectionConfigs(collections)
+    const userSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.user })?.slug
+    const accountSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.account })?.slug
+
     const user = await req.payload.findByID({
-      collection: options.userSlug,
+      collection: userSlug,
       id: doc.id,
       depth: 0,
       req,
@@ -26,14 +25,13 @@ export const getSyncAccountHook = (options: SyncAccountOptions): CollectionAfter
     if (!user || !user.hash || !user.salt) return doc
 
     const passwordValue = `${user.salt}:${user.hash}`
-    const userField = req.payload.betterAuth.options.account?.fields?.userId || 'userId'
 
     if (operation === 'create' && !(BETTER_AUTH_CONTEXT_KEY in context)) {
       try {
         await req.payload.create({
-          collection: options.accountSlug,
+          collection: accountSlug,
           data: {
-            [userField]: doc.id,
+            userId: doc.id,
             accountId: doc.id.toString(),
             providerId: 'credential',
             password: passwordValue,
@@ -49,9 +47,9 @@ export const getSyncAccountHook = (options: SyncAccountOptions): CollectionAfter
     if (operation === 'update') {
       try {
         const accounts = await req.payload.find({
-          collection: options.accountSlug,
+          collection: accountSlug,
           where: {
-            and: [{ [userField]: { equals: doc.id } }, { providerId: { equals: 'credential' } }]
+            and: [{ userId: { equals: doc.id } }, { providerId: { equals: 'credential' } }]
           },
           req,
           depth: 0,
@@ -61,7 +59,7 @@ export const getSyncAccountHook = (options: SyncAccountOptions): CollectionAfter
         const account = accounts.docs.at(0)
         if (account) {
           await req.payload.update({
-            collection: options.accountSlug,
+            collection: accountSlug,
             id: account.id,
             data: {
               password: passwordValue

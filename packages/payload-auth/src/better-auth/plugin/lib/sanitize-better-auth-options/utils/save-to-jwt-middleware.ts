@@ -2,9 +2,11 @@ import { prepareSessionData } from '@/better-auth/plugin/helpers/prepare-session
 import { createAuthMiddleware } from 'better-auth/api'
 import { setSessionCookie } from 'better-auth/cookies'
 
-import type { BetterAuthPluginOptions, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
-import type { Config, Payload } from 'payload'
-import { baseCollectionSlugs } from '@/better-auth/plugin/constants'
+import type { SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
+import type { CollectionConfig, Config, Payload } from 'payload'
+import type { CollectionSchemaMap } from '@/better-auth/plugin/helpers/get-collection-schema-map'
+import { baModelKey } from '@/better-auth/plugin/constants'
+
 /**
  * Sets up a middleware that enforces the saveToJwt configuration when setting session data.
  * This ensures that only fields specified in saveToJwt are included in the cookie cache
@@ -15,25 +17,29 @@ import { baseCollectionSlugs } from '@/better-auth/plugin/constants'
  */
 export function saveToJwtMiddleware({
   sanitizedOptions,
-  payloadConfig,
-  pluginOptions
+  config,
+  collectionSchemaMap
 }: {
   sanitizedOptions: SanitizedBetterAuthOptions
-  payloadConfig: Payload['config'] | Config | Promise<Payload['config'] | Config>
-  pluginOptions: BetterAuthPluginOptions
+  config: Payload['config'] | Config | Promise<Payload['config'] | Config>
+  collectionSchemaMap: CollectionSchemaMap
 }) {
   if (typeof sanitizedOptions.hooks !== 'object') sanitizedOptions.hooks = {}
   const originalAfter = sanitizedOptions.hooks.after
   sanitizedOptions.hooks.after = createAuthMiddleware(async (ctx) => {
     const newSession = ctx.context.newSession
     if (newSession) {
+      const awaitedPayloadConfig = await config
+      const usersCollection = awaitedPayloadConfig?.collections?.find((c) => c.slug === collectionSchemaMap[baModelKey.user].collectionSlug)
+      const sessionsCollection = awaitedPayloadConfig?.collections?.find(
+        (c) => c.slug === collectionSchemaMap[baModelKey.session].collectionSlug
+      )
+      if (!usersCollection || !sessionsCollection) return null
+
       const filteredSessionData = await prepareSessionData({
         sessionData: newSession,
-        payloadConfig,
-        collectionSlugs: {
-          userCollectionSlug: pluginOptions.users?.slug ?? baseCollectionSlugs.users,
-          sessionCollectionSlug: pluginOptions.sessions?.slug ?? baseCollectionSlugs.sessions
-        }
+        usersCollection: usersCollection,
+        sessionsCollection: sessionsCollection
       })
 
       if (filteredSessionData) {
@@ -42,9 +48,7 @@ export function saveToJwtMiddleware({
     }
 
     if (typeof originalAfter === 'function') {
-      return originalAfter(ctx)
+      originalAfter(ctx)
     }
-
-    return
   })
 }

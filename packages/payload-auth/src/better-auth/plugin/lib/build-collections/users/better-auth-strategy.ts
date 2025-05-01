@@ -1,6 +1,6 @@
 import type { AuthStrategy } from 'payload'
 import { getPayloadAuth } from '@/better-auth/plugin/lib/get-payload-auth'
-import { baseCollectionSlugs } from '@/better-auth/plugin/constants'
+import { baseSlugs } from '@/better-auth/plugin/constants'
 
 /**
  * Auth strategy for BetterAuth
@@ -26,7 +26,7 @@ export function betterAuthStrategy(userSlug?: string): AuthStrategy {
           return { user: null }
         }
         const user = await payloadAuth.findByID({
-          collection: userSlug ?? baseCollectionSlugs.users,
+          collection: userSlug ?? baseSlugs.users,
           id: userId
         })
         if (!user) {
@@ -35,7 +35,7 @@ export function betterAuthStrategy(userSlug?: string): AuthStrategy {
         return {
           user: {
             ...user,
-            collection: userSlug ?? baseCollectionSlugs.users,
+            collection: userSlug ?? baseSlugs.users,
             _strategy: 'better-auth'
           }
         }

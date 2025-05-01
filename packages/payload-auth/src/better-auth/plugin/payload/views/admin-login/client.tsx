@@ -36,14 +36,7 @@ const LoginForm: React.FC<{
   prefillUsername?: string
   searchParams: { [key: string]: string | string[] | undefined }
   loginWithUsername: false | LoginWithUsernameOptions
-}> = ({
-  hasUsernamePlugin,
-  prefillEmail,
-  prefillPassword,
-  prefillUsername,
-  searchParams,
-  loginWithUsername
-}) => {
+}> = ({ hasUsernamePlugin, prefillEmail, prefillPassword, prefillUsername, searchParams, loginWithUsername }) => {
   const { config } = useConfig()
   const router = useRouter()
   const adminRoute = valueOrDefaultString(config?.routes?.admin, '/admin')
@@ -55,17 +48,18 @@ const LoginForm: React.FC<{
     adminRoute: adminRoute,
     path: adminRoutes?.forgotPassword as `/${string}`
   })
-  const authClient = useMemo(() =>
-    createAuthClient({
-      plugins: [
-        usernameClient(),
-        twoFactorClient({
-          onTwoFactorRedirect() {
-            router.push(`${adminRoute}/two-factor-verify?redirect=${redirectUrl}`)
-          }
-        })
-      ]
-    }),
+  const authClient = useMemo(
+    () =>
+      createAuthClient({
+        plugins: [
+          usernameClient(),
+          twoFactorClient({
+            onTwoFactorRedirect() {
+              router.push(`${adminRoute}${adminRoutes.twoFactorVerify}?redirect=${redirectUrl}`)
+            }
+          })
+        ]
+      }),
     []
   )
   const loginType = useMemo(() => {
@@ -128,19 +122,18 @@ const LoginForm: React.FC<{
       {searchParamError && searchParamError === 'signup_disabled' && <FormError errors={['Sign up is disabled.']} />}
       <Form
         className={baseClass}
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           void form.handleSubmit()
-        }}
-      >
+        }}>
         <FormInputWrap className={baseClass}>
           <form.AppField
             name="login"
-            children={field => <field.TextField type="text" className="email" autoComplete="email" label={getLoginTypeLabel()} />}
+            children={(field) => <field.TextField type="text" className="email" autoComplete="email" label={getLoginTypeLabel()} />}
           />
           <form.AppField
             name="password"
-            children={field => (
+            children={(field) => (
               <field.TextField type="password" className="password" autoComplete="password" label={t('general:password')} />
             )}
           />

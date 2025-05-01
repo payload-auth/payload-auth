@@ -1,116 +1,105 @@
-import { CollectionConfig } from 'payload'
-import { BetterAuthPluginOptions } from '../../types'
-import { betterAuthPluginSlugs, baseCollectionSlugs } from '../../constants'
-import { getTimestampFields } from './utils/get-timestamp-fields'
+import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
+import { assertAllSchemaFields } from './utils/collection-schema'
 
-export function buildOauthApplicationsCollection({ pluginOptions }: { pluginOptions: BetterAuthPluginOptions }) {
-  const oauthApplicationSlug = betterAuthPluginSlugs.oauthApplications
-  const userSlug = pluginOptions.users?.slug ?? baseCollectionSlugs.users
+import type { CollectionConfig } from 'payload'
+import type { OauthApplication } from '@/better-auth/generated-types'
+import type { FieldRule } from './utils/model-field-transformations'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-  const oauthApplicationCollection: CollectionConfig = {
+export function buildOauthApplicationsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+  const oauthApplicationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthApplication, pluginOptions })
+
+  const existingOauthApplicationCollection = incomingCollections.find((collection) => collection.slug === oauthApplicationSlug) as
+    | CollectionConfig
+    | undefined
+
+  const fieldOverrides: FieldOverrides<keyof OauthApplication> = {
+    clientId: () => ({
+      unique: true,
+      index: true,
+      admin: { readOnly: true, description: 'Unique identifier for each OAuth client' }
+    }),
+    clientSecret: () => ({
+      admin: { readOnly: true, description: 'Secret key for the OAuth client' }
+    }),
+    name: () => ({
+      index: true,
+      admin: { description: 'Name of the OAuth application' }
+    }),
+    redirectURLs: () => ({
+      admin: { description: 'Comma-separated list of redirect URLs' }
+    }),
+    metadata: () => ({
+      admin: { readOnly: true, description: 'Additional metadata for the OAuth application' }
+    }),
+    type: () => ({
+      admin: { readOnly: true, description: 'Type of OAuth client (e.g., web, mobile)' }
+    }),
+    disabled: () => ({
+      defaultValue: false,
+      admin: { description: 'Indicates if the client is disabled' }
+    }),
+    icon: () => ({
+      admin: { description: 'Icon of the OAuth application' }
+    }),
+    userId: () => ({
+      admin: { readOnly: true, description: 'ID of the user who owns the client. (optional)' }
+    })
+  }
+
+  const oauthApplicationFieldRules: FieldRule[] = [
+    {
+      condition: (field) => field.type === 'date',
+      transform: (field) => ({
+        ...field,
+        saveToJWT: false,
+        admin: {
+          disableBulkEdit: true,
+          hidden: true
+        },
+        index: true,
+        label: ({ t }: any) => t('general:updatedAt')
+      })
+    }
+  ]
+
+  const collectionFields = getCollectionFields({
+    schema,
+    fieldRules: oauthApplicationFieldRules,
+    additionalProperties: fieldOverrides
+  })
+
+  let oauthApplicationCollection: CollectionConfig = {
+    ...existingOauthApplicationCollection,
     slug: oauthApplicationSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: 'name',
       description: 'OAuth applications are custom OAuth clients',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth'
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingOauthApplicationCollection?.admin
     },
     access: {
-      ...getAdminAccess(pluginOptions)
+      ...getAdminAccess(pluginOptions),
+      ...(existingOauthApplicationCollection?.access ?? {})
     },
-    fields: [
-      {
-        name: 'clientId',
-        type: 'text',
-        unique: true,
-        index: true,
-        required: true,
-        label: 'Client ID',
-        admin: {
-          readOnly: true,
-          description: 'Unique identifier for each OAuth client'
-        }
-      },
-      {
-        name: 'clientSecret',
-        type: 'text',
-        required: true,
-        label: 'Client Secret',
-        admin: {
-          readOnly: true,
-          description: 'Secret key for the OAuth client'
-        }
-      },
-      {
-        name: 'name',
-        type: 'text',
-        required: true,
-        index: true,
-        label: 'Name',
-        admin: {
-          description: 'Name of the OAuth application'
-        }
-      },
-      {
-        name: 'redirectURLs',
-        type: 'text',
-        required: true,
-        label: 'Redirect URLs',
-        admin: {
-          description: 'Comma-separated list of redirect URLs'
-        }
-      },
-      {
-        name: 'metadata',
-        type: 'json',
-        admin: {
-          readOnly: true,
-          description: 'Additional metadata for the OAuth application'
-        }
-      },
-      {
-        name: 'type',
-        type: 'text',
-        required: true,
-        label: 'Type',
-        admin: {
-          readOnly: true,
-          description: 'Type of OAuth client (e.g., web, mobile)'
-        }
-      },
-      {
-        name: 'disabled',
-        type: 'checkbox',
-        defaultValue: false,
-        required: true,
-        label: 'Disabled',
-        admin: {
-          description: 'Indicates if the client is disabled'
-        }
-      },
-      {
-        name: 'icon',
-        type: 'text',
-        label: 'Icon',
-        admin: {
-          description: 'Icon of the OAuth application'
-        }
-      },
-      {
-        name: 'user',
-        type: 'relationship',
-        relationTo: userSlug,
-        required: false,
-        label: 'User',
-        admin: {
-          readOnly: true,
-          description: 'ID of the user who owns the client. (optional)'
-        }
-      },
-      ...getTimestampFields()
-    ]
+    custom: {
+      ...(existingOauthApplicationCollection?.custom ?? {}),
+      betterAuthModelKey: baModelKey.oauthApplication
+    },
+    fields: [...(existingOauthApplicationCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
+
+  if (typeof pluginOptions.pluginCollectionOverrides?.oauthApplications === 'function') {
+    oauthApplicationCollection = pluginOptions.pluginCollectionOverrides.oauthApplications({
+      collection: oauthApplicationCollection
+    })
+  }
+
+  assertAllSchemaFields(oauthApplicationCollection, schema)
 
   return oauthApplicationCollection
 }

@@ -5,8 +5,10 @@ import type {
   InferAPI,
   InferPluginTypes
 } from 'better-auth/types'
-import type { BasePayload, CollectionConfig, Config, Endpoint, Payload, PayloadRequest } from 'payload'
-import { adminRoutes, loginMethods, socialProviders } from './constants'
+import type { BasePayload, CollectionConfig, Config, Endpoint, Field, Payload, PayloadRequest } from 'payload'
+import { adminRoutes, baPluginSlugs, loginMethods, socialProviders, supportedBAPluginIds } from './constants'
+import { FieldAttribute } from 'better-auth/db'
+import { CollectionSchemaMap } from './helpers/get-collection-schema-map'
 
 /**
  * BetterAuth options with the following caveats:
@@ -32,6 +34,10 @@ export interface SanitizedBetterAuthOptions extends Omit<BetterAuthOptionsType, 
 export type SocialProvider = (typeof socialProviders)[number]
 
 export type LoginMethod = (typeof loginMethods)[number]
+
+type PluginCollectionOverrides = {
+  [K in keyof typeof baPluginSlugs]?: (options: { collection: CollectionConfig }) => CollectionConfig
+}
 
 export interface BetterAuthPluginOptions {
   /**
@@ -95,9 +101,9 @@ export interface BetterAuthPluginOptions {
   /**
    * Require a valid admin invitation for any *public* sign‑up.
    *
-   * – Applies to both email/password and social‑provider flows.  
+   * – Applies to both email/password and social‑provider flows.
    * – Existing users can still sign in; admins can still create users via
-   *   the Payload UI or server‑side calls.  
+   *   the Payload UI or server‑side calls.
    * – Ignores provider‑level `disableImplicitSignUp` and `disableSignUp`:
    *   with a valid invite the sign‑up proceeds, without one it's blocked.
    * – Also sets `disableImplicitSignUp` for all providers, requiring `requestSignUp` to be true for all `authClient.signIn.social` calls when creating a new account with a provider.
@@ -108,6 +114,24 @@ export interface BetterAuthPluginOptions {
    * @default false
    */
   requireAdminInviteForSignUp?: boolean
+  /**
+   * BetterAuth options with the following caveats:
+   * - The `database` option is removed as it is configured internally
+   * - The `user` `modelName` and `fields` is removed as it is configured internally
+   * - The `account` `modelName` and `fields` is removed as it is configured internally
+   * - The `session` `modelName` and `fields` is removed as it is configured internally
+   * - The `verification` `modelName` and `fields` is removed as it is configured internally
+   *
+   * @see https://www.better-auth.com/docs/reference/options
+   */
+  betterAuthOptions?: BetterAuthOptions
+  /**
+   * Override plugin configurations
+   *
+   * Note: TypeScript cannot enforce that only enabled plugins are configured
+   * at compile time, but this will be validated at runtime.
+   */
+  pluginCollectionOverrides?: PluginCollectionOverrides
   /**
    * Configure the Users collections:
    */
@@ -318,23 +342,13 @@ export interface BetterAuthPluginOptions {
      */
     collectionOverrides?: (options: { collection: CollectionConfig }) => CollectionConfig
   }
-  /**
-   * BetterAuth options with the following caveats:
-   * - The `database` option is removed as it is configured internally
-   * - The `user` `modelName` and `fields` is removed as it is configured internally
-   * - The `account` `modelName` and `fields` is removed as it is configured internally
-   * - The `session` `modelName` and `fields` is removed as it is configured internally
-   * - The `verification` `modelName` and `fields` is removed as it is configured internally
-   *
-   * @see https://www.better-auth.com/docs/reference/options
-   */
-  betterAuthOptions?: BetterAuthOptions
 }
 
-export type SendAdminInviteEmailFn = (options: { payload: Payload; email: string; url: string }) => Promise<
-  | { success: true; message?: string }
-  | { success: false; message: string }
->
+export type SendAdminInviteEmailFn = (options: {
+  payload: Payload
+  email: string
+  url: string
+}) => Promise<{ success: true; message?: string } | { success: false; message: string }>
 
 export type GenerateAdminInviteUrlFn = (options: { payload: Payload; token: string }) => string
 
@@ -383,4 +397,21 @@ export type BetterAuthReturn<T extends TPlugins> = Omit<ReturnType<typeof better
 export type BetterAuthFunctionOptions<P extends TPlugins> = Omit<BetterAuthOptions, 'database' | 'plugins'> & {
   enableDebugLogs?: boolean
   plugins: P
+}
+
+export interface BuildSchema {
+  fields: Record<string, FieldAttribute>
+  order: number
+}
+
+export interface BuildCollectionProps {
+  schema: BuildSchema
+  pluginOptions: BetterAuthPluginOptions
+  incomingCollections: CollectionConfig[]
+}
+
+export type FieldOverrides<K extends string = string> = {
+  [Key in K]?: (field: FieldAttribute) => Partial<Field>
+} & {
+  [key: string]: (field: FieldAttribute) => Partial<Field>
 }
