@@ -151,7 +151,7 @@ export const betterAuthPluginOptions: BetterAuthPluginOptions = {
   disableDefaultPayloadAuth: true,
   hidePluginCollections: true,
   users: {
-    slug: 'users',
+    slug: 'users', // not required, this is the default anyways
     hidden: false,
     adminRoles: ['admin'],
     allowedFields: ['name']

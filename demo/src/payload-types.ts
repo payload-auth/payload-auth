@@ -78,7 +78,7 @@ export interface Config {
     members: Member;
     invitations: Invitation;
     teams: Team;
-    adminInvitations: AdminInvitation;
+    'admin-invitations': AdminInvitation;
     projects: Project;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -97,7 +97,7 @@ export interface Config {
     members: MembersSelect<false> | MembersSelect<true>;
     invitations: InvitationsSelect<false> | InvitationsSelect<true>;
     teams: TeamsSelect<false> | TeamsSelect<true>;
-    adminInvitations: AdminInvitationsSelect<false> | AdminInvitationsSelect<true>;
+    'admin-invitations': AdminInvitationsSelect<false> | AdminInvitationsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -156,7 +156,7 @@ export interface User {
   /**
    * Users chosen display name
    */
-  name?: string | null;
+  name: string;
   /**
    * The email of the user
    */
@@ -395,6 +395,9 @@ export interface Passkey {
    * The public key of the passkey
    */
   publicKey: string;
+  /**
+   * The user that the passkey belongs to
+   */
   user: number | User;
   /**
    * The unique identifier of the registered credential
@@ -588,13 +591,16 @@ export interface Team {
    * The name of the team.
    */
   name: string;
+  /**
+   * The organization that the team belongs to.
+   */
   organization: number | Organization;
   createdAt: string;
   updatedAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "adminInvitations".
+ * via the `definition` "admin-invitations".
  */
 export interface AdminInvitation {
   id: number;
@@ -668,7 +674,7 @@ export interface PayloadLockedDocument {
         value: number | Team;
       } | null)
     | ({
-        relationTo: 'adminInvitations';
+        relationTo: 'admin-invitations';
         value: number | AdminInvitation;
       } | null)
     | ({
@@ -888,7 +894,7 @@ export interface TeamsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "adminInvitations_select".
+ * via the `definition` "admin-invitations_select".
  */
 export interface AdminInvitationsSelect<T extends boolean = true> {
   role?: T;

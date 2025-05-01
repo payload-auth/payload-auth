@@ -7,7 +7,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE TYPE "public"."enum_projects_status" AS ENUM('active', 'inactive');
   CREATE TABLE IF NOT EXISTS "users" (
   	"id" serial PRIMARY KEY NOT NULL,
-  	"name" varchar,
+  	"name" varchar NOT NULL,
   	"email" varchar NOT NULL,
   	"email_verified" boolean NOT NULL,
   	"image" varchar,
