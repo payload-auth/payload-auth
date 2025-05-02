@@ -408,6 +408,7 @@ export interface BuildCollectionProps {
   schema: BuildSchema
   pluginOptions: BetterAuthPluginOptions
   incomingCollections: CollectionConfig[]
+  collectionSchemaMap: CollectionSchemaMap
 }
 
 export type FieldOverrides<K extends string = string> = {

@@ -1,16 +1,17 @@
 import { baModelFieldKeysToFieldNames, baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
-import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import { assertAllSchemaFields, getSchemaFieldName } from './utils/collection-schema'
-
-import type { CollectionConfig } from 'payload'
+import { assertAllSchemaFields } from './utils/collection-schema'
+import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 import type { Passkey } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
-import { isAdminOrCurrentUserWithRoles, isAdminWithRoles } from './utils/payload-access'
+import type { CollectionConfig } from 'payload'
+import { isAdminOrCurrentUserWithRoles } from './utils/payload-access'
 
 export function buildPasskeysCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const passkeySlug = getDeafultCollectionSlug({ modelKey: baModelKey.passkey, pluginOptions })
+  const userIdFieldName = schema?.fields?.userId?.fieldName ?? baModelFieldKeysToFieldNames.passkey.userId
+  const adminRoles = pluginOptions.users?.adminRoles ?? ['admin']
 
   const existingPasskeyCollection = incomingCollections.find((collection) => collection.slug === passkeySlug) as
     | CollectionConfig
@@ -67,8 +68,12 @@ export function buildPasskeysCollection({ incomingCollections, pluginOptions, sc
     access: {
       ...getAdminAccess(pluginOptions),
       read: isAdminOrCurrentUserWithRoles({
-        idField: schema?.fields?.userId?.fieldName ?? baModelFieldKeysToFieldNames.passkey.userId,
-        adminRoles: pluginOptions.users?.adminRoles ?? ['admin']
+        idField: userIdFieldName,
+        adminRoles
+      }),
+      delete: isAdminOrCurrentUserWithRoles({
+        idField: userIdFieldName,
+        adminRoles
       }),
       ...(existingPasskeyCollection?.access ?? {})
     },

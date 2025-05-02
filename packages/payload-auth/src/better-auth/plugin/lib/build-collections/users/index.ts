@@ -1,8 +1,8 @@
 import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exists'
 import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
-import { baModelKey, defaults, supportedBAPluginIds } from '../../../constants'
+import { baModelFieldKeys, baModelKey, defaults, supportedBAPluginIds } from '../../../constants'
 import { getAllRoleOptions } from '../../../helpers/get-all-roles'
-import { assertAllSchemaFields } from '../utils/collection-schema'
+import { assertAllSchemaFields, getSchemaFieldName } from '../utils/collection-schema'
 import { isAdminOrCurrentUserUpdateWithAllowedFields, isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
 import { getCollectionFields } from '../utils/transform-schema-fields-to-payload'
 import { betterAuthStrategy } from './better-auth-strategy'
@@ -21,9 +21,10 @@ import type { FieldRule } from '../utils/model-field-transformations'
 import type { BuildCollectionProps, FieldOverrides } from '../../../types'
 import type { User } from '@/better-auth/generated-types'
 
-export function buildUsersCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
+export function buildUsersCollection({ incomingCollections, pluginOptions, collectionSchemaMap, schema }: BuildCollectionProps): CollectionConfig {
   const userSlug = getDeafultCollectionSlug({ modelKey: baModelKey.user, pluginOptions })
   const passkeySlug = getDeafultCollectionSlug({ modelKey: baModelKey.passkey, pluginOptions })
+  const passkeyUserIdFieldName = getSchemaFieldName(collectionSchemaMap, baModelKey.passkey, baModelFieldKeys.passkey.userId)
   const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
   const allRoleOptions = getAllRoleOptions(pluginOptions)
   const hasUsernamePlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.username)
@@ -237,8 +238,9 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, schem
                 disableBulkEdit: true,
                 components: {
                   Field: {
-                    path: 'payload-auth/better-auth/plugin/client#Passkeys',
+                    path: 'payload-auth/better-auth/plugin/rsc#Passkeys',
                     serverProps: {
+                      passkeyUserIdFieldName,
                       passkeySlug
                     }
                   }

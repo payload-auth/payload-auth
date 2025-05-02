@@ -67,6 +67,7 @@ export function buildCollectionMap({
       collectionMap[collectionSlug] = builder({
         incomingCollections,
         pluginOptions,
+        collectionSchemaMap,
         schema: getModelSchema(modelKey)
       })
     }
@@ -80,6 +81,7 @@ export function buildCollectionMap({
   collectionMap[adminInvitationsSlug] = collectionBuilders[baseSlugs.adminInvitations]({
     incomingCollections,
     pluginOptions,
+    collectionSchemaMap,
     schema: {
       fields: {},
       order: 0
