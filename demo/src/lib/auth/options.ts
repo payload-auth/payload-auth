@@ -53,8 +53,8 @@ export const betterAuthPlugins = [
     }
   }),
   passkey({
-    rpID: 'payload-better-auth',
-    rpName: 'payload-better-auth-demo',
+    rpID: 'localhost',
+    rpName: 'Localhost',
     origin: 'http://localhost:3000'
   }),
   admin(),
