@@ -35,7 +35,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, colle
 
   const userFieldRules: FieldRule[] = [
     {
-      condition: (field) => field.type === 'date',
+      condition: (field) => field.fieldName === 'createdAt' || field.fieldName === 'updatedAt',
       transform: (field) => ({
         ...field,
         saveToJWT: false,
@@ -44,7 +44,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, colle
           hidden: true
         },
         index: true,
-        label: ({ t }: any) => t('general:updatedAt')
+        label: ({ t }: any) => field.fieldName === 'createdAt' ? t('general:createdAt') : t('general:updatedAt')
       })
     }
   ]

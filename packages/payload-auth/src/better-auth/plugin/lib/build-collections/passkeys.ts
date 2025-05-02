@@ -1,17 +1,17 @@
-import { baModelFieldKeysToFieldNames, baModelKey } from '../../constants'
-import { getAdminAccess } from '../../helpers/get-admin-access'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import { assertAllSchemaFields } from './utils/collection-schema'
-import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 import type { Passkey } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 import type { CollectionConfig } from 'payload'
+import { baModelFieldKeysToFieldNames, baModelKey, defaults } from '../../constants'
+import { getAdminAccess } from '../../helpers/get-admin-access'
+import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { assertAllSchemaFields } from './utils/collection-schema'
 import { isAdminOrCurrentUserWithRoles } from './utils/payload-access'
+import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 
 export function buildPasskeysCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
   const passkeySlug = getDeafultCollectionSlug({ modelKey: baModelKey.passkey, pluginOptions })
   const userIdFieldName = schema?.fields?.userId?.fieldName ?? baModelFieldKeysToFieldNames.passkey.userId
-  const adminRoles = pluginOptions.users?.adminRoles ?? ['admin']
+  const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
 
   const existingPasskeyCollection = incomingCollections.find((collection) => collection.slug === passkeySlug) as
     | CollectionConfig
