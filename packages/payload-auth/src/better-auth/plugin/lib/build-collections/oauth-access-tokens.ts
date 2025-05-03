@@ -2,15 +2,16 @@ import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import { assertAllSchemaFields } from './utils/collection-schema'
+import { assertAllSchemaFields, getSchemaCollectionSlug, getSchemaFieldName } from './utils/collection-schema'
 
 import type { CollectionConfig } from 'payload'
 import type { FieldRule } from './utils/model-field-transformations'
 import type { OauthAccessToken } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildOauthAccessTokensCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const oauthAccessTokenSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthAccessToken, pluginOptions })
+export function buildOauthAccessTokensCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const oauthAccessTokenSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.oauthAccessToken)
+  const oauthAccessTokenSchema = resolvedSchemas[baModelKey.oauthAccessToken]
 
   const existingOauthAccessTokenCollection = incomingCollections.find((collection) => collection.slug === oauthAccessTokenSlug) as
     | CollectionConfig
@@ -58,7 +59,7 @@ export function buildOauthAccessTokensCollection({ incomingCollections, pluginOp
   ]
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: oauthAccessTokenSchema,
     fieldRules: oauthAccessTokenFieldRules,
     additionalProperties: fieldOverrides
   })
@@ -68,7 +69,7 @@ export function buildOauthAccessTokensCollection({ incomingCollections, pluginOp
     slug: oauthAccessTokenSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: 'accessToken',
+      useAsTitle: getSchemaFieldName(resolvedSchemas, baModelKey.oauthAccessToken, 'accessToken'),
       description: 'OAuth access tokens for custom OAuth clients',
       group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingOauthAccessTokenCollection?.admin
@@ -90,7 +91,7 @@ export function buildOauthAccessTokensCollection({ incomingCollections, pluginOp
     })
   }
 
-  assertAllSchemaFields(oauthAccessTokenCollection, schema)
+  assertAllSchemaFields(oauthAccessTokenCollection, oauthAccessTokenSchema)
 
   return oauthAccessTokenCollection
 }

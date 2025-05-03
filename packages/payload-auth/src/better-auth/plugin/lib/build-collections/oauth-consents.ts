@@ -8,9 +8,11 @@ import type { CollectionConfig } from 'payload'
 import type { OauthConsent } from '@/better-auth/generated-types'
 import type { FieldRule } from './utils/model-field-transformations'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import { getSchemaCollectionSlug } from './utils/collection-schema'
 
-export function buildOauthConsentsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const oauthConsentSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthConsent, pluginOptions })
+export function buildOauthConsentsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const oauthConsentSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.oauthConsent)
+  const oauthConsentSchema = resolvedSchemas[baModelKey.oauthConsent]
 
   const existingOauthConsentCollection = incomingCollections.find((collection) => collection.slug === oauthConsentSlug) as
     | CollectionConfig
@@ -49,7 +51,7 @@ export function buildOauthConsentsCollection({ incomingCollections, pluginOption
   ]
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: oauthConsentSchema,
     fieldRules: oauthConsentFieldRules,
     additionalProperties: fieldOverrides
   })
@@ -80,7 +82,7 @@ export function buildOauthConsentsCollection({ incomingCollections, pluginOption
     })
   }
 
-  assertAllSchemaFields(oauthConsentCollection, schema)
+  assertAllSchemaFields(oauthConsentCollection, oauthConsentSchema)
 
   return oauthConsentCollection
 }

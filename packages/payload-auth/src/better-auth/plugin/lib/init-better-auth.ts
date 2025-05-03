@@ -6,7 +6,7 @@ import type { BetterAuthFunctionOptions, BetterAuthReturn, TPlugins } from '../t
 export function initBetterAuth<P extends TPlugins>({
   payload,
   idType,
-  options: { enableDebugLogs = false, ...restOptions }
+  options: { enableDebugLogs = false, ...restOptions },
 }: {
   payload: BasePayload
   idType: 'number' | 'text'
@@ -14,7 +14,8 @@ export function initBetterAuth<P extends TPlugins>({
 }): BetterAuthReturn<P> {
   return betterAuth({
     ...restOptions,
-    database: payloadAdapter(payload, {
+    database: payloadAdapter({
+      payloadClient: payload,
       enableDebugLogs,
       idType
     })

@@ -180,6 +180,23 @@ const gen = (): string => {
     out += `export type ${P} = ${parts.join(' & ')}\n\n`
   }
 
+  // Generate union type of plugin identifiers
+  const pluginIdUnion = [...seen]
+    .map((id) => JSON.stringify(id))
+    .join(' | ')
+  out += `export type PluginId = ${pluginIdUnion}\n\n`
+
+  // Generate full schema mapping
+  out += `export type BetterAuthFullSchema = {\n`
+  for (const model of models) {
+    const P = pascal(model)
+    out += `  ${JSON.stringify(model)}: ${P}\n`
+  }
+  out += `}\n\n`
+
+  // Generate union type of all model names
+  out += `export type ModelKey = keyof BetterAuthFullSchema`
+
   return out
 }
 

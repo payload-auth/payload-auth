@@ -3,14 +3,15 @@ import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/
 import type { CollectionConfig } from 'payload'
 import { baModelFieldKeysToFieldNames, baModelKey, defaults } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { getSchemaCollectionSlug, getSchemaFieldName } from './utils/collection-schema'
 import { assertAllSchemaFields } from './utils/collection-schema'
 import { isAdminOrCurrentUserWithRoles } from './utils/payload-access'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 
-export function buildPasskeysCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const passkeySlug = getDeafultCollectionSlug({ modelKey: baModelKey.passkey, pluginOptions })
-  const userIdFieldName = schema?.fields?.userId?.fieldName ?? baModelFieldKeysToFieldNames.passkey.userId
+export function buildPasskeysCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const passkeySlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.passkey)
+  const passkeySchema = resolvedSchemas[baModelKey.passkey]
+  const userIdFieldName = passkeySchema?.fields?.userId?.fieldName ?? baModelFieldKeysToFieldNames.passkey.userId
   const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
 
   const existingPasskeyCollection = incomingCollections.find((collection) => collection.slug === passkeySlug) as
@@ -51,7 +52,7 @@ export function buildPasskeysCollection({ incomingCollections, pluginOptions, sc
   }
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: passkeySchema,
     additionalProperties: fieldOverrides
   })
 
@@ -60,7 +61,7 @@ export function buildPasskeysCollection({ incomingCollections, pluginOptions, sc
     slug: passkeySlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: 'name',
+      useAsTitle: getSchemaFieldName(resolvedSchemas, baModelKey.passkey, 'name'),
       description: 'Passkeys are used to authenticate users',
       group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingPasskeyCollection?.admin
@@ -90,7 +91,7 @@ export function buildPasskeysCollection({ incomingCollections, pluginOptions, sc
     })
   }
 
-  assertAllSchemaFields(passkeyCollection, schema)
+  assertAllSchemaFields(passkeyCollection, passkeySchema)
 
   return passkeyCollection
 }

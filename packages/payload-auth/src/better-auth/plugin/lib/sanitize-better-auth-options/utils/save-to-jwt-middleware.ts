@@ -2,10 +2,9 @@ import { prepareSessionData } from '@/better-auth/plugin/helpers/prepare-session
 import { createAuthMiddleware } from 'better-auth/api'
 import { setSessionCookie } from 'better-auth/cookies'
 
-import type { SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
-import type { CollectionConfig, Config, Payload } from 'payload'
-import type { CollectionSchemaMap } from '@/better-auth/plugin/helpers/get-collection-schema-map'
 import { baModelKey } from '@/better-auth/plugin/constants'
+import type { BetterAuthSchemas, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
+import type { Config, Payload } from 'payload'
 
 /**
  * Sets up a middleware that enforces the saveToJwt configuration when setting session data.
@@ -18,11 +17,11 @@ import { baModelKey } from '@/better-auth/plugin/constants'
 export function saveToJwtMiddleware({
   sanitizedOptions,
   config,
-  collectionSchemaMap
+  resolvedSchemas
 }: {
   sanitizedOptions: SanitizedBetterAuthOptions
   config: Payload['config'] | Config | Promise<Payload['config'] | Config>
-  collectionSchemaMap: CollectionSchemaMap
+  resolvedSchemas: BetterAuthSchemas
 }) {
   if (typeof sanitizedOptions.hooks !== 'object') sanitizedOptions.hooks = {}
   const originalAfter = sanitizedOptions.hooks.after
@@ -30,9 +29,9 @@ export function saveToJwtMiddleware({
     const newSession = ctx.context.newSession
     if (newSession) {
       const awaitedPayloadConfig = await config
-      const usersCollection = awaitedPayloadConfig?.collections?.find((c) => c.slug === collectionSchemaMap[baModelKey.user].collectionSlug)
+      const usersCollection = awaitedPayloadConfig?.collections?.find((c) => c.slug === resolvedSchemas[baModelKey.user].modelName)
       const sessionsCollection = awaitedPayloadConfig?.collections?.find(
-        (c) => c.slug === collectionSchemaMap[baModelKey.session].collectionSlug
+        (c) => c.slug === resolvedSchemas[baModelKey.session].modelName
       )
       if (!usersCollection || !sessionsCollection) return null
 

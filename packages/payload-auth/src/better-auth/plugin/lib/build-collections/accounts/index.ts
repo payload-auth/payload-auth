@@ -1,17 +1,18 @@
 import { baModelKey, defaults } from '@/better-auth/plugin/constants'
-import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
+import { assertAllSchemaFields } from '../utils/collection-schema'
 import { isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
 import { getCollectionFields } from '../utils/transform-schema-fields-to-payload'
 import { getSyncPasswordToUserHook } from './hooks/sync-password-to-user'
-import { assertAllSchemaFields } from '../utils/collection-schema'
 
-import type { CollectionConfig } from 'payload'
 import type { Account } from '@/better-auth/generated-types'
-import type { FieldRule } from '../utils/model-field-transformations'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import type { CollectionConfig } from 'payload'
+import { getSchemaCollectionSlug } from '../utils/collection-schema'
+import type { FieldRule } from '../utils/model-field-transformations'
 
-export function buildAccountsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const accountSlug = getDeafultCollectionSlug({ modelKey: baModelKey.account, pluginOptions })
+export function buildAccountsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const accountSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.account)
+  const accountSchema = resolvedSchemas[baModelKey.account]
   const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
 
   const existingAccountCollection = incomingCollections.find((collection) => collection.slug === accountSlug) as
@@ -101,7 +102,7 @@ export function buildAccountsCollection({ incomingCollections, pluginOptions, sc
   }
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: accountSchema,
     fieldRules: accountFieldRules,
     additionalProperties: fieldOverrides
   })
@@ -142,7 +143,7 @@ export function buildAccountsCollection({ incomingCollections, pluginOptions, sc
     })
   }
 
-  assertAllSchemaFields(accountCollection, schema)
+  assertAllSchemaFields(accountCollection, accountSchema)
 
   return accountCollection
 }

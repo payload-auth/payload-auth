@@ -1,15 +1,16 @@
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { getSchemaCollectionSlug, getSchemaFieldName } from './utils/collection-schema'
 import { assertAllSchemaFields } from './utils/collection-schema'
 
 import type { CollectionConfig } from 'payload'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 import type { Organization } from '@/better-auth/generated-types'
 
-export function buildOrganizationsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const organizationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.organization, pluginOptions })
+export function buildOrganizationsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const organizationSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.organization)
+  const organizationSchema = resolvedSchemas[baModelKey.organization]
 
   const existingOrganizationCollection = incomingCollections.find((collection) => collection.slug === organizationSlug) as
     | CollectionConfig
@@ -33,7 +34,7 @@ export function buildOrganizationsCollection({ incomingCollections, pluginOption
   }
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: organizationSchema,
     additionalProperties: fieldOverrides
   })
 
@@ -42,7 +43,7 @@ export function buildOrganizationsCollection({ incomingCollections, pluginOption
     slug: organizationSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: 'name',
+      useAsTitle: getSchemaFieldName(resolvedSchemas, baModelKey.organization, 'name'),
       description: 'Organizations are groups of users that share access to certain resources.',
       group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingOrganizationCollection?.admin
@@ -64,7 +65,7 @@ export function buildOrganizationsCollection({ incomingCollections, pluginOption
     })
   }
 
-  assertAllSchemaFields(organizationCollection, schema)
+  assertAllSchemaFields(organizationCollection, organizationSchema)
 
   return organizationCollection
 }
