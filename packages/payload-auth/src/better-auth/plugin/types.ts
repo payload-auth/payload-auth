@@ -1,4 +1,5 @@
 import type { UnionToIntersection, betterAuth } from 'better-auth'
+import { FieldAttribute } from 'better-auth/db'
 import type {
   BetterAuthOptions as BetterAuthOptionsType,
   BetterAuthPlugin as BetterAuthPluginType,
@@ -6,9 +7,8 @@ import type {
   InferPluginTypes
 } from 'better-auth/types'
 import type { BasePayload, CollectionConfig, Config, Endpoint, Field, Payload, PayloadRequest } from 'payload'
-import { adminRoutes, baPluginSlugs, loginMethods, socialProviders, supportedBAPluginIds } from './constants'
-import { FieldAttribute } from 'better-auth/db'
-import { CollectionSchemaMap } from './helpers/get-collection-schema-map'
+import { ModelKey } from '../generated-types'
+import { adminRoutes, baPluginSlugs, loginMethods, socialProviders } from './constants'
 
 /**
  * BetterAuth options with the following caveats:
@@ -399,16 +399,19 @@ export type BetterAuthFunctionOptions<P extends TPlugins> = Omit<BetterAuthOptio
   plugins: P
 }
 
-export interface BuildSchema {
+export interface BuiltBetterAuthSchema {
+  modelName: string
   fields: Record<string, FieldAttribute>
   order: number
 }
 
+export type BetterAuthSchemas = Record<ModelKey, BuiltBetterAuthSchema>
+
+
 export interface BuildCollectionProps {
-  schema: BuildSchema
+  resolvedSchemas: BetterAuthSchemas
   pluginOptions: BetterAuthPluginOptions
   incomingCollections: CollectionConfig[]
-  collectionSchemaMap: CollectionSchemaMap
 }
 
 export type FieldOverrides<K extends string = string> = {

@@ -1,15 +1,16 @@
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { getSchemaCollectionSlug, getSchemaFieldName } from './utils/collection-schema'
 import { assertAllSchemaFields } from './utils/collection-schema'
 
 import type { CollectionConfig } from 'payload'
 import type { Subscription } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildSubscriptionsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const subscriptionsSlug = getDeafultCollectionSlug({ modelKey: baModelKey.subscription, pluginOptions })
+export function buildSubscriptionsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const subscriptionsSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.subscription)
+  const subscriptionsSchema = resolvedSchemas[baModelKey.subscription]
 
   const existingSubscriptionCollection = incomingCollections.find((collection) => collection.slug === subscriptionsSlug) as
     | CollectionConfig
@@ -57,7 +58,7 @@ export function buildSubscriptionsCollection({ incomingCollections, pluginOption
   }
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: subscriptionsSchema,
     additionalProperties: fieldOverrides
   })
 
@@ -65,7 +66,7 @@ export function buildSubscriptionsCollection({ incomingCollections, pluginOption
     ...existingSubscriptionCollection,
     slug: subscriptionsSlug,
     admin: {
-      useAsTitle: 'plan',
+      useAsTitle: getSchemaFieldName(resolvedSchemas, baModelKey.subscription, 'plan'),
       description: 'Subscriptions are used to manage the subscriptions of the users',
       group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingSubscriptionCollection?.admin
@@ -87,7 +88,7 @@ export function buildSubscriptionsCollection({ incomingCollections, pluginOption
     })
   }
 
-  assertAllSchemaFields(subscriptionsCollection, schema)
+  assertAllSchemaFields(subscriptionsCollection, subscriptionsSchema)
 
   return subscriptionsCollection
 }

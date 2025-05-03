@@ -2,14 +2,15 @@ import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import { assertAllSchemaFields } from './utils/collection-schema'
+import { assertAllSchemaFields, getSchemaCollectionSlug, getSchemaFieldName } from './utils/collection-schema'
 
 import type { CollectionConfig } from 'payload'
 import type { Jwks } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildJwksCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const jwksSlug = getDeafultCollectionSlug({ modelKey: baModelKey.jwks, pluginOptions })
+export function buildJwksCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const jwksSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.jwks)
+  const jwksSchema = resolvedSchemas[baModelKey.jwks]
 
   const existingJwksCollection = incomingCollections.find((collection) => collection.slug === jwksSlug) as CollectionConfig | undefined
 
@@ -24,7 +25,7 @@ export function buildJwksCollection({ incomingCollections, pluginOptions, schema
   }
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: jwksSchema,
     additionalProperties: fieldOverrides
   })
 
@@ -33,7 +34,7 @@ export function buildJwksCollection({ incomingCollections, pluginOptions, schema
     slug: jwksSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: 'publicKey',
+      useAsTitle: getSchemaFieldName(resolvedSchemas, baModelKey.jwks, 'publicKey'),
       description: 'JWKS are used to verify the signature of the JWT token',
       group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingJwksCollection?.admin
@@ -55,7 +56,7 @@ export function buildJwksCollection({ incomingCollections, pluginOptions, schema
     })
   }
 
-  assertAllSchemaFields(jwksCollection, schema)
+  assertAllSchemaFields(jwksCollection, jwksSchema)
 
   return jwksCollection
 }

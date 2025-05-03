@@ -1,11 +1,11 @@
 import type { UIFieldServerProps } from 'payload'
-import type { BuildSchema } from '@/better-auth/types'
+import type { BuiltBetterAuthSchema } from '@/better-auth/types'
 import type { Passkey } from '@/better-auth/generated-types'
 
 export type PasskeyWithId = Passkey & { id: string; createdAt: Date }
 
 export type PasskeysServerComponentProps = UIFieldServerProps & {
-  schema: BuildSchema
+  schema: BuiltBetterAuthSchema
   passkeySlug: string
   passkeyUserIdFieldName: string
 }

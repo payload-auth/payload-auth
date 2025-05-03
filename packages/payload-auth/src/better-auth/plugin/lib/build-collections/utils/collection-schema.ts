@@ -1,13 +1,17 @@
-import type { CollectionSchemaMap } from "@/better-auth/plugin/helpers/get-collection-schema-map";
-import { BuildSchema } from "@/better-auth/types";
-import { CollectionConfig, flattenAllFields } from "payload";
+import type { ModelKey, BetterAuthFullSchema } from '@/better-auth/generated-types'
+import type { BuiltBetterAuthSchema, BetterAuthSchemas } from '@/better-auth/types'
+import { type CollectionConfig, flattenAllFields } from 'payload'
 
-export function getSchemaCollectionSlug(collectionSchemaMap: CollectionSchemaMap, model: string): string {
-  return collectionSchemaMap?.[model as keyof CollectionSchemaMap]?.collectionSlug ?? model;
+export function getSchemaCollectionSlug(resolvedSchemas: BetterAuthSchemas, model: ModelKey): string {
+  return resolvedSchemas?.[model]?.modelName ?? model
 }
 
-export function getSchemaFieldName(collectionSchemaMap: CollectionSchemaMap, model: string, fieldName: string): string {
-  return collectionSchemaMap?.[model as keyof CollectionSchemaMap]?.fields[fieldName] ?? fieldName;
+export function getSchemaFieldName<M extends ModelKey>(
+  resolvedSchemas: BetterAuthSchemas,
+  model: M,
+  fieldKey: Extract<keyof BetterAuthFullSchema[M], string>
+): string {
+  return resolvedSchemas?.[model]?.fields?.[fieldKey]?.fieldName ?? fieldKey
 }
 
 /**
@@ -20,22 +24,16 @@ export function getSchemaFieldName(collectionSchemaMap: CollectionSchemaMap, mod
  * @throws {Error} If any required field is missing from the schema
  */
 
-export function assertAllSchemaFields(collection: CollectionConfig, schema: BuildSchema) {
-  const missingFields: string[] = []
+export function assertAllSchemaFields(collection: CollectionConfig, schema: BuiltBetterAuthSchema): void {
   const schemaFieldKeys = Object.keys(schema.fields)
-  const flattenedCollectionFields = flattenAllFields(collection)
+  const collectionConfigBetterAuthKeys = new Set(
+    flattenAllFields(collection)
+      .map((field) => field.custom?.betterAuthFieldKey)
+      .filter((key): key is string => typeof key === 'string')
+  )
 
-  // Check that each schema field key has a corresponding field in the collection
-  schemaFieldKeys.forEach((schemaKey) => {
-    const fieldExists = flattenedCollectionFields.some((field) => field.custom?.betterAuthFieldKey === schemaKey)
+  const missingFields = schemaFieldKeys.filter((key) => !collectionConfigBetterAuthKeys.has(key))
+  if (missingFields.length === 0) return
 
-    if (!fieldExists) {
-      missingFields.push(schemaKey)
-    }
-  })
-
-  if (missingFields.length > 0) {
-    throw new Error(`Missing required custom.betterAuthFieldKeys in collection: ${collection.slug} [${missingFields.join(', ')}]`)
-  }
+  throw new Error(`Missing required custom.betterAuthFieldKeys in collection "${collection.slug}": ${missingFields.join(', ')}`)
 }
-

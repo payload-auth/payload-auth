@@ -1,26 +1,16 @@
-import { ModelKey } from '@/better-auth/generated-types';
-import { getAuthTables, type FieldAttribute } from 'better-auth/db';
-import { baModelFieldKeysToFieldNames } from '../constants';
-import { BetterAuthPluginOptions, BetterAuthSchemas } from '../types';
-import { getDeafultCollectionSlug } from './get-collection-slug';
+import { ModelKey } from '@/better-auth/generated-types'
+import { getAuthTables, type FieldAttribute } from 'better-auth/db'
+import { baModelFieldKeysToFieldNames } from '../constants'
+import type { BetterAuthPluginOptions, BetterAuthSchemas } from '../types'
+import { getDeafultCollectionSlug } from './get-collection-slug'
 
 /**
- * A consistent BetterAuth schema generator.
- *
- * Differences from the original `getSchema` implementation in BetterAuth:
- * 1. Keys in the returned object are always the **static table identifiers** coming from
- *    `getAuthTables`, never the possibly-overridden `modelName`.  This guarantees that
- *    subsequent look-ups remain stable even if the user renames collections.
- * 2. Each schema entry now contains an explicit `modelName` property exposing the current
- *    (potentially user-overridden) model name, while `fields` continue to be referenced by
- *    their static BetterAuth field keys.
- * 3. When converting fields, we store them under their original key (`actualFields[key] = field`)
- *    instead of `field.fieldName || key` to avoid accidental renames.
- *
- * @param config - The BetterAuth options fed into `getAuthTables`.
- * @returns A map keyed by static table keys, each value containing `{ modelName, fields, order }`.
+ * Generates a BetterAuth schema but replaces every `modelName` with the slug
+ * returned by `getDeafultCollectionSlug`. It also guarantees that:
+ *  • Every field has a `fieldName` (existing → default mapping → key).
+ *  • Every `references.model` points to the resolved modelName.
  */
-export function getDefaultBetterAuthSchema(pluginOptions: BetterAuthPluginOptions): BetterAuthSchemas {
+export function getResolvedBetterAuthSchema(pluginOptions: BetterAuthPluginOptions): BetterAuthSchemas {
   const betterAuthOptions = pluginOptions.betterAuthOptions ?? {}
   const tables = getAuthTables(betterAuthOptions)
 
@@ -48,6 +38,7 @@ export function getDefaultBetterAuthSchema(pluginOptions: BetterAuthPluginOption
         const refModelKey = fieldValue.references.model as string
         const resolvedRefModelName = getDeafultCollectionSlug({ modelKey: refModelKey, pluginOptions })
         newField.references = {
+          ...fieldValue.references,
           model: resolvedRefModelName,
           field: fieldValue.references.field
         }

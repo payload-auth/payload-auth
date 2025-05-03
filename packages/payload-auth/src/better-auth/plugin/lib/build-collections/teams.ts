@@ -1,17 +1,16 @@
+import type { Team } from '@/better-auth/generated-types'
+import type { CollectionConfig } from 'payload'
+import type { BuildCollectionProps, FieldOverrides } from '../../types'
+import type { FieldRule } from './utils/model-field-transformations'
+
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
-import { assertAllSchemaFields } from './utils/collection-schema'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { assertAllSchemaFields, getSchemaCollectionSlug, getSchemaFieldName } from './utils/collection-schema'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 
-import type { CollectionConfig } from 'payload'
-import type { Team } from '@/better-auth/generated-types'
-import type { FieldRule } from './utils/model-field-transformations'
-import type { BuildCollectionProps, FieldOverrides } from '../../types'
-
-export function buildTeamsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const teamSlug = getDeafultCollectionSlug({ modelKey: baModelKey.team, pluginOptions })
-
+export function buildTeamsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const teamSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.team)
+  const teamSchema = resolvedSchemas[baModelKey.team]
   const existingTeamCollection = incomingCollections.find((collection) => collection.slug === teamSlug) as CollectionConfig | undefined
 
   const fieldOverrides: FieldOverrides<keyof Team> = {
@@ -43,7 +42,7 @@ export function buildTeamsCollection({ incomingCollections, pluginOptions, schem
   ]
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: teamSchema,
     fieldRules: teamFieldRules,
     additionalProperties: fieldOverrides
   })
@@ -53,7 +52,7 @@ export function buildTeamsCollection({ incomingCollections, pluginOptions, schem
     slug: teamSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: 'name',
+      useAsTitle: getSchemaFieldName(resolvedSchemas, baModelKey.team, 'name'),
       description: 'Teams are groups of users that share access to certain resources.',
       group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingTeamCollection?.admin
@@ -75,7 +74,7 @@ export function buildTeamsCollection({ incomingCollections, pluginOptions, schem
     })
   }
 
-  assertAllSchemaFields(teamCollection, schema)
+  assertAllSchemaFields(teamCollection, teamSchema)
 
   return teamCollection
 }

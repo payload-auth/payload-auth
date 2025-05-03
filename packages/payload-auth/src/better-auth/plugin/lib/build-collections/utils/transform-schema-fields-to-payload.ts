@@ -1,4 +1,4 @@
-import { BuildSchema } from '@/better-auth/plugin/types'
+import { BuiltBetterAuthSchema } from '@/better-auth/plugin/types'
 import { type FieldAttribute } from 'better-auth/db'
 import type { Field, RelationshipField } from 'payload'
 import type { FieldRule } from './model-field-transformations'
@@ -9,7 +9,7 @@ export function getCollectionFields({
   fieldRules = [],
   additionalProperties = {}
 }: {
-  schema: BuildSchema
+  schema: BuiltBetterAuthSchema
   fieldRules?: FieldRule[]
   additionalProperties?: Record<string, (field: FieldAttribute) => Partial<Field>>
 }): Field[] | null {
