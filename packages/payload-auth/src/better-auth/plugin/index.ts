@@ -27,13 +27,22 @@ function buildBetterAuthData({
 
   const defaultBetterAuthSchemas = getDefaultBetterAuthSchema(pluginOptions)
 
-  const collectionMap = buildCollections({
+  let collectionMap = buildCollections({
     resolvedSchemas: defaultBetterAuthSchemas,
     incomingCollections: payloadConfig.collections ?? [],
     pluginOptions
   })
 
   const resolvedBetterAuthSchemas = syncResolvedSchemaWithCollectionMap(defaultBetterAuthSchemas, collectionMap)
+
+  // We need to build the collections a second time with the resolved schemas
+  // due to hooks, endpoints, useAsTitle, etc should relay on resolvedBetterAuthSchemas to get slugs
+  // if they are referencing to other collections then it self.
+  collectionMap = buildCollections({
+    resolvedSchemas: resolvedBetterAuthSchemas,
+    incomingCollections: payloadConfig.collections ?? [],
+    pluginOptions
+  })
 
   const sanitizedBetterAuthOptions = sanitizeBetterAuthOptions({
     config: payloadConfig,

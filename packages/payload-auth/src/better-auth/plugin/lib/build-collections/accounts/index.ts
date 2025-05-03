@@ -1,5 +1,5 @@
 import { baModelKey, defaults } from '@/better-auth/plugin/constants'
-import { assertAllSchemaFields } from '../utils/collection-schema'
+import { assertAllSchemaFields, getSchemaFieldName } from '../utils/collection-schema'
 import { isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
 import { getCollectionFields } from '../utils/transform-schema-fields-to-payload'
 import { getSyncPasswordToUserHook } from './hooks/sync-password-to-user'
@@ -119,7 +119,7 @@ export function buildAccountsCollection({ incomingCollections, pluginOptions, re
     access: {
       create: isAdminWithRoles({ adminRoles }),
       delete: isAdminWithRoles({ adminRoles }),
-      read: isAdminOrCurrentUserWithRoles({ adminRoles, idField: 'user' }),
+      read: isAdminOrCurrentUserWithRoles({ adminRoles, idField: getSchemaFieldName(resolvedSchemas, baModelKey.account, 'userId') }),
       update: isAdminWithRoles({ adminRoles }),
       ...(existingAccountCollection?.access ?? {})
     },
@@ -130,7 +130,7 @@ export function buildAccountsCollection({ incomingCollections, pluginOptions, re
     hooks: {
       afterChange: [
         ...(existingAccountCollection?.hooks?.afterChange ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [getSyncPasswordToUserHook(pluginOptions)])
+        ...(pluginOptions.disableDefaultPayloadAuth ? [] : [getSyncPasswordToUserHook(resolvedSchemas)])
       ]
     },
     fields: [...(existingAccountCollection?.fields ?? []), ...(collectionFields ?? [])],
