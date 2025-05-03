@@ -1,9 +1,8 @@
 import { baModelKey } from '@/better-auth/plugin/constants'
-import { getMappedCollection, transformCollectionsToCollectionConfigs } from '@/better-auth/plugin/helpers/get-collection'
+import { getCollectionByModelKey } from '@/better-auth/plugin/helpers/get-collection'
 import { getIp } from '@/better-auth/plugin/helpers/get-ip'
 import { prepareSessionData } from '@/better-auth/plugin/helpers/prepare-session-data'
 import { getPayloadAuth } from '@/better-auth/plugin/lib/get-payload-auth'
-import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
 import { generateId, Session } from 'better-auth'
 import { createAuthMiddleware } from 'better-auth/api'
 import { setSessionCookie } from 'better-auth/cookies'
@@ -19,9 +18,8 @@ export function getAfterLoginHook() {
     const config = req.payload.config
     const payload = await getPayloadAuth(config)
     const collections = req.payload.collections
-    const collectionMap = transformCollectionsToCollectionConfigs(collections)
-    const userCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.user })
-    const sessionCollection = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.session })
+    const userCollection = getCollectionByModelKey(collections, baModelKey.user)
+    const sessionCollection = getCollectionByModelKey(collections, baModelKey.session)
     const cookieStore = await cookies()
     const authContext = await payload.betterAuth.$context
     const sessionExpiration = payload.betterAuth.options.session?.expiresIn || 60 * 60 * 24 * 7 // 7 days
