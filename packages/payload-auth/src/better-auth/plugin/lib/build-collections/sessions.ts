@@ -8,9 +8,11 @@ import type { CollectionConfig } from 'payload'
 import type { Session } from '@/better-auth/generated-types'
 import type { FieldRule } from './utils/model-field-transformations'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import { getSchemaCollectionSlug } from './utils/collection-schema'
 
-export function buildSessionsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const sessionSlug = getDeafultCollectionSlug({ modelKey: baModelKey.session, pluginOptions })
+export function buildSessionsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const sessionSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.session)
+  const sessionSchema = resolvedSchemas[baModelKey.session]
 
   const existingSessionCollection = incomingCollections.find((collection) => collection.slug === sessionSlug) as
     | CollectionConfig
@@ -77,7 +79,7 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, sc
   ]
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: sessionSchema,
     fieldRules: sessionFieldRules,
     additionalProperties: fieldOverrides
   })
@@ -108,7 +110,7 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, sc
     })
   }
 
-  assertAllSchemaFields(sessionCollection, schema)
+  assertAllSchemaFields(sessionCollection, sessionSchema)
 
   return sessionCollection
 }

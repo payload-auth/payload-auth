@@ -1,15 +1,16 @@
-import { baModelKey } from '../../constants'
+import { baModelFieldKeysToFieldNames, baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { getSchemaCollectionSlug, getSchemaFieldName } from './utils/collection-schema'
 import { assertAllSchemaFields } from './utils/collection-schema'
 
 import type { CollectionConfig } from 'payload'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 import type { Member } from '@/better-auth/generated-types'
 
-export function buildMembersCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const memberSlug = getDeafultCollectionSlug({ modelKey: baModelKey.member, pluginOptions })
+export function buildMembersCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const memberSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.member)
+  const memberSchema = resolvedSchemas[baModelKey.member]
 
   const existingMemberCollection = incomingCollections.find((collection) => collection.slug === memberSlug) as CollectionConfig | undefined
 
@@ -32,7 +33,7 @@ export function buildMembersCollection({ incomingCollections, pluginOptions, sch
   }
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: memberSchema,
     additionalProperties: fieldOverrides
   })
 
@@ -41,7 +42,7 @@ export function buildMembersCollection({ incomingCollections, pluginOptions, sch
     slug: memberSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: 'organization',
+      useAsTitle: getSchemaFieldName(resolvedSchemas, baModelKey.member, 'organizationId'),
       description: 'Members of an organization.',
       group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingMemberCollection?.admin
@@ -63,7 +64,7 @@ export function buildMembersCollection({ incomingCollections, pluginOptions, sch
     })
   }
 
-  assertAllSchemaFields(memberCollection, schema)
+  assertAllSchemaFields(memberCollection, memberSchema)
 
   return memberCollection
 }

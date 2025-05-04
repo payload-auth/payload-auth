@@ -82,7 +82,7 @@
     "generate:better-auth-types": "rm -rf src/better-auth/generated-types.ts && tsx src/better-auth/scripts/generate-types.ts"
   },
   "peerDependencies": {
-    "@payloadcms/ui": "3.35.1",
+    "@payloadcms/ui": "^3.35",
     "better-auth": "^1.2",
     "next": "^15.3.0",
     "payload": "^3.35",
@@ -109,7 +109,7 @@
     "@better-auth/stripe": "1.2.7",
     "@better-auth/utils": "0.2.4",
     "@clerk/backend": "^1.25.8",
-    "@clerk/clerk-js": "^5.58.1",
+    "@clerk/clerk-js": "^5.63.5",
     "@clerk/nextjs": "^6.12.12",
     "@polar-sh/better-auth": "^0.1.1",
     "@polar-sh/sdk": "^0.32.13",

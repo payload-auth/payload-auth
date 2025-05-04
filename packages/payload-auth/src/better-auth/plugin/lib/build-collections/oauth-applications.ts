@@ -2,15 +2,17 @@ import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
-import { assertAllSchemaFields } from './utils/collection-schema'
+import { assertAllSchemaFields, getSchemaCollectionSlug } from './utils/collection-schema'
 
 import type { CollectionConfig } from 'payload'
 import type { OauthApplication } from '@/better-auth/generated-types'
 import type { FieldRule } from './utils/model-field-transformations'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildOauthApplicationsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const oauthApplicationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.oauthApplication, pluginOptions })
+export function buildOauthApplicationsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const oauthApplicationSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.oauthApplication)
+
+  const oauthApplicationSchema = resolvedSchemas[baModelKey.oauthApplication]
 
   const existingOauthApplicationCollection = incomingCollections.find((collection) => collection.slug === oauthApplicationSlug) as
     | CollectionConfig
@@ -67,7 +69,7 @@ export function buildOauthApplicationsCollection({ incomingCollections, pluginOp
   ]
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: oauthApplicationSchema,
     fieldRules: oauthApplicationFieldRules,
     additionalProperties: fieldOverrides
   })
@@ -77,7 +79,7 @@ export function buildOauthApplicationsCollection({ incomingCollections, pluginOp
     slug: oauthApplicationSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: 'name',
+      useAsTitle: oauthApplicationSchema?.fields?.name?.fieldName,
       description: 'OAuth applications are custom OAuth clients',
       group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingOauthApplicationCollection?.admin
@@ -99,7 +101,7 @@ export function buildOauthApplicationsCollection({ incomingCollections, pluginOp
     })
   }
 
-  assertAllSchemaFields(oauthApplicationCollection, schema)
+  assertAllSchemaFields(oauthApplicationCollection, oauthApplicationSchema)
 
   return oauthApplicationCollection
 }

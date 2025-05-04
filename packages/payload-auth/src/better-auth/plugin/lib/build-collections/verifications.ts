@@ -1,16 +1,16 @@
+import type { Verification } from '@/better-auth/generated-types'
+import type { CollectionConfig } from 'payload'
+import type { BuildCollectionProps, FieldOverrides } from '../../types'
+import type { FieldRule } from './utils/model-field-transformations'
+
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
+import { assertAllSchemaFields, getSchemaCollectionSlug, getSchemaFieldName } from './utils/collection-schema'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import { assertAllSchemaFields } from './utils/collection-schema'
 
-import type { CollectionConfig } from 'payload'
-import type { Verification } from '@/better-auth/generated-types'
-import type { FieldRule } from './utils/model-field-transformations'
-import type { BuildCollectionProps, FieldOverrides } from '../../types'
-
-export function buildVerificationsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const verificationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.verification, pluginOptions })
+export function buildVerificationsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const verificationSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.verification)
+  const verificationSchema = resolvedSchemas[baModelKey.verification]
 
   const existingVerificationCollection = incomingCollections.find((collection) => collection.slug === verificationSlug) as
     | CollectionConfig
@@ -55,7 +55,7 @@ export function buildVerificationsCollection({ incomingCollections, pluginOption
   ]
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: verificationSchema,
     fieldRules: verificationFieldRules,
     additionalProperties: fieldOverrides
   })
@@ -64,7 +64,7 @@ export function buildVerificationsCollection({ incomingCollections, pluginOption
     ...existingVerificationCollection,
     slug: verificationSlug,
     admin: {
-      useAsTitle: 'identifier',
+      useAsTitle: getSchemaFieldName(resolvedSchemas, baModelKey.verification, 'identifier'),
       description: 'Verifications are used to verify authentication requests',
       group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingVerificationCollection?.admin,
@@ -87,7 +87,7 @@ export function buildVerificationsCollection({ incomingCollections, pluginOption
     })
   }
 
-  assertAllSchemaFields(verificationCollection, schema)
+  assertAllSchemaFields(verificationCollection, verificationSchema)
 
   return verificationCollection
 }

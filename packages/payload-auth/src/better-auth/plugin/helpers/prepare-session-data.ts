@@ -1,8 +1,6 @@
 import { Session, User } from 'better-auth'
-import type { Collection, CollectionConfig, Config, Payload } from 'payload'
+import type { CollectionConfig } from 'payload'
 import { getFieldsToSign } from 'payload'
-import { baModelKey } from '../constants'
-import { CollectionSchemaMap } from './get-collection-schema-map'
 
 export async function prepareUser({ user, userCollection }: { user: User & Record<string, any>; userCollection: CollectionConfig }) {
   const newUser = getFieldsToSign({

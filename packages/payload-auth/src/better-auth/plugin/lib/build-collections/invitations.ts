@@ -1,16 +1,15 @@
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
-import { assertAllSchemaFields } from './utils/collection-schema'
+import { assertAllSchemaFields, getSchemaCollectionSlug, getSchemaFieldName } from './utils/collection-schema'
 
 import type { CollectionConfig } from 'payload'
 import type { Invitation } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildInvitationsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const invitationSlug = getDeafultCollectionSlug({ modelKey: baModelKey.invitation, pluginOptions })
-
+export function buildInvitationsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const invitationSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.invitation)
+  const invitationSchema = resolvedSchemas[baModelKey.invitation]
   const existingInvitationCollection = incomingCollections.find((collection) => collection.slug === invitationSlug) as
     | CollectionConfig
     | undefined
@@ -44,7 +43,7 @@ export function buildInvitationsCollection({ incomingCollections, pluginOptions,
   }
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: invitationSchema,
     additionalProperties: fieldOverrides
   })
 
@@ -53,7 +52,7 @@ export function buildInvitationsCollection({ incomingCollections, pluginOptions,
     slug: invitationSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: 'email',
+      useAsTitle: getSchemaFieldName(resolvedSchemas, baModelKey.invitation, 'email'),
       description: 'Invitations to join an organization',
       group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingInvitationCollection?.admin
@@ -75,7 +74,7 @@ export function buildInvitationsCollection({ incomingCollections, pluginOptions,
     })
   }
 
-  assertAllSchemaFields(invitationCollection, schema)
+  assertAllSchemaFields(invitationCollection, invitationSchema)
 
   return invitationCollection
 }

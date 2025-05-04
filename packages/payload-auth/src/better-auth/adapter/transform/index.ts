@@ -1,5 +1,8 @@
-import { FieldAttribute, FieldType, getAuthTables } from 'better-auth/db'
+
+import type { ModelKey } from '@/better-auth/generated-types'
 import type { BetterAuthOptions, Where } from 'better-auth'
+import type { FieldAttribute } from 'better-auth/db'
+import { type FieldType, getAuthTables } from 'better-auth/db'
 import type { CollectionSlug, Where as PayloadWhere } from 'payload'
 
 export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boolean) => {
@@ -37,9 +40,9 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
    * @warning If a collection is overridden using the collectionOverride option
    * without updating the schema mapping, this function may return incorrect slugs
    */
-  function getCollectionSlug(model: string): CollectionSlug {
+  function getCollectionSlug(model: ModelKey): CollectionSlug {
     // First try to get the modelName from schema, otherwise fall back to the original model name
-    const collection = schema[model]?.modelName || model
+    const collection = schema?.[model]?.modelName || model
     debugLog(['getCollectionSlug:', { model, resolvedSlug: collection }])
     return collection as CollectionSlug
   }
@@ -71,7 +74,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
    * @warning If a fieldName is overridden in the payload collection config using the collectionOverride option
    * without updating the schema mapping, this function may return incorrect field names
    */
-  function getFieldName(model: string, field: string): string {
+  function getFieldName(model: ModelKey, field: string): string {
     // Special case: 'id' or '_id' is always preserved as-is
     if (['id', '_id'].includes(field)) {
       return field
@@ -300,7 +303,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
     idType
   }: {
     data: Record<string, any>
-    model: string
+    model: ModelKey
     idType: 'number' | 'text'
   }): Record<string, any> {
     const transformedData: Record<string, any> = {}
@@ -355,7 +358,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
    * @param model - The model name in the BetterAuth schema
    * @returns The transformed document compatible with BetterAuth
    */
-  function transformOutput<T extends Record<string, any> | null>({ doc, model }: { doc: T; model: string }): T {
+  function transformOutput<T extends Record<string, any> | null>({ doc, model }: { doc: T; model: ModelKey }): T {
     if (!doc || typeof doc !== 'object') return doc
 
     const result = { ...doc }
@@ -554,7 +557,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
    * @param where - Array of Better Auth where conditions
    * @returns A Payload-compatible where clause object
    */
-  function convertWhereClause({ idType, model, where }: { idType: 'number' | 'text'; model: string; where?: Where[] }): PayloadWhere {
+  function convertWhereClause({ idType, model, where }: { idType: 'number' | 'text'; model: ModelKey; where?: Where[] }): PayloadWhere {
     // Handle empty where clause
     if (!where) return {}
 
@@ -637,7 +640,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
    * // Input: ['email', 'name']
    * // Output: { email: true, name: true }
    */
-  function convertSelect(model: string, select?: string[]) {
+  function convertSelect(model: ModelKey, select?: string[]) {
     // Return undefined if select is empty or not provided
     if (!select || select.length === 0) return undefined
 
@@ -664,7 +667,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
    * // Input: { field: 'createdAt', direction: 'asc' }
    * // Output: 'createdAt'
    */
-  function convertSort(model: string, sortBy?: { field: string; direction: 'asc' | 'desc' }): string | undefined {
+  function convertSort(model: ModelKey, sortBy?: { field: string; direction: 'asc' | 'desc' }): string | undefined {
     if (!sortBy) return undefined
     const fieldName = getFieldName(model, sortBy.field)
     const prefix = sortBy.direction === 'desc' ? '-' : ''

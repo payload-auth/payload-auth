@@ -1,5 +1,5 @@
 import { baModelKey } from '@/better-auth/plugin/constants'
-import { getMappedCollection, transformCollectionsToCollectionConfigs } from '@/better-auth/plugin/helpers/get-collection'
+import { getCollectionByModelKey } from '@/better-auth/plugin/helpers/get-collection'
 import { getPayloadAuth } from '@/better-auth/plugin/lib/get-payload-auth'
 import { cookies } from 'next/headers'
 import type { CollectionAfterLogoutHook } from 'payload'
@@ -8,14 +8,12 @@ export function getAfterLogoutHook() {
   const hook: CollectionAfterLogoutHook = async ({ req }) => {
     const cookieStore = await cookies()
     const payload = await getPayloadAuth(req.payload.config)
-    const collections = req.payload.collections
-    const collectionMap = transformCollectionsToCollectionConfigs(collections)
     const securePrefix = '__Secure-'
     const authContext = await payload.betterAuth.$context
     const sessionTokenName = authContext.authCookies.sessionToken.name
     const sessionDataName = authContext.authCookies.sessionData.name
     const dontRememberTokenName = authContext.authCookies.dontRememberToken.name
-    const sessionsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.session }).slug
+    const sessionsSlug = getCollectionByModelKey(req.payload.collections, baModelKey.session).slug
 
     try {
       const sessionCookieValue = cookieStore.get(sessionTokenName)?.value

@@ -1,14 +1,13 @@
 import { baModelKey } from '@/better-auth/plugin/constants'
-import { getMappedCollection, transformCollectionsToCollectionConfigs } from '@/better-auth/plugin/helpers/get-collection'
+import { getCollectionByModelKey } from '@/better-auth/plugin/helpers/get-collection'
 import { commitTransaction, initTransaction, killTransaction, type CollectionBeforeDeleteHook } from 'payload'
 
 export function getBeforeDeleteHook(): CollectionBeforeDeleteHook {
   const hook: CollectionBeforeDeleteHook = async ({ req, id }) => {
     const collections = req.payload.collections
-    const collectionMap = transformCollectionsToCollectionConfigs(collections)
-    const accountsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.account }).slug
-    const sessionsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.session }).slug
-    const verificationsSlug = getMappedCollection({ collectionMap, betterAuthModelKey: baModelKey.verification }).slug
+    const accountsSlug = getCollectionByModelKey(collections, baModelKey.account).slug
+    const sessionsSlug = getCollectionByModelKey(collections, baModelKey.session).slug
+    const verificationsSlug = getCollectionByModelKey(collections, baModelKey.verification).slug
     try {
       const { payload } = req
       const userId = id

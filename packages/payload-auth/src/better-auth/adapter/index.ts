@@ -3,6 +3,9 @@ import type { Adapter, BetterAuthOptions, Where } from 'better-auth'
 import { generateSchema } from './generate-schema'
 import { createTransform } from './transform'
 import type { PayloadAdapter } from './types'
+import { BasePayload } from 'payload'
+import { BetterAuthSchemas } from '@/index'
+import { ModelKey } from '../generated-types'
 
 export const BETTER_AUTH_CONTEXT_KEY = 'payload-db-adapter'
 const PAYLOAD_QUERY_DEPTH = 0
@@ -17,13 +20,13 @@ const PAYLOAD_QUERY_DEPTH = 0
  * @param config - Configuration options for the adapter
  * @returns A function that creates a Better Auth adapter
  */
-const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
+const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false, idType }) => {
   /**
    * Logs debug messages if debug logging is enabled
    * @param message - The message to log
    */
   function debugLog(message: any[]) {
-    if (config.enableDebugLogs) {
+    if (enableDebugLogs) {
       console.log('[payload-db-adapter]', ...message)
     }
   }
@@ -88,7 +91,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
    */
   return (options: BetterAuthOptions): Adapter => {
     const { transformInput, transformOutput, convertWhereClause, convertSelect, convertSort, getCollectionSlug, singleIdQuery } =
-      createTransform(options, config.enableDebugLogs ?? false)
+      createTransform(options, enableDebugLogs)
 
     return {
       id: 'payload-adapter',
@@ -103,15 +106,15 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
       }): Promise<R> {
         const start = Date.now()
         const payload = await resolvePayloadClient()
-        const collectionSlug = getCollectionSlug(model)
+        const collectionSlug = getCollectionSlug(model as ModelKey)
 
         // Validate collection exists before proceeding
         await validateCollection(payload, collectionSlug, model)
 
         const transformedInput = transformInput({
           data: values,
-          model,
-          idType: config.idType
+          model: model as ModelKey,
+          idType: idType
         })
 
         debugLog(['create', { collectionSlug, transformedInput, select }])
@@ -120,14 +123,14 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
           const result = await payload.create({
             collection: collectionSlug,
             data: transformedInput,
-            select: convertSelect(model, select),
+            select: convertSelect(model as ModelKey, select),
             context: createAdapterContext({ model, operation: 'create' }),
             depth: PAYLOAD_QUERY_DEPTH
           })
 
           const transformedResult = transformOutput({
             doc: result,
-            model
+            model: model as ModelKey
           })
 
           debugLog([
@@ -148,14 +151,14 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
       async findOne<R>({ model, where, select }: { model: string; where: Where[]; select?: string[] }): Promise<R | null> {
         const start = Date.now()
         const payload = await resolvePayloadClient()
-        const collectionSlug = getCollectionSlug(model)
+        const collectionSlug = getCollectionSlug(model as ModelKey)
 
         // Validate collection exists before proceeding
         await validateCollection(payload, collectionSlug, model)
 
         const payloadWhere = convertWhereClause({
-          idType: config.idType,
-          model,
+          idType: idType,
+          model: model as ModelKey,
           where
         })
 
@@ -170,7 +173,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
             result = await payload.findByID({
               collection: collectionSlug,
               id: singleId,
-              select: convertSelect(model, select),
+              select: convertSelect(model as ModelKey, select),
               context: createAdapterContext({
                 model,
                 operation: 'findOneByID'
@@ -182,7 +185,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
             const docs = await payload.find({
               collection: collectionSlug,
               where: payloadWhere,
-              select: convertSelect(model, select),
+              select: convertSelect(model as ModelKey, select),
               context: createAdapterContext({
                 model,
                 operation: 'findOneByWhere'
@@ -195,7 +198,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
 
           const transformedResult = transformOutput<typeof result | null>({
             doc: result,
-            model
+            model: model as ModelKey
           })
 
           debugLog([
@@ -234,14 +237,14 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
       }): Promise<R[]> {
         const start = Date.now()
         const payload = await resolvePayloadClient()
-        const collectionSlug = getCollectionSlug(model)
+        const collectionSlug = getCollectionSlug(model as ModelKey)
 
         // Validate collection exists before proceeding
         await validateCollection(payload, collectionSlug, model)
 
         const payloadWhere = convertWhereClause({
-          idType: config.idType,
-          model,
+          idType: idType,
+          model: model as ModelKey,
           where
         })
 
@@ -277,7 +280,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
               where: payloadWhere,
               limit: fetchLimit,
               page: page,
-              sort: convertSort(model, sortBy),
+              sort: convertSort(model as ModelKey, sortBy),
               depth: PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({
                 model,
@@ -291,7 +294,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
             result?.docs.map((doc) =>
               transformOutput({
                 doc,
-                model
+                model: model as ModelKey
               })
             ) ?? []
 
@@ -316,21 +319,21 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
       async update<R>({ model, where, update }: { model: string; where: Where[]; update: Record<string, unknown> }): Promise<R | null> {
         const start = Date.now()
         const payload = await resolvePayloadClient()
-        const collectionSlug = getCollectionSlug(model)
+        const collectionSlug = getCollectionSlug(model as ModelKey)
 
         // Validate collection exists before proceeding
         await validateCollection(payload, collectionSlug, model)
 
         const payloadWhere = convertWhereClause({
-          idType: config.idType,
-          model,
+          idType: idType,
+          model: model as ModelKey,
           where
         })
 
         const transformedInput = transformInput({
           data: update,
-          model,
-          idType: config.idType
+          model: model as ModelKey,
+          idType: idType
         })
 
         debugLog(['update', { collectionSlug, update }])
@@ -365,7 +368,7 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
 
           const transformedResult = transformOutput<typeof result | null>({
             doc: result,
-            model
+            model: model as ModelKey
           })
 
           debugLog([
@@ -389,21 +392,21 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
       async updateMany({ model, where, update }: { model: string; where: Where[]; update: Record<string, unknown> }): Promise<number> {
         const start = Date.now()
         const payload = await resolvePayloadClient()
-        const collectionSlug = getCollectionSlug(model)
+        const collectionSlug = getCollectionSlug(model as ModelKey)
 
         // Validate collection exists before proceeding
         await validateCollection(payload, collectionSlug, model)
 
         const payloadWhere = convertWhereClause({
-          idType: config.idType,
-          model,
+          idType: idType,
+          model: model as ModelKey,
           where
         })
 
         const transformedInput = transformInput({
           data: update,
-          model,
-          idType: config.idType
+          model: model as ModelKey,
+          idType: idType
         })
 
         debugLog(['updateMany', { collectionSlug, payloadWhere, update }])
@@ -438,14 +441,14 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
       async delete({ model, where }: { model: string; where: Where[] }): Promise<void> {
         const start = Date.now()
         const payload = await resolvePayloadClient()
-        const collectionSlug = getCollectionSlug(model)
+        const collectionSlug = getCollectionSlug(model as ModelKey)
 
         // Validate collection exists before proceeding
         await validateCollection(payload, collectionSlug, model)
 
         const payloadWhere = convertWhereClause({
-          idType: config.idType,
-          model,
+          idType: idType,
+          model: model as ModelKey,
           where
         })
 
@@ -499,14 +502,14 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
       async deleteMany({ model, where }: { model: string; where: Where[] }): Promise<number> {
         const start = Date.now()
         const payload = await resolvePayloadClient()
-        const collectionSlug = getCollectionSlug(model)
+        const collectionSlug = getCollectionSlug(model as ModelKey)
 
         // Validate collection exists before proceeding
         await validateCollection(payload, collectionSlug, model)
 
         const payloadWhere = convertWhereClause({
-          idType: config.idType,
-          model,
+          idType: idType,
+          model: model as ModelKey,
           where
         })
 
@@ -541,14 +544,14 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
       async count({ model, where }: { model: string; where?: Where[] }): Promise<number> {
         const start = Date.now()
         const payload = await resolvePayloadClient()
-        const collectionSlug = getCollectionSlug(model)
+        const collectionSlug = getCollectionSlug(model as ModelKey)
 
         // Validate collection exists before proceeding
         await validateCollection(payload, collectionSlug, model)
 
         const payloadWhere = convertWhereClause({
-          idType: config.idType,
-          model,
+          idType: idType,
+          model: model as ModelKey,
           where
         })
 
@@ -590,8 +593,8 @@ const payloadAdapter: PayloadAdapter = (payloadClient, config) => {
         }
       },
       options: {
-        enableDebugLogs: config.enableDebugLogs,
-        idType: config.idType
+        enableDebugLogs,
+        idType
       }
     }
   }

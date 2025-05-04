@@ -95,7 +95,7 @@ export const PasswordResetForm: React.FC<PasswordResetFormArgs> = ({ token }) =>
         e.preventDefault()
         void form.handleSubmit()
       }}>
-      <FormInputWrap>
+      <FormInputWrap className="login__form">
         <form.AppField
           name="password"
           children={(field) => <field.TextField type="password" className="password" label={t('authentication:newPassword')} required />}

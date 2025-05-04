@@ -1,12 +1,10 @@
-import type { BasePayload } from 'payload'
 import type { AdapterInstance } from 'better-auth'
+import type { BasePayload } from 'payload'
 
-export type PayloadAdapterOptions = {
-  idType: 'number' | 'text'
-  enableDebugLogs?: boolean
+export type PayloadAdapterParams = {
+  payloadClient: BasePayload | Promise<BasePayload> | (() => Promise<BasePayload>);
+  enableDebugLogs?: boolean;
+  idType: 'number' | 'text';
 }
 
-export type PayloadAdapter = (
-  payloadClient: BasePayload | Promise<BasePayload> | (() => Promise<BasePayload>),
-  config: PayloadAdapterOptions
-) => AdapterInstance
+export type PayloadAdapter = (options: PayloadAdapterParams) => AdapterInstance
