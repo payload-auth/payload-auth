@@ -251,7 +251,7 @@ export type SubscriptionFields = {
 
 export type Subscription = SubscriptionFields
 
-export type PluginId = "username" | "admin" | "api-key" | "passkey" | "harmony-email" | "harmony-phone-number" | "bearer" | "email-otp" | "magic-link" | "phone-number" | "one-tap" | "anonymous" | "multi-session" | "one-time-token" | "oidc" | "sso" | "generic-oauth" | "open-api" | "organization" | "jwt" | "two-factor" | "stripe" | "polar"
+export type PluginId = "username" | "admin" | "api-key" | "passkey" | "harmony-email" | "harmony-phone-number" | "bearer" | "email-otp" | "magic-link" | "phone-number" | "one-tap" | "anonymous" | "multi-session" | "one-time-token" | "oidc" | "sso" | "generic-oauth" | "open-api" | "organization" | "jwt" | "two-factor" | "next-cookies" | "stripe" | "polar"
 
 export type BetterAuthFullSchema = {
   "user": User

@@ -21,6 +21,7 @@ import {
   twoFactor,
   username
 } from 'better-auth/plugins'
+import { nextCookies } from 'better-auth/next-js'
 import { passkey } from 'better-auth/plugins/passkey'
 import { sso } from 'better-auth/plugins/sso'
 import { polar } from '@polar-sh/better-auth'
@@ -58,6 +59,7 @@ const plugins = [
   jwt(),
   twoFactor(),
   phoneNumber(),
+  nextCookies(),
   stripe({
     stripeClient: { apiKey: 'typescript' },
     stripeWebhookSecret: 'typescript',
