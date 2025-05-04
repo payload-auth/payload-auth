@@ -19,7 +19,8 @@ import {
   oidcProvider,
   phoneNumber,
   twoFactor,
-  username
+  username,
+  customSession
 } from 'better-auth/plugins'
 import { nextCookies } from 'better-auth/next-js'
 import { passkey } from 'better-auth/plugins/passkey'
@@ -60,6 +61,7 @@ const plugins = [
   twoFactor(),
   phoneNumber(),
   nextCookies(),
+  customSession(async () => ({})),
   stripe({
     stripeClient: { apiKey: 'typescript' },
     stripeWebhookSecret: 'typescript',
