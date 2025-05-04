@@ -144,6 +144,7 @@ const LoginForm: React.FC<{
         <Link href={forgotPasswordUrl} prefetch={false}>
           {t('authentication:forgotPasswordQuestion')}
         </Link>
+        <button type="submit" style={{ display: 'none' }} tabIndex={-1} />
         <form.AppForm children={<form.Submit label={t('authentication:login')} loadingLabel={t('general:loading')} />} />
       </Form>
     </div>
