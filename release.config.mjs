@@ -22,7 +22,7 @@ function transformCommit(commit) {
 }
 
 // Enrich commit author data by retrieving the GitHub login via the API,
-// using the commit author’s email as the key. If commit.author is an object,
+// using the commit author's email as the key. If commit.author is an object,
 // we use only its name (if available) and then append " (@login)"; if no name exists,
 // we only append the GitHub username without exposing the email.
 async function enrichCommitAuthors(context, headers, owner, repository) {
@@ -127,7 +127,16 @@ async function finalizeContext(context) {
  * @type {import('semantic-release').GlobalConfig}
  */
 const config = {
-  branches: ['main'],
+  // The `main` branch keeps producing regular releases on the default (latest) dist-tag.
+  // Every other branch automatically publishes a prerelease to the `canary` channel/dist-tag.
+  branches: [
+    'main',
+    {
+      name: 'canary',
+      channel: 'canary',
+      prerelease: 'canary'
+    }
+  ],
   plugins: [
     [
       '@semantic-release/commit-analyzer',

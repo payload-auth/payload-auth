@@ -1,0 +1,70 @@
+name: Publish Canary
+
+on:
+  push:
+    branches:
+      - canary
+    paths:
+      - 'packages/**'
+  pull_request:
+    branches:
+      - canary
+    paths:
+      - 'packages/**'
+
+jobs:
+  commitlint:
+    name: Lint Commit Messages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: wagoid/commitlint-github-action@v6
+        with:
+          configFile: ../../commitlint.config.mjs
+
+  publish:
+    name: Publish Canary
+    needs: commitlint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Ensure full history for semantic-release
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Build the specific package required for release
+      - name: Build payload-auth package
+        run: pnpm run build
+
+      # Create an archive of the distribution files
+      - name: Archive distribution files
+        run: (cd packages/payload-auth/dist && zip -r ../../../payload-auth-distribution.zip .)
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpm exec semantic-release 
