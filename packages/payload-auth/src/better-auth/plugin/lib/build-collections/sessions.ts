@@ -1,7 +1,7 @@
 import { baModelKey, baModelKeyToSlug, baseSlugs } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { getDefaultCollectionSlug } from '../../helpers/get-collection-slug'
 import { assertAllSchemaFields } from './utils/collection-schema'
 
 import type { CollectionConfig } from 'payload'
@@ -22,7 +22,7 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, re
     userId: () => ({
       saveToJWT: true,
       admin: { readOnly: true, description: 'The user that the session belongs to' },
-      relationTo: getDeafultCollectionSlug({ modelKey: baModelKey.user, pluginOptions })
+      relationTo: getDefaultCollectionSlug({ modelKey: baModelKey.user, pluginOptions })
     }),
     token: () => ({
       index: true,
@@ -54,7 +54,7 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, re
     activeOrganizationId: () => ({
       type: 'relationship',
       saveToJWT: true,
-      relationTo: getDeafultCollectionSlug({ modelKey: baModelKey.organization, pluginOptions }),
+      relationTo: getDefaultCollectionSlug({ modelKey: baModelKey.organization, pluginOptions }),
       admin: {
         readOnly: true,
         description: 'The currently active organization for the session'
