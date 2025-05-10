@@ -1,7 +1,7 @@
 import type { BetterAuthPluginOptions } from '../types'
 import { baseSlugs, baModelKeyToSlug } from '../constants'
 
-export function getDeafultCollectionSlug({
+export function getDefaultCollectionSlug({
   pluginOptions,
   modelKey
 }: {
@@ -9,7 +9,7 @@ export function getDeafultCollectionSlug({
   modelKey: string
 }): string {
   const baseSlug = baModelKeyToSlug[modelKey as keyof typeof baModelKeyToSlug] ?? modelKey
-  
+
   switch (modelKey) {
     case 'user':
       return pluginOptions.users?.slug ?? baseSlugs.users
@@ -24,4 +24,4 @@ export function getDeafultCollectionSlug({
     default:
       return baseSlug
   }
-} 
+}

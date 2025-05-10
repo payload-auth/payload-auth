@@ -1,6 +1,6 @@
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { getDefaultCollectionSlug } from '../../helpers/get-collection-slug'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 import { assertAllSchemaFields, getSchemaCollectionSlug } from './utils/collection-schema'
 

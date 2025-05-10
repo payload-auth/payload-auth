@@ -1,5 +1,5 @@
 import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exists'
-import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
+import { getDefaultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
 import { baModelFieldKeys, baModelKey, defaults, supportedBAPluginIds } from '../../../constants'
 import { getAllRoleOptions } from '../../../helpers/get-all-roles'
 import { assertAllSchemaFields, getSchemaCollectionSlug, getSchemaFieldName } from '../utils/collection-schema'
@@ -45,7 +45,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
           hidden: true
         },
         index: true,
-        label: ({ t }: any) => field.fieldName === 'createdAt' ? t('general:createdAt') : t('general:updatedAt')
+        label: ({ t }: any) => (field.fieldName === 'createdAt' ? t('general:createdAt') : t('general:updatedAt'))
       })
     }
   ]
