@@ -30,6 +30,5 @@ export function getCollectionFieldNameByFieldKey<M extends ModelKey>(
   fieldKey: Extract<keyof BetterAuthFullSchema[M], string>
 ): string {
   const fields = flattenAllFields({ fields: collection.fields })
-  console.log('fields', fields)
   return fields.find((f) => f.custom?.betterAuthFieldKey === fieldKey)?.name ?? fieldKey
 }

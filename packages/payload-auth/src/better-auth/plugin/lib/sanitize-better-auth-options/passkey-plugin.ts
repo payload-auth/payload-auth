@@ -7,4 +7,5 @@ export function configurePasskeyPlugin(plugin: any, resolvedSchemas: BetterAuthS
   const model = baModelKey.passkey
   set(plugin, `schema.${model}.modelName`, getSchemaCollectionSlug(resolvedSchemas, model))
   set(plugin, `schema.${model}.fields.userId.fieldName`, getSchemaFieldName(resolvedSchemas, model, baModelFieldKeys.passkey.userId))
+  set(plugin, `schema.${model}.fields.userId.references.model`, getSchemaCollectionSlug(resolvedSchemas, baModelKey.user))
 }
