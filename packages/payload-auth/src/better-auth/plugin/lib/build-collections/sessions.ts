@@ -1,16 +1,18 @@
 import { baModelKey, baModelKeyToSlug, baseSlugs } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { getDefaultCollectionSlug } from '../../helpers/get-collection-slug'
 import { assertAllSchemaFields } from './utils/collection-schema'
 
 import type { CollectionConfig } from 'payload'
 import type { Session } from '@/better-auth/generated-types'
 import type { FieldRule } from './utils/model-field-transformations'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import { getSchemaCollectionSlug } from './utils/collection-schema'
 
-export function buildSessionsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const sessionSlug = getDeafultCollectionSlug({ modelKey: baModelKey.session, pluginOptions })
+export function buildSessionsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const sessionSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.session)
+  const sessionSchema = resolvedSchemas[baModelKey.session]
 
   const existingSessionCollection = incomingCollections.find((collection) => collection.slug === sessionSlug) as
     | CollectionConfig
@@ -20,7 +22,7 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, sc
     userId: () => ({
       saveToJWT: true,
       admin: { readOnly: true, description: 'The user that the session belongs to' },
-      relationTo: getDeafultCollectionSlug({ modelKey: baModelKey.user, pluginOptions })
+      relationTo: getDefaultCollectionSlug({ modelKey: baModelKey.user, pluginOptions })
     }),
     token: () => ({
       index: true,
@@ -52,7 +54,7 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, sc
     activeOrganizationId: () => ({
       type: 'relationship',
       saveToJWT: true,
-      relationTo: getDeafultCollectionSlug({ modelKey: baModelKey.organization, pluginOptions }),
+      relationTo: getDefaultCollectionSlug({ modelKey: baModelKey.organization, pluginOptions }),
       admin: {
         readOnly: true,
         description: 'The currently active organization for the session'
@@ -77,7 +79,7 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, sc
   ]
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: sessionSchema,
     fieldRules: sessionFieldRules,
     additionalProperties: fieldOverrides
   })
@@ -108,7 +110,7 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, sc
     })
   }
 
-  assertAllSchemaFields(sessionCollection, schema)
+  assertAllSchemaFields(sessionCollection, sessionSchema)
 
   return sessionCollection
 }

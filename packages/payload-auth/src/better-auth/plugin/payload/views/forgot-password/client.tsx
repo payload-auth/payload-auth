@@ -11,14 +11,17 @@ import { toast, useConfig, useTranslation } from '@payloadcms/ui'
 import type { FC } from 'react'
 import { z } from 'zod'
 
-type ForgotPasswordFormProps = {}
+type ForgotPasswordFormProps = {
+  baseURL?: string
+  basePath?: string
+}
 
-export const ForgotPasswordForm: FC<ForgotPasswordFormProps> = () => {
+export const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ baseURL, basePath }) => {
   const { t } = useTranslation()
   const { config } = useConfig()
   const adminRoute = config.routes.admin
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
-  const authClient = useMemo(() => createAuthClient(), [])
+  const authClient = useMemo(() => createAuthClient({ baseURL, basePath }), [])
 
   const forgotSchema = z.object({
     email: z.string().refine(
@@ -66,8 +69,7 @@ export const ForgotPasswordForm: FC<ForgotPasswordFormProps> = () => {
       onSubmit={(e) => {
         e.preventDefault()
         void form.handleSubmit()
-      }}
-    >
+      }}>
       <FormHeader heading={t('authentication:forgotPassword')} description={t('authentication:forgotPasswordEmailInstructions')} />
       <FormInputWrap>
         <form.AppField

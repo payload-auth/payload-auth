@@ -1,16 +1,17 @@
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { getDefaultCollectionSlug } from '../../helpers/get-collection-slug'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
-import { assertAllSchemaFields } from './utils/collection-schema'
+import { assertAllSchemaFields, getSchemaCollectionSlug } from './utils/collection-schema'
 
 import { type CollectionConfig } from 'payload'
 import type { Apikey } from '@/better-auth/generated-types'
 import type { FieldRule } from './utils/model-field-transformations'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildApiKeysCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const apiKeySlug = getDeafultCollectionSlug({ modelKey: baModelKey.apikey, pluginOptions })
+export function buildApiKeysCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const apiKeySlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.apikey)
+  const apiKeySchema = resolvedSchemas[baModelKey.apikey]
 
   const existingApiKeyCollection = incomingCollections.find((collection) => collection.slug === apiKeySlug) as CollectionConfig | undefined
 
@@ -91,7 +92,7 @@ export function buildApiKeysCollection({ incomingCollections, pluginOptions, sch
   ]
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: apiKeySchema,
     fieldRules: apiKeyFieldRules,
     additionalProperties: fieldOverrides
   })
@@ -101,7 +102,7 @@ export function buildApiKeysCollection({ incomingCollections, pluginOptions, sch
     slug: apiKeySlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: 'name',
+      useAsTitle: apiKeySchema?.fields?.name?.fieldName,
       description: 'API keys are used to authenticate requests to the API.',
       group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingApiKeyCollection?.admin
@@ -123,7 +124,7 @@ export function buildApiKeysCollection({ incomingCollections, pluginOptions, sch
     })
   }
 
-  assertAllSchemaFields(apiKeyCollection, schema)
+  assertAllSchemaFields(apiKeyCollection, apiKeySchema)
 
   return apiKeyCollection
 }

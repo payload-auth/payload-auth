@@ -1,15 +1,16 @@
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { getSchemaCollectionSlug, getSchemaFieldName } from './utils/collection-schema'
 import { assertAllSchemaFields } from './utils/collection-schema'
 
 import type { CollectionConfig } from 'payload'
 import type { SsoProvider } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildSsoProvidersCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const ssoProviderSlug = getDeafultCollectionSlug({ modelKey: baModelKey.ssoProvider, pluginOptions })
+export function buildSsoProvidersCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const ssoProviderSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.ssoProvider)
+  const ssoProviderSchema = resolvedSchemas[baModelKey.ssoProvider]
 
   const existingSsoProviderCollection = incomingCollections.find((collection) => collection.slug === ssoProviderSlug) as
     | CollectionConfig
@@ -44,7 +45,7 @@ export function buildSsoProvidersCollection({ incomingCollections, pluginOptions
   }
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: ssoProviderSchema,
     additionalProperties: fieldOverrides
   })
 
@@ -53,7 +54,7 @@ export function buildSsoProvidersCollection({ incomingCollections, pluginOptions
     slug: ssoProviderSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: 'issuer',
+      useAsTitle: getSchemaFieldName(resolvedSchemas, baModelKey.ssoProvider, 'issuer'),
       description: 'SSO providers are used to authenticate users with an external provider',
       group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingSsoProviderCollection?.admin
@@ -75,7 +76,7 @@ export function buildSsoProvidersCollection({ incomingCollections, pluginOptions
     })
   }
 
-  assertAllSchemaFields(ssoProviderCollection, schema)
+  assertAllSchemaFields(ssoProviderCollection, ssoProviderSchema)
 
   return ssoProviderCollection
 }

@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@daveyplate/better-auth-ui": "^1.4.7",
-    "@hookform/resolvers": "^4.1.3",
     "@payloadcms/db-mongodb": "3.35.1",
     "@payloadcms/db-vercel-postgres": "3.35.1",
     "@payloadcms/next": "3.35.1",

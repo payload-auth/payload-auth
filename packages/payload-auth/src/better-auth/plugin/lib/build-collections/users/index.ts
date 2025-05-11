@@ -1,8 +1,8 @@
 import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exists'
-import { getDeafultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
+import { getDefaultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
 import { baModelFieldKeys, baModelKey, defaults, supportedBAPluginIds } from '../../../constants'
 import { getAllRoleOptions } from '../../../helpers/get-all-roles'
-import { assertAllSchemaFields, getSchemaFieldName } from '../utils/collection-schema'
+import { assertAllSchemaFields, getSchemaCollectionSlug, getSchemaFieldName } from '../utils/collection-schema'
 import { isAdminOrCurrentUserUpdateWithAllowedFields, isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
 import { getCollectionFields } from '../utils/transform-schema-fields-to-payload'
 import { betterAuthStrategy } from './better-auth-strategy'
@@ -21,10 +21,11 @@ import type { FieldRule } from '../utils/model-field-transformations'
 import type { BuildCollectionProps, FieldOverrides } from '../../../types'
 import type { User } from '@/better-auth/generated-types'
 
-export function buildUsersCollection({ incomingCollections, pluginOptions, collectionSchemaMap, schema }: BuildCollectionProps): CollectionConfig {
-  const userSlug = getDeafultCollectionSlug({ modelKey: baModelKey.user, pluginOptions })
-  const passkeySlug = getDeafultCollectionSlug({ modelKey: baModelKey.passkey, pluginOptions })
-  const passkeyUserIdFieldName = getSchemaFieldName(collectionSchemaMap, baModelKey.passkey, baModelFieldKeys.passkey.userId)
+export function buildUsersCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const userSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.user)
+  const passkeySlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.passkey)
+  const passkeyUserIdFieldName = getSchemaFieldName(resolvedSchemas, baModelKey.passkey, baModelFieldKeys.passkey.userId)
+  const userSchema = resolvedSchemas[baModelKey.user]
   const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
   const allRoleOptions = getAllRoleOptions(pluginOptions)
   const hasUsernamePlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.username)
@@ -44,7 +45,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, colle
           hidden: true
         },
         index: true,
-        label: ({ t }: any) => field.fieldName === 'createdAt' ? t('general:createdAt') : t('general:updatedAt')
+        label: ({ t }: any) => (field.fieldName === 'createdAt' ? t('general:createdAt') : t('general:updatedAt'))
       })
     }
   ]
@@ -127,7 +128,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, colle
   }
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: userSchema,
     fieldRules: userFieldRules,
     additionalProperties: fieldOverrides
   })
@@ -155,7 +156,9 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, colle
                 Component: {
                   path: 'payload-auth/better-auth/plugin/client#AdminButtons',
                   clientProps: {
-                    userSlug
+                    userSlug,
+                    baseURL: pluginOptions.betterAuthOptions?.baseURL,
+                    basePath: pluginOptions.betterAuthOptions?.basePath
                   }
                 },
                 condition: () => {
@@ -241,7 +244,8 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, colle
                     path: 'payload-auth/better-auth/plugin/rsc#Passkeys',
                     serverProps: {
                       passkeyUserIdFieldName,
-                      passkeySlug
+                      passkeySlug,
+                      pluginOptions
                     }
                   }
                 }
@@ -258,7 +262,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, colle
     })
   }
 
-  assertAllSchemaFields(usersCollection, schema)
+  assertAllSchemaFields(usersCollection, userSchema)
 
   return usersCollection
 }

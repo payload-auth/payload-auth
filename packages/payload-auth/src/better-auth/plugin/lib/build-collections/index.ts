@@ -1,9 +1,7 @@
+import type { ModelKey } from '@/better-auth/generated-types'
 import type { CollectionConfig } from 'payload'
 import { baModelKey, baseSlugs } from '../../constants'
-import { getBetterAuthSchema } from '../../helpers/get-better-auth-schema'
-import { CollectionSchemaMap } from '../../helpers/get-collection-schema-map'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import type { BetterAuthPluginOptions, BuildCollectionProps, BuildSchema } from '../../types'
+import type { BetterAuthPluginOptions, BuildCollectionProps, BetterAuthSchemas } from '../../types'
 import { buildAccountsCollection } from './accounts/index'
 import { buildAdminInvitationsCollection } from './admin-invitations'
 import { buildApiKeysCollection } from './api-keys'
@@ -21,30 +19,26 @@ import { buildSubscriptionsCollection } from './subscriptions'
 import { buildTeamsCollection } from './teams'
 import { buildTwoFactorsCollection } from './two-factors'
 import { buildUsersCollection } from './users/index'
+import { getSchemaCollectionSlug } from './utils/collection-schema'
 import { buildVerificationsCollection } from './verifications'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
  */
-export function buildCollectionMap({
-  collectionSchemaMap,
+export function buildCollections({
   incomingCollections,
-  pluginOptions
+  pluginOptions,
+  resolvedSchemas
 }: {
-  collectionSchemaMap: CollectionSchemaMap
   incomingCollections: CollectionConfig[]
   pluginOptions: BetterAuthPluginOptions
+  resolvedSchemas: BetterAuthSchemas
 }): Record<string, CollectionConfig> {
-  const schema = getBetterAuthSchema(pluginOptions.betterAuthOptions ?? {})
-
-  const getModelSchema = (modelKey: string) => schema[collectionSchemaMap[modelKey as keyof CollectionSchemaMap]?.collectionSlug]
-
-  const collectionBuilders = {
+  const collectionBuilders: Record<ModelKey, (props: BuildCollectionProps) => CollectionConfig> = {
     [baModelKey.user]: (props: BuildCollectionProps) => buildUsersCollection(props),
     [baModelKey.account]: (props: BuildCollectionProps) => buildAccountsCollection(props),
     [baModelKey.session]: (props: BuildCollectionProps) => buildSessionsCollection(props),
     [baModelKey.verification]: (props: BuildCollectionProps) => buildVerificationsCollection(props),
-    [baseSlugs.adminInvitations]: (props: BuildCollectionProps) => buildAdminInvitationsCollection(props),
     [baModelKey.organization]: (props: BuildCollectionProps) => buildOrganizationsCollection(props),
     [baModelKey.member]: (props: BuildCollectionProps) => buildMembersCollection(props),
     [baModelKey.invitation]: (props: BuildCollectionProps) => buildInvitationsCollection(props),
@@ -61,31 +55,22 @@ export function buildCollectionMap({
   }
 
   const collectionMap: Record<string, CollectionConfig> = {}
-  Object.entries(collectionSchemaMap).forEach(([modelKey, { collectionSlug }]) => {
-    const builder = collectionBuilders[modelKey as keyof typeof collectionBuilders]
-    if (builder) {
-      collectionMap[collectionSlug] = builder({
-        incomingCollections,
-        pluginOptions,
-        collectionSchemaMap,
-        schema: getModelSchema(modelKey)
-      })
-    }
-  })
+  for (const modelKey of Object.keys(resolvedSchemas) as ModelKey[]) {
+    const collectionSlug = getSchemaCollectionSlug(resolvedSchemas, modelKey)
+    const builder = collectionBuilders[modelKey]
+    if (!builder) continue
+    collectionMap[collectionSlug] = builder({
+      incomingCollections,
+      pluginOptions,
+      resolvedSchemas
+    })
+  }
 
   // Add adminInvitations collection as it's not in the collectionSchemaMap
-  const adminInvitationsSlug = getDeafultCollectionSlug({
-    modelKey: baseSlugs.adminInvitations,
-    pluginOptions
-  })
-  collectionMap[adminInvitationsSlug] = collectionBuilders[baseSlugs.adminInvitations]({
+  const adminInvitationsSlug = pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations
+  collectionMap[adminInvitationsSlug] = buildAdminInvitationsCollection({
     incomingCollections,
-    pluginOptions,
-    collectionSchemaMap,
-    schema: {
-      fields: {},
-      order: 0
-    }
+    pluginOptions
   })
 
   // Then add incoming collections that don't conflict with required ones

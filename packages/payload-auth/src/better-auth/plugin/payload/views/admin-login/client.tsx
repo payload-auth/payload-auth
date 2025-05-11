@@ -26,6 +26,8 @@ type AdminLoginClientProps = {
   prefillUsername?: string
   searchParams: { [key: string]: string | string[] | undefined }
   loginWithUsername: false | LoginWithUsernameOptions
+  baseURL?: string
+  basePath?: string
 }
 
 const baseClass = 'login__form'
@@ -38,7 +40,19 @@ const LoginForm: React.FC<{
   prefillUsername?: string
   searchParams: { [key: string]: string | string[] | undefined }
   loginWithUsername: false | LoginWithUsernameOptions
-}> = ({ hasUsernamePlugin, hasPasskeyPlugin, prefillEmail, prefillPassword, prefillUsername, searchParams, loginWithUsername }) => {
+  baseURL?: string
+  basePath?: string
+}> = ({
+  hasUsernamePlugin,
+  hasPasskeyPlugin,
+  prefillEmail,
+  prefillPassword,
+  prefillUsername,
+  searchParams,
+  loginWithUsername,
+  baseURL,
+  basePath
+}) => {
   const { config } = useConfig()
   const router = useRouter()
   const adminRoute = valueOrDefaultString(config?.routes?.admin, '/admin')
@@ -53,6 +67,8 @@ const LoginForm: React.FC<{
   const authClient = useMemo(
     () =>
       createAuthClient({
+        baseURL,
+        basePath,
         plugins: [
           usernameClient(),
           twoFactorClient({
@@ -70,11 +86,6 @@ const LoginForm: React.FC<{
     if (canLoginWithUsername && hasUsernamePlugin) return 'username'
     return 'email'
   }, [canLoginWithEmail, canLoginWithUsername, hasUsernamePlugin])
-  const [requireEmailVerification, setRequireEmailVerification] = useState<boolean>(false)
-
-  if (requireEmailVerification) {
-    return <FormHeader heading="Please verify your email" description={t('authentication:emailSent')} style={{ textAlign: 'center' }} />
-  }
 
   const loginSchema = createLoginSchema({ t, loginType, canLoginWithUsername })
 
@@ -111,6 +122,12 @@ const LoginForm: React.FC<{
     }
   })
 
+  const [requireEmailVerification, setRequireEmailVerification] = useState<boolean>(false)
+
+  if (requireEmailVerification) {
+    return <FormHeader heading="Please verify your email" description={t('authentication:emailSent')} style={{ textAlign: 'center' }} />
+  }
+
   const getLoginTypeLabel = () => {
     const labels = {
       email: t('general:email') || 'Email',
@@ -132,18 +149,31 @@ const LoginForm: React.FC<{
         <FormInputWrap className={baseClass}>
           <form.AppField
             name="login"
-            children={(field) => <field.TextField type="text" className="email" autoComplete={`email${hasPasskeyPlugin ? ' webauthn' : ''}`} label={getLoginTypeLabel()} />}
+            children={(field) => (
+              <field.TextField
+                type="text"
+                className="email"
+                autoComplete={`email${hasPasskeyPlugin ? ' webauthn' : ''}`}
+                label={getLoginTypeLabel()}
+              />
+            )}
           />
           <form.AppField
             name="password"
             children={(field) => (
-              <field.TextField type="password" className="password" autoComplete={`password${hasPasskeyPlugin ? ' webauthn' : ''}`} label={t('general:password')} />
+              <field.TextField
+                type="password"
+                className="password"
+                autoComplete={`password${hasPasskeyPlugin ? ' webauthn' : ''}`}
+                label={t('general:password')}
+              />
             )}
           />
         </FormInputWrap>
         <Link href={forgotPasswordUrl} prefetch={false}>
           {t('authentication:forgotPasswordQuestion')}
         </Link>
+        <button type="submit" style={{ display: 'none' }} tabIndex={-1} />
         <form.AppForm children={<form.Submit label={t('authentication:login')} loadingLabel={t('general:loading')} />} />
       </Form>
     </div>
@@ -158,7 +188,9 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
   prefillPassword,
   prefillUsername,
   searchParams,
-  loginWithUsername
+  loginWithUsername,
+  baseURL,
+  basePath
 }) => {
   return (
     <>
@@ -171,6 +203,8 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
           prefillUsername={prefillUsername}
           searchParams={searchParams}
           loginWithUsername={loginWithUsername}
+          baseURL={baseURL}
+          basePath={basePath}
         />
       )}
       <AdminSocialProviderButtons
@@ -178,6 +212,8 @@ export const AdminLoginClient: React.FC<AdminLoginClientProps> = ({
         loginMethods={loginMethods}
         setLoading={() => {}}
         redirectUrl={getSafeRedirect(searchParams?.redirect as string, useConfig().config.routes.admin)}
+        baseURL={baseURL}
+        basePath={basePath}
       />
     </>
   )

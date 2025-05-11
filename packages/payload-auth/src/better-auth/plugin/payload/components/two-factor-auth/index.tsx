@@ -15,7 +15,12 @@ import { useAppForm } from '@/shared/form'
 
 const baseClass = 'two-factor-auth-modal'
 
-export const TwoFactorAuth: React.FC = () => {
+type TwoFactorAuthProps = {
+  baseURL?: string
+  basePath?: string
+}
+
+export const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({ baseURL, basePath }) => {
   const [totpURI, setTotpURI] = useState('')
   const [backupCodes, setBackupCodes] = useState<string[] | null>(null)
   const [formState, setFormState] = useState<'enable' | 'verify' | 'backupCodes' | 'disable'>('enable')
@@ -25,7 +30,7 @@ export const TwoFactorAuth: React.FC = () => {
   const twoFactorEnabled = Boolean(twoFactorEnabledField?.value)
   const { setValue: setTwoFactorEnabled } = useField({ path: 'twoFactorEnabled' })
 
-  const authClient = useMemo(() => createAuthClient({ plugins: [twoFactorClient()] }), [])
+  const authClient = useMemo(() => createAuthClient({ baseURL, basePath, plugins: [twoFactorClient()] }), [])
 
   const copyURI = async () => {
     if (!totpURI) return

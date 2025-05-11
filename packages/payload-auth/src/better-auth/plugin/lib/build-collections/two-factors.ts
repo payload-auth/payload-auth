@@ -1,15 +1,15 @@
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
-import { assertAllSchemaFields } from './utils/collection-schema'
+import { getSchemaCollectionSlug, assertAllSchemaFields, getSchemaFieldName } from './utils/collection-schema'
 
 import type { CollectionConfig } from 'payload'
 import type { TwoFactor } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '../../types'
 
-export function buildTwoFactorsCollection({ incomingCollections, pluginOptions, schema }: BuildCollectionProps): CollectionConfig {
-  const twoFactorSlug = getDeafultCollectionSlug({ modelKey: baModelKey.twoFactor, pluginOptions })
+export function buildTwoFactorsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+  const twoFactorSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.twoFactor)
+  const twoFactorSchema = resolvedSchemas[baModelKey.twoFactor]
 
   const existingTwoFactorCollection = incomingCollections.find((collection) => collection.slug === twoFactorSlug) as
     | CollectionConfig
@@ -38,7 +38,7 @@ export function buildTwoFactorsCollection({ incomingCollections, pluginOptions, 
   }
 
   const collectionFields = getCollectionFields({
-    schema,
+    schema: twoFactorSchema,
     additionalProperties: fieldOverrides
   })
 
@@ -47,7 +47,7 @@ export function buildTwoFactorsCollection({ incomingCollections, pluginOptions, 
     slug: twoFactorSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: 'secret',
+      useAsTitle: getSchemaFieldName(resolvedSchemas, baModelKey.twoFactor, 'secret'),
       description: 'Two factor authentication secrets',
       group: pluginOptions?.collectionAdminGroup ?? 'Auth',
       ...existingTwoFactorCollection?.admin
@@ -69,7 +69,7 @@ export function buildTwoFactorsCollection({ incomingCollections, pluginOptions, 
     })
   }
 
-  assertAllSchemaFields(twoFactorCollection, schema)
+  assertAllSchemaFields(twoFactorCollection, twoFactorSchema)
 
   return twoFactorCollection
 }
