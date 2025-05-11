@@ -56,7 +56,12 @@ const TwoFactorVerify: React.FC<TwoFactorVerifyProps> = async ({ searchParams, i
 
   return (
     <MinimalTemplate className="two-factor-verify">
-      <TwoFactorVerifyForm redirect={redirectUrl} twoFactorDigits={twoFactorOptions?.totpOptions?.digits} />
+      <TwoFactorVerifyForm
+        redirect={redirectUrl}
+        twoFactorDigits={twoFactorOptions?.totpOptions?.digits}
+        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        basePath={pluginOptions.betterAuthOptions?.basePath}
+      />
     </MinimalTemplate>
   )
 }

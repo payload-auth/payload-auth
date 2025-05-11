@@ -10,9 +10,11 @@ import './index.scss'
 
 type AdminButtonsProps = {
   userSlug: string
+  baseURL?: string
+  basePath?: string
 }
 
-export const AdminButtons: React.FC<AdminButtonsProps> = () => {
+export const AdminButtons: React.FC<AdminButtonsProps> = ({ baseURL, basePath }) => {
   const router = useRouter()
   const { id } = useDocumentInfo()
   const isBanned = useFormFields(([fields]) => fields.banned)
@@ -24,6 +26,8 @@ export const AdminButtons: React.FC<AdminButtonsProps> = () => {
   const authClient = useMemo(
     () =>
       createAuthClient({
+        baseURL,
+        basePath,
         plugins: [adminClient()]
       }),
     []

@@ -156,7 +156,9 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
                 Component: {
                   path: 'payload-auth/better-auth/plugin/client#AdminButtons',
                   clientProps: {
-                    userSlug
+                    userSlug,
+                    baseURL: pluginOptions.betterAuthOptions?.baseURL,
+                    basePath: pluginOptions.betterAuthOptions?.basePath
                   }
                 },
                 condition: () => {
@@ -242,7 +244,8 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
                     path: 'payload-auth/better-auth/plugin/rsc#Passkeys',
                     serverProps: {
                       passkeyUserIdFieldName,
-                      passkeySlug
+                      passkeySlug,
+                      pluginOptions
                     }
                   }
                 }

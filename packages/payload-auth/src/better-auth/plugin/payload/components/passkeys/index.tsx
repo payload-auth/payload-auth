@@ -4,11 +4,11 @@ import './index.scss'
 import type { PasskeysServerComponentProps, PasskeyWithId } from './types'
 
 export const Passkeys: React.FC<PasskeysServerComponentProps> = async (props) => {
-  const { id, passkeySlug, payload, passkeyUserIdFieldName, req, user } = props
+  const { id, passkeySlug, payload, passkeyUserIdFieldName, req, user, pluginOptions } = props
 
   if (!id || !passkeySlug || !passkeyUserIdFieldName) return null
 
-  const { docs: userPasskeys } = await payload.find({
+  const { docs: userPasskeys } = (await payload.find({
     collection: passkeySlug,
     where: {
       [passkeyUserIdFieldName]: { equals: id }
@@ -16,7 +16,7 @@ export const Passkeys: React.FC<PasskeysServerComponentProps> = async (props) =>
     limit: 100,
     req,
     depth: 0
-  }) as unknown as { docs: PasskeyWithId[] }
+  })) as unknown as { docs: PasskeyWithId[] }
 
   return (
     <div className="passkeys-field">
@@ -29,6 +29,8 @@ export const Passkeys: React.FC<PasskeysServerComponentProps> = async (props) =>
         currentUserId={user?.id}
         passkeySlug={passkeySlug}
         passkeyUserIdFieldName={passkeyUserIdFieldName}
+        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        basePath={pluginOptions.betterAuthOptions?.basePath}
       />
     </div>
   )

@@ -93,6 +93,8 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
             loginMethods={loginMethods}
             searchParams={searchParams ?? {}}
             loginWithUsername={canLoginWithUsername}
+            baseURL={pluginOptions.betterAuthOptions?.baseURL}
+            basePath={pluginOptions.betterAuthOptions?.basePath}
           />
         )
       )}

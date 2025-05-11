@@ -13,11 +13,13 @@ const baseClass = 'passkeys-modal'
 
 interface PassKeyAddButtonProps {
   onAdd?: () => void
+  baseURL?: string
+  basePath?: string
 }
 
-export const PassKeyAddButton: React.FC<PassKeyAddButtonProps> = ({ onAdd }) => {
+export const PassKeyAddButton: React.FC<PassKeyAddButtonProps> = ({ onAdd, baseURL, basePath }) => {
   const { openModal, closeModal } = useModal()
-  const authClient = useMemo(() => createAuthClient({ plugins: [passkeyClient()] }), [])
+  const authClient = useMemo(() => createAuthClient({ baseURL, basePath, plugins: [passkeyClient()] }), [])
 
   const AddPasskeyForm: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false)
@@ -39,7 +41,7 @@ export const PassKeyAddButton: React.FC<PassKeyAddButtonProps> = ({ onAdd }) => 
         closeModal('passkeys-modal')
         if (typeof onAdd === 'function') onAdd()
       },
-      validators: { 
+      validators: {
         onSubmit: nameSchema
       }
     })
