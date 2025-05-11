@@ -1,6 +1,6 @@
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
-import { getDeafultCollectionSlug } from '../../helpers/get-collection-slug'
+import { getDefaultCollectionSlug } from '../../helpers/get-collection-slug'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 import { assertAllSchemaFields } from './utils/collection-schema'
 
@@ -10,7 +10,11 @@ import type { FieldRule } from './utils/model-field-transformations'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 import { getSchemaCollectionSlug } from './utils/collection-schema'
 
-export function buildOauthConsentsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+export function buildOauthConsentsCollection({
+  incomingCollections,
+  pluginOptions,
+  resolvedSchemas
+}: BuildCollectionProps): CollectionConfig {
   const oauthConsentSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.oauthConsent)
   const oauthConsentSchema = resolvedSchemas[baModelKey.oauthConsent]
 
