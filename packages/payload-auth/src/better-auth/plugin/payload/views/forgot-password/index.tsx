@@ -7,8 +7,12 @@ import { formatAdminURL } from 'payload/shared'
 import { FormHeader } from '@/shared/form/ui/header'
 import { ForgotPasswordForm } from './client'
 import { adminRoutes } from '@/better-auth/plugin/constants'
+import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+type ForgotPasswordProps = AdminViewServerProps & {
+  pluginOptions: BetterAuthPluginOptions
+}
 
-const ForgotPassword: React.FC<AdminViewServerProps> = ({ initPageResult }) => {
+const ForgotPassword: React.FC<ForgotPasswordProps> = ({ pluginOptions, initPageResult }) => {
   const {
     req: {
       payload: {
@@ -57,7 +61,7 @@ const ForgotPassword: React.FC<AdminViewServerProps> = ({ initPageResult }) => {
 
   return (
     <MinimalTemplate>
-      <ForgotPasswordForm />
+      <ForgotPasswordForm baseURL={pluginOptions.betterAuthOptions?.baseURL} basePath={pluginOptions.betterAuthOptions?.basePath} />
       <Link
         href={formatAdminURL({
           adminRoute,

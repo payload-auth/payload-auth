@@ -1,7 +1,7 @@
 'use client'
 
 import { socialProviders } from '@/better-auth/plugin/constants'
-import type { LoginMethod, SocialProvider } from '@/better-auth/plugin/types'
+import type { BetterAuthPluginOptions, LoginMethod, SocialProvider } from '@/better-auth/plugin/types'
 import { Icons } from '@/shared/components/icons'
 import { Button, toast } from '@payloadcms/ui'
 import { passkeyClient } from 'better-auth/client/plugins'
@@ -18,6 +18,8 @@ type AdminSocialProviderButtonsProps = {
   redirectUrl?: string
   newUserCallbackURL?: string
   adminInviteToken?: string
+  baseURL?: string
+  basePath?: string
 }
 
 const baseClass = 'admin-social-provider-buttons'
@@ -28,12 +30,22 @@ export const AdminSocialProviderButtons: React.FC<AdminSocialProviderButtonsProp
   setLoading,
   redirectUrl,
   newUserCallbackURL,
-  adminInviteToken
+  adminInviteToken,
+  baseURL,
+  basePath
 }) => {
   const router = useRouter()
-  const authClient = useMemo(() => createAuthClient({ plugins: [passkeyClient()] }), [])
-  
-  const loginMethodCount = loginMethods.filter(method => method !== 'emailPassword', 'passkey').length
+  const authClient = useMemo(
+    () =>
+      createAuthClient({
+        baseURL,
+        basePath,
+        plugins: [passkeyClient()]
+      }),
+    []
+  )
+
+  const loginMethodCount = loginMethods.filter((method) => method !== 'emailPassword', 'passkey').length
   if (loginMethodCount === 0) return null
 
   const showIconOnly = loginMethodCount >= 3
@@ -48,8 +60,8 @@ export const AdminSocialProviderButtons: React.FC<AdminSocialProviderButtonsProp
             textTransform: 'uppercase',
             marginTop: '-.5rem',
             color: 'var(--theme-elevation-450)',
-          marginBottom: '1.5rem'
-        }}>
+            marginBottom: '1.5rem'
+          }}>
           <span>Or {isSignup ? 'sign up' : 'login'} with</span>
         </div>
       )}
@@ -113,7 +125,7 @@ export const AdminSocialProviderButtons: React.FC<AdminSocialProviderButtonsProp
                   errorCallbackURL: window.location.href,
                   callbackURL: redirectUrl,
                   newUserCallbackURL,
-                  ...(isSignup && { requestSignUp: true }),
+                  ...(isSignup && { requestSignUp: true })
                 })
 
                 if (error) {
@@ -133,7 +145,7 @@ export const AdminSocialProviderButtons: React.FC<AdminSocialProviderButtonsProp
                 size="large"
                 className={`${baseClass}__button provider--${loginMethod}`}
                 onClick={handleSocialClick}
-                iconPosition='left'
+                iconPosition="left"
                 icon={<Icon className={`${baseClass}__icon`} />}
                 tooltip={showIconOnly ? `Sign in with ${providerName}` : undefined}>
                 {!showIconOnly && <span>{providerName}</span>}

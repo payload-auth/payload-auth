@@ -11,7 +11,6 @@ import { useAppForm } from '@/shared/form'
 import { Form, FormInputWrap } from '@/shared/form/ui'
 import { FormHeader } from '@/shared/form/ui/header'
 import { createSignupSchema } from '@/shared/form/validation'
-import { tryCatch } from '@/shared/utils/try-catch'
 import { createAuthClient } from 'better-auth/react'
 import { usernameClient } from 'better-auth/client/plugins'
 
@@ -21,6 +20,8 @@ type AdminSignupClientProps = {
   loginMethods: LoginMethod[]
   searchParams: { [key: string]: string | string[] | undefined }
   loginWithUsername: false | LoginWithUsernameOptions
+  baseURL?: string
+  basePath?: string
 }
 
 const baseClass = 'admin-signup'
@@ -31,6 +32,8 @@ type SignupFormProps = {
   loginWithUsername: false | LoginWithUsernameOptions
   requireEmailVerification: boolean
   setRequireEmailVerification: React.Dispatch<React.SetStateAction<boolean>>
+  baseURL?: string
+  basePath?: string
 }
 
 const SignupForm: React.FC<SignupFormProps> = ({
@@ -38,7 +41,9 @@ const SignupForm: React.FC<SignupFormProps> = ({
   loginWithUsername,
   requireEmailVerification,
   setRequireEmailVerification,
-  adminInviteToken
+  adminInviteToken,
+  baseURL,
+  basePath
 }) => {
   const {
     config: {
@@ -49,7 +54,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
   } = useConfig()
   const { t } = useTranslation()
   const redirectUrl = getSafeRedirect(searchParams?.redirect as string, adminRoute)
-  const authClient = createAuthClient({ plugins: [usernameClient()] })
+  const authClient = createAuthClient({ baseURL, basePath, plugins: [usernameClient()] })
 
   const requireUsername = Boolean(loginWithUsername && typeof loginWithUsername === 'object' && loginWithUsername.requireUsername)
 
@@ -66,7 +71,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
     },
     onSubmit: async ({ value }) => {
       const { name, email, username, password } = value
-      
+
       const { data, error } = await authClient.signUp.email({
         name,
         email,
@@ -80,7 +85,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
         }
       })
 
-      if((error && error.code === 'EMAIL_NOT_VERIFIED') || (!error && !data.token && !data?.user.emailVerified)) {
+      if ((error && error.code === 'EMAIL_NOT_VERIFIED') || (!error && !data.token && !data?.user.emailVerified)) {
         setRequireEmailVerification(true)
         toast.success('Check your email for a verification link')
         return
@@ -157,7 +162,9 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
   userSlug,
   searchParams,
   loginMethods,
-  loginWithUsername
+  loginWithUsername,
+  baseURL,
+  basePath
 }) => {
   const {
     config: {
@@ -178,6 +185,8 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
           loginWithUsername={loginWithUsername}
           requireEmailVerification={requireEmailVerification}
           setRequireEmailVerification={setRequireEmailVerification}
+          baseURL={baseURL}
+          basePath={basePath}
         />
       )}
       {!requireEmailVerification && (
@@ -188,6 +197,8 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
           setLoading={() => {}}
           redirectUrl={redirectUrl}
           newUserCallbackURL={setAdminRoleCallbackURL}
+          baseURL={baseURL}
+          basePath={basePath}
         />
       )}
     </>

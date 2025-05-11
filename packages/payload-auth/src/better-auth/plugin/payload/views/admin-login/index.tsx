@@ -133,6 +133,8 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
         prefillPassword={prefillPassword}
         prefillUsername={prefillUsername}
         searchParams={searchParams ?? {}}
+        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        basePath={pluginOptions.betterAuthOptions?.basePath}
       />
       {RenderServerComponent({
         Component: filteredAfterLogin,

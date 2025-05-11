@@ -11,7 +11,9 @@ export const PasskeysClient: React.FC<PasskeysClientComponentProps> = ({
   documentId,
   currentUserId,
   passkeySlug,
-  passkeyUserIdFieldName
+  passkeyUserIdFieldName,
+  baseURL,
+  basePath
 }) => {
   const {
     config: {
@@ -33,11 +35,14 @@ export const PasskeysClient: React.FC<PasskeysClientComponentProps> = ({
     void fetchPasskeys()
   }, [fetchPasskeys])
 
-  const handleDelete = useCallback(async (id: string) => {
-    const res = await fetch(`${apiRoute}/${passkeySlug}/${id}`, { method: 'DELETE', credentials: 'include' })
-    if (!res.ok) return
-    void fetchPasskeys()
-  }, [apiRoute, passkeySlug, fetchPasskeys])
+  const handleDelete = useCallback(
+    async (id: string) => {
+      const res = await fetch(`${apiRoute}/${passkeySlug}/${id}`, { method: 'DELETE', credentials: 'include' })
+      if (!res.ok) return
+      void fetchPasskeys()
+    },
+    [apiRoute, passkeySlug, fetchPasskeys]
+  )
 
   const handleAdd = useCallback(() => {
     void fetchPasskeys()
@@ -46,7 +51,7 @@ export const PasskeysClient: React.FC<PasskeysClientComponentProps> = ({
   return (
     <>
       <PasskeyList passkeys={passkeys} onDelete={handleDelete} />
-      {currentUserId === documentId && <PassKeyAddButton onAdd={handleAdd} />}
+      {currentUserId === documentId && <PassKeyAddButton onAdd={handleAdd} baseURL={baseURL} basePath={basePath} />}
     </>
   )
 }

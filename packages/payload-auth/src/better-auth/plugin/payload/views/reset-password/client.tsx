@@ -14,13 +14,15 @@ type PasswordResetFormArgs = {
   readonly token: string
   readonly minPasswordLength?: number
   readonly maxPasswordLength?: number
+  readonly baseURL?: string
+  readonly basePath?: string
 }
 
-export const PasswordResetForm: React.FC<PasswordResetFormArgs> = ({ token }) => {
+export const PasswordResetForm: React.FC<PasswordResetFormArgs> = ({ token, baseURL, basePath }) => {
   const { t } = useTranslation()
   const history = useRouter()
   const { fetchFullUser } = useAuth()
-  const authClient = useMemo(() => createAuthClient(), [])
+  const authClient = useMemo(() => createAuthClient({ baseURL, basePath }), [])
   const {
     config: {
       admin: {
