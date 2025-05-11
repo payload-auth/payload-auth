@@ -43,6 +43,10 @@ export function saveToJwtMiddleware({
 
       if (filteredSessionData) {
         await setSessionCookie(ctx, filteredSessionData)
+        // Set back all the data internally as we only want the cookie to update.
+        // This allows plugins like two factor plugin to get enabledTwoFactor,
+        // while not exposing it in cookie cache data.
+        ctx.context.setNewSession(newSession)
       }
     }
 

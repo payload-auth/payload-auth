@@ -29,7 +29,7 @@ export const TwoFactorVerifyForm = ({
     code: z
       .string()
       .length(twoFactorDigits, `Code must be ${twoFactorDigits} digits`)
-      .refine((val) => /^\d{${twoFactorDigits}}$/.test(val), `Code must be numeric`)
+      .refine((val) => /^\d{6}$/.test(val), 'Code must be numeric')
   })
 
   const form = useAppForm({
