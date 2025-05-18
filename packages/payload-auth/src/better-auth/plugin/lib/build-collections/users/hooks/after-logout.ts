@@ -2,80 +2,90 @@ import { baModelKey } from '@/better-auth/plugin/constants'
 import { getCollectionByModelKey } from '@/better-auth/plugin/helpers/get-collection'
 import { getPayloadAuth } from '@/better-auth/plugin/lib/get-payload-auth'
 import { cookies } from 'next/headers'
-import type { CollectionAfterLogoutHook } from 'payload'
+import type { CollectionAfterLogoutHook, PayloadRequest } from 'payload'
 
 export function getAfterLogoutHook() {
   const hook: CollectionAfterLogoutHook = async ({ req }) => {
-    const cookieStore = await cookies()
+    const store = await cookies()
     const payload = await getPayloadAuth(req.payload.config)
-    const securePrefix = '__Secure-'
-    const authContext = await payload.betterAuth.$context
-    const sessionTokenName = authContext.authCookies.sessionToken.name
-    const sessionDataName = authContext.authCookies.sessionData.name
-    const dontRememberTokenName = authContext.authCookies.dontRememberToken.name
+
+    const { sessionToken, sessionData, dontRememberToken } = (await payload.betterAuth.$context).authCookies
+
     const sessionsSlug = getCollectionByModelKey(req.payload.collections, baModelKey.session).slug
 
-    try {
-      const sessionCookieValue = cookieStore.get(sessionTokenName)?.value
-      if (sessionCookieValue) {
-        const payload = req.payload
-        const [token] = sessionCookieValue.split('.')
-        const { docs: sessions } = await payload.find({
-          collection: sessionsSlug,
-          where: {
-            token: { equals: token }
-          },
-          limit: 1,
-          req
-        })
-        const session = sessions.at(0)
-        if (session) {
-          try {
-            await payload.delete({
-              collection: sessionsSlug,
-              where: {
-                id: { equals: session.id }
-              },
-              req
-            })
-          } catch (error) {
-            console.error('Error deleting session:', error)
-          }
-        }
-      }
+    await deleteSessionFromDb(payload, sessionsSlug, store.get(sessionToken.name)?.value, req)
 
-      const baseMultiSessionName = sessionTokenName + '_multi'
-      const multiSessionCookies = cookieStore.getAll()
-      multiSessionCookies.forEach((cookie) => {
-        if (cookie.name.startsWith(baseMultiSessionName)) {
-          cookieStore.delete(cookie.name)
-        }
-        const secureMultiSessionName = securePrefix + baseMultiSessionName
-        if (cookie.name.startsWith(secureMultiSessionName)) {
-          cookieStore.delete(cookie.name)
-        }
-      })
-    } catch (error) {
-      console.error('Error afterLogoutHook:', error)
-    }
-    
-    //This is a hacky wat to delete the admin session cookie (BETTER AUTH HARDCODED THIS)
-    // see https://github.com/better-auth/better-auth/blob/25e82669eed83ba6da063c167e8ae5b7da84ef9f/packages/better-auth/src/plugins/admin/admin.ts#L917C7-L917C23
-    cookieStore.delete('admin_session')
+    const baseNames = [
+      sessionToken.name,
+      sessionData.name,
+      dontRememberToken.name,
+      //This is a hacky wat to delete the admin session cookie (BETTER AUTH HARDCODED THIS)
+      // see https://github.com/better-auth/better-auth/blob/25e82669eed83ba6da063c167e8ae5b7da84ef9f/packages/better-auth/src/plugins/admin/admin.ts#L917C7-L917C23
+      'admin_session'
+    ]
 
-    const cleanSessionTokenName = sessionTokenName.replace(securePrefix, '')
-    const cleanSessionDataName = sessionDataName.replace(securePrefix, '')
-    const cleanDontRememberTokenName = dontRememberTokenName.replace(securePrefix, '')
+    const multiBase = `${sessionToken.name}_multi`
+    const multiCandidates = store
+      .getAll()
+      .filter((c) => c.name.startsWith(multiBase) || c.name.startsWith(`__Secure-${multiBase}`))
+      .map((c) => c.name)
 
-    cookieStore.delete(cleanSessionTokenName)
-    cookieStore.delete(`__Secure-${cleanSessionTokenName}`)
+    const allNames = [
+      ...baseNames.flatMap((n) => {
+        const clean = n.replace(/^__Secure-/, '')
+        return [clean, `__Secure-${clean}`]
+      }),
+      ...multiCandidates
+    ]
 
-    cookieStore.delete(cleanSessionDataName)
-    cookieStore.delete(`__Secure-${cleanSessionDataName}`)
-
-    cookieStore.delete(cleanDontRememberTokenName)
-    cookieStore.delete(`__Secure-${cleanDontRememberTokenName}`)
+    allNames.forEach((n) => deleteCookie(store, n))
   }
 
-  return hook as CollectionAfterLogoutHook
+  return hook
+}
+
+async function deleteSessionFromDb(
+  payload: Awaited<ReturnType<typeof getPayloadAuth>>,
+  slug: string,
+  rawCookieValue: string | undefined,
+  req: PayloadRequest
+) {
+  if (!rawCookieValue) return
+  const [token] = rawCookieValue.split('.')
+  const { docs } = await payload.find({
+    collection: slug,
+    where: { token: { equals: token } },
+    limit: 1,
+    req
+  })
+  const session = docs.at(0)
+  if (!session) return
+  try {
+    await payload.delete({
+      collection: slug,
+      where: { id: { equals: session.id } },
+      req
+    })
+  } catch {}
+}
+
+/**
+ * Deleting __Secure-* cookies need to set options.secure = true
+ */
+function deleteCookie(store: Awaited<ReturnType<typeof cookies>>, name: string) {
+  const cookie = store.get(name)
+  if (!cookie) return
+
+  const isSecure = name.startsWith('__Secure-') || name.startsWith('__Host-')
+
+  const options: Record<string, unknown> = {
+    path: '/',
+    maxAge: 0,
+    httpOnly: true,
+    sameSite: 'lax'
+  }
+
+  if (isSecure) options.secure = true
+
+  store.set(name, '', options)
 }
