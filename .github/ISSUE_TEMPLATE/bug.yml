@@ -1,5 +1,8 @@
-name: Bug Report
-labels: bug
+name: "🐛 Bug Report"
+description: "Report a reproducible bug in Payload Auth"
+title: "[Bug]: "
+labels: ["bug"]
+
 body:
   - type: markdown
     attributes:
