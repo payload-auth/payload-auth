@@ -1,5 +1,4 @@
 name: Bug Report
-about: Report a reproducible issue with this project
 labels: bug
 body:
   - type: markdown
