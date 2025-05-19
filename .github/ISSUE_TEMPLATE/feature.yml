@@ -1,6 +1,8 @@
-name: Feature Request
-about: Suggest an idea or enhancement for this project
-labels: enhancement
+name: "✨ Feature Request"
+description: "Suggest an enhancement for Payload Auth"
+title: "[Feature]: "
+labels: ["enhancement"]
+
 body:
   - type: markdown
     attributes:
@@ -20,7 +22,7 @@ body:
     id: use-case
     attributes:
       label: Use Case
-      description: Explain the problem this feature would solve or the use case it enables.
+      description: Explain the problem this feature would solve or the use-case it enables.
     validations:
       required: true
 
