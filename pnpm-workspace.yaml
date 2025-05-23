@@ -6,9 +6,11 @@ packages:
 onlyBuiltDependencies:
   - '@clerk/shared'
   - '@swc/core'
+  - '@tailwindcss/oxide'
   - browser-tabs-lock
   - bufferutil
   - core-js
   - esbuild
   - sharp
+  - unrs-resolver
   - utf-8-validate

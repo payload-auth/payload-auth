@@ -25,7 +25,7 @@ import {
 import { nextCookies } from 'better-auth/next-js'
 import { passkey } from 'better-auth/plugins/passkey'
 import { sso } from 'better-auth/plugins/sso'
-import { polar } from '@polar-sh/better-auth'
+import { polar, checkout, portal, usage } from '@polar-sh/better-auth'
 import { Polar } from '@polar-sh/sdk'
 import type { SanitizedBetterAuthOptions } from '../types'
 import fs from 'node:fs/promises'
@@ -35,7 +35,7 @@ import { fileURLToPath } from 'node:url'
 const client = new Polar({
   accessToken: 'pk_test_1234567890',
   server: 'sandbox'
-});
+})
 
 const plugins = [
   username(),
@@ -77,14 +77,17 @@ const plugins = [
   // As of writing this, Polar don't create schema fields, but just in case in the future we leave this here.
   polar({
     client,
-    checkout: {
-      enabled: true,
-      products: [
-        { productId: 'basic', slug: 'basic' },
-        { productId: 'pro', slug: 'pro' },
-        { productId: 'enterprise', slug: 'enterprise' }
-      ]
-    }
+    use: [
+      checkout({
+        products: [
+          { productId: 'basic', slug: 'basic' },
+          { productId: 'pro', slug: 'pro' },
+          { productId: 'enterprise', slug: 'enterprise' }
+        ]
+      }),
+      portal(),
+      usage()
+    ]
   })
 ]
 
@@ -185,9 +188,7 @@ const gen = (): string => {
   }
 
   // Generate union type of plugin identifiers
-  const pluginIdUnion = [...seen]
-    .map((id) => JSON.stringify(id))
-    .join(' | ')
+  const pluginIdUnion = [...seen].map((id) => JSON.stringify(id)).join(' | ')
   out += `export type PluginId = ${pluginIdUnion}\n\n`
 
   // Generate full schema mapping
