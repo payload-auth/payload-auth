@@ -1,4 +1,3 @@
-
 import type { ModelKey } from '@/better-auth/generated-types'
 import type { BetterAuthOptions, Where } from 'better-auth'
 import type { FieldAttribute } from 'better-auth/db'
@@ -366,6 +365,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
 
     // Identify relationship fields with custom field name mappings
     const relationshipFields = Object.fromEntries(Object.entries(schemaFields).filter(([key]) => isRelationshipField(key, schemaFields)))
+    const dateFields = Object.fromEntries(Object.entries(schemaFields).filter(([_, value]) => value.type === 'date'))
 
     Object.entries(doc).forEach(([key, value]) => {
       if (value === null || value === undefined) return
@@ -383,8 +383,9 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
         return
       }
 
-      // Convert ISO date strings to Date objects for BetterAuth
-      if (isDateField(value)) {
+      const originalDateFieldKey = Object.keys(dateFields).find((k) => dateFields[k].fieldName === key)
+      if (originalDateFieldKey) {
+        // Convert ISO date strings to Date objects for BetterAuth
         result[key] = new Date(value)
         return
       }
