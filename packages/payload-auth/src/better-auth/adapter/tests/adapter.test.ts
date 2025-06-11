@@ -10,7 +10,8 @@ describe('Handle Payload Adapter', async () => {
     const payload = await getPayload()
 
     const auth = betterAuth({
-      database: payloadAdapter(payload, {
+      database: payloadAdapter({
+        payloadClient: payload,
         idType: 'number'
       })
     })
@@ -102,7 +103,8 @@ describe('Run BetterAuth Base Collections Adapter tests', async () => {
 
   deleteAll(payload)
 
-  const adapter = payloadAdapter(payload, {
+  const adapter = payloadAdapter({
+    payloadClient: payload,
     idType: 'number'
   })
 
@@ -125,7 +127,8 @@ describe('Run BetterAuth Base Collections Adapter tests with number id', async (
 
   deleteAll(payload)
 
-  const adapter = payloadAdapter(payload, {
+  const adapter = payloadAdapter({
+    payloadClient: payload,
     idType: 'number'
   })
 
