@@ -113,31 +113,6 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
     // A field is a relationship field if it has a 'references' property defined
     return schemaFields[fieldKey]?.references !== undefined
   }
-
-  /**
-   * Determines if a value is a valid date string that can be parsed into a Date object.
-   *
-   * This utility function checks if a value is a string and can be successfully parsed
-   * into a JavaScript Date object using Date.parse(). It's used to identify date fields
-   * during data transformation processes.
-   *
-   * @param value - The value to check if it's a valid date string
-   * @returns True if the value is a string that can be parsed as a date, false otherwise
-   *
-   * @example
-   * // Returns true for ISO date strings
-   * isDateField('2023-01-01T12:00:00Z') // true
-   *
-   * @example
-   * // Returns false for non-date strings or other types
-   * isDateField('not a date') // false
-   * isDateField(123) // false
-   */
-  function isDateField(value: any): boolean {
-    // Check if value is a string and can be parsed as a valid date
-    return typeof value === 'string' && !isNaN(Date.parse(value))
-  }
-
   /**
    * Extracts a single ID value from a Payload where clause if it represents a simple ID query.
    *
