@@ -114,7 +114,6 @@ export const baModelFieldKeysToFieldNames = {
   },
   session: {
     userId: 'user',
-    activeOrganizationId: 'activeOrganization',
   },
   member: {
     organizationId: 'organization',
