@@ -86,7 +86,7 @@ export function buildApiKeysCollection({ incomingCollections, pluginOptions, res
           hidden: true
         },
         index: true,
-        label: ({ t }: any) => t('general:updatedAt')
+        label: 'general:updatedAt'
       })
     }
   ]

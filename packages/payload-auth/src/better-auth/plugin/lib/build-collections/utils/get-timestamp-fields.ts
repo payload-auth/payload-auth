@@ -21,7 +21,7 @@ export function getTimestampFields(
         hidden: true
       },
       index: true,
-      label: ({ t }) => t('general:updatedAt')
+      label: 'general:updatedAt'
     },
     {
       name: 'createdAt',
@@ -32,7 +32,7 @@ export function getTimestampFields(
       },
       type: 'date',
       index: true,
-      label: ({ t }) => t('general:createdAt')
+      label: 'general:createdAt'
     }
   ]
 }

@@ -34,6 +34,11 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
   // TODO: REVIEW THIS
   const allowedFields = pluginOptions.users?.allowedFields ?? ['name']
 
+  const showAdminButtonsTab = checkPluginExists(
+    pluginOptions.betterAuthOptions ?? {},
+    supportedBAPluginIds.admin
+  )
+
   const userFieldRules: FieldRule[] = [
     {
       condition: (field) => field.fieldName === 'createdAt' || field.fieldName === 'updatedAt',
@@ -45,7 +50,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
           hidden: true
         },
         index: true,
-        label: ({ t }: any) => (field.fieldName === 'createdAt' ? t('general:createdAt') : t('general:updatedAt'))
+        label: field.fieldName === 'createdAt' ? 'general:createdAt' : 'general:updatedAt'
       })
     }
   ]
@@ -151,22 +156,22 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
         },
         views: {
           edit: {
-            adminButtons: {
-              tab: {
-                Component: {
-                  path: 'payload-auth/better-auth/plugin/client#AdminButtons',
-                  clientProps: {
-                    userSlug,
-                    baseURL: pluginOptions.betterAuthOptions?.baseURL,
-                    basePath: pluginOptions.betterAuthOptions?.basePath
+            ...(showAdminButtonsTab
+              ? {
+                  adminButtons: {
+                    tab: {
+                      Component: {
+                        path: 'payload-auth/better-auth/plugin/client#AdminButtons',
+                        clientProps: {
+                          userSlug,
+                          baseURL: pluginOptions.betterAuthOptions?.baseURL,
+                          basePath: pluginOptions.betterAuthOptions?.basePath
+                        }
+                      }
+                    }
                   }
-                },
-                condition: () => {
-                  // Only show the impersonate button if the admin plugin is enabled
-                  return checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.admin)
                 }
-              }
-            }
+              : {})
           }
         }
       }

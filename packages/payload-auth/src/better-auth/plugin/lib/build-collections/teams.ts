@@ -36,7 +36,7 @@ export function buildTeamsCollection({ incomingCollections, pluginOptions, resol
           hidden: true
         },
         index: true,
-        label: ({ t }: any) => t('general:updatedAt')
+        label: 'general:updatedAt'
       })
     }
   ]

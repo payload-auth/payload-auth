@@ -30,7 +30,7 @@ export function buildAccountsCollection({ incomingCollections, pluginOptions, re
           hidden: true
         },
         index: true,
-        label: ({ t }: any) => t('general:updatedAt')
+        label: 'general:updatedAt'
       })
     }
   ]
