@@ -20,13 +20,15 @@ const PAYLOAD_QUERY_DEPTH = 0
  * @param config - Configuration options for the adapter
  * @returns A function that creates a Better Auth adapter
  */
-const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false, idType }) => {
+const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig, enableDebugLogs, idType }) => {
+  const debug = adapterConfig?.enableDebugLogs ?? enableDebugLogs ?? false
+  const idTypeResolved = adapterConfig?.idType ?? idType ?? 'text'
   /**
    * Logs debug messages if debug logging is enabled
    * @param message - The message to log
    */
   function debugLog(message: any[]) {
-    if (enableDebugLogs) {
+    if (debug) {
       console.log('[payload-db-adapter]', ...message)
     }
   }
@@ -91,10 +93,26 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false
    */
   return (options: BetterAuthOptions): Adapter => {
     const { transformInput, transformOutput, convertWhereClause, convertSelect, convertSort, getCollectionSlug, singleIdQuery } =
-      createTransform(options, enableDebugLogs)
+      createTransform(options, debug)
 
     return {
       id: 'payload-adapter',
+      async transaction(fn) {
+        // Payload doesn't expose cross-collection transactions; run function directly
+        return await fn({
+          id: 'payload-adapter',
+          create: this.create,
+          findOne: this.findOne,
+          findMany: this.findMany,
+          update: this.update,
+          updateMany: this.updateMany,
+          delete: this.delete,
+          deleteMany: this.deleteMany,
+          count: this.count,
+          createSchema: this.createSchema,
+          options: this.options
+        })
+      },
       async create<T extends Record<string, any>, R = T>({
         model,
         data: values,
@@ -114,7 +132,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false
         const transformedInput = transformInput({
           data: values,
           model: model as ModelKey,
-          idType: idType
+          idType: idTypeResolved
         })
 
         debugLog(['create', { collectionSlug, transformedInput, select }])
@@ -157,7 +175,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false
         await validateCollection(payload, collectionSlug, model)
 
         const payloadWhere = convertWhereClause({
-          idType: idType,
+          idType: idTypeResolved,
           model: model as ModelKey,
           where
         })
@@ -243,7 +261,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false
         await validateCollection(payload, collectionSlug, model)
 
         const payloadWhere = convertWhereClause({
-          idType: idType,
+          idType: idTypeResolved,
           model: model as ModelKey,
           where
         })
@@ -325,7 +343,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false
         await validateCollection(payload, collectionSlug, model)
 
         const payloadWhere = convertWhereClause({
-          idType: idType,
+          idType: idTypeResolved,
           model: model as ModelKey,
           where
         })
@@ -333,7 +351,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false
         const transformedInput = transformInput({
           data: update,
           model: model as ModelKey,
-          idType: idType
+          idType: idTypeResolved
         })
 
         debugLog(['update', { collectionSlug, update }])
@@ -398,7 +416,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false
         await validateCollection(payload, collectionSlug, model)
 
         const payloadWhere = convertWhereClause({
-          idType: idType,
+          idType: idTypeResolved,
           model: model as ModelKey,
           where
         })
@@ -406,7 +424,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false
         const transformedInput = transformInput({
           data: update,
           model: model as ModelKey,
-          idType: idType
+          idType: idTypeResolved
         })
 
         debugLog(['updateMany', { collectionSlug, payloadWhere, update }])
@@ -447,7 +465,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false
         await validateCollection(payload, collectionSlug, model)
 
         const payloadWhere = convertWhereClause({
-          idType: idType,
+          idType: idTypeResolved,
           model: model as ModelKey,
           where
         })
@@ -508,7 +526,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false
         await validateCollection(payload, collectionSlug, model)
 
         const payloadWhere = convertWhereClause({
-          idType: idType,
+          idType: idTypeResolved,
           model: model as ModelKey,
           where
         })
@@ -550,7 +568,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false
         await validateCollection(payload, collectionSlug, model)
 
         const payloadWhere = convertWhereClause({
-          idType: idType,
+          idType: idTypeResolved,
           model: model as ModelKey,
           where
         })
@@ -593,8 +611,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false
         }
       },
       options: {
-        enableDebugLogs,
-        idType
+        adapterConfig: {} as any
       }
     }
   }

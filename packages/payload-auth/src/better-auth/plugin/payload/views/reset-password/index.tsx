@@ -56,7 +56,7 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ pluginOptions, initPageRe
                 )
               }}
               i18nKey="authentication:loggedInChangePassword"
-              t={t}
+              t={t as any}
             />
           }
           heading={t('authentication:alreadyLoggedIn')}

@@ -47,7 +47,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ pluginOptions, initPage
                 )
               }}
               i18nKey="authentication:loggedInChangePassword"
-              t={i18n.t}
+              t={i18n.t as any}
             />
           }
           heading={i18n.t('authentication:alreadyLoggedIn')}

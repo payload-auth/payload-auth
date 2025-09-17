@@ -8,6 +8,7 @@ import { buildApiKeysCollection } from './api-keys'
 import { buildInvitationsCollection } from './invitations'
 import { buildJwksCollection } from './jwks'
 import { buildMembersCollection } from './members'
+import { buildTeamMembersCollection } from './team-members'
 import { buildOauthAccessTokensCollection } from './oauth-access-tokens'
 import { buildOauthApplicationsCollection } from './oauth-applications'
 import { buildOauthConsentsCollection } from './oauth-consents'
@@ -34,7 +35,7 @@ export function buildCollections({
   pluginOptions: BetterAuthPluginOptions
   resolvedSchemas: BetterAuthSchemas
 }): Record<string, CollectionConfig> {
-  const collectionBuilders: Record<ModelKey, (props: BuildCollectionProps) => CollectionConfig> = {
+  const collectionBuilders: Partial<Record<ModelKey, (props: BuildCollectionProps) => CollectionConfig>> = {
     [baModelKey.user]: (props: BuildCollectionProps) => buildUsersCollection(props),
     [baModelKey.account]: (props: BuildCollectionProps) => buildAccountsCollection(props),
     [baModelKey.session]: (props: BuildCollectionProps) => buildSessionsCollection(props),
@@ -43,6 +44,7 @@ export function buildCollections({
     [baModelKey.member]: (props: BuildCollectionProps) => buildMembersCollection(props),
     [baModelKey.invitation]: (props: BuildCollectionProps) => buildInvitationsCollection(props),
     [baModelKey.team]: (props: BuildCollectionProps) => buildTeamsCollection(props),
+    [baModelKey.teamMember as any]: (props: BuildCollectionProps) => buildTeamMembersCollection(props as any),
     [baModelKey.jwks]: (props: BuildCollectionProps) => buildJwksCollection(props),
     [baModelKey.apikey]: (props: BuildCollectionProps) => buildApiKeysCollection(props),
     [baModelKey.twoFactor]: (props: BuildCollectionProps) => buildTwoFactorsCollection(props),
@@ -58,7 +60,13 @@ export function buildCollections({
   for (const modelKey of Object.keys(resolvedSchemas) as ModelKey[]) {
     const collectionSlug = getSchemaCollectionSlug(resolvedSchemas, modelKey)
     const builder = collectionBuilders[modelKey]
-    if (!builder) continue
+    if (!builder) {
+      if (modelKey === (baModelKey as any).teamMember && (resolvedSchemas as any).teamMember) {
+        const slug = getSchemaCollectionSlug(resolvedSchemas as any, (baModelKey as any).teamMember)
+        collectionMap[slug] = buildTeamMembersCollection({ incomingCollections, pluginOptions, resolvedSchemas } as any)
+      }
+      continue
+    }
     collectionMap[collectionSlug] = builder({
       incomingCollections,
       pluginOptions,

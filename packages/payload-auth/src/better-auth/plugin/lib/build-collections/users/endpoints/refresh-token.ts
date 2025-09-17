@@ -98,7 +98,7 @@ export const getRefreshTokenEndpoint = (userSlug: string): Endpoint => {
       await setCookieCache(ctx, {
         session: res.session,
         user: cookieCacheFields as any
-      })
+      }, false)
 
       return response
     }

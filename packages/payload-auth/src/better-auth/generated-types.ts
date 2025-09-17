@@ -56,6 +56,7 @@ export type SessionPluginFields = {
   }
   "organization": {
     activeOrganizationId?: string
+    activeTeamId?: string
   }
 }
 
@@ -82,8 +83,8 @@ export type BaseVerificationFields = {
   identifier: string
   value: string
   expiresAt: Date
-  createdAt?: Date
-  updatedAt?: Date
+  createdAt: Date
+  updatedAt: Date
 }
 
 export type Verification = BaseVerificationFields
@@ -123,6 +124,7 @@ export type PasskeyFields = {
   backedUp: boolean
   transports?: string
   createdAt?: Date
+  aaguid?: string
 }
 
 export type Passkey = PasskeyFields
@@ -180,6 +182,23 @@ export type SsoProviderFields = {
 
 export type SsoProvider = SsoProviderFields
 
+export type TeamFields = {
+  name: string
+  organizationId: string
+  createdAt: Date
+  updatedAt?: Date
+}
+
+export type Team = TeamFields
+
+export type TeamMemberFields = {
+  teamId: string
+  userId: string
+  createdAt?: Date
+}
+
+export type TeamMember = TeamMemberFields
+
 export type OrganizationFields = {
   name: string
   slug?: string
@@ -194,7 +213,6 @@ export type MemberFields = {
   organizationId: string
   userId: string
   role: string
-  teamId?: string
   createdAt: Date
 }
 
@@ -211,15 +229,6 @@ export type InvitationFields = {
 }
 
 export type Invitation = InvitationFields
-
-export type TeamFields = {
-  name: string
-  organizationId: string
-  createdAt: Date
-  updatedAt?: Date
-}
-
-export type Team = TeamFields
 
 export type JwksFields = {
   publicKey: string
@@ -264,10 +273,11 @@ export type BetterAuthFullSchema = {
   "oauthAccessToken": OauthAccessToken
   "oauthConsent": OauthConsent
   "ssoProvider": SsoProvider
+  "team": Team
+  "teamMember": TeamMember
   "organization": Organization
   "member": Member
   "invitation": Invitation
-  "team": Team
   "jwks": Jwks
   "twoFactor": TwoFactor
   "subscription": Subscription

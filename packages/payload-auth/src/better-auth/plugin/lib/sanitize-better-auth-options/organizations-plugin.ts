@@ -11,16 +11,21 @@ export function configureOrganizationPlugin(plugin: any, resolvedSchemas: Better
   set(plugin, `schema.${baModelKey.member}.fields.organizationId.references.model`, getSchemaCollectionSlug(resolvedSchemas, baModelKey.organization))
   set(plugin, `schema.${baModelKey.member}.fields.userId.fieldName`, getSchemaFieldName(resolvedSchemas, baModelKey.member, baModelFieldKeys.member.userId))
   set(plugin, `schema.${baModelKey.member}.fields.userId.references.model`, getSchemaCollectionSlug(resolvedSchemas, baModelKey.user))
-  set(plugin, `schema.${baModelKey.member}.fields.teamId.fieldName`, getSchemaFieldName(resolvedSchemas, baModelKey.member, baModelFieldKeys.member.teamId))
+  if ((resolvedSchemas as any)?.member?.fields?.teamId) {
+    set(plugin, `schema.${baModelKey.member}.fields.teamId.fieldName`, getSchemaFieldName(resolvedSchemas as any, baModelKey.member as any, (baModelFieldKeys as any).member.teamId))
+  }
 
   set(plugin, `schema.${baModelKey.invitation}.fields.organizationId.fieldName`, getSchemaFieldName(resolvedSchemas, baModelKey.invitation, baModelFieldKeys.invitation.organizationId))
   set(plugin, `schema.${baModelKey.invitation}.fields.organizationId.references.model`, getSchemaCollectionSlug(resolvedSchemas, baModelKey.organization))
   set(plugin, `schema.${baModelKey.invitation}.fields.inviterId.fieldName`, getSchemaFieldName(resolvedSchemas, baModelKey.invitation, baModelFieldKeys.invitation.inviterId))
   set(plugin, `schema.${baModelKey.invitation}.fields.inviterId.references.model`, getSchemaCollectionSlug(resolvedSchemas, baModelKey.user))
-  set(plugin, `schema.${baModelKey.invitation}.fields.teamId.fieldName`, getSchemaFieldName(resolvedSchemas, baModelKey.invitation, baModelFieldKeys.invitation.teamId))
+  // Guard for older versions without teamId in invitation
+  if ((resolvedSchemas as any)?.invitation?.fields?.teamId) {
+    set(plugin, `schema.${baModelKey.invitation}.fields.teamId.fieldName`, getSchemaFieldName(resolvedSchemas, baModelKey.invitation, baModelFieldKeys.invitation.teamId))
+  }
   
   set(plugin, `schema.${baModelKey.team}.fields.organizationId.fieldName`, getSchemaFieldName(resolvedSchemas, baModelKey.team, baModelFieldKeys.team.organizationId))
-  set(plugin, `schema.${baModelKey.team}.fields.organizationId.references.model`, getSchemaCollectionSlug(resolvedSchemas, baModelKey.user))
+  set(plugin, `schema.${baModelKey.team}.fields.organizationId.references.model`, getSchemaCollectionSlug(resolvedSchemas, baModelKey.organization))
   
   set(plugin, `schema.${baModelKey.session}.fields.activeOrganizationId.fieldName`, getSchemaFieldName(resolvedSchemas, baModelKey.session, baModelFieldKeys.session.activeOrganizationId))
 }

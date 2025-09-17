@@ -100,6 +100,7 @@ export const baModelKey = {
   invitation: 'invitation',
   member: 'member',
   team: 'team',
+  teamMember: 'teamMember',
   subscription: 'subscription',
   apikey: 'apikey',
   jwks: 'jwks'
@@ -216,6 +217,7 @@ export const baModelKeyToSlug = {
   invitation: baPluginSlugs.invitations,
   member: baPluginSlugs.members,
   team: baPluginSlugs.teams,
+  teamMember: 'teamMembers',
   subscription: baPluginSlugs.subscriptions,
   apikey: baPluginSlugs.apiKeys,
   jwks: baPluginSlugs.jwks

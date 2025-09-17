@@ -1,6 +1,7 @@
 import { stripe } from '@better-auth/stripe'
 import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
-import { getSchema } from 'better-auth/db'
+// Dynamic import to avoid type coupling between minor versions
+const getSchema: (opts: any) => any = (await import('better-auth/db')).getSchema as any
 import type { FieldAttribute } from 'better-auth/db'
 import {
   admin,
@@ -37,7 +38,7 @@ const client = new Polar({
   server: 'sandbox'
 });
 
-const plugins = [
+const plugins: any[] = [
   username(),
   admin(),
   apiKey(),
@@ -91,7 +92,7 @@ const plugins = [
 const betterAuthConfig: SanitizedBetterAuthOptions = {
   emailAndPassword: { enabled: true },
   user: { additionalFields: { role: { type: 'string', defaultValue: 'user', input: false } } },
-  plugins
+  plugins: plugins
 }
 
 const baseSchema = getSchema({ ...betterAuthConfig, plugins: [] })
@@ -150,7 +151,7 @@ const gen = (): string => {
 
     if (Object.keys(base).length) {
       out += `export type Base${P}Fields = {\n`
-      for (const [k, f] of Object.entries(base)) out += `  ${f.fieldName ?? k}${f.required ? '' : '?'}: ${map(f.type as string)}\n`
+      for (const [k, f] of Object.entries(base as Record<string, any>)) out += `  ${(f as any).fieldName ?? k}${(f as any).required ? '' : '?'}: ${map((f as any).type as string)}\n`
       out += '}\n\n'
     }
 
@@ -159,7 +160,7 @@ const gen = (): string => {
       out += `export type ${P}PluginFields = {\n`
       for (const [pid, flds] of Object.entries(pluginsForModel)) {
         out += `  ${JSON.stringify(pid)}: {\n`
-        for (const [k, f] of Object.entries(flds)) out += `    ${f.fieldName ?? k}${f.required ? '' : '?'}: ${map(f.type as string)}\n`
+        for (const [k, f] of Object.entries(flds as Record<string, any>)) out += `    ${(f as any).fieldName ?? k}${(f as any).required ? '' : '?'}: ${map((f as any).type as string)}\n`
         out += '  }\n'
       }
       out += '}\n\n'
@@ -168,8 +169,8 @@ const gen = (): string => {
     if (!Object.keys(base).length && pluginIds.length === 1) {
       const only = pluginIds[0]
       out += `export type ${P}Fields = {\n`
-      for (const [k, f] of Object.entries(pluginsForModel[only]))
-        out += `  ${f.fieldName ?? k}${f.required ? '' : '?'}: ${map(f.type as string)}\n`
+      for (const [k, f] of Object.entries(pluginsForModel[only] as Record<string, any>))
+        out += `  ${(f as any).fieldName ?? k}${(f as any).required ? '' : '?'}: ${map((f as any).type as string)}\n`
       out += '}\n\n'
       out += `export type ${P} = ${P}Fields\n\n`
       continue
