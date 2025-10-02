@@ -79,7 +79,8 @@
     "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
     "build:types": "pnpm generate:better-auth-types && tsc --project tsconfig.json",
     "test": "vitest",
-    "generate:better-auth-types": "rm -rf src/better-auth/generated-types.ts && tsx src/better-auth/scripts/generate-types.ts"
+    "generate:better-auth-types": "rm -rf src/better-auth/generated-types.ts && tsx src/better-auth/scripts/generate-types.ts",
+    "prepare": "pnpm build"
   },
   "peerDependencies": {
     "@payloadcms/ui": "^3.35",
