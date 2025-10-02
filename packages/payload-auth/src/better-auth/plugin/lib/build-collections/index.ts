@@ -17,6 +17,7 @@ import { buildSessionsCollection } from './sessions'
 import { buildSsoProvidersCollection } from './sso-providers'
 import { buildSubscriptionsCollection } from './subscriptions'
 import { buildTeamsCollection } from './teams'
+import { buildTeamMembersCollection } from './team-members'
 import { buildTwoFactorsCollection } from './two-factors'
 import { buildUsersCollection } from './users/index'
 import { getSchemaCollectionSlug } from './utils/collection-schema'
@@ -43,6 +44,7 @@ export function buildCollections({
     [baModelKey.member]: (props: BuildCollectionProps) => buildMembersCollection(props),
     [baModelKey.invitation]: (props: BuildCollectionProps) => buildInvitationsCollection(props),
     [baModelKey.team]: (props: BuildCollectionProps) => buildTeamsCollection(props),
+    [baModelKey.teamMember]: (props: BuildCollectionProps) => buildTeamMembersCollection(props),
     [baModelKey.jwks]: (props: BuildCollectionProps) => buildJwksCollection(props),
     [baModelKey.apikey]: (props: BuildCollectionProps) => buildApiKeysCollection(props),
     [baModelKey.twoFactor]: (props: BuildCollectionProps) => buildTwoFactorsCollection(props),

@@ -27,14 +27,19 @@ import { passkey } from 'better-auth/plugins/passkey'
 import { sso } from 'better-auth/plugins/sso'
 import { polar } from '@polar-sh/better-auth'
 import { Polar } from '@polar-sh/sdk'
+import Stripe from 'stripe'
 import type { SanitizedBetterAuthOptions } from '../types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const client = new Polar({
+const polarClient = new Polar({
   accessToken: 'pk_test_1234567890',
   server: 'sandbox'
+});
+
+const stripeClient = new Stripe('sk_test_fake_key_for_types_generation', {
+  apiVersion: '2025-08-27.basil'
 });
 
 const plugins = [
@@ -63,20 +68,20 @@ const plugins = [
   nextCookies(),
   customSession(async () => ({})),
   stripe({
-    stripeClient: { apiKey: 'typescript' },
-    stripeWebhookSecret: 'typescript',
+    stripeClient,
+    stripeWebhookSecret: 'whsec_test_fake_webhook_secret',
     subscription: {
       enabled: true,
       plans: [
-        { id: 'basic', name: 'Basic', price: 1000, interval: 'month', currency: 'usd' },
-        { id: 'pro', name: 'Pro', price: 2000, interval: 'month', currency: 'usd' },
-        { id: 'enterprise', name: 'Enterprise', price: 3000, interval: 'month', currency: 'usd' }
+        { name: 'Basic', priceId: 'price_basic', lookupKey: 'basic' },
+        { name: 'Pro', priceId: 'price_pro', lookupKey: 'pro' },
+        { name: 'Enterprise', priceId: 'price_enterprise', lookupKey: 'enterprise' }
       ]
     }
   }),
   // As of writing this, Polar don't create schema fields, but just in case in the future we leave this here.
   polar({
-    client,
+    client: polarClient,
     checkout: {
       enabled: true,
       products: [

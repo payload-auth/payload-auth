@@ -592,9 +592,13 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, enableDebugLogs = false
           overwrite: true
         }
       },
+      transaction: async (fn) => {
+        // Payload doesn't support transactions in the same way as SQL databases
+        // Execute the callback directly, passing a no-op transaction object
+        return await fn({} as any)
+      },
       options: {
-        enableDebugLogs,
-        idType
+        adapterConfig: {} as any
       }
     }
   }

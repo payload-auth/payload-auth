@@ -11,7 +11,6 @@ export function configureOrganizationPlugin(plugin: any, resolvedSchemas: Better
   set(plugin, `schema.${baModelKey.member}.fields.organizationId.references.model`, getSchemaCollectionSlug(resolvedSchemas, baModelKey.organization))
   set(plugin, `schema.${baModelKey.member}.fields.userId.fieldName`, getSchemaFieldName(resolvedSchemas, baModelKey.member, baModelFieldKeys.member.userId))
   set(plugin, `schema.${baModelKey.member}.fields.userId.references.model`, getSchemaCollectionSlug(resolvedSchemas, baModelKey.user))
-  set(plugin, `schema.${baModelKey.member}.fields.teamId.fieldName`, getSchemaFieldName(resolvedSchemas, baModelKey.member, baModelFieldKeys.member.teamId))
 
   set(plugin, `schema.${baModelKey.invitation}.fields.organizationId.fieldName`, getSchemaFieldName(resolvedSchemas, baModelKey.invitation, baModelFieldKeys.invitation.organizationId))
   set(plugin, `schema.${baModelKey.invitation}.fields.organizationId.references.model`, getSchemaCollectionSlug(resolvedSchemas, baModelKey.organization))

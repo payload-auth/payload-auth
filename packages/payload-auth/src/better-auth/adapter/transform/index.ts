@@ -109,7 +109,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
    * // If schema.user.fields.email has no references property
    * isRelationshipField('email', schema.user.fields) // Returns false
    */
-  function isRelationshipField(fieldKey: string, schemaFields: Record<string, FieldAttribute<FieldType>>): boolean {
+  function isRelationshipField(fieldKey: string, schemaFields: Record<string, FieldAttribute>): boolean {
     // A field is a relationship field if it has a 'references' property defined
     return schemaFields[fieldKey]?.references !== undefined
   }

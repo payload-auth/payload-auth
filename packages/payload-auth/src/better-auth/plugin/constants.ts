@@ -82,7 +82,8 @@ export const baPluginSlugs = {
   organizations: 'organizations',
   invitations: 'invitations',
   members: 'members',
-  teams: 'teams'
+  teams: 'teams',
+  teamMembers: 'teamMembers'
 } as const
 
 export const baModelKey = {
@@ -100,6 +101,7 @@ export const baModelKey = {
   invitation: 'invitation',
   member: 'member',
   team: 'team',
+  teamMember: 'teamMember',
   subscription: 'subscription',
   apikey: 'apikey',
   jwks: 'jwks'
@@ -117,8 +119,11 @@ export const baModelFieldKeysToFieldNames = {
   },
   member: {
     organizationId: 'organization',
-    userId: 'user',
-    teamId: 'team'
+    userId: 'user'
+  },
+  teamMember: {
+    teamId: 'team',
+    userId: 'user'
   },
   invitation: {
     organizationId: 'organization',
@@ -164,8 +169,11 @@ export const baModelFieldKeys = {
   },
   member: {
     organizationId: 'organizationId',
-    userId: 'userId',
-    teamId: 'teamId'
+    userId: 'userId'
+  },
+  teamMember: {
+    teamId: 'teamId',
+    userId: 'userId'
   },
   invitation: {
     organizationId: 'organizationId',
@@ -215,6 +223,7 @@ export const baModelKeyToSlug = {
   invitation: baPluginSlugs.invitations,
   member: baPluginSlugs.members,
   team: baPluginSlugs.teams,
+  teamMember: baPluginSlugs.teamMembers,
   subscription: baPluginSlugs.subscriptions,
   apikey: baPluginSlugs.apiKeys,
   jwks: baPluginSlugs.jwks
