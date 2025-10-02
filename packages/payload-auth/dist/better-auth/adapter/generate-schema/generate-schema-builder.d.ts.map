@@ -1,0 +1,1 @@
+{"version":3,"file":"generate-schema-builder.d.ts","sourceRoot":"","sources":["../../../../src/better-auth/adapter/generate-schema/generate-schema-builder.ts"],"names":[],"mappings":"AAAA;;;;;;;;;;;;;;;;;GAiBG;AACH,OAAO,KAAK,EAAE,iBAAiB,EAAE,MAAM,aAAa,CAAA;AAKpD,eAAO,MAAM,0BAA0B,GAAU,qBAAqB;IAAE,IAAI,EAAE,MAAM,CAAC;IAAC,SAAS,EAAE,iBAAiB,CAAA;CAAE,oBAcnH,CAAA"}

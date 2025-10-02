@@ -1,0 +1,1 @@
+{"version":3,"file":"token-field.d.ts","sourceRoot":"","sources":["../../../../../src/better-auth/plugin/payload/components/token-field.tsx"],"names":[],"mappings":"AAEA,OAAO,KAAK,MAAM,OAAO,CAAA;AAEzB,OAAO,EAAE,oBAAoB,EAAE,MAAM,SAAS,CAAA;AAE9C,QAAA,MAAM,qBAAqB,EAAE,KAAK,CAAC,EAAE,CAAC,oBAAoB,CAYzD,CAAA;AAED,eAAe,qBAAqB,CAAA"}

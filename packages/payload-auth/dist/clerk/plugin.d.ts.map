@@ -1,0 +1,1 @@
+{"version":3,"file":"plugin.d.ts","sourceRoot":"","sources":["../../src/clerk/plugin.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,MAAM,EAAE,MAAM,SAAS,CAAA;AACrC,OAAO,KAAK,EAAE,kBAAkB,EAAE,MAAM,SAAS,CAAA;AAIjD,cAAc,wBAAwB,CAAA;AACtC,cAAc,4BAA4B,CAAA;AAE1C,wBAAgB,WAAW,CAAC,aAAa,GAAE,kBAAuB,IACxD,QAAQ,MAAM,KAAG,MAAM,CAgEhC"}

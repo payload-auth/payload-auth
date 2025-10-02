@@ -1,0 +1,1 @@
+{"version":3,"file":"load-clerk-instance.d.ts","sourceRoot":"","sources":["../../../src/clerk/utils/load-clerk-instance.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,KAAK,EAAE,MAAM,iBAAiB,CAAA;AAE5C,OAAO,CAAC,MAAM,CAAC;IACb,UAAU,MAAM;QACd,aAAa,CAAC,EAAE,KAAK,CAAA;KACtB;CACF;AAED,wBAAsB,iBAAiB,+BAQtC"}

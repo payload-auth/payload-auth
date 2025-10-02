@@ -1,0 +1,1 @@
+{"version":3,"file":"sync-clerk-users-button.d.ts","sourceRoot":"","sources":["../../../../src/clerk/plugin/components/sync-clerk-users-button.tsx"],"names":[],"mappings":"AAOA,eAAO,MAAM,oBAAoB,GAAI,oDAIlC;IACD,kBAAkB,EAAE,MAAM,CAAA;IAC1B,WAAW,EAAE,MAAM,CAAA;IACnB,aAAa,EAAE,MAAM,CAAA;CACtB,uCAiEA,CAAA"}

@@ -1,0 +1,54 @@
+.admin-social-provider-buttons {
+  display: flex;
+  gap: 0.75rem;
+
+  &--count-0,
+  &--count-1,
+  &--count-2 {
+    flex-direction: column;
+
+    .admin-social-provider-buttons__button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .btn__label {
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+  }
+
+  &--count-many {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100% / 5, 60px), 1fr));
+    gap: 0.5rem;
+    max-width: 100%;
+
+    .admin-social-provider-buttons__button {
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  &__button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block: 0;
+
+    &--icon-only {
+      .admin-social-provider-buttons__icon {
+        margin: 0;
+      }
+      span {
+        display: none;
+      }
+    }
+  }
+
+  &__icon {
+    height: 1.25rem;
+    width: 1.25rem;
+  }
+}

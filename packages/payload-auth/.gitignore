@@ -150,4 +150,4 @@ out
 .turbo/
 .tsup
 .todo
-/dev/media
+/dev/media# Temporarily commiting dist/ for GitHub installation

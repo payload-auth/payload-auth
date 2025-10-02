@@ -1,0 +1,1 @@
+{"version":3,"file":"get-url-after-read.d.ts","sourceRoot":"","sources":["../../../../../../../src/better-auth/plugin/lib/build-collections/admin-invitations/hooks/get-url-after-read.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,SAAS,CAAA;AACxC,OAAO,EAAE,wBAAwB,EAAE,MAAM,4BAA4B,CAAA;AAErE,eAAO,MAAM,8BAA8B,GAAI,8BAA8B;IAAE,wBAAwB,EAAE,wBAAwB,CAAA;CAAE,cAQlI,CAAA"}

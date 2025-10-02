@@ -1,0 +1,1 @@
+{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../src/better-auth/adapter/index.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,cAAc,EAAE,MAAM,mBAAmB,CAAA;AAElD,OAAO,KAAK,EAAE,cAAc,EAAE,MAAM,SAAS,CAAA;AAK7C,eAAO,MAAM,uBAAuB,uBAAuB,CAAA;AAG3D;;;;;;;;;GASG;AACH,QAAA,MAAM,cAAc,EAAE,cAskBrB,CAAA;AAED,OAAO,EAAE,cAAc,EAAE,cAAc,EAAE,CAAA"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"get-collection-slug.d.ts","sourceRoot":"","sources":["../../../../src/better-auth/plugin/helpers/get-collection-slug.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,uBAAuB,EAAE,MAAM,UAAU,CAAA;AAGvD,wBAAgB,wBAAwB,CAAC,EACvC,aAAa,EACb,QAAQ,EACT,EAAE;IACD,aAAa,EAAE,uBAAuB,CAAA;IACtC,QAAQ,EAAE,MAAM,CAAA;CACjB,GAAG,MAAM,CAiBT"}

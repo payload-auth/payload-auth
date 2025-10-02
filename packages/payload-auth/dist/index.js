@@ -1,0 +1,7 @@
+// These re-exports will be used by consumers of the library
+export * from "./better-auth";
+export * from "./clerk";
+export * from "./kinde";
+export * from "./authjs";
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uL3NyYy9pbmRleC50cyJdLCJzb3VyY2VzQ29udGVudCI6WyIvLyBUaGVzZSByZS1leHBvcnRzIHdpbGwgYmUgdXNlZCBieSBjb25zdW1lcnMgb2YgdGhlIGxpYnJhcnlcbmV4cG9ydCAqIGZyb20gJy4vYmV0dGVyLWF1dGgnXG5leHBvcnQgKiBmcm9tICcuL2NsZXJrJ1xuZXhwb3J0ICogZnJvbSAnLi9raW5kZSdcbmV4cG9ydCAqIGZyb20gJy4vYXV0aGpzJ1xuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLDREQUE0RDtBQUM1RCxjQUFjLGdCQUFlO0FBQzdCLGNBQWMsVUFBUztBQUN2QixjQUFjLFVBQVM7QUFDdkIsY0FBYyxXQUFVIn0=

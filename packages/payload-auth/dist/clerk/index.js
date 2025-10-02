@@ -1,0 +1,8 @@
+export * from "./plugin";
+export * from "./types";
+export * from "./utils";
+import { clerkPlugin } from "./plugin";
+import { clerkAuthStrategy } from "./plugin/auth-strategy";
+export { clerkPlugin, clerkAuthStrategy };
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9jbGVyay9pbmRleC50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJleHBvcnQgKiBmcm9tICcuL3BsdWdpbidcbmV4cG9ydCAqIGZyb20gJy4vdHlwZXMnXG5leHBvcnQgKiBmcm9tICcuL3V0aWxzJ1xuXG5pbXBvcnQgeyBjbGVya1BsdWdpbiB9IGZyb20gJy4vcGx1Z2luJ1xuaW1wb3J0IHsgY2xlcmtBdXRoU3RyYXRlZ3kgfSBmcm9tICcuL3BsdWdpbi9hdXRoLXN0cmF0ZWd5J1xuXG5leHBvcnQgeyBjbGVya1BsdWdpbiwgY2xlcmtBdXRoU3RyYXRlZ3kgfVxuIl0sIm5hbWVzIjpbImNsZXJrUGx1Z2luIiwiY2xlcmtBdXRoU3RyYXRlZ3kiXSwibWFwcGluZ3MiOiJBQUFBLGNBQWMsV0FBVTtBQUN4QixjQUFjLFVBQVM7QUFDdkIsY0FBYyxVQUFTO0FBRXZCLFNBQVNBLFdBQVcsUUFBUSxXQUFVO0FBQ3RDLFNBQVNDLGlCQUFpQixRQUFRLHlCQUF3QjtBQUUxRCxTQUFTRCxXQUFXLEVBQUVDLGlCQUFpQixHQUFFIn0=

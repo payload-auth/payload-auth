@@ -1,0 +1,1 @@
+{"version":3,"file":"client.d.ts","sourceRoot":"","sources":["../../../../../../src/better-auth/plugin/payload/views/forgot-password/client.tsx"],"names":[],"mappings":"AAUA,OAAO,KAAK,EAAE,EAAE,EAAE,MAAM,OAAO,CAAA;AAG/B,KAAK,uBAAuB,GAAG;IAC7B,OAAO,CAAC,EAAE,MAAM,CAAA;IAChB,QAAQ,CAAC,EAAE,MAAM,CAAA;CAClB,CAAA;AAED,eAAO,MAAM,kBAAkB,EAAE,EAAE,CAAC,uBAAuB,CA2E1D,CAAA"}

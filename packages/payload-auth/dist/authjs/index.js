@@ -1,0 +1,3 @@
+export const authjs = 'authjs';
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9hdXRoanMvaW5kZXgudHMiXSwic291cmNlc0NvbnRlbnQiOlsiZXhwb3J0IGNvbnN0IGF1dGhqcyA9ICdhdXRoanMnXG4iXSwibmFtZXMiOlsiYXV0aGpzIl0sIm1hcHBpbmdzIjoiQUFBQSxPQUFPLE1BQU1BLFNBQVMsU0FBUSJ9

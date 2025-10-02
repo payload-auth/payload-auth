@@ -1,0 +1,3 @@
+export const kinde = 'kinde';
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9raW5kZS9pbmRleC50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJleHBvcnQgY29uc3Qga2luZGUgPSAna2luZGUnXG4iXSwibmFtZXMiOlsia2luZGUiXSwibWFwcGluZ3MiOiJBQUFBLE9BQU8sTUFBTUEsUUFBUSxRQUFPIn0=
