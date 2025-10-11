@@ -69,7 +69,6 @@ export function filterProps<T extends object, K extends readonly (keyof T)[]>(
   const out: Record<string, unknown> = {}
   for (const [k, v] of Object.entries(obj)) {
     if (!allow.has(k)) continue
-    if (typeof v === 'function') continue
     out[k] = v
   }
   return out as Partial<T>
