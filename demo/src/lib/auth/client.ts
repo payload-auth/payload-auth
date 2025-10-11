@@ -17,6 +17,7 @@ import {
   inferAdditionalFields
 } from 'better-auth/client/plugins'
 import { toast } from 'sonner'
+import { betterAuthOptions } from './options'
 
 export const authClient = createAuthClient({
   baseURL: `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}`,
@@ -50,7 +51,8 @@ export const authClient = createAuthClient({
         toast.error('Too many requests. Please try again later.')
       }
     }
-  }
+  },
+  $InferAuth: betterAuthOptions
 })
 
 export const { signUp, signIn, signOut, useSession, organization, useListOrganizations, useActiveOrganization } = authClient

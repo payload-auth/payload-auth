@@ -16,6 +16,7 @@ import type { Config, Payload } from 'payload'
 import { configureTwoFactorPlugin } from './two-factor-plugin'
 import { requireAdminInviteForSignUpMiddleware } from './utils/require-admin-invite-for-sign-up-middleware'
 import { useAdminInviteAfterEmailSignUpMiddleware } from './utils/use-admin-invite-after-email-sign-up-middleware'
+import { configureDeviceAuthorizationPlugin } from './device-authorization-plugin'
 
 /**
  * Sanitizes the BetterAuth options
@@ -26,29 +27,34 @@ export function sanitizeBetterAuthOptions({
   resolvedSchemas
 }: {
   config: Payload['config'] | Config | Promise<Payload['config'] | Config>
-  pluginOptions: BetterAuthPluginOptions,
+  pluginOptions: BetterAuthPluginOptions
   resolvedSchemas: BetterAuthSchemas
 }): SanitizedBetterAuthOptions {
-
   const betterAuthOptions: SanitizedBetterAuthOptions = { ...(pluginOptions.betterAuthOptions ?? {}) }
 
-  const userCollectionSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.user);
-  const adminInvitationCollectionSlug = pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations;
+  const userCollectionSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.user)
+  const adminInvitationCollectionSlug = pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations
 
   set(betterAuthOptions, `${baModelKey.user}.modelName`, userCollectionSlug)
   set(betterAuthOptions, `${baModelKey.user}.additionalFields.role`, {
     type: 'string',
     defaultValue: pluginOptions.users?.defaultRole || defaults.userRole,
-    input: false,
+    input: false
   })
-  
-  const baseModels = [baModelKey.account, baModelKey.session, baModelKey.verification] as const
-  baseModels.forEach((model) =>
-    set(betterAuthOptions, `${model}.modelName`, getSchemaCollectionSlug(resolvedSchemas, model))
-  )
 
-  set(betterAuthOptions, `${baModelKey.account}.fields.userId`, getSchemaFieldName(resolvedSchemas, baModelKey.account, baModelFieldKeys.account.userId))
-  set(betterAuthOptions, `${baModelKey.session}.fields.userId`, getSchemaFieldName(resolvedSchemas, baModelKey.session, baModelFieldKeys.session.userId))
+  const baseModels = [baModelKey.account, baModelKey.session, baModelKey.verification] as const
+  baseModels.forEach((model) => set(betterAuthOptions, `${model}.modelName`, getSchemaCollectionSlug(resolvedSchemas, model)))
+
+  set(
+    betterAuthOptions,
+    `${baModelKey.account}.fields.userId`,
+    getSchemaFieldName(resolvedSchemas, baModelKey.account, baModelFieldKeys.account.userId)
+  )
+  set(
+    betterAuthOptions,
+    `${baModelKey.session}.fields.userId`,
+    getSchemaFieldName(resolvedSchemas, baModelKey.session, baModelFieldKeys.session.userId)
+  )
 
   set(betterAuthOptions, `emailAndPassword.enabled`, betterAuthOptions.emailAndPassword?.enabled ?? true)
 
@@ -71,7 +77,6 @@ export function sanitizeBetterAuthOptions({
       options: betterAuthOptions,
       pluginOptions
     })
-    
   }
   useAdminInviteAfterEmailSignUpMiddleware({
     options: betterAuthOptions,
@@ -127,7 +132,8 @@ export function sanitizeBetterAuthOptions({
         [supportedBAPluginIds.organization]: (p: any) => configureOrganizationPlugin(p, resolvedSchemas),
         [supportedBAPluginIds.sso]: (p: any) => configureSsoPlugin(p, resolvedSchemas),
         [supportedBAPluginIds.oidc]: (p: any) => configureOidcPlugin(p, resolvedSchemas),
-        [supportedBAPluginIds.twoFactor]: (p: any) => configureTwoFactorPlugin(p, resolvedSchemas)
+        [supportedBAPluginIds.twoFactor]: (p: any) => configureTwoFactorPlugin(p, resolvedSchemas),
+        [supportedBAPluginIds.deviceAuthorization]: (p: any) => configureDeviceAuthorizationPlugin(p, resolvedSchemas)
       }
 
       supportedPlugins.forEach((plugin) => {

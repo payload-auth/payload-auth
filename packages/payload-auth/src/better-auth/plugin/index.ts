@@ -1,7 +1,6 @@
 import type { BetterAuthOptions } from 'better-auth/types'
 import { getPayload, SanitizedConfig, type Config } from 'payload'
 import { payloadAdapter } from 'payload-auth/better-auth/adapter'
-import { PayloadAdapterParams } from '../types'
 import { getDefaultBetterAuthSchema } from './helpers/get-better-auth-schema'
 import { syncResolvedSchemaWithCollectionMap } from './helpers/sync-resolved-schema-with-collection-map'
 import { applyDisabledDefaultAuthConfig } from './lib/apply-disabled-default-auth-config'
@@ -31,7 +30,7 @@ function buildBetterAuthData({ payloadConfig, pluginOptions }: { payloadConfig: 
   const resolvedBetterAuthSchemas = syncResolvedSchemaWithCollectionMap(defaultBetterAuthSchemas, collectionMap)
 
   // We need to build the collections a second time with the resolved schemas
-  // due to hooks, endpoints, useAsTitle, etc should relay on resolvedBetterAuthSchemas to get slugs
+  // due to hooks, endpoints, useAsTitle, etc should rely on resolvedBetterAuthSchemas to get slugs
   // if they are referencing to other collections then it self.
   collectionMap = buildCollections({
     resolvedSchemas: resolvedBetterAuthSchemas,
@@ -132,7 +131,10 @@ export function withPayloadAuth({ payloadConfig }: { payloadConfig: SanitizedCon
     ...betterAuthConfig,
     database: payloadAdapter({
       payloadClient: async () => await getPayload({ config: payloadConfig }),
-      idType: payloadConfig.db.defaultIDType
+      adapterConfig: {
+        enableDebugLogs: false,
+        idType: payloadConfig.db.defaultIDType
+      }
     })
   }
 

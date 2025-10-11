@@ -1,4 +1,4 @@
-import { BetterAuthFullSchema, ModelKey } from '@/better-auth/generated-types'
+import type { BetterAuthFullSchema, ModelKey } from '@/better-auth/generated-types'
 import { flattenAllFields, type Collection, type CollectionConfig } from 'payload'
 
 export function getCollectionByModelKey(collections: Record<string, Collection>, modelKey: ModelKey): CollectionConfig {

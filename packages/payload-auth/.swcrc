@@ -22,9 +22,6 @@
       "@/*": ["./src/*"],
       "@/shared/*": ["./src/shared/*"],
       "@/better-auth/*": ["./src/better-auth/*"],
-      "@/clerk/*": ["./src/clerk/*"],
-      "@/authjs/*": ["./src/authjs/*"],
-      "@/kinde/*": ["./src/kinde/*"]
     }
   },
   "module": {

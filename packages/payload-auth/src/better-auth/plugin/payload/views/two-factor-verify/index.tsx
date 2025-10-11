@@ -1,4 +1,3 @@
-import { MinimalTemplate } from '@payloadcms/next/templates'
 import { redirect } from 'next/navigation'
 import type { AdminViewServerProps } from 'payload'
 import React from 'react'
@@ -8,6 +7,7 @@ import { getSafeRedirect } from '../../utils/get-safe-redirect'
 import { valueOrDefaultString } from '@/shared/utils/value-or-default'
 import { adminRoutes, supportedBAPluginIds } from '@/better-auth/plugin/constants'
 import { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+import { MinimalTemplate } from '@payloadcms/next/templates'
 
 interface TwoFactorVerifyProps extends AdminViewServerProps {
   pluginOptions: BetterAuthPluginOptions

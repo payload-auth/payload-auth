@@ -10,7 +10,7 @@ export async function SignInButton() {
   })
 
   return (
-    <Link href={session?.session ? '/dashboard' : '/sign-in'} className="flex justify-center">
+    <Link href={session?.session ? '/dashboard' : '/auth/sign-in'} className="flex justify-center">
       <Button className="justify-between gap-2" variant="default">
         {!session?.session ? (
           <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24">

@@ -25,7 +25,7 @@ export function ImpersonatingBar() {
   if (!impersonatedUser || !impersonatedBy) return null
 
   return (
-    <div className="w-full bg-zinc-100 px-4 py-2 text-center text-black dark:bg-zinc-900 dark:text-white">
+    <div className="impersonating-bar fixed top-9 right-0 left-0 z-[69] w-full bg-zinc-100 px-4 py-2 text-center text-black dark:bg-zinc-900 dark:text-white">
       <div className="mx-auto flex max-w-6xl items-center justify-center gap-3">
         <span>
           You are currently impersonating {impersonatedUser?.email}
@@ -35,8 +35,7 @@ export function ImpersonatingBar() {
           variant="secondary"
           size="sm"
           onClick={handleStopImpersonating}
-          className="cursor-pointer font-medium transition-colors duration-200 hover:bg-zinc-200 dark:hover:bg-zinc-800"
-        >
+          className="cursor-pointer font-medium transition-colors duration-200 hover:bg-zinc-200 dark:hover:bg-zinc-800">
           Stop Impersonating
         </Button>
       </div>

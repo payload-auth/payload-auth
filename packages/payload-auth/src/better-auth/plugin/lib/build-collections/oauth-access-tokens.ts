@@ -1,13 +1,11 @@
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
-import { getDefaultCollectionSlug } from '../../helpers/get-collection-slug'
 import { assertAllSchemaFields, getSchemaCollectionSlug, getSchemaFieldName } from './utils/collection-schema'
 
 import type { CollectionConfig } from 'payload'
-import type { FieldRule } from './utils/model-field-transformations'
 import type { OauthAccessToken } from '@/better-auth/generated-types'
-import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import type { BuildCollectionProps, FieldOverrides, FieldRule } from '@/better-auth/plugin/types'
 
 export function buildOauthAccessTokensCollection({
   incomingCollections,

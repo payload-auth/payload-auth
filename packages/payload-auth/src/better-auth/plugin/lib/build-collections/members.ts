@@ -1,4 +1,4 @@
-import { baModelFieldKeysToFieldNames, baModelKey } from '../../constants'
+import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 import { getSchemaCollectionSlug, getSchemaFieldName } from './utils/collection-schema'

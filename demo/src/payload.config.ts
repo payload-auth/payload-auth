@@ -7,7 +7,6 @@ import { fileURLToPath } from 'url'
 import { betterAuthPluginOptions } from './lib/auth/options'
 import collections from './payload/collections'
 import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres'
-import { mongooseAdapter } from '@payloadcms/db-mongodb'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)

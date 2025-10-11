@@ -27,7 +27,7 @@ export function AdminBarClient({ user, isPreviewMode, userCollectionSlug, icons 
   const linkClasses = 'inline-flex items-center gap-2 hover:text-zinc-300 cursor-pointer py-2 shrink-0'
 
   return (
-    <div className="admin-bar text-foreground bg-background border-border fixed top-0 z-50 w-full border-b text-sm [body:has(.admin-bar):has(&)]:mt-[36px] [body:has(.admin-bar):has(&)_.app>header]:top-[36px]">
+    <div className="admin-bar border-border bg-background text-foreground fixed top-0 right-0 left-0 z-[70] h-9 w-full border-b text-sm">
       <div className="container ms-auto flex max-w-screen-xl flex-wrap items-center justify-between">
         <div className="flex flex-wrap items-center gap-4">
           <Link href="/admin" className={linkClasses}>

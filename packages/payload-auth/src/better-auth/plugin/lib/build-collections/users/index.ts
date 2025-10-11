@@ -1,5 +1,4 @@
 import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exists'
-import { getDefaultCollectionSlug } from '@/better-auth/plugin/helpers/get-collection-slug'
 import { baModelFieldKeys, baModelKey, defaults, supportedBAPluginIds } from '../../../constants'
 import { getAllRoleOptions } from '../../../helpers/get-all-roles'
 import { assertAllSchemaFields, getSchemaCollectionSlug, getSchemaFieldName } from '../utils/collection-schema'
@@ -17,8 +16,7 @@ import {
 } from './hooks'
 
 import type { CollectionConfig, UIField } from 'payload'
-import type { FieldRule } from '../utils/model-field-transformations'
-import type { BuildCollectionProps, FieldOverrides } from '../../../types'
+import type { BuildCollectionProps, FieldOverrides, FieldRule } from '../../../types'
 import type { User } from '@/better-auth/generated-types'
 
 export function buildUsersCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {

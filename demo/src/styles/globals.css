@@ -2,6 +2,8 @@
 
 @plugin "tailwindcss-animate";
 
+@import '@daveyplate/better-auth-ui/css';
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -207,5 +209,39 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* offset for fixed admin + impersonating bars when present */
+    padding-top: 0;
   }
+}
+
+/* dynamic offsets when bars exist */
+body:has(.admin-bar):not(:has(.impersonating-bar)) {
+  padding-top: 36px; /* matches admin bar h-9 = 36px */
+}
+body:has(.admin-bar):has(.impersonating-bar) {
+  padding-top: 76px; /* 36 + ~40 impersonate */
+}
+
+/* Offset fixed sidebar container so it doesn't sit under the bars */
+body:has(.admin-bar) [data-slot='sidebar-container'] {
+  top: 36px;
+  height: calc(100svh - 36px);
+}
+body:has(.admin-bar):has(.impersonating-bar) [data-slot='sidebar-container'] {
+  top: 76px;
+  height: calc(100svh - 76px);
+}
+
+/* Global marketing header offset by bars; hide when sidebar is present */
+.site-header {
+  top: 0;
+}
+body:has(.admin-bar) .site-header {
+  top: 36px;
+}
+body:has(.admin-bar):has(.impersonating-bar) .site-header {
+  top: 76px;
+}
+body:has([data-slot='sidebar-container']) .site-header {
+  display: none;
 }
