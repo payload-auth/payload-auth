@@ -1,8 +1,8 @@
-import { BuiltBetterAuthSchema } from '@/better-auth/plugin/types'
-import { type FieldAttribute } from 'better-auth/db'
+import type { BuiltBetterAuthSchema, FieldRule } from '@/better-auth/plugin/types'
+import type { DBFieldAttribute } from 'better-auth/db'
 import type { Field, RelationshipField } from 'payload'
-import type { FieldRule } from './model-field-transformations'
 import { getAdditionalFieldProperties } from './model-field-transformations'
+import { getValidFieldPropertyKeysForType } from './filter-properties'
 
 export function getCollectionFields({
   schema,
@@ -11,7 +11,7 @@ export function getCollectionFields({
 }: {
   schema: BuiltBetterAuthSchema
   fieldRules?: FieldRule[]
-  additionalProperties?: Record<string, (field: FieldAttribute) => Partial<Field>>
+  additionalProperties?: Record<string, (field: DBFieldAttribute) => Partial<Field>>
 }): Field[] | null {
   const payloadFields = Object.entries(schema.fields).map(([fieldKey, field]) => {
     return convertSchemaFieldToPayload({ field, fieldKey, fieldRules, additionalProperties })
@@ -26,13 +26,20 @@ export function convertSchemaFieldToPayload({
   fieldRules = [],
   additionalProperties = {}
 }: {
-  field: FieldAttribute
+  field: DBFieldAttribute
   fieldKey: string
   fieldRules?: FieldRule[]
-  additionalProperties?: Record<string, (field: FieldAttribute) => Partial<Field>>
+  additionalProperties?: Record<string, (field: DBFieldAttribute) => Partial<Field>>
 }): Field {
   const { type, hasMany } = getPayloadFieldProperties({ field })
-  const additionalFieldProperties = getAdditionalFieldProperties({ field, fieldKey, fieldRules, additionalProperties })
+  const validFieldPropertyKeys = getValidFieldPropertyKeysForType(type)
+  const additionalFieldProperties = getAdditionalFieldProperties({
+    field,
+    fieldKey,
+    fieldRules,
+    additionalProperties,
+    validFieldPropertyKeys
+  })
   const baseField = {
     name: field.fieldName ?? fieldKey,
     type,
@@ -57,7 +64,7 @@ export function convertSchemaFieldToPayload({
   return baseField
 }
 
-export function getPayloadFieldProperties({ field }: { field: FieldAttribute }): {
+export function getPayloadFieldProperties({ field }: { field: DBFieldAttribute }): {
   type: Field['type']
   hasMany?: boolean
 } {

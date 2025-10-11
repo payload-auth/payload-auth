@@ -10,6 +10,8 @@ import React from 'react'
 import { BetterAuthProvider } from '@/lib/auth/context'
 import { getContextProps } from '@/lib/auth/context/get-context-props'
 import { ImpersonatingBar } from '@/components/impersonating-bar'
+import { Providers } from '@/components/providers'
+import { Toaster } from '@/components/ui/sonner'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -31,15 +33,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
-          <div className="app relative flex min-h-screen flex-col">
-            <BetterAuthProvider {...getContextProps()}>
+          <BetterAuthProvider {...getContextProps()}>
+            <Providers>
               <AdminBar />
               <ImpersonatingBar />
               <Header />
               {children}
               <Footer />
-            </BetterAuthProvider>
-          </div>
+            </Providers>
+            <Toaster />
+          </BetterAuthProvider>
         </ThemeProvider>
       </body>
     </html>

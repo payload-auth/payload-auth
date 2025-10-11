@@ -1,5 +1,5 @@
 import type { UnionToIntersection, betterAuth } from 'better-auth'
-import { FieldAttribute } from 'better-auth/db'
+import type { DBFieldAttribute } from 'better-auth/db'
 import type {
   BetterAuthOptions as BetterAuthOptionsType,
   BetterAuthPlugin as BetterAuthPluginType,
@@ -401,12 +401,11 @@ export type BetterAuthFunctionOptions<P extends TPlugins> = Omit<BetterAuthOptio
 
 export interface BuiltBetterAuthSchema {
   modelName: string
-  fields: Record<string, FieldAttribute>
+  fields: Record<string, DBFieldAttribute>
   order: number
 }
 
 export type BetterAuthSchemas = Record<ModelKey, BuiltBetterAuthSchema>
-
 
 export interface BuildCollectionProps {
   resolvedSchemas: BetterAuthSchemas
@@ -415,7 +414,14 @@ export interface BuildCollectionProps {
 }
 
 export type FieldOverrides<K extends string = string> = {
-  [Key in K]?: (field: FieldAttribute) => Partial<Field>
+  [Key in K]?: (field: DBFieldAttribute) => Partial<Field>
 } & {
-  [key: string]: (field: FieldAttribute) => Partial<Field>
+  [key: string]: (field: DBFieldAttribute) => Partial<Field>
+}
+
+export type FieldWithIds = { name?: string; custom?: { betterAuthFieldKey?: string } }
+
+export type FieldRule = {
+  condition?: (field: DBFieldAttribute) => boolean
+  transform: (field: DBFieldAttribute) => Record<string, unknown>
 }

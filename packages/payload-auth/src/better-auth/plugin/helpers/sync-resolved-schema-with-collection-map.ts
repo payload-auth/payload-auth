@@ -1,7 +1,6 @@
 import type { CollectionConfig } from 'payload'
-
 import type { ModelKey } from '../../generated-types'
-import type { BetterAuthSchemas } from '../types'
+import type { BetterAuthSchemas, FieldWithIds } from '../types'
 
 /**
  * Syncs a BetterAuth `ResolvedSchema` object with the *actual* collection
@@ -59,8 +58,6 @@ export function syncResolvedSchemaWithCollectionMap(
     }
 
     // ───── Sync field names ───────────────────────────────────────────────────
-    type FieldWithIds = { name?: string; custom?: { betterAuthFieldKey?: string } }
-
     const collectionFields: FieldWithIds[] = Array.isArray(collection.fields) ? (collection.fields as FieldWithIds[]) : []
 
     for (const [fieldKey, schemaField] of Object.entries(schema.fields)) {

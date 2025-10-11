@@ -1,7 +1,7 @@
 import { stripe } from '@better-auth/stripe'
 import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
 import { getSchema } from 'better-auth/db'
-import type { FieldAttribute } from 'better-auth/db'
+import type { DBFieldAttribute } from 'better-auth/db'
 import {
   admin,
   anonymous,
@@ -20,22 +20,26 @@ import {
   phoneNumber,
   twoFactor,
   username,
-  customSession
+  customSession,
+  deviceAuthorization,
+  mcp,
+  lastLoginMethod
 } from 'better-auth/plugins'
 import { nextCookies } from 'better-auth/next-js'
 import { passkey } from 'better-auth/plugins/passkey'
-import { sso } from 'better-auth/plugins/sso'
-import { polar } from '@polar-sh/better-auth'
+import { sso } from '@better-auth/sso'
+import { polar, checkout } from '@polar-sh/better-auth'
 import { Polar } from '@polar-sh/sdk'
 import type { SanitizedBetterAuthOptions } from '../types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import Stripe from 'stripe'
 
 const client = new Polar({
   accessToken: 'pk_test_1234567890',
   server: 'sandbox'
-});
+})
 
 const plugins = [
   username(),
@@ -62,29 +66,45 @@ const plugins = [
   phoneNumber(),
   nextCookies(),
   customSession(async () => ({})),
+  mcp({ loginPage: '' }),
+  deviceAuthorization(),
+  lastLoginMethod({ storeInDatabase: true }),
   stripe({
-    stripeClient: { apiKey: 'typescript' },
+    stripeClient: new Stripe('typescript'),
     stripeWebhookSecret: 'typescript',
     subscription: {
       enabled: true,
       plans: [
-        { id: 'basic', name: 'Basic', price: 1000, interval: 'month', currency: 'usd' },
-        { id: 'pro', name: 'Pro', price: 2000, interval: 'month', currency: 'usd' },
-        { id: 'enterprise', name: 'Enterprise', price: 3000, interval: 'month', currency: 'usd' }
+        {
+          name: 'Basic',
+          priceId: 'basic'
+        },
+        {
+          name: 'Pro',
+          priceId: 'pro'
+        },
+        {
+          name: 'Enterprise',
+          priceId: 'enterprise'
+        }
       ]
     }
   }),
   // As of writing this, Polar don't create schema fields, but just in case in the future we leave this here.
   polar({
     client,
-    checkout: {
-      enabled: true,
-      products: [
-        { productId: 'basic', slug: 'basic' },
-        { productId: 'pro', slug: 'pro' },
-        { productId: 'enterprise', slug: 'enterprise' }
-      ]
-    }
+    use: [
+      checkout({
+        products: [
+          {
+            productId: '123-456-789', // ID of Product from Polar Dashboard
+            slug: 'pro' // Custom slug for easy reference in Checkout URL, e.g. /checkout/pro
+          }
+        ],
+        successUrl: '/success?checkout_id={CHECKOUT_ID}',
+        authenticatedUsersOnly: true
+      })
+    ]
   })
 ]
 
@@ -96,7 +116,7 @@ const betterAuthConfig: SanitizedBetterAuthOptions = {
 
 const baseSchema = getSchema({ ...betterAuthConfig, plugins: [] })
 
-type Schema = Record<string, { fields: Record<string, FieldAttribute> }>
+type Schema = Record<string, { fields: Record<string, DBFieldAttribute> }>
 
 const map = (t: string): string => {
   if (t === 'boolean') return 'boolean'
@@ -114,8 +134,8 @@ const pascal = (s: string): string =>
     .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
     .join('')
 
-const diff = (base: Schema, target: Schema): Record<string, Record<string, FieldAttribute>> => {
-  const d: Record<string, Record<string, FieldAttribute>> = {}
+const diff = (base: Schema, target: Schema): Record<string, Record<string, DBFieldAttribute>> => {
+  const d: Record<string, Record<string, DBFieldAttribute>> = {}
   for (const [m, { fields }] of Object.entries(target)) {
     const added = Object.entries(fields).filter(([k]) => !(k in (base[m]?.fields ?? {})))
     if (added.length) d[m] = Object.fromEntries(added)
@@ -126,7 +146,7 @@ const diff = (base: Schema, target: Schema): Record<string, Record<string, Field
 const gen = (): string => {
   let out = '// Auto-generated types. Do not edit.\n\n'
 
-  const pluginAdds: Record<string, Record<string, Record<string, FieldAttribute>>> = {}
+  const pluginAdds: Record<string, Record<string, Record<string, DBFieldAttribute>>> = {}
   const seen = new Set<string>()
 
   for (const pl of plugins) {
@@ -185,9 +205,7 @@ const gen = (): string => {
   }
 
   // Generate union type of plugin identifiers
-  const pluginIdUnion = [...seen]
-    .map((id) => JSON.stringify(id))
-    .join(' | ')
+  const pluginIdUnion = [...seen].map((id) => JSON.stringify(id)).join(' | ')
   out += `export type PluginId = ${pluginIdUnion}\n\n`
 
   // Generate full schema mapping

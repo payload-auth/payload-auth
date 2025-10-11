@@ -1,11 +1,9 @@
 import React from 'react'
-import { MinimalTemplate } from '@payloadcms/next/templates'
 import { Button, Link, Translation } from '@payloadcms/ui'
 import type { AdminViewServerProps } from 'payload'
 import { formatAdminURL } from 'payload/shared'
-
+import { MinimalTemplate } from '@payloadcms/next/templates'
 import { z } from 'zod'
-
 import { FormHeader } from '@/shared/form/ui/header'
 import { PasswordResetForm } from './client'
 import { adminRoutes } from '@/better-auth/plugin/constants'
@@ -75,7 +73,7 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ pluginOptions, initPageRe
   const { token } = resetPasswordParams.data
 
   return (
-    <MinimalTemplate className={`${resetPasswordBaseClass}`}>
+    <div className={`${resetPasswordBaseClass}`}>
       <FormHeader heading={t('authentication:resetPassword')} />
       <PasswordResetForm
         token={token}
@@ -90,7 +88,7 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ pluginOptions, initPageRe
         prefetch={false}>
         {t('authentication:backToLogin')}
       </Link>
-    </MinimalTemplate>
+    </div>
   )
 }
 

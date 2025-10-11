@@ -1,13 +1,10 @@
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
-import { getDefaultCollectionSlug } from '../../helpers/get-collection-slug'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 import { assertAllSchemaFields, getSchemaCollectionSlug } from './utils/collection-schema'
-
-import { type CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload'
 import type { Apikey } from '@/better-auth/generated-types'
-import type { FieldRule } from './utils/model-field-transformations'
-import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import type { BuildCollectionProps, FieldOverrides, FieldRule } from '@/better-auth/plugin/types'
 
 export function buildApiKeysCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
   const apiKeySlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.apikey)

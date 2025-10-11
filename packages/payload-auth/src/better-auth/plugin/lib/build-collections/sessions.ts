@@ -1,14 +1,13 @@
-import { baModelKey, baModelKeyToSlug, baseSlugs } from '../../constants'
+import { baModelKey, baseSlugs } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
 import { getDefaultCollectionSlug } from '../../helpers/get-collection-slug'
 import { assertAllSchemaFields } from './utils/collection-schema'
+import { getSchemaCollectionSlug } from './utils/collection-schema'
 
 import type { CollectionConfig } from 'payload'
 import type { Session } from '@/better-auth/generated-types'
-import type { FieldRule } from './utils/model-field-transformations'
-import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
-import { getSchemaCollectionSlug } from './utils/collection-schema'
+import type { BuildCollectionProps, FieldOverrides, FieldRule } from '@/better-auth/plugin/types'
 
 export function buildSessionsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
   const sessionSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.session)
@@ -20,6 +19,7 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, re
 
   const fieldOverrides: FieldOverrides<keyof Session> = {
     userId: () => ({
+      index: true,
       saveToJWT: true,
       admin: { readOnly: true, description: 'The user that the session belongs to' },
       relationTo: getDefaultCollectionSlug({ modelKey: baModelKey.user, pluginOptions })
@@ -58,6 +58,15 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, re
       admin: {
         readOnly: true,
         description: 'The currently active organization for the session'
+      }
+    }),
+    activeTeamId: () => ({
+      type: 'relationship',
+      saveToJWT: true,
+      relationTo: getDefaultCollectionSlug({ modelKey: baModelKey.team, pluginOptions }),
+      admin: {
+        readOnly: true,
+        description: 'The currently active team for the session'
       }
     })
   }

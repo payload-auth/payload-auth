@@ -1,12 +1,10 @@
 import React from 'react'
-
 import { z } from 'zod'
 import { Logo } from '@/shared/components/logo'
-import { MinimalTemplate } from '@payloadcms/next/templates'
 import { AdminSignupClient } from './client'
 import { FormHeader } from '@/shared/form/ui/header'
 import { supportedBAPluginIds } from '@/better-auth/plugin/constants'
-
+import { MinimalTemplate } from '@payloadcms/next/templates'
 import type { AdminViewServerProps } from 'payload'
 import type { BetterAuthPluginOptions } from '../../../types'
 import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exists'

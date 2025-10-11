@@ -17,7 +17,7 @@ export function betterAuthStrategy(userSlug?: string): AuthStrategy {
         const res = await payloadAuth.betterAuth.api.getSession({
           headers
         })
-
+        
         if (!res) {
           return { user: null }
         }

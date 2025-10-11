@@ -33,12 +33,15 @@ export type UserPluginFields = {
   "two-factor": {
     twoFactorEnabled?: boolean
   }
+  "last-login-method": {
+    lastLoginMethod?: string
+  }
   "stripe": {
     stripeCustomerId?: string
   }
 }
 
-export type User = BaseUserFields & UserPluginFields["username"] & UserPluginFields["admin"] & UserPluginFields["harmony-email"] & UserPluginFields["phone-number"] & UserPluginFields["anonymous"] & UserPluginFields["two-factor"] & UserPluginFields["stripe"]
+export type User = BaseUserFields & UserPluginFields["username"] & UserPluginFields["admin"] & UserPluginFields["harmony-email"] & UserPluginFields["phone-number"] & UserPluginFields["anonymous"] & UserPluginFields["two-factor"] & UserPluginFields["last-login-method"] & UserPluginFields["stripe"]
 
 export type BaseSessionFields = {
   expiresAt: Date
@@ -56,6 +59,7 @@ export type SessionPluginFields = {
   }
   "organization": {
     activeOrganizationId?: string
+    activeTeamId?: string
   }
 }
 
@@ -82,8 +86,8 @@ export type BaseVerificationFields = {
   identifier: string
   value: string
   expiresAt: Date
-  createdAt?: Date
-  updatedAt?: Date
+  createdAt: Date
+  updatedAt: Date
 }
 
 export type Verification = BaseVerificationFields
@@ -123,50 +127,89 @@ export type PasskeyFields = {
   backedUp: boolean
   transports?: string
   createdAt?: Date
+  aaguid?: string
 }
 
 export type Passkey = PasskeyFields
 
-export type OauthApplicationFields = {
-  name?: string
-  icon?: string
-  metadata?: string
-  clientId?: string
-  clientSecret?: string
-  redirectURLs?: string
-  type?: string
-  disabled?: boolean
-  userId?: string
-  createdAt?: Date
-  updatedAt?: Date
+export type OauthApplicationPluginFields = {
+  "oidc": {
+    name?: string
+    icon?: string
+    metadata?: string
+    clientId?: string
+    clientSecret?: string
+    redirectURLs?: string
+    type?: string
+    disabled?: boolean
+    userId?: string
+    createdAt?: Date
+    updatedAt?: Date
+  }
+  "mcp": {
+    name?: string
+    icon?: string
+    metadata?: string
+    clientId?: string
+    clientSecret?: string
+    redirectURLs?: string
+    type?: string
+    disabled?: boolean
+    userId?: string
+    createdAt?: Date
+    updatedAt?: Date
+  }
 }
 
-export type OauthApplication = OauthApplicationFields
+export type OauthApplication = OauthApplicationPluginFields["oidc"] & OauthApplicationPluginFields["mcp"]
 
-export type OauthAccessTokenFields = {
-  accessToken?: string
-  refreshToken?: string
-  accessTokenExpiresAt?: Date
-  refreshTokenExpiresAt?: Date
-  clientId?: string
-  userId?: string
-  scopes?: string
-  createdAt?: Date
-  updatedAt?: Date
+export type OauthAccessTokenPluginFields = {
+  "oidc": {
+    accessToken?: string
+    refreshToken?: string
+    accessTokenExpiresAt?: Date
+    refreshTokenExpiresAt?: Date
+    clientId?: string
+    userId?: string
+    scopes?: string
+    createdAt?: Date
+    updatedAt?: Date
+  }
+  "mcp": {
+    accessToken?: string
+    refreshToken?: string
+    accessTokenExpiresAt?: Date
+    refreshTokenExpiresAt?: Date
+    clientId?: string
+    userId?: string
+    scopes?: string
+    createdAt?: Date
+    updatedAt?: Date
+  }
 }
 
-export type OauthAccessToken = OauthAccessTokenFields
+export type OauthAccessToken = OauthAccessTokenPluginFields["oidc"] & OauthAccessTokenPluginFields["mcp"]
 
-export type OauthConsentFields = {
-  clientId?: string
-  userId?: string
-  scopes?: string
-  createdAt?: Date
-  updatedAt?: Date
-  consentGiven?: boolean
+export type OauthConsentPluginFields = {
+  "oidc": {
+    clientId?: string
+    userId?: string
+    scopes?: string
+    createdAt?: Date
+    updatedAt?: Date
+    consentGiven?: boolean
+  }
+  "mcp": {
+    clientId?: string
+    userId?: string
+    scopes?: string
+    createdAt?: Date
+    updatedAt?: Date
+    consentGiven?: boolean
+  }
 }
 
-export type OauthConsent = OauthConsentFields
+export type OauthConsent = OauthConsentPluginFields["oidc"] & OauthConsentPluginFields["mcp"]
 
 export type SsoProviderFields = {
   issuer: string
@@ -180,9 +223,26 @@ export type SsoProviderFields = {
 
 export type SsoProvider = SsoProviderFields
 
+export type TeamFields = {
+  name: string
+  organizationId: string
+  createdAt: Date
+  updatedAt?: Date
+}
+
+export type Team = TeamFields
+
+export type TeamMemberFields = {
+  teamId: string
+  userId: string
+  createdAt?: Date
+}
+
+export type TeamMember = TeamMemberFields
+
 export type OrganizationFields = {
   name: string
-  slug?: string
+  slug: string
   logo?: string
   createdAt: Date
   metadata?: string
@@ -194,7 +254,6 @@ export type MemberFields = {
   organizationId: string
   userId: string
   role: string
-  teamId?: string
   createdAt: Date
 }
 
@@ -212,15 +271,6 @@ export type InvitationFields = {
 
 export type Invitation = InvitationFields
 
-export type TeamFields = {
-  name: string
-  organizationId: string
-  createdAt: Date
-  updatedAt?: Date
-}
-
-export type Team = TeamFields
-
 export type JwksFields = {
   publicKey: string
   privateKey: string
@@ -237,6 +287,20 @@ export type TwoFactorFields = {
 
 export type TwoFactor = TwoFactorFields
 
+export type DeviceCodeFields = {
+  deviceCode: string
+  userCode: string
+  userId?: string
+  expiresAt: Date
+  status: string
+  lastPolledAt?: Date
+  pollingInterval?: number
+  clientId?: string
+  scope?: string
+}
+
+export type DeviceCode = DeviceCodeFields
+
 export type SubscriptionFields = {
   plan: string
   referenceId: string
@@ -245,13 +309,15 @@ export type SubscriptionFields = {
   status?: string
   periodStart?: Date
   periodEnd?: Date
+  trialStart?: Date
+  trialEnd?: Date
   cancelAtPeriodEnd?: boolean
   seats?: number
 }
 
 export type Subscription = SubscriptionFields
 
-export type PluginId = "username" | "admin" | "api-key" | "passkey" | "harmony-email" | "harmony-phone-number" | "bearer" | "email-otp" | "magic-link" | "phone-number" | "one-tap" | "anonymous" | "multi-session" | "one-time-token" | "oidc" | "sso" | "generic-oauth" | "open-api" | "organization" | "jwt" | "two-factor" | "next-cookies" | "custom-session" | "stripe" | "polar"
+export type PluginId = "username" | "admin" | "api-key" | "passkey" | "harmony-email" | "harmony-phone-number" | "bearer" | "email-otp" | "magic-link" | "phone-number" | "one-tap" | "anonymous" | "multi-session" | "one-time-token" | "oidc" | "sso" | "generic-oauth" | "open-api" | "organization" | "jwt" | "two-factor" | "next-cookies" | "custom-session" | "mcp" | "device-authorization" | "last-login-method" | "stripe" | "polar"
 
 export type BetterAuthFullSchema = {
   "user": User
@@ -264,12 +330,14 @@ export type BetterAuthFullSchema = {
   "oauthAccessToken": OauthAccessToken
   "oauthConsent": OauthConsent
   "ssoProvider": SsoProvider
+  "team": Team
+  "teamMember": TeamMember
   "organization": Organization
   "member": Member
   "invitation": Invitation
-  "team": Team
   "jwks": Jwks
   "twoFactor": TwoFactor
+  "deviceCode": DeviceCode
   "subscription": Subscription
 }
 

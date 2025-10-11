@@ -1,5 +1,5 @@
 import { ModelKey } from '@/better-auth/generated-types'
-import { getAuthTables, type FieldAttribute } from 'better-auth/db'
+import { type DBFieldAttribute, getAuthTables } from 'better-auth/db'
 import { baModelFieldKeysToFieldNames } from '../constants'
 import { BetterAuthPluginOptions, BetterAuthSchemas } from '../types'
 import { getDefaultCollectionSlug } from './get-collection-slug'
@@ -34,11 +34,11 @@ export function getDefaultBetterAuthSchema(pluginOptions: BetterAuthPluginOption
 
     const defaultFieldMap = (baModelFieldKeysToFieldNames as Record<string, Record<string, string>>)[modelKey] ?? {}
 
-    const actualFields: Record<string, FieldAttribute> = {}
+    const actualFields: Record<string, DBFieldAttribute> = {}
 
     Object.entries(table.fields).forEach(([fieldKey, fieldValue]) => {
       // Build the field ensuring a fieldName exists
-      const newField: FieldAttribute = {
+      const newField: DBFieldAttribute = {
         ...fieldValue,
         fieldName: defaultFieldMap[fieldKey] ?? fieldKey
       }

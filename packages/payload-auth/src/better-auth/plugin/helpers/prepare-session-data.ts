@@ -1,4 +1,4 @@
-import { Session, User } from 'better-auth'
+import type { Session, User } from 'better-auth'
 import type { CollectionConfig } from 'payload'
 import { getFieldsToSign } from 'payload'
 

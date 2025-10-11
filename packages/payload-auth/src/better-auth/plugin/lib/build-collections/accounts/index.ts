@@ -3,12 +3,11 @@ import { assertAllSchemaFields, getSchemaFieldName } from '../utils/collection-s
 import { isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
 import { getCollectionFields } from '../utils/transform-schema-fields-to-payload'
 import { getSyncPasswordToUserHook } from './hooks/sync-password-to-user'
-
 import type { Account } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 import type { CollectionConfig } from 'payload'
 import { getSchemaCollectionSlug } from '../utils/collection-schema'
-import type { FieldRule } from '../utils/model-field-transformations'
+import type { FieldRule } from '@/better-auth/plugin/types'
 
 export function buildAccountsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
   const accountSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.account)
@@ -30,7 +29,7 @@ export function buildAccountsCollection({ incomingCollections, pluginOptions, re
           hidden: true
         },
         index: true,
-        label: ({ t }: any) => t('general:updatedAt')
+        label: 'general:updatedAt'
       })
     }
   ]

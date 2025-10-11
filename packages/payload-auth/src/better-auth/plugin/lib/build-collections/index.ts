@@ -21,6 +21,8 @@ import { buildTwoFactorsCollection } from './two-factors'
 import { buildUsersCollection } from './users/index'
 import { getSchemaCollectionSlug } from './utils/collection-schema'
 import { buildVerificationsCollection } from './verifications'
+import { buildTeamMembersCollection } from './team-members'
+import { buildDeviceCodeCollection } from './device-code'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
@@ -43,6 +45,7 @@ export function buildCollections({
     [baModelKey.member]: (props: BuildCollectionProps) => buildMembersCollection(props),
     [baModelKey.invitation]: (props: BuildCollectionProps) => buildInvitationsCollection(props),
     [baModelKey.team]: (props: BuildCollectionProps) => buildTeamsCollection(props),
+    [baModelKey.teamMember]: (props: BuildCollectionProps) => buildTeamMembersCollection(props),
     [baModelKey.jwks]: (props: BuildCollectionProps) => buildJwksCollection(props),
     [baModelKey.apikey]: (props: BuildCollectionProps) => buildApiKeysCollection(props),
     [baModelKey.twoFactor]: (props: BuildCollectionProps) => buildTwoFactorsCollection(props),
@@ -51,7 +54,8 @@ export function buildCollections({
     [baModelKey.oauthConsent]: (props: BuildCollectionProps) => buildOauthConsentsCollection(props),
     [baModelKey.passkey]: (props: BuildCollectionProps) => buildPasskeysCollection(props),
     [baModelKey.ssoProvider]: (props: BuildCollectionProps) => buildSsoProvidersCollection(props),
-    [baModelKey.subscription]: (props: BuildCollectionProps) => buildSubscriptionsCollection(props)
+    [baModelKey.subscription]: (props: BuildCollectionProps) => buildSubscriptionsCollection(props),
+    [baModelKey.deviceCode]: (props: BuildCollectionProps) => buildDeviceCodeCollection(props)
   }
 
   const collectionMap: Record<string, CollectionConfig> = {}

@@ -49,6 +49,7 @@ export const supportedBAPluginIds = {
   oneTap: 'one-tap',
   admin: 'admin',
   apiKey: 'api-key',
+  mcp: 'mcp',
   organization: 'organization',
   multiSession: 'multi-session',
   openApi: 'open-api',
@@ -58,7 +59,12 @@ export const supportedBAPluginIds = {
   oidc: 'oidc',
   expo: 'expo',
   polar: 'polar',
-  stripe: 'stripe'
+  stripe: 'stripe',
+  autumn: 'autumn',
+  dodopayments: 'dodopayments',
+  dubAnalytics: 'dub-analytics',
+  deviceAuthorization: 'device-authorization',
+  lastLoginMethod: 'last-login-method'
 } as const
 
 export const baseSlugs = {
@@ -82,7 +88,8 @@ export const baPluginSlugs = {
   organizations: 'organizations',
   invitations: 'invitations',
   members: 'members',
-  teams: 'teams'
+  teams: 'teams',
+  teamMembers: 'teamMembers'
 } as const
 
 export const baModelKey = {
@@ -100,9 +107,11 @@ export const baModelKey = {
   invitation: 'invitation',
   member: 'member',
   team: 'team',
+  teamMember: 'teamMember',
   subscription: 'subscription',
   apikey: 'apikey',
-  jwks: 'jwks'
+  jwks: 'jwks',
+  deviceCode: 'deviceCode'
 } as const
 
 export const baModelFieldKeysToFieldNames = {
@@ -114,7 +123,6 @@ export const baModelFieldKeysToFieldNames = {
   },
   session: {
     userId: 'user',
-    activeOrganizationId: 'activeOrganization',
   },
   member: {
     organizationId: 'organization',
@@ -155,13 +163,18 @@ export const baModelFieldKeysToFieldNames = {
 } as const
 
 export const baModelFieldKeys = {
+  teamMember: {
+    teamId: 'teamId',
+    userId: 'userId'
+  },
   account: {
     userId: 'userId'
   },
   session: {
     userId: 'userId',
     activeOrganizationId: 'activeOrganizationId',
-    impersonatedBy: 'impersonatedBy'
+    impersonatedBy: 'impersonatedBy',
+    activeTeamId: 'activeTeamId'
   },
   member: {
     organizationId: 'organizationId',
@@ -216,6 +229,7 @@ export const baModelKeyToSlug = {
   invitation: baPluginSlugs.invitations,
   member: baPluginSlugs.members,
   team: baPluginSlugs.teams,
+  teamMember: baPluginSlugs.teamMembers,
   subscription: baPluginSlugs.subscriptions,
   apikey: baPluginSlugs.apiKeys,
   jwks: baPluginSlugs.jwks

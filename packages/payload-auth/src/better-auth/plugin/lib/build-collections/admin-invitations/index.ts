@@ -3,9 +3,8 @@ import { generateAdminInviteUrl } from '../../../payload/utils/generate-admin-in
 import { getUrlBeforeChangeHook } from './hooks/get-url-before-change'
 import { getAdminInviteUrlAfterReadHook } from './hooks/get-url-after-read'
 import { baseSlugs, defaults } from '@/better-auth/plugin/constants'
-
 import type { CollectionConfig } from 'payload'
-import type { BetterAuthPluginOptions } from '../../../types'
+import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
 
 export function buildAdminInvitationsCollection({
   incomingCollections,

@@ -1,6 +1,5 @@
 import type { BetterAuthOptions, BetterAuthPluginOptions } from 'payload-auth/better-auth'
 import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
-import { nextCookies } from 'better-auth/next-js'
 import {
   admin,
   anonymous,
@@ -15,6 +14,8 @@ import {
   username
 } from 'better-auth/plugins'
 import { passkey } from 'better-auth/plugins/passkey'
+import { createAuthMiddleware } from 'better-auth/api'
+import { nextCookies } from 'better-auth/next-js'
 
 export const betterAuthPlugins = [
   username(),
@@ -79,6 +80,14 @@ export const betterAuthOptions: BetterAuthOptions = {
   appName: 'payload-better-auth',
   baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
   trustedOrigins: [process.env.NEXT_PUBLIC_BETTER_AUTH_URL],
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === '/sign-in/email') {
+        console.log('Running after sign in email: ', ctx.context.responseHeaders)
+        return ctx
+      }
+    })
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -124,7 +133,8 @@ export const betterAuthOptions: BetterAuthOptions = {
       role: {
         type: 'string',
         defaultValue: 'user',
-        input: false
+        input: false,
+        returned: true
       }
     }
   },
@@ -146,7 +156,7 @@ export const betterAuthPluginOptions: BetterAuthPluginOptions = {
   disabled: false,
   debug: {
     logTables: false,
-    enableDebugLogs: true
+    enableDebugLogs: false
   },
   disableDefaultPayloadAuth: true,
   hidePluginCollections: true,

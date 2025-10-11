@@ -3,7 +3,6 @@
 import React, { useMemo } from 'react'
 import { z } from 'zod'
 import { Form, FormInputWrap } from '@/shared/form/ui'
-import { FormHeader } from '@/shared/form/ui/header'
 import { useRouter } from 'next/navigation.js'
 import { formatAdminURL } from 'payload/shared'
 import { createAuthClient } from 'better-auth/react'

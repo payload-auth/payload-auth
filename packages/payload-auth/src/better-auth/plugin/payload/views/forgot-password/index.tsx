@@ -1,5 +1,4 @@
 import React, { Fragment } from 'react'
-import { MinimalTemplate } from '@payloadcms/next/templates'
 import { Button, Translation } from '@payloadcms/ui'
 import Link from 'next/link'
 import type { AdminViewServerProps } from 'payload'
@@ -8,6 +7,8 @@ import { FormHeader } from '@/shared/form/ui/header'
 import { ForgotPasswordForm } from './client'
 import { adminRoutes } from '@/better-auth/plugin/constants'
 import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+import { MinimalTemplate } from '@payloadcms/next/templates'
+
 type ForgotPasswordProps = AdminViewServerProps & {
   pluginOptions: BetterAuthPluginOptions
 }

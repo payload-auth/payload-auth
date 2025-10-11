@@ -8,7 +8,11 @@ import type { CollectionConfig } from 'payload'
 import type { Subscription } from '@/better-auth/generated-types'
 import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
 
-export function buildSubscriptionsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+export function buildSubscriptionsCollection({
+  incomingCollections,
+  pluginOptions,
+  resolvedSchemas
+}: BuildCollectionProps): CollectionConfig {
   const subscriptionsSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.subscription)
   const subscriptionsSchema = resolvedSchemas[baModelKey.subscription]
 

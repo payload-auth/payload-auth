@@ -3,11 +3,10 @@ import { AdminLoginClient } from './client'
 import { redirect } from 'next/navigation'
 import { Logo } from '@/shared/components/logo'
 import { getSafeRedirect } from '@/better-auth/plugin/payload/utils/get-safe-redirect'
-import { MinimalTemplate } from '@payloadcms/next/templates'
 import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exists'
 import { RenderServerComponent } from '@payloadcms/ui/elements/RenderServerComponent'
 import { adminRoutes, defaults, supportedBAPluginIds } from '@/better-auth/plugin/constants'
-
+import { MinimalTemplate } from '@payloadcms/next/templates'
 import { type AdminViewServerProps, type ServerProps } from 'payload'
 import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
 

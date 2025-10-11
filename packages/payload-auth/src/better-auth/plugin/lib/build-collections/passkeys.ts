@@ -1,12 +1,12 @@
-import type { Passkey } from '@/better-auth/generated-types'
-import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
-import type { CollectionConfig } from 'payload'
 import { baModelFieldKeysToFieldNames, baModelKey, defaults } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { getSchemaCollectionSlug, getSchemaFieldName } from './utils/collection-schema'
 import { assertAllSchemaFields } from './utils/collection-schema'
 import { isAdminOrCurrentUserWithRoles } from './utils/payload-access'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
+import type { Passkey } from '@/better-auth/generated-types'
+import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/types'
+import type { CollectionConfig } from 'payload'
 
 export function buildPasskeysCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
   const passkeySlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.passkey)

@@ -1,7 +1,7 @@
+import { getAuthTables } from 'better-auth/db'
 import type { ModelKey } from '@/better-auth/generated-types'
 import type { BetterAuthOptions, Where } from 'better-auth'
-import type { FieldAttribute } from 'better-auth/db'
-import { type FieldType, getAuthTables } from 'better-auth/db'
+import type { DBFieldAttribute } from 'better-auth/db'
 import type { CollectionSlug, Where as PayloadWhere } from 'payload'
 
 export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boolean) => {
@@ -109,7 +109,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
    * // If schema.user.fields.email has no references property
    * isRelationshipField('email', schema.user.fields) // Returns false
    */
-  function isRelationshipField(fieldKey: string, schemaFields: Record<string, FieldAttribute<FieldType>>): boolean {
+  function isRelationshipField(fieldKey: string, schemaFields: Record<string, DBFieldAttribute>): boolean {
     // A field is a relationship field if it has a 'references' property defined
     return schemaFields[fieldKey]?.references !== undefined
   }

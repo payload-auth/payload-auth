@@ -30,11 +30,8 @@ export function saveToJwtMiddleware({
     if (newSession) {
       const awaitedPayloadConfig = await config
       const usersCollection = awaitedPayloadConfig?.collections?.find((c) => c.slug === resolvedSchemas[baModelKey.user].modelName)
-      const sessionsCollection = awaitedPayloadConfig?.collections?.find(
-        (c) => c.slug === resolvedSchemas[baModelKey.session].modelName
-      )
+      const sessionsCollection = awaitedPayloadConfig?.collections?.find((c) => c.slug === resolvedSchemas[baModelKey.session].modelName)
       if (!usersCollection || !sessionsCollection) return null
-
       const filteredSessionData = await prepareSessionData({
         sessionData: newSession,
         usersCollection: usersCollection,

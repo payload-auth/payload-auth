@@ -1,14 +1,16 @@
-import type { Verification } from '@/better-auth/generated-types'
-import type { CollectionConfig } from 'payload'
-import type { BuildCollectionProps, FieldOverrides } from '../../types'
-import type { FieldRule } from './utils/model-field-transformations'
-
 import { baModelKey } from '../../constants'
 import { getAdminAccess } from '../../helpers/get-admin-access'
 import { assertAllSchemaFields, getSchemaCollectionSlug, getSchemaFieldName } from './utils/collection-schema'
 import { getCollectionFields } from './utils/transform-schema-fields-to-payload'
+import type { Verification } from '@/better-auth/generated-types'
+import type { CollectionConfig } from 'payload'
+import type { BuildCollectionProps, FieldOverrides, FieldRule } from '../../types'
 
-export function buildVerificationsCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
+export function buildVerificationsCollection({
+  incomingCollections,
+  pluginOptions,
+  resolvedSchemas
+}: BuildCollectionProps): CollectionConfig {
   const verificationSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.verification)
   const verificationSchema = resolvedSchemas[baModelKey.verification]
 

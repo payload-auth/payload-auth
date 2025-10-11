@@ -1,5 +1,5 @@
 import type { FieldHook } from 'payload'
-import { GenerateAdminInviteUrlFn } from '@/better-auth/plugin/types'
+import type { GenerateAdminInviteUrlFn } from '@/better-auth/plugin/types'
 
 export const getAdminInviteUrlAfterReadHook = ({ generateAdminInviteUrlFn }: { generateAdminInviteUrlFn: GenerateAdminInviteUrlFn }) => {
   const hook: FieldHook = async ({ req, data }) => {

@@ -3,8 +3,12 @@ import type { BasePayload } from 'payload'
 
 export type PayloadAdapterParams = {
   payloadClient: BasePayload | Promise<BasePayload> | (() => Promise<BasePayload>);
-  enableDebugLogs?: boolean;
-  idType: 'number' | 'text';
+  adapterConfig: {
+    enableDebugLogs?: boolean;
+    idType: 'number' | 'text';
+  };
+  // enableDebugLogs?: boolean;
+  // idType: 'number' | 'text';
 }
 
 export type PayloadAdapter = (options: PayloadAdapterParams) => AdapterInstance
