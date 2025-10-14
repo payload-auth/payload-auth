@@ -7,7 +7,7 @@
     "clean-all": "find . -type d -name node_modules -o -name dist -o -name .turbo -o -name .next -o -type f -name tsconfig.tsbuildinfo -o -name pnpm-lock.yaml | xargs rm -rf",
     "build": "turbo run build --filter=./packages/payload-auth",
     "publish": "cd packages/payload-auth && pnpm publish --access public",
-    "dev": "cd demo && pnpm dev",
+    "dev": "turbo run dev --filter=./packages/payload-auth --filter=./demo",
     "format": "prettier . --write"
   },
   "keywords": [
