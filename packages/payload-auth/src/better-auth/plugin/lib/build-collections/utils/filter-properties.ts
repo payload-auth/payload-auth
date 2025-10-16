@@ -1,4 +1,4 @@
-import type { Field, TextField, NumberField, DateField, CheckboxField, RelationshipField, FieldBase } from 'payload'
+import type { Field, TextField, NumberField, DateField, CheckboxField, RelationshipField, SelectField, FieldBase } from 'payload'
 
 export const COMMON_FIELD_KEYS = [
   'access',
@@ -42,11 +42,20 @@ export const RELATIONSHIP_FIELD_KEYS = [
   'relationTo',
   'type'
 ] as const satisfies readonly (keyof RelationshipField)[]
+export const SELECT_FIELD_KEYS = [
+  ...COMMON_FIELD_KEYS,
+  'dbName',
+  'enumName',
+  'hasMany',
+  'options'
+] as const satisfies readonly (keyof SelectField)[]
 
 export function getValidFieldPropertyKeysForType(type: Field['type']) {
   switch (type) {
     case 'relationship':
       return [...RELATIONSHIP_FIELD_KEYS]
+    case 'select':
+      return [...SELECT_FIELD_KEYS]
     case 'text':
       return [...TEXT_FIELD_KEYS]
     case 'number':

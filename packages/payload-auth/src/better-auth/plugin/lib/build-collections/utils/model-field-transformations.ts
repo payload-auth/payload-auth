@@ -33,5 +33,10 @@ export const getAdditionalFieldProperties = ({
 
   const mergedProps = { ...ruleProps, ...specificProps }
 
+  // If validFieldPropertyKeys is empty, skip filtering (return all merged props)
+  if (validFieldPropertyKeys.length === 0) {
+    return mergedProps as Partial<Field>
+  }
+
   return filterProps(mergedProps as any, validFieldPropertyKeys as any)
 }

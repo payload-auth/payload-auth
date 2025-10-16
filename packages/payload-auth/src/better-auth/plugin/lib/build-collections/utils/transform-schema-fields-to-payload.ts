@@ -31,22 +31,37 @@ export function convertSchemaFieldToPayload({
   fieldRules?: FieldRule[]
   additionalProperties?: Record<string, (field: DBFieldAttribute) => Partial<Field>>
 }): Field {
-  const { type, hasMany } = getPayloadFieldProperties({ field })
-  const validFieldPropertyKeys = getValidFieldPropertyKeysForType(type)
-  const additionalFieldProperties = getAdditionalFieldProperties({
+  const { type: baseType, hasMany } = getPayloadFieldProperties({ field })
+  
+  // First, get unfiltered additional properties to check for type overrides
+  const unfilteredAdditionalProperties = getAdditionalFieldProperties({
+    field,
+    fieldKey,
+    fieldRules,
+    additionalProperties,
+    validFieldPropertyKeys: [] // Empty array means no filtering
+  })
+  
+  // Determine the effective type (override takes precedence over base type)
+  const effectiveType = (unfilteredAdditionalProperties as any).type ?? baseType
+  
+  // Now filter properties based on the effective type
+  const validFieldPropertyKeys = getValidFieldPropertyKeysForType(effectiveType)
+  const filteredAdditionalProperties = getAdditionalFieldProperties({
     field,
     fieldKey,
     fieldRules,
     additionalProperties,
     validFieldPropertyKeys
   })
+  
   const baseField = {
     name: field.fieldName ?? fieldKey,
-    type,
+    type: effectiveType,
     ...(hasMany && { hasMany }),
     ...(field.required && { required: true }),
     ...(field.unique && { unique: true }),
-    ...additionalFieldProperties,
+    ...filteredAdditionalProperties,
     custom: {
       betterAuthFieldKey: fieldKey
     }
@@ -55,8 +70,8 @@ export function convertSchemaFieldToPayload({
   if (field.references) {
     return {
       ...baseField,
-      ...('relationTo' in additionalFieldProperties
-        ? { relationTo: additionalFieldProperties.relationTo }
+      ...('relationTo' in filteredAdditionalProperties
+        ? { relationTo: filteredAdditionalProperties.relationTo }
         : { relationTo: field.references.model })
     } as RelationshipField
   }
