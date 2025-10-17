@@ -39,7 +39,7 @@ export default function Hero() {
                   <Link href={"/changelogs"}>
                     <span className="bg-gradient-to-tr dark:from-stone-800/50 dark:to-black from-stone-200 to-white  px-2 rounded-none">
                       <span className="text-xs dark:text-zinc-200 tracking-tighter font-mono mb-0 underline underline-offset-4">
-                        v1.3 is out
+                        v1.6.5 is out
                       </span>
                       <CornerRightUp className="inline ml-1 w-3 h-3" />
                     </span>
@@ -54,7 +54,7 @@ export default function Hero() {
                 <GradientBG className="flex items-center justify-between py-2 px-3">
                   <div className="flex items-center gap-2">
                     <Link
-                      href="https://www.npmjs.com/package/@payload-auth/better-auth-plugin"
+                      href="https://www.npmjs.com/package/payload-auth"
                       target="_blank"
                       className="hover:opacity-80 transition-opacity flex-shrink-0"
                       aria-label="NPM Package"
@@ -62,14 +62,14 @@ export default function Hero() {
                       <Icons.npm className="w-5 h-5" />
                     </Link>
                     <code className="font-mono text-sm dark:text-white text-black overflow-hidden text-ellipsis">
-                      npm add{" "}
+                      pnpm add{" "}
                       <span className="relative dark:text-fuchsia-100 text-fuchsia-950 overflow-hidden text-ellipsis">
-                        @payload-auth/better-auth-plugin
+                        payload-auth
                         <span className="absolute h-1.5 bg-gradient-to-tr from-white via-stone-200 to-stone-300 blur-2xl w-full top-0 left-1"></span>
                       </span>
                     </code>
                     <CopyButton
-                      text="npm add @payload-auth/better-auth-plugin"
+                      text="pnpm add payload-auth"
                       className="ml-1 flex-shrink-0"
                     />
                   </div>

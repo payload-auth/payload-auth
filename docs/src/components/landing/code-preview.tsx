@@ -19,49 +19,54 @@ import Link from "next/link";
 const tabs: { name: string; code: string }[] = [
   {
     name: "payload.config.ts",
-    code: `export default buildConfig({
-      plugins: [
-        payloadBetterAuth({
-          betterAuthOptions: {
-            emailAndPassword: {
-              enabled: true,
-            },
-            plugins: [
-              admin(),
-              twoFactor(),
-            ],
-          },
-        })
-      .....
-      `,
+    code: `import { buildConfig } from 'payload'
+import { betterAuthPlugin } from 'payload-auth/better-auth/plugin'
+import { betterAuthPluginOptions } from './lib/auth/options'
+
+export default buildConfig({
+  plugins: [
+    betterAuthPlugin(betterAuthPluginOptions)
+  ],
+  // ... rest of config
+})
+    `,
   },
   {
-    name: "get-payload.ts",
-    code: `import config from "./payload.config";
-import type { BAPlugins } from "./plugins";
-import { getPayloadAuth } from 
-"@payload-auth/better-auth-plugin";
+    name: "lib/auth/options.ts",
+    code: `import type { BetterAuthOptions, BetterAuthPluginOptions } 
+  from 'payload-auth/better-auth'
+import { admin, twoFactor, organization } 
+  from 'better-auth/plugins'
 
-export function getPayload() {
-  return getPayloadAuth<BAPlugins>(config);
+export const betterAuthPluginOptions: BetterAuthPluginOptions = {
+  disableDefaultPayloadAuth: true,
+  betterAuthOptions: {
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: true,
+    },
+    plugins: [
+      admin(),
+      twoFactor(),
+    ],
+  },
 }
   `,
   },
   {
-    name: "action.ts",
-    code: `"use server";
+    name: "lib/auth/client.ts",
+    code: `import { createAuthClient } from 'better-auth/react'
+import { twoFactorClient, organizationClient } 
+  from 'better-auth/client/plugins'
 
-import { getPayload } from "./get-payload";
+export const authClient = createAuthClient({
+  baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL, // Base URL of your app
+  plugins: [
+    twoFactorClient(),
+  ],
+})
 
-export async function signIn() {
-  const payload = getPayload();
-  await payload.betterAuth.api.signInEmail({
-    body: {
-      email: "test@test.com",
-      password: "password",
-    },
-  });
-}
+export const { signUp, signIn, signOut, useSession } = authClient
   `,
   },
 ];
