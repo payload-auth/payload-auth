@@ -295,14 +295,22 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
 
       // Get the mapped field name from schema (if any)
       const schemaFieldName = schemaFields[key]?.fieldName
+      const fieldType = schemaFields[key]?.type as string | undefined
 
       // Normalize the data value based on field type and ID type
-      const normalizedData = normalizeData({
+      let normalizedData = normalizeData({
         idType,
         key,
         value,
         isRelatedField
       })
+
+      // Convert single value to array if field expects array type (e.g., 'string[]', 'number[]')
+      // This handles multiRole scenario where BetterAuth sends string but PayloadCMS expects array
+      if (fieldType?.endsWith('[]') && !Array.isArray(normalizedData)) {
+        normalizedData = [normalizedData]
+        debugLog([`Array conversion: ${key} converting value to array for ${fieldType} field`, { original: value, converted: normalizedData }])
+      }
 
       // Use the schema-defined field name if available, otherwise use original key
       const targetFieldName = schemaFieldName || key

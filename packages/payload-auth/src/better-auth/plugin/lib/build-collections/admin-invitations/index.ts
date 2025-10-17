@@ -17,6 +17,7 @@ export function buildAdminInvitationsCollection({
   const adminInvitationSlug = pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations
   const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
   const roles = pluginOptions.users?.roles ?? [defaults.userRole]
+  const multiRole = pluginOptions.users?.multiRole ?? false
   const allRoleOptions = [...new Set([...adminRoles, ...roles])].map((role) => ({
     label: role
       .split(/[-_\s]/)
@@ -48,12 +49,14 @@ export function buildAdminInvitationsCollection({
     timestamps: true,
     fields: [
       {
-        label: 'Role',
+        label: multiRole ? 'Roles' : 'Role',
         name: 'role',
         type: 'select',
         options: allRoleOptions,
         required: true,
-        defaultValue: pluginOptions.users?.defaultAdminRole ?? defaults.adminRole
+        ...(multiRole 
+          ? { hasMany: true, defaultValue: [pluginOptions.users?.defaultAdminRole ?? defaults.adminRole] } 
+          : { defaultValue: pluginOptions.users?.defaultAdminRole ?? defaults.adminRole })
       },
       {
         name: 'token',

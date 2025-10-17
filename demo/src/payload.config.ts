@@ -44,7 +44,7 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI
     },
-    push: false, // Should be false (this is just for demo purposes)
+    // push: false, // Should be false (this is just for demo purposes)
     migrationDir: path.resolve(dirname, 'lib/migrations')
   }),
   email: emailAdapter,

@@ -36,14 +36,7 @@ export const authClient = createAuthClient({
     adminClient(),
     apiKeyClient(),
     organizationClient(),
-    multiSessionClient(),
-    inferAdditionalFields({
-      user: {
-        role: {
-          type: 'string'
-        }
-      }
-    })
+    multiSessionClient()
   ],
   fetchOptions: {
     onError(e) {

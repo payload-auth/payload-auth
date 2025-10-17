@@ -17,8 +17,13 @@ export const isAdminWithRoles =
   (config: AdminRolesConfig = {}): FieldAccess =>
   ({ req }) => {
     const { adminRoles = ['admin'] } = config
-    if (!req?.user || !req.user.role || !adminRoles.includes(req.user.role)) return false
-    return true
+    if (!req?.user || !req.user.role) return false
+    
+    // Handle role as both array (from Payload) and string (from Better Auth)
+    const userRoles = Array.isArray(req.user.role) ? req.user.role : [req.user.role]
+    const hasAdminRole = userRoles.some((role) => adminRoles.includes(role as string))
+    
+    return hasAdminRole
   }
 
 export const isAdminOrCurrentUserWithRoles =

@@ -38,6 +38,7 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
   } = config
 
   const adminRole = pluginOptions.users?.defaultAdminRole ?? defaults.adminRole
+  const multiRole = pluginOptions.users?.multiRole ?? false
   const redirectUrl = getSafeRedirect(searchParams?.redirect ?? '', adminRoute)
 
   if (user) {
@@ -47,7 +48,9 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
   const adminCount = await req.payload.count({
     collection: userSlug,
     where: {
-      role: {
+      role: multiRole ? {
+        contains: adminRole
+      } : {
         equals: adminRole
       }
     }
@@ -58,7 +61,9 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
     const existingInvitations = await req.payload.find({
       collection: adminInvitationsSlug,
       where: {
-        role: {
+        role: multiRole ? {
+          contains: adminRole
+        } : {
           equals: adminRole
         }
       }
@@ -72,10 +77,11 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
     } else {
       // Generate a new secure invite token
       token = crypto.randomUUID()
+      const multiRole = pluginOptions.users?.multiRole ?? false
       await req.payload.create({
         collection: adminInvitationsSlug,
         data: {
-          role: adminRole,
+          role: multiRole ? [adminRole] : adminRole,
           token
         }
       })

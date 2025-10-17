@@ -36,9 +36,12 @@ export function sanitizeBetterAuthOptions({
   const adminInvitationCollectionSlug = pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations
 
   set(betterAuthOptions, `${baModelKey.user}.modelName`, userCollectionSlug)
+  const multiRole = pluginOptions.users?.multiRole ?? false
   set(betterAuthOptions, `${baModelKey.user}.additionalFields.role`, {
-    type: 'string',
-    defaultValue: pluginOptions.users?.defaultRole || defaults.userRole,
+    type: multiRole ? 'string[]' : 'string',
+    defaultValue: multiRole 
+      ? [pluginOptions.users?.defaultRole || defaults.userRole]
+      : pluginOptions.users?.defaultRole || defaults.userRole,
     input: false
   })
 

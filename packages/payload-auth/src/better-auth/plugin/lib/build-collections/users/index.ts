@@ -26,6 +26,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
   const userSchema = resolvedSchemas[baModelKey.user]
   const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
   const allRoleOptions = getAllRoleOptions(pluginOptions)
+  const multiRole = pluginOptions.users?.multiRole ?? false
   const hasUsernamePlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.username)
   const existingUserCollection = incomingCollections.find((collection) => collection.slug === userSlug) as CollectionConfig | undefined
 
@@ -52,9 +53,11 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
     role: (field) => ({
       type: 'select',
       options: allRoleOptions,
-      defaultValue: field.defaultValue ?? defaults.userRole,
+      ...(multiRole 
+        ? { hasMany: true, defaultValue: [field.defaultValue ?? defaults.userRole] } 
+        : { defaultValue: field.defaultValue ?? defaults.userRole }),
       saveToJWT: true,
-      admin: { description: 'The role of the user' }
+      admin: { description: multiRole ? 'The roles of the user' : 'The role of the user' }
     }),
     email: () => ({
       index: true,
@@ -144,7 +147,8 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
         Description: {
           path: 'payload-auth/better-auth/plugin/client#AdminInviteButton',
           clientProps: {
-            roles: allRoleOptions
+            roles: allRoleOptions,
+            multiRole
           }
         },
         views: {
@@ -170,7 +174,12 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
       }
     },
     access: {
-      admin: ({ req }) => adminRoles.includes((req.user?.role as string) ?? 'user'),
+      admin: ({ req }) => {
+        const userRole = req.user?.role
+        // Handle role as both array (from Payload) and string (from Better Auth)
+        const roles = Array.isArray(userRole) ? userRole : [userRole ?? 'user']
+        return roles.some(role => adminRoles.includes(role as string))
+      },
       read: isAdminOrCurrentUserWithRoles({ adminRoles, idField: 'id' }),
       create: isAdminWithRoles({ adminRoles }),
       delete: isAdminOrCurrentUserWithRoles({ adminRoles, idField: 'id' }),

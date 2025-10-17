@@ -35,7 +35,11 @@ export const useAdminInviteAfterEmailSignUpMiddleware = async ({
         }
       ]
     })) as any
-    if (!adminInvitation || !adminInvitation?.role || !email) {
+    // Validate admin invitation and role
+    const hasValidRole = adminInvitation?.role && 
+      (Array.isArray(adminInvitation.role) ? adminInvitation.role.length > 0 : true)
+    
+    if (!adminInvitation || !hasValidRole || !email) {
       if (typeof originalAfter === 'function') originalAfter(ctx)
       return
     }

@@ -15,6 +15,7 @@ export * from './helpers/index'
 export { getPayloadAuth } from './lib/get-payload-auth'
 export { sanitizeBetterAuthOptions } from './lib/sanitize-better-auth-options/index'
 export * from './types'
+export * from './utils/role-helpers'
 
 function buildBetterAuthData({ payloadConfig, pluginOptions }: { payloadConfig: SanitizedConfig; pluginOptions: BetterAuthPluginOptions }) {
   pluginOptions = setLoginMethods({ pluginOptions })

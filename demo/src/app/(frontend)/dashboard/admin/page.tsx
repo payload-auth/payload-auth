@@ -17,6 +17,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { hasRole } from 'payload-auth/better-auth/plugin'
 
 export default function AdminDashboard() {
   const queryClient = useQueryClient()
@@ -151,7 +152,7 @@ export default function AdminDashboard() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-2xl">Admin Dashboard</CardTitle>
-          {user?.role === 'admin' && (
+          {hasRole(user?.role, 'admin') && (
             <>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
@@ -272,7 +273,7 @@ export default function AdminDashboard() {
           )}
         </CardHeader>
         <CardContent>
-          {user?.role === 'admin' ? (
+          {hasRole(user?.role, 'admin') ? (
             <>
               {isUsersLoading ? (
                 <div className="flex h-64 items-center justify-center">
@@ -294,7 +295,21 @@ export default function AdminDashboard() {
                       <TableRow key={user.id}>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>{user.name}</TableCell>
-                        <TableCell>{user.role || 'user'}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {Array.isArray(user.role) ? (
+                              user.role.map((r) => (
+                                <Badge key={r} variant={r === 'admin' ? 'default' : 'secondary'}>
+                                  {r}
+                                </Badge>
+                              ))
+                            ) : (
+                              <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                                {user.role || 'user'}
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell>
                           {user.banned ? <Badge variant="destructive">Yes</Badge> : <Badge variant="outline">No</Badge>}
                         </TableCell>

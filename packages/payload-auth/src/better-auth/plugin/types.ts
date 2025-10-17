@@ -193,6 +193,17 @@ export interface BetterAuthPluginOptions {
      */
     adminRoles?: string[]
     /**
+     * Enable multi-role support for users
+     *
+     * When enabled, users can have multiple roles assigned to them
+     * The role field will be converted to a select field with hasMany: true
+     *
+     * Note: This affects both the users collection and admin invitations
+     *
+     * @default false
+     */
+    multiRole?: boolean
+    /**
      * Hide the `users` collection from the payload admin UI
      *
      * This will be overwritten if you change the value in the collection overrides option

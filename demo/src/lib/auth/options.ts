@@ -1,5 +1,6 @@
-import type { BetterAuthOptions, BetterAuthPluginOptions } from 'payload-auth/better-auth'
 import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
+import { createAuthMiddleware } from 'better-auth/api'
+import { nextCookies } from 'better-auth/next-js'
 import {
   admin,
   anonymous,
@@ -14,9 +15,8 @@ import {
   username
 } from 'better-auth/plugins'
 import { passkey } from 'better-auth/plugins/passkey'
-import { createAuthMiddleware } from 'better-auth/api'
-import { nextCookies } from 'better-auth/next-js'
-
+import type { BetterAuthOptions, BetterAuthPluginOptions } from 'payload-auth/better-auth'
+const isDev = process.env.NODE_ENV === 'development'
 export const betterAuthPlugins = [
   username(),
   emailHarmony(),
@@ -130,12 +130,12 @@ export const betterAuthOptions: BetterAuthOptions = {
       }
     },
     additionalFields: {
-      role: {
-        type: 'string',
-        defaultValue: 'user',
-        input: false,
-        returned: true
-      }
+      // role: {
+      //   type: 'string[]',
+      //   defaultValue: ['user'],
+      //   input: false
+      //   // returned: true
+      // }
     }
   },
   session: {
@@ -155,15 +155,19 @@ export const betterAuthOptions: BetterAuthOptions = {
 export const betterAuthPluginOptions: BetterAuthPluginOptions = {
   disabled: false,
   debug: {
-    logTables: false,
-    enableDebugLogs: false
+    logTables: isDev,
+    enableDebugLogs: isDev
   },
   disableDefaultPayloadAuth: true,
   hidePluginCollections: true,
   users: {
     slug: 'users', // not required, this is the default anyways
     hidden: false,
+    multiRole: true,
     adminRoles: ['admin'],
+    defaultRole: 'user', // not required, this is the default anyways
+    defaultAdminRole: 'admin', // not required, this is the default anyways
+    roles: ['admin', 'moderator', 'user'], // default is ['admin', 'user']
     allowedFields: ['name']
   },
   accounts: {

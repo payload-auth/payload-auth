@@ -17,7 +17,7 @@ export const getGenerateInviteUrlEndpoint = ({ roles, pluginOptions }: InviteEnd
     method: 'post',
     handler: async (req) => {
       await addDataAndFileToRequest(req)
-      const body = req.data as { role: { label: string; value: string } }
+      const body = req.data as { role: { label: string; value: string } | { label: string; value: string }[] }
       const generateAdminInviteUrlFn = pluginOptions?.adminInvitations?.generateInviteUrl ?? generateAdminInviteUrl
 
       if (!body) {
@@ -28,9 +28,16 @@ export const getGenerateInviteUrlEndpoint = ({ roles, pluginOptions }: InviteEnd
         return Response.json({ message: 'Invalid body' }, { status: httpStatus.BAD_REQUEST })
       }
 
-      if (!roles.some((role) => role.value === body.role.value)) {
-        return Response.json({ message: 'Invalid role' }, { status: httpStatus.BAD_REQUEST })
+      // Handle both single role and multi-role
+      const selectedRoles = Array.isArray(body.role) ? body.role : [body.role]
+      const roleValues = selectedRoles.map(r => r.value)
+      
+      // Validate all selected roles
+      const invalidRoles = roleValues.filter(value => !roles.some((role) => role.value === value))
+      if (invalidRoles.length > 0) {
+        return Response.json({ message: `Invalid role(s): ${invalidRoles.join(', ')}` }, { status: httpStatus.BAD_REQUEST })
       }
+      
       const token = crypto.randomUUID()
       const inviteLink = generateAdminInviteUrlFn({
         payload: req.payload,
@@ -38,11 +45,14 @@ export const getGenerateInviteUrlEndpoint = ({ roles, pluginOptions }: InviteEnd
       })
 
       try {
+        // Store as array if multi-role, otherwise as single value
+        const roleData = pluginOptions.users?.multiRole ? roleValues : roleValues[0]
+        
         await req.payload.create({
           collection: pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
           data: {
             token,
-            role: body.role.value,
+            role: roleData,
             url: inviteLink
           }
         })

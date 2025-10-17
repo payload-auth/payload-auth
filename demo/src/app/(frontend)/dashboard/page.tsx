@@ -1,11 +1,9 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { useActiveOrganization } from '@/lib/auth/client'
-import { useBetterAuth } from '@/lib/auth/context'
-import { AuthUIContext } from '@daveyplate/better-auth-ui'
-import { use, useContext, useEffect, useState } from 'react'
 import { authClient } from '@/lib/auth/client'
+import { useBetterAuth } from '@/lib/auth/context'
+import { formatRole } from 'payload-auth/better-auth/plugin'
+import { use } from 'react'
 
 function getInitials(name?: string) {
   if (!name) return 'P'
@@ -39,8 +37,8 @@ export default function DashboardPage() {
             <div className="text-muted-foreground mt-1 text-xs">User Initials</div>
           </div>
           <div className="bg-card flex flex-col items-center rounded-lg border p-4">
-            <div className="text-2xl font-bold">{user?.role ?? '–'}</div>
-            <div className="text-muted-foreground mt-1 text-xs">Role</div>
+            <div className="text-2xl font-bold">{formatRole(user?.role)}</div>
+            <div className="text-muted-foreground mt-1 text-xs">Role{Array.isArray(user?.role) && user.role.length > 1 ? 's' : ''}</div>
           </div>
           <div className="bg-card flex flex-col items-center rounded-lg border p-4">
             <div className="text-2xl font-bold">{Array.isArray(organizations) ? organizations.length : '–'}</div>

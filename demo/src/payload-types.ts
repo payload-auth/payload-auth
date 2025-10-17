@@ -202,9 +202,9 @@ export interface User {
    */
   phoneNumberVerified?: boolean | null;
   /**
-   * The role of the user
+   * The roles of the user
    */
-  role?: string | null;
+  role?: ('admin' | 'moderator' | 'user')[] | null;
   /**
    * Whether the user is banned from the platform
    */
@@ -251,15 +251,61 @@ export interface Session {
   /**
    * The admin who is impersonating this session
    */
-  impersonatedBy?: string | null;
+  impersonatedBy?: (number | null) | User;
   /**
    * The currently active organization for the session
    */
-  activeOrganizationId?: string | null;
+  activeOrganizationId?: (number | null) | Organization;
   /**
    * The currently active team for the session
    */
-  activeTeamId?: string | null;
+  activeTeamId?: (number | null) | Team;
+}
+/**
+ * Organizations are groups of users that share access to certain resources.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: number;
+  /**
+   * The name of the organization.
+   */
+  name: string;
+  /**
+   * The slug of the organization.
+   */
+  slug: string;
+  /**
+   * The logo of the organization.
+   */
+  logo?: string | null;
+  createdAt: string;
+  /**
+   * Additional metadata for the organization.
+   */
+  metadata?: string | null;
+  updatedAt: string;
+}
+/**
+ * Teams are groups of users that share access to certain resources.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teams".
+ */
+export interface Team {
+  id: number;
+  /**
+   * The name of the team.
+   */
+  name: string;
+  /**
+   * The organization that the team belongs to.
+   */
+  organization: number | Organization;
+  createdAt: string;
+  updatedAt: string;
 }
 /**
  * Accounts are used to store user accounts for authentication providers
@@ -483,53 +529,15 @@ export interface ApiKey {
   /**
    * Any additional metadata you want to store with the key.
    */
-  metadata?: string | null;
-}
-/**
- * Teams are groups of users that share access to certain resources.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "teams".
- */
-export interface Team {
-  id: number;
-  /**
-   * The name of the team.
-   */
-  name: string;
-  /**
-   * The organization that the team belongs to.
-   */
-  organization: number | Organization;
-  createdAt: string;
-  updatedAt: string;
-}
-/**
- * Organizations are groups of users that share access to certain resources.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organizations".
- */
-export interface Organization {
-  id: number;
-  /**
-   * The name of the organization.
-   */
-  name: string;
-  /**
-   * The slug of the organization.
-   */
-  slug: string;
-  /**
-   * The logo of the organization.
-   */
-  logo?: string | null;
-  createdAt: string;
-  /**
-   * Additional metadata for the organization.
-   */
-  metadata?: string | null;
-  updatedAt: string;
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
 }
 /**
  * Team members of an organization team.
@@ -618,7 +626,7 @@ export interface Invitation {
  */
 export interface AdminInvitation {
   id: number;
-  role: 'admin' | 'user';
+  role: ('admin' | 'moderator' | 'user')[];
   token: string;
   url?: string | null;
   updatedAt: string;

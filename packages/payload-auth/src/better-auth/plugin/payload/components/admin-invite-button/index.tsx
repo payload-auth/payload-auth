@@ -13,10 +13,11 @@ const baseClass = 'admin-invite-modal'
 
 type AdminInviteButtonProps = {
   roles: { label: string; value: string }[]
+  multiRole?: boolean
 }
 
-export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
-  const [role, setRole] = useState<Option | undefined>(undefined)
+export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles, multiRole = false }) => {
+  const [role, setRole] = useState<Option | Option[] | undefined>(undefined)
   const [email, setEmail] = useState('')
   const [inviteLink, setInviteLink] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -36,8 +37,13 @@ export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) =
   if (pathname !== `${adminRoute}/collections/${userSlug}`) return null
 
   const handleGenerateInvite = async () => {
-    if (!role) {
-      toast.error('Please select a role first')
+    // Validate role selection (handle both single and multi-role)
+    const hasRole = multiRole 
+      ? (Array.isArray(role) && role.length > 0) 
+      : role !== undefined && role !== null
+    
+    if (!hasRole) {
+      toast.error(`Please select ${multiRole ? 'at least one role' : 'a role'} first`)
       return null
     }
 
@@ -62,8 +68,13 @@ export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) =
   }
 
   const handleSendEmail = async () => {
-    if (!role) {
-      toast.error('Please select a role first')
+    // Validate role selection (handle both single and multi-role)
+    const hasRole = multiRole 
+      ? (Array.isArray(role) && role.length > 0) 
+      : role !== undefined && role !== null
+    
+    if (!hasRole) {
+      toast.error(`Please select ${multiRole ? 'at least one role' : 'a role'} first`)
       return
     }
 
@@ -99,8 +110,13 @@ export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) =
   }
 
   const handleCopyLink = async () => {
-    if (!role) {
-      toast.error('Please select a role first')
+    // Validate role selection (handle both single and multi-role)
+    const hasRole = multiRole 
+      ? (Array.isArray(role) && role.length > 0) 
+      : role !== undefined && role !== null
+    
+    if (!hasRole) {
+      toast.error(`Please select ${multiRole ? 'at least one role' : 'a role'} first`)
       return
     }
 
@@ -140,8 +156,14 @@ export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) =
           </Button>
           <div className={`${baseClass}__content`} style={{ maxWidth: '38rem' }}>
             <h2>Invite User</h2>
-            <p>Invite a user to your application. Select the role of the user and send the invite via email or copy the invite link.</p>
-            <Select options={roles} value={role} placeholder="Select Role" onChange={(option: any) => setRole(option)} />
+            <p>Invite a user to your application. Select the {multiRole ? 'roles' : 'role'} of the user and send the invite via email or copy the invite link.</p>
+            <Select 
+              options={roles} 
+              value={role} 
+              placeholder={multiRole ? "Select Roles" : "Select Role"} 
+              onChange={(option: any) => setRole(option)} 
+              isMulti={multiRole}
+            />
 
             <div className={`${baseClass}__invite-controls`}>
               <div className={`${baseClass}__email-field`}>
@@ -155,7 +177,11 @@ export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) =
               </div>
 
               <div className={`${baseClass}__buttons`}>
-                <Button type="button" onClick={handleSendEmail} disabled={isLoading || !role || !email}>
+                <Button 
+                  type="button" 
+                  onClick={handleSendEmail} 
+                  disabled={isLoading || !(multiRole ? (Array.isArray(role) && role.length > 0) : role) || !email}
+                >
                   {isLoading ? <Loader2 size={24} className="mr-2 animate-spin" /> : null}
                   Send Email
                 </Button>
@@ -166,7 +192,8 @@ export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) =
                   className={`${baseClass}__copy-button`}
                   type="button"
                   onClick={handleCopyLink}
-                  disabled={isCopyLoading || !role}>
+                  disabled={isCopyLoading || !(multiRole ? (Array.isArray(role) && role.length > 0) : role)}
+                >
                   {isCopyLoading ? <Loader2 size={20} strokeWidth={1.5} className="animate-spin" /> : <Copy size={20} strokeWidth={1.5} />}
                   Generate Link
                 </Button>
