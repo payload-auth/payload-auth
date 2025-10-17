@@ -98,9 +98,10 @@ export function CodePreview() {
   }, [theme.resolvedTheme]);
 
   return (
-    <div className="relative">
-      <div className="from-sky-300 via-sky-300/70 to-blue-300 absolute inset-0 rounded-none bg-gradient-to-tr opacity-5 blur-lg" />
-      <div className="from-stone-300 via-stone-300/70 to-blue-300 absolute inset-0 rounded-none bg-gradient-to-tr opacity-5" />
+    <div>
+      <div className="relative">
+        <div className="from-sky-300 via-sky-300/70 to-blue-300 absolute inset-0 rounded-none bg-gradient-to-tr opacity-5 blur-lg" />
+        <div className="from-stone-300 via-stone-300/70 to-blue-300 absolute inset-0 rounded-none bg-gradient-to-tr opacity-5" />
       <AnimatePresence initial={false}>
         <MotionConfig transition={{ duration: 0.5, type: "spring", bounce: 0 }}>
           <motion.div
@@ -233,6 +234,46 @@ export function CodePreview() {
           </motion.div>
         </MotionConfig>
       </AnimatePresence>
+      </div>
+      <div className="mt-6 flex justify-center">
+        <Link
+          href="https://github.com/payload-auth/payload-auth/tree/main/demo"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          <span>View advanced configuration examples</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="group-hover:translate-x-1 transition-transform"
+          >
+            <path d="M7 7h10v10" />
+            <path d="M7 17 17 7" />
+          </svg>
+        </Link>
+      </div>
     </div>
   );
 }
