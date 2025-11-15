@@ -1,15 +1,10 @@
 import type { UnionToIntersection, betterAuth } from 'better-auth'
 import type { DBFieldAttribute } from 'better-auth/db'
-import type {
-  BetterAuthOptions as BetterAuthOptionsType,
-  BetterAuthPlugin as BetterAuthPluginType,
-  InferAPI,
-  InferPluginTypes
-} from 'better-auth/types'
+import type { BetterAuthOptions as BetterAuthOptionsType, BetterAuthPlugin as BetterAuthPluginType, InferAPI } from 'better-auth/types'
 import type { BasePayload, CollectionConfig, Config, Endpoint, Field, Payload, PayloadRequest } from 'payload'
 import { ModelKey } from '../generated-types'
 import { adminRoutes, baPluginSlugs, loginMethods, socialProviders } from './constants'
-
+import type { InferSession, InferUser } from 'better-auth/types'
 /**
  * BetterAuth options with the following caveats:
  * - The `database` option is removed as it is configured internally
@@ -389,9 +384,43 @@ export type PluginInferTypes<T extends TPlugins> = {
   }>[K]
 }
 
+export type PrettifyDeep<T> = {
+  [K in keyof T]: T[K] extends (...args: any[]) => any
+    ? T[K]
+    : T[K] extends object
+      ? T[K] extends Array<any>
+        ? T[K]
+        : T[K] extends Date
+          ? T[K]
+          : PrettifyDeep<T[K]>
+      : T[K]
+} & {}
+
+type InferPluginTypes<O extends BetterAuthOptions> = O['plugins'] extends (infer P)[]
+  ? UnionToIntersection<P extends BetterAuthPluginType ? (P['$Infer'] extends Record<string, any> ? P['$Infer'] : {}) : {}>
+  : {}
+
 export type BetterAuthReturn<T extends TPlugins> = Omit<ReturnType<typeof betterAuth>, '$Infer'> & {
   api: T extends (infer P)[] ? InferAPI<UnionToIntersection<ExtractEndpoints<P>>> : {}
-  $Infer: ReturnType<typeof betterAuth>['$Infer'] & PluginInferTypes<T>
+  $Infer: InferPluginTypes<{
+    plugins: T
+  }> extends {
+    Session: any
+  }
+    ? InferPluginTypes<{
+        plugins: T
+      }>
+    : {
+        Session: {
+          session: PrettifyDeep<InferSession<{ plugins: T }>>
+          user: PrettifyDeep<InferUser<{ plugins: T }>>
+        }
+      } & Omit<
+        InferPluginTypes<{
+          plugins: T
+        }>,
+        'Session'
+      >
 }
 
 export type BetterAuthFunctionOptions<P extends TPlugins> = Omit<BetterAuthOptions, 'database' | 'plugins'> & {
