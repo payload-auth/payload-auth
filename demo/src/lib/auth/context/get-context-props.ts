@@ -1,21 +1,12 @@
-import type { Account, DeviceSession } from '@/lib/auth/types'
+import type { Account, DeviceSession, Session as BetterAuthSession } from '@/lib/auth/types'
 import { getPayload } from '@/lib/payload'
-import type { Session, User } from '@/payload-types'
 import { headers as requestHeaders } from 'next/headers'
 
 export const getSession = async () => {
   const payload = await getPayload()
   const headers = await requestHeaders()
   const session = await payload.betterAuth.api.getSession({ headers })
-  return session as {
-    session: Omit<Session, 'user' | 'id' | 'createdAt' | 'updatedAt' | 'expiresAt'> & {
-      id: string
-      createdAt: string
-      updatedAt: string
-      expiresAt: string
-    }
-    user: (Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { id: string; createdAt: string; updatedAt: string }) | null
-  } | null
+  return session as BetterAuthSession | null
 }
 
 export const getUserAccounts = async (): Promise<Account[]> => {
