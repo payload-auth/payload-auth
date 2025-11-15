@@ -5,6 +5,7 @@ import type { BasePayload, CollectionConfig, Config, Endpoint, Field, Payload, P
 import { ModelKey } from '../generated-types'
 import { adminRoutes, baPluginSlugs, loginMethods, socialProviders } from './constants'
 import type { InferSession, InferUser } from 'better-auth/types'
+
 /**
  * BetterAuth options with the following caveats:
  * - The `database` option is removed as it is configured internally
@@ -360,18 +361,18 @@ export interface BetterAuthPlugin {
   pluginOptions: BetterAuthPluginOptions
 }
 
-export interface PayloadRequestWithBetterAuth<TPlugins extends BetterAuthPluginType[] = []> extends PayloadRequest {
+export interface PayloadRequestWithBetterAuth<O extends BetterAuthOptions> extends PayloadRequest {
   payload: BasePayload & {
-    betterAuth: BetterAuthReturn<TPlugins>
+    betterAuth: BetterAuthReturn<O>
   }
 }
 
-export type CollectionHookWithBetterAuth<T extends (args: any) => any> = T extends (args: infer A) => infer R
-  ? (args: Omit<A, 'req'> & { req: PayloadRequestWithBetterAuth }) => R
+export type CollectionHookWithBetterAuth<O extends BetterAuthOptions, T extends (args: any) => any> = T extends (args: infer A) => infer R
+  ? (args: Omit<A, 'req'> & { req: PayloadRequestWithBetterAuth<O> }) => R
   : never
 
-export type EndpointWithBetterAuth = Omit<Endpoint, 'handler'> & {
-  handler: (req: PayloadRequestWithBetterAuth) => Promise<Response> | Response
+export type EndpointWithBetterAuth<O extends BetterAuthOptions> = Omit<Endpoint, 'handler'> & {
+  handler: (req: PayloadRequestWithBetterAuth<O>) => Promise<Response> | Response
 }
 
 export type ExtractEndpoints<T> = T extends BetterAuthPlugin ? (T extends { endpoints?: infer E } ? E : {}) : {}
@@ -400,32 +401,23 @@ type InferPluginTypes<O extends BetterAuthOptions> = O['plugins'] extends (infer
   ? UnionToIntersection<P extends BetterAuthPluginType ? (P['$Infer'] extends Record<string, any> ? P['$Infer'] : {}) : {}>
   : {}
 
-export type BetterAuthReturn<T extends TPlugins> = Omit<ReturnType<typeof betterAuth>, '$Infer'> & {
-  api: T extends (infer P)[] ? InferAPI<UnionToIntersection<ExtractEndpoints<P>>> : {}
-  $Infer: InferPluginTypes<{
-    plugins: T
-  }> extends {
+export type BetterAuthReturn<O extends BetterAuthOptions> = Omit<ReturnType<typeof betterAuth>, '$Infer'> & {
+  api: O['plugins'] extends (infer P)[] ? InferAPI<UnionToIntersection<ExtractEndpoints<P>>> : {}
+  $Infer: InferPluginTypes<O> extends {
     Session: any
   }
-    ? InferPluginTypes<{
-        plugins: T
-      }>
+    ? InferPluginTypes<O>
     : {
         Session: {
-          session: PrettifyDeep<InferSession<{ plugins: T }>>
-          user: PrettifyDeep<InferUser<{ plugins: T }>>
+          session: PrettifyDeep<InferSession<O>>
+          user: PrettifyDeep<InferUser<O>>
         }
-      } & Omit<
-        InferPluginTypes<{
-          plugins: T
-        }>,
-        'Session'
-      >
+      } & InferPluginTypes<O>
 }
 
-export type BetterAuthFunctionOptions<P extends TPlugins> = Omit<BetterAuthOptions, 'database' | 'plugins'> & {
+export type BetterAuthFunctionOptions<O extends BetterAuthOptions> = Omit<BetterAuthOptions, 'database' | 'plugins'> & {
   enableDebugLogs?: boolean
-  plugins: P
+  plugins: O['plugins']
 }
 
 export interface BuiltBetterAuthSchema {
