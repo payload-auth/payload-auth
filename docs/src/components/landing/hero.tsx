@@ -39,7 +39,7 @@ export default function Hero() {
                   <Link href={"/changelogs"}>
                     <span className="bg-gradient-to-tr dark:from-stone-800/50 dark:to-black from-stone-200 to-white  px-2 rounded-none">
                       <span className="text-xs dark:text-zinc-200 tracking-tighter font-mono mb-0 underline underline-offset-4">
-                        v1.6.5 is out
+                        v1.6.6 is out
                       </span>
                       <CornerRightUp className="inline ml-1 w-3 h-3" />
                     </span>
