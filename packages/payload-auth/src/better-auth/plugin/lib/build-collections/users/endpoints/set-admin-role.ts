@@ -39,29 +39,33 @@ export const getSetAdminRoleEndpoint = (pluginOptions: BetterAuthPluginOptions, 
         return Response.json({ message: 'Invalid token' }, { status: httpStatus.UNAUTHORIZED })
       }
       const role = invite.docs[0].role as string
-      const updatedUser = await req.payload.update({
-        collection: userSlug,
-        id: session.user.id,
-        data: {
-          role: role
-        },
-        overrideAccess: true
-      })
-      await req.payload.delete({
-        collection: pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
-        where: {
-          token: {
-            equals: token
+      try {
+        const updatedUser = await req.payload.update({
+          collection: userSlug,
+          id: session.user.id,
+          data: {
+            role: [role]
+          },
+          overrideAccess: true
+        })
+        await req.payload.delete({
+          collection: pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
+          where: {
+            token: {
+              equals: token
+            }
           }
-        }
-      })
-      const response = new Response(null, {
-        status: 307,
-        headers: {
-          Location: redirect ?? config.routes.admin
-        }
-      })
-      return response
+        })
+        const response = new Response(null, {
+          status: 307,
+          headers: {
+            Location: redirect ?? config.routes.admin
+          }
+        })
+        return response
+      } catch (error) {
+        return Response.json({ message: 'Error updating user role' }, { status: httpStatus.INTERNAL_SERVER_ERROR })
+      }
     }
   }
 

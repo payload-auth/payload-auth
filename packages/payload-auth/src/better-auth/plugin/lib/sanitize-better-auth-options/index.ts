@@ -17,6 +17,9 @@ import { configureTwoFactorPlugin } from './two-factor-plugin'
 import { requireAdminInviteForSignUpMiddleware } from './utils/require-admin-invite-for-sign-up-middleware'
 import { useAdminInviteAfterEmailSignUpMiddleware } from './utils/use-admin-invite-after-email-sign-up-middleware'
 import { configureDeviceAuthorizationPlugin } from './device-authorization-plugin'
+import { adminBeforeRoleMiddleware } from './utils/admin-before-role-middleware'
+import { adminAfterRoleMiddleware } from './utils/admin-after-role-middleware'
+import { checkPluginExists } from '../../helpers/check-plugin-exists'
 
 /**
  * Sanitizes the BetterAuth options
@@ -36,11 +39,6 @@ export function sanitizeBetterAuthOptions({
   const adminInvitationCollectionSlug = pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations
 
   set(betterAuthOptions, `${baModelKey.user}.modelName`, userCollectionSlug)
-  set(betterAuthOptions, `${baModelKey.user}.additionalFields.role`, {
-    type: 'string',
-    defaultValue: pluginOptions.users?.defaultRole || defaults.userRole,
-    input: false
-  })
 
   const baseModels = [baModelKey.account, baModelKey.session, baModelKey.verification] as const
   baseModels.forEach((model) => set(betterAuthOptions, `${model}.modelName`, getSchemaCollectionSlug(resolvedSchemas, model)))
@@ -78,6 +76,7 @@ export function sanitizeBetterAuthOptions({
       pluginOptions
     })
   }
+
   useAdminInviteAfterEmailSignUpMiddleware({
     options: betterAuthOptions,
     adminInvitationCollectionSlug,
@@ -126,7 +125,7 @@ export function sanitizeBetterAuthOptions({
 
       // Configure plugins by type
       const pluginConfigurators = {
-        [supportedBAPluginIds.admin]: (p: any) => configureAdminPlugin(p, pluginOptions),
+        [supportedBAPluginIds.admin]: (p: any) => configureAdminPlugin(p, pluginOptions, resolvedSchemas),
         [supportedBAPluginIds.apiKey]: (p: any) => configureApiKeyPlugin(p, resolvedSchemas),
         [supportedBAPluginIds.passkey]: (p: any) => configurePasskeyPlugin(p, resolvedSchemas),
         [supportedBAPluginIds.organization]: (p: any) => configureOrganizationPlugin(p, resolvedSchemas),
@@ -152,6 +151,16 @@ export function sanitizeBetterAuthOptions({
     config,
     resolvedSchemas
   })
+
+  if (checkPluginExists(betterAuthOptions, supportedBAPluginIds.admin)) {
+    adminBeforeRoleMiddleware({
+      sanitizedOptions: betterAuthOptions
+    })
+
+    adminAfterRoleMiddleware({
+      sanitizedOptions: betterAuthOptions
+    })
+  }
 
   return betterAuthOptions
 }

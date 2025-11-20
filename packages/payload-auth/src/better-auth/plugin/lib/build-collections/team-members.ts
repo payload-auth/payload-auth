@@ -21,10 +21,12 @@ export function buildTeamMembersCollection({
 
   const fieldOverrides: FieldOverrides<keyof TeamMember> = {
     teamId: () => ({
+      name: 'team',
       index: true,
       admin: { readOnly: true, description: 'The team that the membership belongs to.' }
     }),
     userId: () => ({
+      name: 'user',
       index: true,
       admin: { readOnly: true, description: 'The user that is a member of the team.' }
     })

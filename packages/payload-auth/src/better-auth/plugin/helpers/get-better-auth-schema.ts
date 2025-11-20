@@ -1,8 +1,9 @@
 import { ModelKey } from '@/better-auth/generated-types'
 import { type DBFieldAttribute, getAuthTables } from 'better-auth/db'
-import { baModelFieldKeysToFieldNames } from '../constants'
+import { baModelFieldKeysToFieldNames, baModelKey, defaults } from '../constants'
 import { BetterAuthPluginOptions, BetterAuthSchemas } from '../types'
 import { getDefaultCollectionSlug } from './get-collection-slug'
+import { set } from '../utils/set'
 
 /**
  * A consistent BetterAuth schema generator.
@@ -22,6 +23,14 @@ import { getDefaultCollectionSlug } from './get-collection-slug'
  */
 export function getDefaultBetterAuthSchema(pluginOptions: BetterAuthPluginOptions): BetterAuthSchemas {
   const betterAuthOptions = pluginOptions.betterAuthOptions ?? {}
+
+  // We need to add the additional role field to the user schema here or else the built collections will not pick it up.
+  set(betterAuthOptions as any, `${baModelKey.user}.additionalFields.role`, {
+    type: 'string',
+    defaultValue: pluginOptions.users?.defaultRole || defaults.userRole,
+    input: false,
+  })
+
   const tables = getAuthTables(betterAuthOptions)
 
   const schema: Partial<BetterAuthSchemas> = {}

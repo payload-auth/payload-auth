@@ -1,12 +1,11 @@
-import { betterAuthPlugin } from 'payload-auth/better-auth'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { BasePayload, buildConfig, EmailAdapter } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
-import { betterAuthPluginOptions } from './lib/auth/options'
 import collections from './payload/collections'
 import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres'
+import { plugins } from './payload/plugins'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -49,7 +48,7 @@ export default buildConfig({
   }),
   email: emailAdapter,
   editor: lexicalEditor(),
-  plugins: [betterAuthPlugin(betterAuthPluginOptions)],
+  plugins,
   secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
   cors: allowedOrigins,
   csrf: allowedOrigins,

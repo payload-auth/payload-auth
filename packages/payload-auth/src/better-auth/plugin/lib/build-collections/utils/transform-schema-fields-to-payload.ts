@@ -2,7 +2,6 @@ import type { BuiltBetterAuthSchema, FieldRule } from '@/better-auth/plugin/type
 import type { DBFieldAttribute } from 'better-auth/db'
 import type { Field, RelationshipField } from 'payload'
 import { getAdditionalFieldProperties } from './model-field-transformations'
-import { getValidFieldPropertyKeysForType } from './filter-properties'
 
 export function getCollectionFields({
   schema,
@@ -32,13 +31,11 @@ export function convertSchemaFieldToPayload({
   additionalProperties?: Record<string, (field: DBFieldAttribute) => Partial<Field>>
 }): Field {
   const { type, hasMany } = getPayloadFieldProperties({ field })
-  const validFieldPropertyKeys = getValidFieldPropertyKeysForType(type)
   const additionalFieldProperties = getAdditionalFieldProperties({
     field,
     fieldKey,
     fieldRules,
     additionalProperties,
-    validFieldPropertyKeys
   })
   const baseField = {
     name: field.fieldName ?? fieldKey,

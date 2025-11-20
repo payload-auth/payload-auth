@@ -1,9 +1,92 @@
 {
-  "id": "81558bfd-d73e-40d0-b496-771b649009f0",
+  "id": "5d496373-2949-44e3-b5d8-0e7d1d7431d6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.users_role": {
+      "name": "users_role",
+      "schema": "",
+      "columns": {
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "enum_users_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "users_role_order_idx": {
+          "name": "users_role_order_idx",
+          "columns": [
+            {
+              "expression": "order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "users_role_parent_idx": {
+          "name": "users_role_parent_idx",
+          "columns": [
+            {
+              "expression": "parent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "users_role_parent_fk": {
+          "name": "users_role_parent_fk",
+          "tableFrom": "users_role",
+          "tableTo": "users",
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.users": {
       "name": "users",
       "schema": "",
@@ -97,13 +180,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": false
-        },
-        "role": {
-          "name": "role",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'user'"
         },
         "banned": {
           "name": "banned",
@@ -278,21 +354,21 @@
           "primaryKey": false,
           "notNull": true
         },
-        "impersonated_by": {
-          "name": "impersonated_by",
-          "type": "varchar",
+        "impersonated_by_id": {
+          "name": "impersonated_by_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
         "active_organization_id": {
           "name": "active_organization_id",
-          "type": "varchar",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
         "active_team_id": {
           "name": "active_team_id",
-          "type": "varchar",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         }
@@ -357,6 +433,51 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "sessions_impersonated_by_idx": {
+          "name": "sessions_impersonated_by_idx",
+          "columns": [
+            {
+              "expression": "impersonated_by_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "sessions_active_organization_idx": {
+          "name": "sessions_active_organization_idx",
+          "columns": [
+            {
+              "expression": "active_organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "sessions_active_team_idx": {
+          "name": "sessions_active_team_idx",
+          "columns": [
+            {
+              "expression": "active_team_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -366,6 +487,45 @@
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "sessions_impersonated_by_id_users_id_fk": {
+          "name": "sessions_impersonated_by_id_users_id_fk",
+          "tableFrom": "sessions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "impersonated_by_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "sessions_active_organization_id_organizations_id_fk": {
+          "name": "sessions_active_organization_id_organizations_id_fk",
+          "tableFrom": "sessions",
+          "tableTo": "organizations",
+          "columnsFrom": [
+            "active_organization_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "sessions_active_team_id_teams_id_fk": {
+          "name": "sessions_active_team_id_teams_id_fk",
+          "tableFrom": "sessions",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "active_team_id"
           ],
           "columnsTo": [
             "id"
@@ -844,8 +1004,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "credential_i_d": {
-          "name": "credential_i_d",
+        "credential_id": {
+          "name": "credential_id",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
@@ -1327,14 +1487,14 @@
           "primaryKey": true,
           "notNull": true
         },
-        "team_id_id": {
-          "name": "team_id_id",
+        "team_id": {
+          "name": "team_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
-        "user_id_id": {
-          "name": "user_id_id",
+        "user_id": {
+          "name": "user_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -1355,11 +1515,11 @@
         }
       },
       "indexes": {
-        "team_members_team_id_idx": {
-          "name": "team_members_team_id_idx",
+        "team_members_team_idx": {
+          "name": "team_members_team_idx",
           "columns": [
             {
-              "expression": "team_id_id",
+              "expression": "team_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1370,11 +1530,11 @@
           "method": "btree",
           "with": {}
         },
-        "team_members_user_id_idx": {
-          "name": "team_members_user_id_idx",
+        "team_members_user_idx": {
+          "name": "team_members_user_idx",
           "columns": [
             {
-              "expression": "user_id_id",
+              "expression": "user_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1402,12 +1562,12 @@
         }
       },
       "foreignKeys": {
-        "team_members_team_id_id_teams_id_fk": {
-          "name": "team_members_team_id_id_teams_id_fk",
+        "team_members_team_id_teams_id_fk": {
+          "name": "team_members_team_id_teams_id_fk",
           "tableFrom": "team_members",
           "tableTo": "teams",
           "columnsFrom": [
-            "team_id_id"
+            "team_id"
           ],
           "columnsTo": [
             "id"
@@ -1415,12 +1575,12 @@
           "onDelete": "set null",
           "onUpdate": "no action"
         },
-        "team_members_user_id_id_users_id_fk": {
-          "name": "team_members_user_id_id_users_id_fk",
+        "team_members_user_id_users_id_fk": {
+          "name": "team_members_user_id_users_id_fk",
           "tableFrom": "team_members",
           "tableTo": "users",
           "columnsFrom": [
-            "user_id_id"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -2006,6 +2166,53 @@
             }
           ],
           "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.payload_kv": {
+      "name": "payload_kv",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "key": {
+          "name": "key",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data": {
+          "name": "data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "payload_kv_key_idx": {
+          "name": "payload_kv_key_idx",
+          "columns": [
+            {
+              "expression": "key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -2976,12 +3183,22 @@
     }
   },
   "enums": {
+    "public.enum_users_role": {
+      "name": "enum_users_role",
+      "schema": "public",
+      "values": [
+        "admin",
+        "user",
+        "publisher"
+      ]
+    },
     "public.enum_admin_invitations_role": {
       "name": "enum_admin_invitations_role",
       "schema": "public",
       "values": [
         "admin",
-        "user"
+        "user",
+        "publisher"
       ]
     },
     "public.enum_projects_status": {
