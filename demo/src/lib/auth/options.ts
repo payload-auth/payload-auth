@@ -16,6 +16,7 @@ import {
 import { passkey } from 'better-auth/plugins/passkey'
 import { createAuthMiddleware } from 'better-auth/api'
 import { nextCookies } from 'better-auth/next-js'
+import type { BetterAuthPlugin as BetterAuthPluginType } from 'better-auth/types'
 
 export const betterAuthPlugins = [
   username(),
@@ -72,22 +73,14 @@ export const betterAuthPlugins = [
   multiSession(),
   openAPI(),
   nextCookies()
-]
+] satisfies BetterAuthPluginType[]
 
 export type BetterAuthPlugins = typeof betterAuthPlugins
 
-export const betterAuthOptions: BetterAuthOptions = {
+export const betterAuthOptions = {
   appName: 'payload-better-auth',
   baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
   trustedOrigins: [process.env.NEXT_PUBLIC_BETTER_AUTH_URL],
-  hooks: {
-    after: createAuthMiddleware(async (ctx) => {
-      if (ctx.path === '/sign-in/email') {
-        console.log('Running after sign in email: ', ctx.context.responseHeaders)
-        return ctx
-      }
-    })
-  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -128,14 +121,6 @@ export const betterAuthOptions: BetterAuthOptions = {
       afterDelete: async (user) => {
         // Perform cleanup after user deletion
       }
-    },
-    additionalFields: {
-      role: {
-        type: 'string',
-        defaultValue: 'user',
-        input: false,
-        returned: true
-      }
     }
   },
   session: {
@@ -150,20 +135,28 @@ export const betterAuthOptions: BetterAuthOptions = {
       trustedProviders: ['google', 'email-password']
     }
   }
-}
+} satisfies BetterAuthOptions
 
-export const betterAuthPluginOptions: BetterAuthPluginOptions = {
+export type ConstructedBetterAuthOptions = typeof betterAuthOptions
+
+export const betterAuthPluginOptions = {
   disabled: false,
   debug: {
     logTables: false,
     enableDebugLogs: false
   },
+  // admin: {
+  //   loginMethods: ['passkey']
+  // },
   disableDefaultPayloadAuth: true,
   hidePluginCollections: true,
   users: {
     slug: 'users', // not required, this is the default anyways
     hidden: false,
     adminRoles: ['admin'],
+    defaultRole: 'user',
+    defaultAdminRole: 'admin',
+    roles: ['user', 'admin', 'publisher'] as const,
     allowedFields: ['name']
   },
   accounts: {
@@ -184,4 +177,6 @@ export const betterAuthPluginOptions: BetterAuthPluginOptions = {
     }
   },
   betterAuthOptions: betterAuthOptions
-}
+} satisfies BetterAuthPluginOptions
+
+export type ConstructedBetterAuthPluginOptions = typeof betterAuthPluginOptions

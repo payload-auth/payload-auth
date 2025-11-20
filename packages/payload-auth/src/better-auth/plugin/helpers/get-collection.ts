@@ -1,9 +1,9 @@
 import type { BetterAuthFullSchema, ModelKey } from '@/better-auth/generated-types'
 import { flattenAllFields, type Collection, type CollectionConfig } from 'payload'
 
-export function getCollectionByModelKey(collections: Record<string, Collection>, modelKey: ModelKey): CollectionConfig {
+export function getCollectionByModelKey(collections: Record<string, Collection>, modelKey: ModelKey | string): CollectionConfig {
   const collection = Object.values(collections).find((c) => {
-    return c.config?.custom?.betterAuthModelKey === modelKey
+    return c.config?.custom?.betterAuthModelKey === modelKey || c.config?.slug === modelKey
   })
 
   if (!collection) {
@@ -31,4 +31,24 @@ export function getCollectionFieldNameByFieldKey<M extends ModelKey>(
 ): string {
   const fields = flattenAllFields({ fields: collection.fields })
   return fields.find((f) => f.custom?.betterAuthFieldKey === fieldKey)?.name ?? fieldKey
+}
+
+export function getCollectionFieldNameByFieldKeyUntyped(collection: CollectionConfig, fieldKey: string): string {
+  const fields = flattenAllFields({ fields: collection.fields })
+  return fields.find((f) => f.custom?.betterAuthFieldKey === fieldKey || f.name === fieldKey)?.name ?? fieldKey
+}
+
+/**
+ * Retrieves the field key from a collection based on the collection field name
+ *
+ * This function searches through the fields of a collection to find a field
+ * that has a matching name.
+ *
+ * @param collection - The collection configuration to search through
+ * @param fieldName - The name of the field to search for
+ * @returns The key of the field if found, otherwise the field name itself
+ */
+export function getFieldKeyByCollectionFieldName(collection: CollectionConfig, fieldName: string): string {
+  const fields = flattenAllFields({ fields: collection.fields })
+  return fields.find((f) => f.name === fieldName)?.custom?.betterAuthFieldKey ?? fieldName
 }

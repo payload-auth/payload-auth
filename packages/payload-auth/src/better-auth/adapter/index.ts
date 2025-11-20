@@ -1,9 +1,10 @@
 import { BetterAuthError } from 'better-auth'
-import type { Adapter, BetterAuthOptions, Where } from 'better-auth'
+import type { BetterAuthOptions, Where } from 'better-auth'
 import { generateSchema } from './generate-schema'
 import { createTransform } from './transform'
 import type { PayloadAdapter } from './types'
 import { ModelKey } from '../generated-types'
+import { DBAdapter } from '@better-auth/core/db/adapter'
 
 export const BETTER_AUTH_CONTEXT_KEY = 'payload-db-adapter'
 const PAYLOAD_QUERY_DEPTH = 0
@@ -87,13 +88,13 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
    * @param options - Better Auth options
    * @returns A Better Auth adapter implementation
    */
-  return (options: BetterAuthOptions): Adapter => {
+  return (options: BetterAuthOptions): DBAdapter => {
     const { transformInput, transformOutput, convertWhereClause, convertSelect, convertSort, getCollectionSlug, singleIdQuery } =
       createTransform(options, adapterConfig.enableDebugLogs ?? false)
 
     return {
       id: 'payload-adapter',
-      async transaction<R>(callback: (tx: Omit<Adapter, 'transaction'>) => Promise<R>): Promise<R> {
+      async transaction<R>(callback: (tx: Omit<DBAdapter, 'transaction'>) => Promise<R>): Promise<R> {
         return await callback(this)
       },
       async create<T extends Record<string, any>, R = T>({
@@ -115,7 +116,8 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         const transformedInput = transformInput({
           data: values,
           model: model as ModelKey,
-          idType: adapterConfig.idType
+          idType: adapterConfig.idType,
+          payload
         })
 
         debugLog(['create', { collectionSlug, transformedInput, select }])
@@ -131,7 +133,8 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
 
           const transformedResult = transformOutput({
             doc: result,
-            model: model as ModelKey
+            model: model as ModelKey,
+            payload
           })
 
           debugLog([
@@ -160,7 +163,8 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         const payloadWhere = convertWhereClause({
           idType: adapterConfig.idType,
           model: model as ModelKey,
-          where
+          where,
+          payload
         })
 
         debugLog(['findOne', { collectionSlug }])
@@ -199,7 +203,8 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
 
           const transformedResult = transformOutput<typeof result | null>({
             doc: result,
-            model: model as ModelKey
+            model: model as ModelKey,
+            payload
           })
 
           debugLog([
@@ -246,7 +251,8 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         const payloadWhere = convertWhereClause({
           idType: adapterConfig.idType,
           model: model as ModelKey,
-          where
+          where,
+          payload
         })
 
         debugLog(['findMany', { collectionSlug, sortBy, limit, offset }])
@@ -295,7 +301,8 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             result?.docs.map((doc) =>
               transformOutput({
                 doc,
-                model: model as ModelKey
+                model: model as ModelKey,
+                payload
               })
             ) ?? []
 
@@ -328,13 +335,15 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         const payloadWhere = convertWhereClause({
           idType: adapterConfig.idType,
           model: model as ModelKey,
-          where
+          where,
+          payload
         })
 
         const transformedInput = transformInput({
           data: update,
           model: model as ModelKey,
-          idType: adapterConfig.idType
+          idType: adapterConfig.idType,
+          payload
         })
 
         debugLog(['update', { collectionSlug, update }])
@@ -369,7 +378,8 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
 
           const transformedResult = transformOutput<typeof result | null>({
             doc: result,
-            model: model as ModelKey
+            model: model as ModelKey,
+            payload
           })
 
           debugLog([
@@ -401,13 +411,15 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         const payloadWhere = convertWhereClause({
           idType: adapterConfig.idType,
           model: model as ModelKey,
-          where
+          where,
+          payload
         })
 
         const transformedInput = transformInput({
           data: update,
           model: model as ModelKey,
-          idType: adapterConfig.idType
+          idType: adapterConfig.idType,
+          payload
         })
 
         debugLog(['updateMany', { collectionSlug, payloadWhere, update }])
@@ -450,7 +462,8 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         const payloadWhere = convertWhereClause({
           idType: adapterConfig.idType,
           model: model as ModelKey,
-          where
+          where,
+          payload
         })
 
         debugLog(['delete', { collectionSlug }])
@@ -511,7 +524,8 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         const payloadWhere = convertWhereClause({
           idType: adapterConfig.idType,
           model: model as ModelKey,
-          where
+          where,
+          payload
         })
 
         debugLog(['deleteMany', { collectionSlug, payloadWhere }])
@@ -553,7 +567,8 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         const payloadWhere = convertWhereClause({
           idType: adapterConfig.idType,
           model: model as ModelKey,
-          where
+          where,
+          payload
         })
 
         debugLog(['count', { collectionSlug, payloadWhere }])

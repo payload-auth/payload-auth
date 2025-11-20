@@ -6,16 +6,9 @@ import { headers as requestHeaders } from 'next/headers'
 export const getSession = async () => {
   const payload = await getPayload()
   const headers = await requestHeaders()
-  const session = await payload.betterAuth.api.getSession({ headers })
-  return session as {
-    session: Omit<Session, 'user' | 'id' | 'createdAt' | 'updatedAt' | 'expiresAt'> & {
-      id: string
-      createdAt: string
-      updatedAt: string
-      expiresAt: string
-    }
-    user: (Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { id: string; createdAt: string; updatedAt: string }) | null
-  } | null
+  type Session = (typeof payload.betterAuth.$Infer)['Session']
+  const session = (await payload.betterAuth.api.getSession({ headers })) as Session
+  return session
 }
 
 export const getUserAccounts = async (): Promise<Account[]> => {

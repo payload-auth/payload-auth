@@ -2,7 +2,12 @@ import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exi
 import { baModelFieldKeys, baModelKey, defaults, supportedBAPluginIds } from '../../../constants'
 import { getAllRoleOptions } from '../../../helpers/get-all-roles'
 import { assertAllSchemaFields, getSchemaCollectionSlug, getSchemaFieldName } from '../utils/collection-schema'
-import { isAdminOrCurrentUserUpdateWithAllowedFields, isAdminOrCurrentUserWithRoles, isAdminWithRoles } from '../utils/payload-access'
+import {
+  hasAdminRoles,
+  isAdminOrCurrentUserUpdateWithAllowedFields,
+  isAdminOrCurrentUserWithRoles,
+  isAdminWithRoles
+} from '../utils/payload-access'
 import { getCollectionFields } from '../utils/transform-schema-fields-to-payload'
 import { betterAuthStrategy } from './better-auth-strategy'
 import { getGenerateInviteUrlEndpoint, getRefreshTokenEndpoint, getSendInviteUrlEndpoint, getSetAdminRoleEndpoint } from './endpoints'
@@ -51,10 +56,11 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
   const fieldOverrides: FieldOverrides<keyof User> = {
     role: (field) => ({
       type: 'select',
+      hasMany: true,
       options: allRoleOptions,
       defaultValue: field.defaultValue ?? defaults.userRole,
       saveToJWT: true,
-      admin: { description: 'The role of the user' }
+      admin: { description: 'The role/ roles of the user' }
     }),
     email: () => ({
       index: true,
@@ -170,7 +176,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
       }
     },
     access: {
-      admin: ({ req }) => adminRoles.includes((req.user?.role as string) ?? 'user'),
+      admin: hasAdminRoles(adminRoles),
       read: isAdminOrCurrentUserWithRoles({ adminRoles, idField: 'id' }),
       create: isAdminWithRoles({ adminRoles }),
       delete: isAdminOrCurrentUserWithRoles({ adminRoles, idField: 'id' }),
