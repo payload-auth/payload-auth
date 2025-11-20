@@ -8,46 +8,44 @@ import type { BuildCollectionProps, FieldOverrides } from '@/better-auth/plugin/
 import { RateLimit } from '@/better-auth/generated-types'
 
 export function buildRateLimitCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
-	const slug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.rateLimit)
-	const schema = resolvedSchemas[ baModelKey.rateLimit ]
-	const existingRateLimitCollection = incomingCollections.find((collection) => collection.slug === slug) as
-		| CollectionConfig
-		| undefined
+  const slug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.rateLimit)
+  const schema = resolvedSchemas[baModelKey.rateLimit]
+  const existingRateLimitCollection = incomingCollections.find((collection) => collection.slug === slug) as CollectionConfig | undefined
 
-	const fieldOverrides: FieldOverrides<keyof RateLimit> = {
-		key: () => ({
-			index: true,
-			admin: { readOnly: true, description: 'The key for the rate limit.' }
-		})
-	}
+  const fieldOverrides: FieldOverrides<keyof RateLimit> = {
+    key: () => ({
+      index: true,
+      admin: { readOnly: true, description: 'The key for the rate limit.' }
+    })
+  }
 
-	const collectionFields = getCollectionFields({
-		schema,
-		additionalProperties: fieldOverrides
-	})
+  const collectionFields = getCollectionFields({
+    schema,
+    additionalProperties: fieldOverrides
+  })
 
-	let rateLimitCollection: CollectionConfig = {
-		...existingRateLimitCollection,
-		slug,
-		admin: {
-			hidden: pluginOptions.hidePluginCollections ?? false,
-			useAsTitle: getSchemaFieldName(resolvedSchemas, baModelKey.rateLimit, 'key'),
-			description: 'Rate limits for users',
-			group: pluginOptions?.collectionAdminGroup ?? 'Auth',
-			...existingRateLimitCollection?.admin
-		},
-		access: {
-			...getAdminAccess(pluginOptions),
-			...(existingRateLimitCollection?.access ?? {})
-		},
-		custom: {
-			...(existingRateLimitCollection?.custom ?? {}),
-			betterAuthModelKey: baModelKey.rateLimit
-		},
-		fields: [ ...(existingRateLimitCollection?.fields ?? []), ...(collectionFields ?? []) ]
-	}
+  let rateLimitCollection: CollectionConfig = {
+    ...existingRateLimitCollection,
+    slug,
+    admin: {
+      hidden: pluginOptions.hidePluginCollections ?? false,
+      useAsTitle: getSchemaFieldName(resolvedSchemas, baModelKey.rateLimit, 'key'),
+      description: 'Rate limits for users',
+      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      ...existingRateLimitCollection?.admin
+    },
+    access: {
+      ...getAdminAccess(pluginOptions),
+      ...(existingRateLimitCollection?.access ?? {})
+    },
+    custom: {
+      ...(existingRateLimitCollection?.custom ?? {}),
+      betterAuthModelKey: baModelKey.rateLimit
+    },
+    fields: [...(existingRateLimitCollection?.fields ?? []), ...(collectionFields ?? [])]
+  }
 
-	assertAllSchemaFields(rateLimitCollection, schema)
+  assertAllSchemaFields(rateLimitCollection, schema)
 
-	return rateLimitCollection
+  return rateLimitCollection
 }
