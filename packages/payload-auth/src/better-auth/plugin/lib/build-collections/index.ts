@@ -23,6 +23,7 @@ import { getSchemaCollectionSlug } from './utils/collection-schema'
 import { buildVerificationsCollection } from './verifications'
 import { buildTeamMembersCollection } from './team-members'
 import { buildDeviceCodeCollection } from './device-code'
+import { buildRateLimitCollection } from './rate-limit'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
@@ -55,7 +56,8 @@ export function buildCollections({
     [baModelKey.passkey]: (props: BuildCollectionProps) => buildPasskeysCollection(props),
     [baModelKey.ssoProvider]: (props: BuildCollectionProps) => buildSsoProvidersCollection(props),
     [baModelKey.subscription]: (props: BuildCollectionProps) => buildSubscriptionsCollection(props),
-    [baModelKey.deviceCode]: (props: BuildCollectionProps) => buildDeviceCodeCollection(props)
+    [baModelKey.deviceCode]: (props: BuildCollectionProps) => buildDeviceCodeCollection(props),
+    [baModelKey.rateLimit]: (props: BuildCollectionProps) => buildRateLimitCollection(props)
   }
 
   const collectionMap: Record<string, CollectionConfig> = {}

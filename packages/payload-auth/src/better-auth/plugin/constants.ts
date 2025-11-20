@@ -89,7 +89,7 @@ export const baPluginSlugs = {
   invitations: 'invitations',
   members: 'members',
   teams: 'teams',
-  teamMembers: 'teamMembers'
+  teamMembers: 'teamMembers',
 } as const
 
 export const baModelKey = {
@@ -111,7 +111,8 @@ export const baModelKey = {
   subscription: 'subscription',
   apikey: 'apikey',
   jwks: 'jwks',
-  deviceCode: 'deviceCode'
+  deviceCode: 'deviceCode',
+  rateLimit: 'rateLimit'
 } as const
 
 export const baModelFieldKeysToFieldNames = {
