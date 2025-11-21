@@ -2,7 +2,6 @@
 
 import { authClient } from '@/lib/auth/client'
 import { useBetterAuth } from '@/lib/auth/context'
-import { roleFormat } from '@/lib/utils'
 import { use } from 'react'
 
 function getInitials(name?: string) {
@@ -38,7 +37,7 @@ export default function DashboardPage() {
             <div className="text-muted-foreground mt-1 text-xs">User Initials</div>
           </div>
           <div className="bg-card flex flex-col items-center rounded-lg border p-4 min-w-[120px]">
-            <div className="text-2xl font-bold whitespace-nowrap">{roleFormat(user)}</div>
+            <div className="text-2xl font-bold whitespace-nowrap">{user?.role?.join(', ')}</div>
             <div className="text-muted-foreground mt-1 text-xs">Role</div>
           </div>
           <div className="bg-card flex flex-col items-center rounded-lg border p-4 min-w-[120px]">

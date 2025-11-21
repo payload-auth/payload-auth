@@ -31,7 +31,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { authClient as client, useSession } from '@/lib/auth/client'
-import { cn, roleFormat } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Calendar as CalendarIcon, Loader2, Plus, RefreshCw, Trash, UserCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -331,7 +331,8 @@ export default function AdminDashboard() {
                       <TableRow key={user.id}>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>{user.name}</TableCell>
-                        <TableCell>{roleFormat(user)}</TableCell>
+                        {/* @ts-ignore type safe mismatch */}
+                        <TableCell>{user.role?.join(', ')}</TableCell>
                         <TableCell>
                           {user.banned ? (
                             <Badge variant="destructive">Yes</Badge>
