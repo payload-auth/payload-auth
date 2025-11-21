@@ -110,6 +110,7 @@ const plugins = [
 
 const betterAuthConfig: SanitizedBetterAuthOptions = {
   emailAndPassword: { enabled: true },
+  rateLimit: { enabled: true, storage: 'database', max: 5, window: 10 },
   user: { additionalFields: { role: { type: 'string', defaultValue: 'user', input: false } } },
   plugins
 }

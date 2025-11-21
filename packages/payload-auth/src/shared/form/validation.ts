@@ -90,13 +90,13 @@ export const createLoginSchema = ({
 }) =>
   z.object({
     login: z.string().refine(
-      (val) => {
+      (val: string) => {
         if (!val) return false
         if (loginType === 'email') return isValidEmail(val)
         if (loginType === 'username') return isValidUsername(val, usernameSettings)
         return isValidEmail(val) || isValidUsername(val, usernameSettings)
       },
-      (val) => {
+      (val: string) => {
         if (!val) return { message: t('validation:required') }
 
         const isProbablyEmail = val.includes('@') || !canLoginWithUsername
