@@ -1,12 +1,12 @@
 import { getPayload } from 'payload'
 import type { BasePayload, SanitizedConfig } from 'payload'
-import type { BetterAuthReturn, TPlugins } from '../types'
+import type { BetterAuthPluginOptions, BetterAuthReturn } from '../types'
 
-export async function getPayloadAuth<P extends TPlugins>(
+export async function getPayloadAuth<O extends BetterAuthPluginOptions>(
   config: Promise<SanitizedConfig> | SanitizedConfig
-): Promise<BasePayload & { betterAuth: BetterAuthReturn<P> }> {
+): Promise<BasePayload & { betterAuth: BetterAuthReturn<O> }> {
   const payload = (await getPayload({ config })) as BasePayload & {
-    betterAuth: BetterAuthReturn<P>
+    betterAuth: BetterAuthReturn<O>
   }
   return payload
 }

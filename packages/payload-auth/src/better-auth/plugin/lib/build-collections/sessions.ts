@@ -52,6 +52,7 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, re
       }
     }),
     activeOrganizationId: () => ({
+      name: 'activeOrganization',
       type: 'relationship',
       saveToJWT: true,
       relationTo: getDefaultCollectionSlug({ modelKey: baModelKey.organization, pluginOptions }),
@@ -61,6 +62,7 @@ export function buildSessionsCollection({ incomingCollections, pluginOptions, re
       }
     }),
     activeTeamId: () => ({
+      name: 'activeTeam',
       type: 'relationship',
       saveToJWT: true,
       relationTo: getDefaultCollectionSlug({ modelKey: baModelKey.team, pluginOptions }),

@@ -95,7 +95,7 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
         }
 
         // Initialize and set the betterAuth instance
-        const auth = initBetterAuth<NonNullable<typeof sanitizedBetterAuthOptions.plugins>>({
+        const auth = initBetterAuth<typeof pluginOptions>({
           payload,
           idType: payload.db.defaultIDType,
           options: {

@@ -2,7 +2,12 @@ import { getAuthTables } from 'better-auth/db'
 import type { ModelKey } from '@/better-auth/generated-types'
 import type { BetterAuthOptions, Where } from 'better-auth'
 import type { DBFieldAttribute } from 'better-auth/db'
-import type { CollectionSlug, Where as PayloadWhere } from 'payload'
+import type { BasePayload, CollectionSlug, Where as PayloadWhere } from 'payload'
+import {
+  getCollectionByModelKey,
+  getCollectionFieldNameByFieldKeyUntyped,
+  getFieldKeyByCollectionFieldName
+} from '@/better-auth/plugin/helpers/get-collection'
 
 export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boolean) => {
   const schema = getAuthTables(options)
@@ -254,6 +259,11 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
       }
     }
 
+    // Handle role fields (Coming from better auth, will be a single string seperated by commas if theres multiple roles)
+    if (key === 'role' || key === 'roles') {
+      return value.split(',').map((role: string) => role.trim().toLowerCase())
+    }
+
     // Return original value if no conversion was needed or applicable
     return value
   }
@@ -274,11 +284,13 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
   function transformInput({
     data,
     model,
-    idType
+    idType,
+    payload
   }: {
     data: Record<string, any>
     model: ModelKey
     idType: 'number' | 'text'
+    payload: BasePayload
   }): Record<string, any> {
     const transformedData: Record<string, any> = {}
     const schemaFields = schema?.[model]?.fields ?? {}
@@ -306,7 +318,8 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
 
       // Use the schema-defined field name if available, otherwise use original key
       const targetFieldName = schemaFieldName || key
-      transformedData[targetFieldName] = normalizedData
+      const targetFieldKey = getCollectionFieldNameByFieldKeyUntyped(getCollectionByModelKey(payload.collections, model), targetFieldName)
+      transformedData[targetFieldKey] = normalizedData
     })
 
     return transformedData
@@ -332,7 +345,15 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
    * @param model - The model name in the BetterAuth schema
    * @returns The transformed document compatible with BetterAuth
    */
-  function transformOutput<T extends Record<string, any> | null>({ doc, model }: { doc: T; model: ModelKey }): T {
+  function transformOutput<T extends Record<string, any> | null>({
+    doc,
+    model,
+    payload
+  }: {
+    doc: T
+    model: ModelKey
+    payload: BasePayload
+  }): T {
     if (!doc || typeof doc !== 'object') return doc
 
     const result = { ...doc }
@@ -341,6 +362,15 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
     // Identify relationship fields with custom field name mappings
     const relationshipFields = Object.fromEntries(Object.entries(schemaFields).filter(([key]) => isRelationshipField(key, schemaFields)))
     const dateFields = Object.fromEntries(Object.entries(schemaFields).filter(([_, value]) => value.type === 'date'))
+
+    // First make sure all the fields keys are correct
+    Object.keys(result).forEach((key) => {
+      const targetFieldKey = getFieldKeyByCollectionFieldName(getCollectionByModelKey(payload.collections, model), key)
+      if (targetFieldKey !== key) {
+        result[targetFieldKey] = result[key]
+        delete result[key]
+      }
+    })
 
     Object.entries(doc).forEach(([key, value]) => {
       if (value === null || value === undefined) return
@@ -533,9 +563,23 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
    * @param where - Array of Better Auth where conditions
    * @returns A Payload-compatible where clause object
    */
-  function convertWhereClause({ idType, model, where }: { idType: 'number' | 'text'; model: ModelKey; where?: Where[] }): PayloadWhere {
+  function convertWhereClause({
+    idType,
+    model,
+    where,
+    payload
+  }: {
+    idType: 'number' | 'text'
+    model: ModelKey
+    where?: Where[]
+    payload: BasePayload
+  }): PayloadWhere {
     // Handle empty where clause
     if (!where) return {}
+
+    function getPayloadFieldName(fieldKey: string): string {
+      return getCollectionFieldNameByFieldKeyUntyped(getCollectionByModelKey(payload.collections, model), fieldKey)
+    }
 
     // Handle single condition case for optimization
     if (where.length === 1) {
@@ -554,7 +598,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
 
       // Create the Payload where condition with proper operator
       const res = {
-        [fieldName]: operatorToPayload(w.operator ?? '', value)
+        [getPayloadFieldName(fieldName)]: operatorToPayload(w.operator ?? '', value)
       }
 
       return res
@@ -574,7 +618,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
         idType
       })
       return {
-        [fieldName]: operatorToPayload(w.operator ?? '', value)
+        [getPayloadFieldName(fieldName)]: operatorToPayload(w.operator ?? '', value)
       }
     })
 
@@ -587,7 +631,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
         idType
       })
       return {
-        [fieldName]: operatorToPayload(w.operator ?? '', value)
+        [getPayloadFieldName(fieldName)]: operatorToPayload(w.operator ?? '', value)
       }
     })
 

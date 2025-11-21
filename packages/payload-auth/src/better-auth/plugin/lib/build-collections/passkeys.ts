@@ -31,6 +31,7 @@ export function buildPasskeysCollection({ incomingCollections, pluginOptions, re
       admin: { readOnly: true, description: 'The user that the passkey belongs to' }
     }),
     credentialID: () => ({
+      name: 'credentialId',
       admin: { readOnly: true, description: 'The unique identifier of the registered credential' }
     }),
     counter: () => ({

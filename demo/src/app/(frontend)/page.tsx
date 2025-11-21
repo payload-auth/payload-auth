@@ -1,6 +1,7 @@
 import { SignInButton } from '@/components/sign-in-btn'
 import Link from 'next/link'
-export default function Home() {
+
+export default async function Home() {
   return (
     <div className="flex min-h-[80vh] items-center justify-center overflow-hidden px-4 sm:px-6 md:px-8">
       <div className="flex w-full flex-col items-center justify-center gap-6">
@@ -12,8 +13,7 @@ export default function Home() {
           <SignInButton />
           <Link
             href="/admin"
-            className="bg-secondary text-secondary-foreground hover:bg-secondary/90 inline-flex h-9 items-center gap-2 rounded-md px-3 py-1 text-sm font-medium transition-colors"
-          >
+            className="bg-secondary text-secondary-foreground hover:bg-secondary/90 inline-flex h-9 items-center gap-2 rounded-md px-3 py-1 text-sm font-medium transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
               <path
                 fill="currentColor"

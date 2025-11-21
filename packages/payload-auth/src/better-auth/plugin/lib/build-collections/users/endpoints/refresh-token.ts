@@ -1,9 +1,9 @@
 import { setCookieCache } from 'better-auth/cookies'
 import { type Endpoint, getFieldsToSign, refreshOperation, TypedUser } from 'payload'
-import { GenericEndpointContext } from 'better-auth/types'
 import { getPayloadAuth } from '@/better-auth/plugin/lib/get-payload-auth'
 import { adminEndpoints } from '@/better-auth/plugin/constants'
 import { getSignedCookie } from '@/better-auth/plugin/helpers/get-signed-cookie'
+import type { GenericEndpointContext } from 'better-auth'
 
 export const getRefreshTokenEndpoint = (userSlug: string): Endpoint => {
   const endpoint: Endpoint = {
@@ -30,7 +30,7 @@ export const getRefreshTokenEndpoint = (userSlug: string): Endpoint => {
       const cookieHeader = req.headers.get('cookie') || ''
       const hasSessionToken = cookieHeader.includes(`${sessionTokenName}=`)
       const dontRememberTokenName = authContext.authCookies.dontRememberToken.name
-      
+
       if (!hasSessionToken) {
         try {
           const result = await refreshOperation({

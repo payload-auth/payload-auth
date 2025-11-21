@@ -81,6 +81,7 @@ export interface Config {
     invitations: Invitation;
     'admin-invitations': AdminInvitation;
     projects: Project;
+    'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -101,6 +102,7 @@ export interface Config {
     invitations: InvitationsSelect<false> | InvitationsSelect<true>;
     'admin-invitations': AdminInvitationsSelect<false> | AdminInvitationsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -202,9 +204,9 @@ export interface User {
    */
   phoneNumberVerified?: boolean | null;
   /**
-   * The role of the user
+   * The role/ roles of the user
    */
-  role?: string | null;
+  role?: ('admin' | 'user' | 'publisher')[] | null;
   /**
    * Whether the user is banned from the platform
    */
@@ -251,15 +253,61 @@ export interface Session {
   /**
    * The admin who is impersonating this session
    */
-  impersonatedBy?: string | null;
+  impersonatedBy?: (number | null) | User;
   /**
    * The currently active organization for the session
    */
-  activeOrganizationId?: string | null;
+  activeOrganization?: (number | null) | Organization;
   /**
    * The currently active team for the session
    */
-  activeTeamId?: string | null;
+  activeTeam?: (number | null) | Team;
+}
+/**
+ * Organizations are groups of users that share access to certain resources.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: number;
+  /**
+   * The name of the organization.
+   */
+  name: string;
+  /**
+   * The slug of the organization.
+   */
+  slug: string;
+  /**
+   * The logo of the organization.
+   */
+  logo?: string | null;
+  createdAt: string;
+  /**
+   * Additional metadata for the organization.
+   */
+  metadata?: string | null;
+  updatedAt: string;
+}
+/**
+ * Teams are groups of users that share access to certain resources.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teams".
+ */
+export interface Team {
+  id: number;
+  /**
+   * The name of the team.
+   */
+  name: string;
+  /**
+   * The organization that the team belongs to.
+   */
+  organization: number | Organization;
+  createdAt: string;
+  updatedAt: string;
 }
 /**
  * Accounts are used to store user accounts for authentication providers
@@ -381,7 +429,7 @@ export interface Passkey {
   /**
    * The unique identifier of the registered credential
    */
-  credentialID: string;
+  credentialId: string;
   /**
    * The counter of the passkey
    */
@@ -486,52 +534,6 @@ export interface ApiKey {
   metadata?: string | null;
 }
 /**
- * Teams are groups of users that share access to certain resources.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "teams".
- */
-export interface Team {
-  id: number;
-  /**
-   * The name of the team.
-   */
-  name: string;
-  /**
-   * The organization that the team belongs to.
-   */
-  organization: number | Organization;
-  createdAt: string;
-  updatedAt: string;
-}
-/**
- * Organizations are groups of users that share access to certain resources.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organizations".
- */
-export interface Organization {
-  id: number;
-  /**
-   * The name of the organization.
-   */
-  name: string;
-  /**
-   * The slug of the organization.
-   */
-  slug: string;
-  /**
-   * The logo of the organization.
-   */
-  logo?: string | null;
-  createdAt: string;
-  /**
-   * Additional metadata for the organization.
-   */
-  metadata?: string | null;
-  updatedAt: string;
-}
-/**
  * Team members of an organization team.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -542,11 +544,11 @@ export interface TeamMember {
   /**
    * The team that the membership belongs to.
    */
-  teamId: number | Team;
+  team: number | Team;
   /**
    * The user that is a member of the team.
    */
-  userId: number | User;
+  user: number | User;
   createdAt: string;
   updatedAt: string;
 }
@@ -618,7 +620,7 @@ export interface Invitation {
  */
 export interface AdminInvitation {
   id: number;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | 'publisher';
   token: string;
   url?: string | null;
   updatedAt: string;
@@ -635,6 +637,23 @@ export interface Project {
   status?: ('active' | 'inactive') | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv".
+ */
+export interface PayloadKv {
+  id: number;
+  key: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -777,8 +796,8 @@ export interface SessionsSelect<T extends boolean = true> {
   userAgent?: T;
   user?: T;
   impersonatedBy?: T;
-  activeOrganizationId?: T;
-  activeTeamId?: T;
+  activeOrganization?: T;
+  activeTeam?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -828,7 +847,7 @@ export interface PasskeysSelect<T extends boolean = true> {
   name?: T;
   publicKey?: T;
   user?: T;
-  credentialID?: T;
+  credentialId?: T;
   counter?: T;
   deviceType?: T;
   backedUp?: T;
@@ -878,8 +897,8 @@ export interface TeamsSelect<T extends boolean = true> {
  * via the `definition` "teamMembers_select".
  */
 export interface TeamMembersSelect<T extends boolean = true> {
-  teamId?: T;
-  userId?: T;
+  team?: T;
+  user?: T;
   createdAt?: T;
   updatedAt?: T;
 }
@@ -942,6 +961,14 @@ export interface ProjectsSelect<T extends boolean = true> {
   status?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv_select".
+ */
+export interface PayloadKvSelect<T extends boolean = true> {
+  key?: T;
+  data?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

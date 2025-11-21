@@ -1,4 +1,5 @@
 import type { Access, FieldAccess } from 'payload'
+import type { PayloadRequest } from 'payload'
 
 export type AdminRolesConfig = {
   adminRoles?: string[]
@@ -17,7 +18,7 @@ export const isAdminWithRoles =
   (config: AdminRolesConfig = {}): FieldAccess =>
   ({ req }) => {
     const { adminRoles = ['admin'] } = config
-    if (!req?.user || !req.user.role || !adminRoles.includes(req.user.role)) return false
+    if (!req?.user || !req.user.role || !hasAdminRoles(adminRoles)({ req })) return false
     return true
   }
 
@@ -33,6 +34,26 @@ export const isAdminOrCurrentUserWithRoles =
       }
     }
   }
+
+export const hasAdminRoles = (adminRoles: string[]) => {
+  return ({ req }: { req: PayloadRequest }): boolean => {
+    let userRoles: string[] = []
+    if (Array.isArray(req.user?.role)) {
+      userRoles = req.user.role
+    } else if (typeof req.user?.role === 'string') {
+      if (req.user.role.includes(',')) {
+        userRoles = req.user.role
+          .split(',')
+          .map((r: string) => r.trim())
+          .filter(Boolean)
+      } else if (req.user.role) {
+        userRoles = [req.user.role]
+      }
+    }
+    if (!userRoles) return false
+    return userRoles.some((role) => adminRoles.includes(role))
+  }
+}
 
 export const isAdminOrCurrentUserUpdateWithAllowedFields = (config: AdminOrCurrentUserUpdateConfig): Access => {
   return async ({ req, id, data }) => {
