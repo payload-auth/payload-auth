@@ -2,7 +2,7 @@ import { getAuthTables } from 'better-auth/db'
 import type { ModelKey } from '@/better-auth/generated-types'
 import type { BetterAuthOptions, Where } from 'better-auth'
 import type { DBFieldAttribute } from 'better-auth/db'
-import type { BasePayload, CollectionSlug, Where as PayloadWhere } from 'payload'
+import { type BasePayload, type CollectionSlug, flattenAllFields, type Where as PayloadWhere } from 'payload'
 import {
   getCollectionByModelKey,
   getCollectionFieldNameByFieldKeyUntyped,
@@ -49,6 +49,24 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
     const collection = schema?.[model]?.modelName || model
     debugLog(['getCollectionSlug:', { model, resolvedSlug: collection }])
     return collection as CollectionSlug
+  }
+
+  /**
+   * Checks if a field in the Payload collection is a relationship or upload field.
+   *
+   * @param payload - The Payload client instance
+   * @param collectionSlug - The slug of the collection
+   * @param fieldName - The name of the field to check
+   * @returns True if the field is a relationship or upload field, false otherwise
+   */
+  function isPayloadRelationship(payload: BasePayload, collectionSlug: string, fieldName: string): boolean {
+    const collection = payload.collections[collectionSlug]
+    if (!collection) return false
+
+    const fields = flattenAllFields({ fields: collection.config.fields })
+    const field = fields.find((f) => f.name === fieldName)
+
+    return field?.type === 'relationship' || field?.type === 'upload'
   }
 
   /**
@@ -302,11 +320,16 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
         return
       }
 
-      // Determine if this is a relationship field
-      const isRelatedField = isRelationshipField(key, schemaFields)
-
       // Get the mapped field name from schema (if any)
       const schemaFieldName = schemaFields[key]?.fieldName
+      const targetFieldName = schemaFieldName || key
+
+      // Check Payload schema for relationship fields
+      const collectionSlug = getCollectionSlug(model)
+      const isPayloadRel = isPayloadRelationship(payload, collectionSlug, targetFieldName)
+
+      // Determine if this is a relationship field
+      const isRelatedField = isRelationshipField(key, schemaFields) || isPayloadRel
 
       // Normalize the data value based on field type and ID type
       const normalizedData = normalizeData({
@@ -316,8 +339,6 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
         isRelatedField
       })
 
-      // Use the schema-defined field name if available, otherwise use original key
-      const targetFieldName = schemaFieldName || key
       const targetFieldKey = getCollectionFieldNameByFieldKeyUntyped(getCollectionByModelKey(payload.collections, model), targetFieldName)
       transformedData[targetFieldKey] = normalizedData
     })
@@ -360,7 +381,16 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
     const schemaFields = schema?.[model]?.fields ?? {}
 
     // Identify relationship fields with custom field name mappings
-    const relationshipFields = Object.fromEntries(Object.entries(schemaFields).filter(([key]) => isRelationshipField(key, schemaFields)))
+    const relationshipFields = Object.fromEntries(
+      Object.entries(schemaFields).filter(([key]) => {
+        if (isRelationshipField(key, schemaFields)) return true
+
+        // Also check payload schema
+        const fieldName = schemaFields[key]?.fieldName || key
+        const collectionSlug = getCollectionSlug(model)
+        return isPayloadRelationship(payload, collectionSlug, fieldName)
+      })
+    )
     const dateFields = Object.fromEntries(Object.entries(schemaFields).filter(([_, value]) => value.type === 'date'))
 
     // First make sure all the fields keys are correct
