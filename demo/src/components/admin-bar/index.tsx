@@ -11,7 +11,7 @@ export async function AdminBar({ path }: AdminBarProps) {
   const headers = await requestHeaders()
   const { user } = await payload.auth({ headers })
 
-  if (user?.role !== 'admin') {
+  if (!user || user.role?.includes('admin')) {
     return null
   }
 
