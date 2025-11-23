@@ -58,6 +58,12 @@ export function buildTeamMembersCollection({
     fields: [...(existingTeamMemberCollection?.fields ?? []), ...(collectionFields ?? [])]
   }
 
+  if (typeof pluginOptions.pluginCollectionOverrides?.teamMembers === 'function') {
+    teamMemberCollection = pluginOptions.pluginCollectionOverrides.teamMembers({
+      collection: teamMemberCollection
+    })
+  }
+
   assertAllSchemaFields(teamMemberCollection, teamMemberSchema)
 
   return teamMemberCollection
