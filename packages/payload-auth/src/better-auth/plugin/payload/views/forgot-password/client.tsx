@@ -1,15 +1,15 @@
 'use client'
 
+import { toast, useConfig, useTranslation } from '@payloadcms/ui'
 import { createAuthClient } from 'better-auth/react'
+import type { FC } from 'react'
 import { useMemo, useState } from 'react'
+import { z } from 'zod'
 import { adminRoutes } from '@/better-auth/plugin/constants'
 import { useAppForm } from '@/shared/form'
 import { Form, FormInputWrap } from '@/shared/form/ui'
 import { FormHeader } from '@/shared/form/ui/header'
 import { emailRegex } from '@/shared/utils/regex'
-import { toast, useConfig, useTranslation } from '@payloadcms/ui'
-import type { FC } from 'react'
-import { z } from 'zod'
 
 type ForgotPasswordFormProps = {
   baseURL?: string
@@ -21,13 +21,17 @@ export const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ baseURL, baseP
   const { config } = useConfig()
   const adminRoute = config.routes.admin
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
-  const authClient = useMemo(() => createAuthClient({ baseURL, basePath }), [])
+  const authClient = useMemo(() => createAuthClient({ baseURL, basePath }), [basePath, baseURL])
 
   const forgotSchema = z.object({
-    email: z.string().refine(
-      (val) => emailRegex.test(val),
-      (val) => ({ message: val ? t('authentication:emailNotValid') || 'Invalid email' : t('validation:required') })
-    )
+    email: z.string().superRefine((val, ctx) => {
+      if (!emailRegex.test(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: val ? t('authentication:emailNotValid') || 'Invalid email' : t('validation:required')
+        })
+      }
+    })
   })
 
   const form = useAppForm({
@@ -37,7 +41,7 @@ export const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ baseURL, baseP
     onSubmit: async ({ value }) => {
       const { email } = value
       try {
-        const { data, error } = await authClient.forgetPassword({
+        const { data, error } = await authClient.requestPasswordReset({
           email,
           redirectTo: `${adminRoute}${adminRoutes.resetPassword}`
         })
