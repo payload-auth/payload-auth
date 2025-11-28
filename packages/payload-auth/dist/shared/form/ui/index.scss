@@ -1,0 +1,27 @@
+.field-error {
+  display: block;
+}
+
+.field-error-message {
+  margin-top: 6px;
+  color: var(--theme-error-950);
+  background-color: var(--theme-error-300);
+  border-radius: 2px;
+  padding: 4px 8px;
+  line-height: 15px;
+}
+
+html[data-theme="light"] .form-error {
+  background-color: var(--theme-error-200);
+  color: black;
+}
+
+.form-error {
+  display: block;
+  color: var(--theme-error-950);
+  background-color: var(--theme-error-300);
+  color: white;
+  border-radius: var(--style-radius-s);
+  padding: 10px 15px;
+  margin-bottom: 1.2rem;
+}

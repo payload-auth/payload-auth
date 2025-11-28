@@ -1,0 +1,1 @@
+{"version":3,"file":"before-login.d.ts","sourceRoot":"","sources":["../../../../../../../src/better-auth/plugin/lib/build-collections/users/hooks/before-login.ts"],"names":[],"mappings":"AAAA,OAAO,EAAY,yBAAyB,EAAE,MAAM,SAAS,CAAA;AAC7D,OAAO,KAAK,EAAE,iBAAiB,EAAE,MAAM,4BAA4B,CAAA;AACnE;;GAEG;AACH,wBAAgB,kBAAkB,CAAC,iBAAiB,EAAE,iBAAiB,6BAYtE"}

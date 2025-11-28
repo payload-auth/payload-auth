@@ -1,0 +1,4 @@
+// These re-exports will be used by consumers of the library
+export * from "./better-auth";
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uL3NyYy9pbmRleC50cyJdLCJzb3VyY2VzQ29udGVudCI6WyIvLyBUaGVzZSByZS1leHBvcnRzIHdpbGwgYmUgdXNlZCBieSBjb25zdW1lcnMgb2YgdGhlIGxpYnJhcnlcbmV4cG9ydCAqIGZyb20gJy4vYmV0dGVyLWF1dGgnXG4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsNERBQTREO0FBQzVELGNBQWMsZ0JBQWUifQ==

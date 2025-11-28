@@ -1,0 +1,1 @@
+{"version":3,"file":"organizations-plugin.d.ts","sourceRoot":"","sources":["../../../../../src/better-auth/plugin/lib/sanitize-better-auth-options/organizations-plugin.ts"],"names":[],"mappings":"AACA,OAAO,KAAK,EAAE,iBAAiB,EAAE,MAAM,qBAAqB,CAAA;AAI5D,wBAAgB,2BAA2B,CAAC,MAAM,EAAE,GAAG,EAAE,eAAe,EAAE,iBAAiB,GAAG,IAAI,CAiFjG"}

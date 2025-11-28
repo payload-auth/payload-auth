@@ -1,0 +1,1 @@
+{"version":3,"file":"get-signed-cookie.d.ts","sourceRoot":"","sources":["../../../../src/better-auth/plugin/helpers/get-signed-cookie.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,KAAK,mBAAmB,EAAE,MAAM,aAAa,CAAA;AAoCtD,wBAAsB,eAAe,CAAC,OAAO,EAAE,MAAM,EAAE,GAAG,EAAE,MAAM,EAAE,MAAM,EAAE,MAAM,EAAE,MAAM,CAAC,EAAE,mBAAmB,kCAuB/G"}

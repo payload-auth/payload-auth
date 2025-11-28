@@ -1,0 +1,1 @@
+{"version":3,"file":"client.d.ts","sourceRoot":"","sources":["../../../../../../src/better-auth/plugin/payload/views/two-factor-verify/client.tsx"],"names":[],"mappings":"AAYA,eAAO,MAAM,mBAAmB,GAAI,kDAKjC;IACD,QAAQ,EAAE,MAAM,CAAA;IAChB,eAAe,CAAC,EAAE,MAAM,CAAA;IACxB,OAAO,CAAC,EAAE,MAAM,CAAA;IAChB,QAAQ,CAAC,EAAE,MAAM,CAAA;CAClB,gCA+CA,CAAA"}

@@ -1,0 +1,113 @@
+@layer payload-default {
+  .two-factor-auth-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+
+    &:before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 0;
+    }
+
+    &__wrapper {
+      z-index: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      border-radius: 3px;
+      border: 1px solid var(--theme-border-color);
+      background-color: var(--theme-elevation-50);
+      min-width: 340px;
+      max-width: 90vw;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+
+    &__close-button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      margin-block: 0 !important;
+      padding: 10px !important;
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding: 1.5rem 1.5rem 1rem 1.5rem;
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+      }
+      p {
+        margin: 0;
+        color: var(--theme-elevation-500);
+      }
+    }
+
+    &__verify-block {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    &__backup-codes {
+      > ul {
+        padding: 1rem;
+        background-color: var(--theme-elevation-50);
+        border: 1px solid var(--theme-elevation-100);
+        border-radius: 4px;
+        columns: 2;
+        font-family: monospace;
+        margin-bottom: 1rem;
+        list-style: none;
+        text-align: center;
+      }
+    }
+
+    &__qrcode {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+    }
+
+    &__uri {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 3px;
+      background: var(--theme-elevation-100, #f3f3f3);
+      padding: 0.5rem 1rem;
+      font-size: 0.95em;
+      word-break: break-all;
+    }
+
+    &__copy-btn {
+      margin-block: 0.5rem;
+      margin-inline: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    &__copy-icon {
+      margin-right: 0.25rem;
+      vertical-align: middle;
+    }
+  }
+} 

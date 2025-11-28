@@ -1,18 +1,17 @@
+import { BASE_ERROR_CODES } from '@better-auth/core/error'
 import type { AuthContext } from 'better-auth'
+import { router } from 'better-auth/api'
 import type { DBFieldAttribute } from 'better-auth/db'
 import type {
   BetterAuthOptions as BetterAuthOptionsType,
   BetterAuthPlugin as BetterAuthPluginType,
   InferAPI,
-  InferPluginTypes
+  InferPluginTypes,
+  InferSession, InferUser
 } from 'better-auth/types'
 import type { BasePayload, CollectionConfig, Config, Endpoint, Field, Payload, PayloadRequest } from 'payload'
 import { ModelKey } from '../generated-types'
-import { adminRoutes, baPluginSlugs, loginMethods, socialProviders } from './constants'
-import type { InferSession, InferUser } from 'better-auth/types'
-import { BASE_ERROR_CODES } from '@better-auth/core/error'
-import { router } from 'better-auth/api'
-import { defaults } from './constants'
+import { adminRoutes, baPluginSlugs, defaults, loginMethods, socialProviders } from './constants'
 /**
  * BetterAuth options with the following caveats:
  * - The `database` option is removed as it is configured internally
@@ -32,7 +31,7 @@ export interface BetterAuthOptions
   advanced?: Omit<NonNullable<BetterAuthOptionsType['advanced']>, 'generateId'> | undefined
 }
 
-export interface SanitizedBetterAuthOptions extends Omit<BetterAuthOptionsType, 'database'> {}
+export interface SanitizedBetterAuthOptions extends Omit<BetterAuthOptionsType, 'database'> { }
 
 export type SocialProvider = (typeof socialProviders)[number]
 
@@ -390,22 +389,22 @@ type PrettifyDeep<T> = {
 } & {};
 type InferPluginErrorCodes<O extends BetterAuthOptions> =
   O['plugins'] extends Array<infer P>
-    ? UnionToIntersection<
-        P extends BetterAuthPluginType ? (P['$ERROR_CODES'] extends Record<string, any> ? P['$ERROR_CODES'] : never) : never
-      > extends infer R
-      ? [R] extends [never]
-        ? {}
-        : R
-      : {}
-    : {}
+  ? UnionToIntersection<
+    P extends BetterAuthPluginType ? (P['$ERROR_CODES'] extends Record<string, any> ? P['$ERROR_CODES'] : never) : never
+  > extends infer R
+  ? [R] extends [never]
+  ? {}
+  : R
+  : {}
+  : {}
 
 export type RoleArray<O extends readonly string[] = readonly [typeof defaults.userRole]> = O[number][] | null
 type OverrideRole<T, O extends readonly string[]> = T extends object ? Omit<T, 'role'> & { role: RoleArray<O> } : T
 type ExtractBA<O extends BetterAuthPluginOptions> = NonNullable<O['betterAuthOptions']>
 type ExtractRoles<O> = O extends { users?: { roles?: infer R } }
   ? R extends readonly string[]
-    ? R
-    : readonly []
+  ? R
+  : readonly []
   : readonly [typeof defaults.userRole]
 type BaseErrorCodes = typeof BASE_ERROR_CODES
 
@@ -418,13 +417,13 @@ export type BetterAuthReturn<O extends BetterAuthPluginOptions = BetterAuthPlugi
   $Infer: InferPluginTypes<ExtractBA<O>> extends {
     Session: any
   }
-    ? InferPluginTypes<ExtractBA<O>>
-    : {
-        Session: {
-          session: PrettifyDeep<InferSession<ExtractBA<O>>>
-          user: OverrideRole<PrettifyDeep<InferUser<ExtractBA<O>>>, ExtractRoles<O>>
-        }
-      } & InferPluginTypes<ExtractBA<O>>
+  ? InferPluginTypes<ExtractBA<O>>
+  : {
+    Session: {
+      session: PrettifyDeep<InferSession<ExtractBA<O>>>
+      user: OverrideRole<PrettifyDeep<InferUser<ExtractBA<O>>>, ExtractRoles<O>>
+    }
+  } & InferPluginTypes<ExtractBA<O>>
 }
 
 export type BetterAuthFunctionOptions<O extends BetterAuthPluginOptions> = Omit<ExtractBA<O>, 'database' | 'plugins'> & {

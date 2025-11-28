@@ -1,0 +1,1 @@
+{"version":3,"file":"set-login-methods.d.ts","sourceRoot":"","sources":["../../../../src/better-auth/plugin/lib/set-login-methods.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,uBAAuB,EAAe,MAAM,UAAU,CAAA;AAE/D,wBAAgB,eAAe,CAAC,EAAE,aAAa,EAAE,EAAE;IAAE,aAAa,EAAE,uBAAuB,CAAA;CAAE,2BAS5F"}

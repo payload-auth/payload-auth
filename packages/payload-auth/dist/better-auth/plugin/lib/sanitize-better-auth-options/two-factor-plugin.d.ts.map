@@ -1,0 +1,1 @@
+{"version":3,"file":"two-factor-plugin.d.ts","sourceRoot":"","sources":["../../../../../src/better-auth/plugin/lib/sanitize-better-auth-options/two-factor-plugin.ts"],"names":[],"mappings":"AAGA,OAAO,KAAK,EAAE,iBAAiB,EAAE,MAAM,qBAAqB,CAAA;AAE5D,wBAAgB,wBAAwB,CAAC,MAAM,EAAE,GAAG,EAAE,eAAe,EAAE,iBAAiB,GAAG,IAAI,CAK9F"}

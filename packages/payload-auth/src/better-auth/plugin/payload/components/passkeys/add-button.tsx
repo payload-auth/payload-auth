@@ -1,13 +1,13 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
-import { useAppForm } from '@/shared/form'
-import { Form, FormInputWrap } from '@/shared/form/ui'
+import { passkeyClient } from '@better-auth/passkey/client'
 import { Button, Modal, toast, useModal } from '@payloadcms/ui'
-import { passkeyClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { XIcon } from 'lucide-react'
+import React, { useMemo, useState } from 'react'
 import { z } from 'zod'
+import { useAppForm } from '@/shared/form'
+import { Form, FormInputWrap } from '@/shared/form/ui'
 
 const baseClass = 'passkeys-modal'
 

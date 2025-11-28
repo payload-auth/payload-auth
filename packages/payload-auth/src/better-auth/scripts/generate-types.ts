@@ -1,40 +1,40 @@
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { passkey } from '@better-auth/passkey'
+import { sso } from '@better-auth/sso'
 import { stripe } from '@better-auth/stripe'
-import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
-import { getSchema } from 'better-auth/db'
+import { checkout, polar } from '@polar-sh/better-auth'
+import { Polar } from '@polar-sh/sdk'
 import type { DBFieldAttribute } from 'better-auth/db'
+import { getSchema } from 'better-auth/db'
+import { nextCookies } from 'better-auth/next-js'
 import {
   admin,
   anonymous,
   apiKey,
   bearer,
+  customSession,
+  deviceAuthorization,
   emailOTP,
   genericOAuth,
   jwt,
+  lastLoginMethod,
   magicLink,
+  mcp,
   multiSession,
+  oidcProvider,
   oneTap,
   oneTimeToken,
   openAPI,
   organization,
-  oidcProvider,
   phoneNumber,
   twoFactor,
-  username,
-  customSession,
-  deviceAuthorization,
-  mcp,
-  lastLoginMethod
+  username
 } from 'better-auth/plugins'
-import { nextCookies } from 'better-auth/next-js'
-import { passkey } from 'better-auth/plugins/passkey'
-import { sso } from '@better-auth/sso'
-import { polar, checkout } from '@polar-sh/better-auth'
-import { Polar } from '@polar-sh/sdk'
-import type { SanitizedBetterAuthOptions } from '../types'
-import fs from 'node:fs/promises'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
 import Stripe from 'stripe'
+import type { SanitizedBetterAuthOptions } from '../types'
 
 const client = new Polar({
   accessToken: 'pk_test_1234567890',
@@ -49,9 +49,9 @@ const plugins = [
   emailHarmony(),
   phoneHarmony(),
   bearer(),
-  emailOTP({ sendVerificationOTP: async () => {} }),
-  magicLink({ sendMagicLink: async () => {} }),
-  phoneNumber({ sendOTP: async () => {} }),
+  emailOTP({ sendVerificationOTP: async () => { } }),
+  magicLink({ sendMagicLink: async () => { } }),
+  phoneNumber({ sendOTP: async () => { } }),
   oneTap(),
   anonymous(),
   multiSession(),
@@ -225,8 +225,8 @@ const gen = (): string => {
 const generated = gen()
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-;(async () => {
-  const file = path.resolve(__dirname, '../generated-types.ts')
-  await fs.writeFile(file, generated, 'utf8')
-  console.log(`Generated types written to ${file}`)
-})()
+  ; (async () => {
+    const file = path.resolve(__dirname, '../generated-types.ts')
+    await fs.writeFile(file, generated, 'utf8')
+    console.log(`Generated types written to ${file}`)
+  })()

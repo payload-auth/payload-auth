@@ -3,8 +3,8 @@
 import { socialProviders } from '@/better-auth/plugin/constants'
 import type { BetterAuthPluginOptions, LoginMethod, SocialProvider } from '@/better-auth/plugin/types'
 import { Icons } from '@/shared/components/icons'
+import { passkeyClient } from '@better-auth/passkey/client'
 import { Button, toast } from '@payloadcms/ui'
-import { passkeyClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { Key } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -42,7 +42,7 @@ export const AdminSocialProviderButtons: React.FC<AdminSocialProviderButtonsProp
         basePath,
         plugins: [passkeyClient()]
       }),
-    []
+    [basePath, baseURL]
   )
 
   const loginMethodCount = loginMethods.filter((method) => method !== 'emailPassword', 'passkey').length

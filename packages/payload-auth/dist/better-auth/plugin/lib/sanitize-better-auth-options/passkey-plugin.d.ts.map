@@ -1,0 +1,1 @@
+{"version":3,"file":"passkey-plugin.d.ts","sourceRoot":"","sources":["../../../../../src/better-auth/plugin/lib/sanitize-better-auth-options/passkey-plugin.ts"],"names":[],"mappings":"AAGA,OAAO,KAAK,EAAE,iBAAiB,EAAE,MAAM,qBAAqB,CAAA;AAE5D,wBAAgB,sBAAsB,CAAC,MAAM,EAAE,GAAG,EAAE,eAAe,EAAE,iBAAiB,GAAG,IAAI,CAK5F"}
