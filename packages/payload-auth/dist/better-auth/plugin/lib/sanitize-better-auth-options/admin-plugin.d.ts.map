@@ -1,0 +1,1 @@
+{"version":3,"file":"admin-plugin.d.ts","sourceRoot":"","sources":["../../../../../src/better-auth/plugin/lib/sanitize-better-auth-options/admin-plugin.ts"],"names":[],"mappings":"AACA,OAAO,KAAK,EAAE,uBAAuB,EAAE,iBAAiB,EAAE,MAAM,qBAAqB,CAAA;AAIrF,wBAAgB,oBAAoB,CAAC,MAAM,EAAE,GAAG,EAAE,OAAO,EAAE,uBAAuB,EAAE,eAAe,EAAE,iBAAiB,GAAG,IAAI,CAS5H"}

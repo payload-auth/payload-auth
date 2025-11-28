@@ -1,0 +1,1 @@
+{"version":3,"file":"device-authorization-plugin.d.ts","sourceRoot":"","sources":["../../../../../src/better-auth/plugin/lib/sanitize-better-auth-options/device-authorization-plugin.ts"],"names":[],"mappings":"AAGA,OAAO,KAAK,EAAE,iBAAiB,EAAE,MAAM,qBAAqB,CAAA;AAE5D,wBAAgB,kCAAkC,CAAC,MAAM,EAAE,GAAG,EAAE,eAAe,EAAE,iBAAiB,GAAG,IAAI,CAExG"}

@@ -1,0 +1,23 @@
+import fs from "node:fs/promises";
+export const getPayloadSchema = async (payloadDirPath)=>{
+    let files;
+    try {
+        files = await fs.readdir(payloadDirPath);
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            throw new Error(`Payload directory not found at "${payloadDirPath}". Please run this CLI from the project root directory where the payload directory is located, otherwise specify a payload directory path in your payloadAdapter options, under schema_generation.payload_dir_path.`);
+        }
+        console.error(error);
+        throw new Error(`Failed to access payload directory at "${payloadDirPath}".`);
+    }
+    if (!files.includes(`schema.ts`)) return '';
+    try {
+        const schemaCode = await fs.readFile(`${payloadDirPath}/schema.ts`, 'utf8');
+        return schemaCode;
+    } catch (error) {
+        console.error(error);
+        throw new Error(`PayloadAdapter: Failed to read schema.ts file from "${payloadDirPath}".`);
+    }
+};
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uLy4uL3NyYy9iZXR0ZXItYXV0aC9hZGFwdGVyL2dlbmVyYXRlLXNjaGVtYS9nZXQtcGF5bG9hZC1zY2hlbWEudHMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IGZzIGZyb20gJ25vZGU6ZnMvcHJvbWlzZXMnXG5cbmV4cG9ydCBjb25zdCBnZXRQYXlsb2FkU2NoZW1hID0gYXN5bmMgKHBheWxvYWREaXJQYXRoOiBzdHJpbmcpOiBQcm9taXNlPHN0cmluZz4gPT4ge1xuICBsZXQgZmlsZXM6IHN0cmluZ1tdXG4gIHRyeSB7XG4gICAgZmlsZXMgPSBhd2FpdCBmcy5yZWFkZGlyKHBheWxvYWREaXJQYXRoKVxuICB9IGNhdGNoIChlcnJvcjogYW55KSB7XG4gICAgaWYgKGVycm9yLmNvZGUgPT09ICdFTk9FTlQnKSB7XG4gICAgICB0aHJvdyBuZXcgRXJyb3IoXG4gICAgICAgIGBQYXlsb2FkIGRpcmVjdG9yeSBub3QgZm91bmQgYXQgXCIke3BheWxvYWREaXJQYXRofVwiLiBQbGVhc2UgcnVuIHRoaXMgQ0xJIGZyb20gdGhlIHByb2plY3Qgcm9vdCBkaXJlY3Rvcnkgd2hlcmUgdGhlIHBheWxvYWQgZGlyZWN0b3J5IGlzIGxvY2F0ZWQsIG90aGVyd2lzZSBzcGVjaWZ5IGEgcGF5bG9hZCBkaXJlY3RvcnkgcGF0aCBpbiB5b3VyIHBheWxvYWRBZGFwdGVyIG9wdGlvbnMsIHVuZGVyIHNjaGVtYV9nZW5lcmF0aW9uLnBheWxvYWRfZGlyX3BhdGguYFxuICAgICAgKVxuICAgIH1cbiAgICBjb25zb2xlLmVycm9yKGVycm9yKVxuICAgIHRocm93IG5ldyBFcnJvcihgRmFpbGVkIHRvIGFjY2VzcyBwYXlsb2FkIGRpcmVjdG9yeSBhdCBcIiR7cGF5bG9hZERpclBhdGh9XCIuYClcbiAgfVxuXG4gIGlmICghZmlsZXMuaW5jbHVkZXMoYHNjaGVtYS50c2ApKSByZXR1cm4gJydcbiAgdHJ5IHtcbiAgICBjb25zdCBzY2hlbWFDb2RlID0gYXdhaXQgZnMucmVhZEZpbGUoYCR7cGF5bG9hZERpclBhdGh9L3NjaGVtYS50c2AsICd1dGY4JylcbiAgICByZXR1cm4gc2NoZW1hQ29kZVxuICB9IGNhdGNoIChlcnJvcikge1xuICAgIGNvbnNvbGUuZXJyb3IoZXJyb3IpXG4gICAgdGhyb3cgbmV3IEVycm9yKGBQYXlsb2FkQWRhcHRlcjogRmFpbGVkIHRvIHJlYWQgc2NoZW1hLnRzIGZpbGUgZnJvbSBcIiR7cGF5bG9hZERpclBhdGh9XCIuYClcbiAgfVxufVxuIl0sIm5hbWVzIjpbImZzIiwiZ2V0UGF5bG9hZFNjaGVtYSIsInBheWxvYWREaXJQYXRoIiwiZmlsZXMiLCJyZWFkZGlyIiwiZXJyb3IiLCJjb2RlIiwiRXJyb3IiLCJjb25zb2xlIiwiaW5jbHVkZXMiLCJzY2hlbWFDb2RlIiwicmVhZEZpbGUiXSwibWFwcGluZ3MiOiJBQUFBLE9BQU9BLFFBQVEsbUJBQWtCO0FBRWpDLE9BQU8sTUFBTUMsbUJBQW1CLE9BQU9DO0lBQ3JDLElBQUlDO0lBQ0osSUFBSTtRQUNGQSxRQUFRLE1BQU1ILEdBQUdJLE9BQU8sQ0FBQ0Y7SUFDM0IsRUFBRSxPQUFPRyxPQUFZO1FBQ25CLElBQUlBLE1BQU1DLElBQUksS0FBSyxVQUFVO1lBQzNCLE1BQU0sSUFBSUMsTUFDUixDQUFDLGdDQUFnQyxFQUFFTCxlQUFlLG1OQUFtTixDQUFDO1FBRTFRO1FBQ0FNLFFBQVFILEtBQUssQ0FBQ0E7UUFDZCxNQUFNLElBQUlFLE1BQU0sQ0FBQyx1Q0FBdUMsRUFBRUwsZUFBZSxFQUFFLENBQUM7SUFDOUU7SUFFQSxJQUFJLENBQUNDLE1BQU1NLFFBQVEsQ0FBQyxDQUFDLFNBQVMsQ0FBQyxHQUFHLE9BQU87SUFDekMsSUFBSTtRQUNGLE1BQU1DLGFBQWEsTUFBTVYsR0FBR1csUUFBUSxDQUFDLEdBQUdULGVBQWUsVUFBVSxDQUFDLEVBQUU7UUFDcEUsT0FBT1E7SUFDVCxFQUFFLE9BQU9MLE9BQU87UUFDZEcsUUFBUUgsS0FBSyxDQUFDQTtRQUNkLE1BQU0sSUFBSUUsTUFBTSxDQUFDLG9EQUFvRCxFQUFFTCxlQUFlLEVBQUUsQ0FBQztJQUMzRjtBQUNGLEVBQUMifQ==

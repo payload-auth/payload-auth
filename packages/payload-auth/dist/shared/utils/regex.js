@@ -1,0 +1,4 @@
+export const emailRegex = /^(?!\.)(?!.*\.\.)([a-z0-9_'+\-\.]*)[a-z0-9_'+\-]@([a-z0-9][a-z0-9\-]*\.)+[a-z]{2,}$/i;
+export const usernameRegex = /^[a-zA-Z0-9._-]+$/;
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9zaGFyZWQvdXRpbHMvcmVnZXgudHMiXSwic291cmNlc0NvbnRlbnQiOlsiZXhwb3J0IGNvbnN0IGVtYWlsUmVnZXggPSAvXig/IVxcLikoPyEuKlxcLlxcLikoW2EtejAtOV8nK1xcLVxcLl0qKVthLXowLTlfJytcXC1dQChbYS16MC05XVthLXowLTlcXC1dKlxcLikrW2Etel17Mix9JC9pXG5leHBvcnQgY29uc3QgdXNlcm5hbWVSZWdleCA9IC9eW2EtekEtWjAtOS5fLV0rJC9cbiJdLCJuYW1lcyI6WyJlbWFpbFJlZ2V4IiwidXNlcm5hbWVSZWdleCJdLCJtYXBwaW5ncyI6IkFBQUEsT0FBTyxNQUFNQSxhQUFhLHVGQUFzRjtBQUNoSCxPQUFPLE1BQU1DLGdCQUFnQixvQkFBbUIifQ==

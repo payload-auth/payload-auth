@@ -1,0 +1,1 @@
+{"version":3,"file":"set-admin-role.d.ts","sourceRoot":"","sources":["../../../../../../../src/better-auth/plugin/lib/build-collections/users/endpoints/set-admin-role.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,KAAK,QAAQ,EAAE,MAAM,SAAS,CAAA;AAEvC,OAAO,EAAE,uBAAuB,EAAE,MAAM,mBAAmB,CAAA;AAS3D,eAAO,MAAM,uBAAuB,GAAI,eAAe,uBAAuB,EAAE,UAAU,MAAM,KAAG,QA4DlG,CAAA"}
