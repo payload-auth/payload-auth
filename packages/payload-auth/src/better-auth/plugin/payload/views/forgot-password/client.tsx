@@ -37,7 +37,7 @@ export const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ baseURL, baseP
     onSubmit: async ({ value }) => {
       const { email } = value
       try {
-        const { data, error } = await authClient.forgetPassword({
+        const { data, error } = await authClient.requestPasswordReset({
           email,
           redirectTo: `${adminRoute}${adminRoutes.resetPassword}`
         })
