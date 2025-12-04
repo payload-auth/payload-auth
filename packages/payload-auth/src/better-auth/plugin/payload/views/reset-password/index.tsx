@@ -73,7 +73,7 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ pluginOptions, initPageRe
   const { token } = resetPasswordParams.data
 
   return (
-    <div className={`${resetPasswordBaseClass}`}>
+    <MinimalTemplate className={`${resetPasswordBaseClass}`}>
       <FormHeader heading={t('authentication:resetPassword')} />
       <PasswordResetForm
         token={token}
@@ -88,7 +88,7 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ pluginOptions, initPageRe
         prefetch={false}>
         {t('authentication:backToLogin')}
       </Link>
-    </div>
+    </MinimalTemplate>
   )
 }
 

@@ -61,8 +61,14 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
 
   const loginMethods = pluginOptions.admin?.loginMethods ?? []
   const hasUsernamePlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.username)
+  const hasPasskeyPlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.passkey)
+  const hasMagicLinkPlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.magicLink)
   const loginWithUsername = collections?.[userSlug]?.config.auth.loginWithUsername
-  const canLoginWithUsername = (hasUsernamePlugin && loginWithUsername) ?? false
+  const loginIdentifiers: ('email' | 'username')[] = (() => {
+    if (!hasUsernamePlugin || !loginWithUsername) return ['email']
+    const allowEmail = typeof loginWithUsername === 'object' ? loginWithUsername.allowEmailLogin !== false : true
+    return allowEmail ? ['email', 'username'] as const : ['username'] as const
+  })()
 
   return (
     <MinimalTemplate className={`${baseClass} admin-signup`}>
@@ -90,7 +96,9 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
             userSlug={userSlug}
             loginMethods={loginMethods}
             searchParams={searchParams ?? {}}
-            loginWithUsername={canLoginWithUsername}
+            loginWithUsername={hasUsernamePlugin ? loginWithUsername ?? false : false}
+            loginIdentifiers={loginIdentifiers}
+            plugins={{ username: hasUsernamePlugin, passkey: hasPasskeyPlugin, magicLink: hasMagicLinkPlugin }}
             baseURL={pluginOptions.betterAuthOptions?.baseURL}
             basePath={pluginOptions.betterAuthOptions?.basePath}
           />

@@ -3,7 +3,7 @@
 import { useConfig, toast, useTranslation } from '@payloadcms/ui'
 import React, { useState } from 'react'
 import type { LoginMethod } from '@/better-auth/plugin/types'
-import { AdminSocialProviderButtons } from '@/better-auth/plugin/payload/components/social-provider-buttons'
+import { LoginFormProvider, AlternativeMethods } from '@/better-auth/plugin/payload/components/login-form'
 import { getSafeRedirect } from '@/better-auth/plugin/payload/utils/get-safe-redirect'
 import { adminEndpoints } from '@/better-auth/plugin/constants'
 import type { LoginWithUsernameOptions } from 'payload'
@@ -20,6 +20,12 @@ type AdminSignupClientProps = {
   loginMethods: LoginMethod[]
   searchParams: { [key: string]: string | string[] | undefined }
   loginWithUsername: false | LoginWithUsernameOptions
+  loginIdentifiers: ('email' | 'username')[]
+  plugins?: {
+    username?: boolean
+    passkey?: boolean
+    magicLink?: boolean
+  }
   baseURL?: string
   basePath?: string
 }
@@ -48,8 +54,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
   const {
     config: {
       admin: { user: userSlug },
-      routes: { admin: adminRoute, api: apiRoute },
-      serverURL
+      routes: { admin: adminRoute }
     }
   } = useConfig()
   const { t } = useTranslation()
@@ -163,6 +168,8 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
   searchParams,
   loginMethods,
   loginWithUsername,
+  loginIdentifiers,
+  plugins,
   baseURL,
   basePath
 }) => {
@@ -190,16 +197,18 @@ export const AdminSignupClient: React.FC<AdminSignupClientProps> = ({
         />
       )}
       {!requireEmailVerification && (
-        <AdminSocialProviderButtons
-          isSignup={true}
+        <LoginFormProvider
           loginMethods={loginMethods}
-          adminInviteToken={adminInviteToken}
-          setLoading={() => {}}
           redirectUrl={redirectUrl}
-          newUserCallbackURL={setAdminRoleCallbackURL}
           baseURL={baseURL}
           basePath={basePath}
-        />
+          isSignup={true}
+          loginIdentifiers={loginIdentifiers}
+          plugins={plugins}
+          adminInviteToken={adminInviteToken}
+          newUserCallbackURL={setAdminRoleCallbackURL}>
+          <AlternativeMethods />
+        </LoginFormProvider>
       )}
     </>
   )
