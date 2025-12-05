@@ -161,10 +161,9 @@ const SocialButton: React.FC<SocialButtonProps> = ({ provider, setLoading }) => 
 }
 
 export const AlternativeMethods: React.FC = () => {
-  const { loginMethods, hasMethod, isSignup, showIconOnly } = useLoginForm()
+  const { alternativeMethods, hasMethod, isSignup, showIconOnly } = useLoginForm()
   const [loading, setLoading] = useState(false)
-
-  const alternativeMethods = loginMethods.filter((m) => m !== 'emailPassword')
+  
   if (alternativeMethods.length === 0) return null
 
   return (

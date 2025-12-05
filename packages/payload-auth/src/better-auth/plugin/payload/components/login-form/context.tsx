@@ -17,6 +17,7 @@ type LoginFormContextValue = {
   authClient: any
   loginType: 'email' | 'username' | 'emailOrUsername'
   hasMethod: (method: LoginMethod) => boolean
+  alternativeMethods: LoginMethod[]
   showIconOnly: boolean
   adminInviteToken?: string
   newUserCallbackURL?: string
@@ -105,7 +106,15 @@ export const LoginFormProvider: React.FC<LoginFormProviderProps> = ({
   }, [canLoginWithEmail, canLoginWithUsername, hasUsernamePlugin])
 
   const hasMethod = (method: LoginMethod) => loginMethods.includes(method)
-  const alternativeMethods = loginMethods.filter((m) => m !== 'emailPassword')
+  const alternativeMethods = useMemo(
+    () =>
+      loginMethods.filter((m) => {
+        if (m === 'emailPassword') return false
+        if (isSignup && (m === 'passkey' || m === 'magicLink')) return false
+        return true
+      }),
+    [loginMethods, isSignup]
+  )
   const showIconOnly = alternativeMethods.length >= 3
 
   const value: LoginFormContextValue = {
@@ -117,6 +126,7 @@ export const LoginFormProvider: React.FC<LoginFormProviderProps> = ({
     authClient,
     loginType,
     hasMethod,
+    alternativeMethods,
     showIconOnly,
     adminInviteToken,
     newUserCallbackURL,
