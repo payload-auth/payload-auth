@@ -9,7 +9,7 @@ import { configurePasskeyPlugin } from './passkey-plugin'
 import { configureSsoPlugin } from './sso-plugin'
 import { ensurePasswordSetBeforeUserCreate } from './utils/ensure-password-set-before-create'
 import { hashPassword, verifyPassword } from './utils/password'
-import { saveToJwtMiddleware } from './utils/save-to-jwt-middleware'
+import { applySaveToJwtReturned } from './utils/apply-save-to-jwt-returned'
 
 import type { BetterAuthPluginOptions, BetterAuthSchemas, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
 import type { Config, Payload } from 'payload'
@@ -21,17 +21,21 @@ import { adminBeforeRoleMiddleware } from './utils/admin-before-role-middleware'
 import { adminAfterRoleMiddleware } from './utils/admin-after-role-middleware'
 import { checkPluginExists } from '../../helpers/check-plugin-exists'
 
+import type { CollectionConfig } from 'payload'
+
 /**
  * Sanitizes the BetterAuth options
  */
 export function sanitizeBetterAuthOptions({
   config,
   pluginOptions,
-  resolvedSchemas
+  resolvedSchemas,
+  collections
 }: {
   config: Payload['config'] | Config | Promise<Payload['config'] | Config>
   pluginOptions: BetterAuthPluginOptions
   resolvedSchemas: BetterAuthSchemas
+  collections: CollectionConfig[]
 }): SanitizedBetterAuthOptions {
   const betterAuthOptions: SanitizedBetterAuthOptions = { ...(pluginOptions.betterAuthOptions ?? {}) }
 
@@ -82,6 +86,11 @@ export function sanitizeBetterAuthOptions({
     adminInvitationCollectionSlug,
     userCollectionSlug
   })
+
+  // Mirror Payload saveToJWT=false onto BetterAuth additionalFields so cookie cache never includes filtered fields.
+  // Safe here because collections are already built (final schema is known).
+  applySaveToJwtReturned({ betterAuthOptions, collections, resolvedSchemas, modelKey: baModelKey.user })
+  applySaveToJwtReturned({ betterAuthOptions, collections, resolvedSchemas, modelKey: baModelKey.session })
 
   // Handle verification email blocking
   if (pluginOptions.users?.blockFirstBetterAuthVerificationEmail && !pluginOptions.disableDefaultPayloadAuth) {
@@ -145,12 +154,6 @@ export function sanitizeBetterAuthOptions({
       throw new Error(`Error sanitizing BetterAuth plugins: ${error}`)
     }
   }
-
-  saveToJwtMiddleware({
-    sanitizedOptions: betterAuthOptions,
-    config,
-    resolvedSchemas
-  })
 
   if (checkPluginExists(betterAuthOptions, supportedBAPluginIds.admin)) {
     adminBeforeRoleMiddleware({

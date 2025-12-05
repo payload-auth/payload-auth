@@ -147,23 +147,23 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
     {
       label: 'Accounts',
       name: baModelKey.account,
-      saveToJWT: false,
       type: 'join',
       hasMany: true,
       collection: accountSlug,
       on: getSchemaFieldName(resolvedSchemas, baModelKey.account, baModelFieldKeys.account.userId),
-      maxDepth: 1
+      maxDepth: 1,
+      saveToJWT: false
     },
     // Sessions use the same pattern; keep the singular model key for the join name.
     {
       label: 'Sessions',
       name: baModelKey.session,
-      saveToJWT: false,
       type: 'join',
       hasMany: true,
       collection: sessionSlug,
       on: getSchemaFieldName(resolvedSchemas, baModelKey.session, baModelFieldKeys.session.userId),
-      maxDepth: 1
+      maxDepth: 1,
+      saveToJWT: false
     }
   ]
 

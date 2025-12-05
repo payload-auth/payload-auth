@@ -8,6 +8,7 @@ import { DBAdapter } from '@better-auth/core/db/adapter'
 
 export const BETTER_AUTH_CONTEXT_KEY = 'payload-db-adapter'
 const PAYLOAD_QUERY_DEPTH = 1
+const CREATE_QUERY_DEPTH = 0
 
 /** Better Auth join option type (not exported from better-auth yet) */
 type JoinOption = {
@@ -166,12 +167,15 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         debugLog(['create', { collectionSlug, transformedInput, select }])
 
         try {
+          // Use depth: 0 for create to avoid populating relationship fields.
+          // Populated relationships would bloat the session data stored in cookie cache.
+          // This needs more testing and validation.
           const result = await payload.create({
             collection: collectionSlug,
             data: transformedInput,
             select: convertSelect(model as ModelKey, select),
             context: createAdapterContext({ model, operation: 'create' }),
-            depth: PAYLOAD_QUERY_DEPTH
+            depth: CREATE_QUERY_DEPTH
           })
 
           const transformedResult = transformOutput({

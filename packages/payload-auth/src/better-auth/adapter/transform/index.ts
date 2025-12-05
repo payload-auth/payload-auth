@@ -464,11 +464,14 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
     }
 
     // Case 2: Object with ID property
-    if (typeof value === 'object' && value !== null && 'id' in value) {
+    if (typeof value === 'object' && value !== null && !Array.isArray(value) && 'id' in value) {
       // For BetterAuth: Extract and stringify the ID
       result[originalKey] = String(value.id)
-      // For Payload: Extract ID but preserve type
-      result[fieldName] = value.id
+      // Preserve the populated relationship object so joins return full documents
+      result[fieldName] = {
+        ...value,
+        id: String(value.id)
+      }
       return
     }
 
@@ -478,7 +481,11 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
       if (value.every((item) => typeof item === 'object' && item !== null && 'id' in item)) {
         // Array of objects with IDs
         result[originalKey] = value.map((item) => String(item.id))
-        result[fieldName] = value.map((item) => item.id)
+        // Keep joined documents intact while normalizing ID type
+        result[fieldName] = value.map((item) => ({
+          ...item,
+          id: String(item.id)
+        }))
       } else {
         // Array of primitive IDs
         result[originalKey] = value.map((item) => String(item))
