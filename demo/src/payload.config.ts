@@ -4,7 +4,7 @@ import { BasePayload, buildConfig, EmailAdapter } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 import collections from './payload/collections'
-import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres'
 import { plugins } from './payload/plugins'
 
 const filename = fileURLToPath(import.meta.url)
@@ -38,8 +38,13 @@ export default buildConfig({
     }
   },
   collections,
-  db: mongooseAdapter({
-    url: process.env.DATABASE_URI
+  db: vercelPostgresAdapter({
+    disableCreateDatabase: false,
+    pool: {
+      connectionString: process.env.DATABASE_URI
+    },
+    push: false, // Should be false (this is just for demo purposes)
+    migrationDir: path.resolve(dirname, 'lib/migrations')
   }),
   email: emailAdapter,
   editor: lexicalEditor(),
