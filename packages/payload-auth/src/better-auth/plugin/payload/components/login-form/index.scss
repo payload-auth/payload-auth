@@ -1,4 +1,8 @@
-.admin-social-provider-buttons {
+.login__form__inputWrap {
+  margin-bottom: .75rem;
+}
+
+.login-form-methods {
   display: flex;
   gap: 0.75rem;
 
@@ -7,7 +11,7 @@
   &--count-2 {
     flex-direction: column;
 
-    .admin-social-provider-buttons__button {
+    .login-form-methods__button {
       width: 100%;
       justify-content: center;
     }
@@ -25,7 +29,7 @@
     gap: 0.5rem;
     max-width: 100%;
 
-    .admin-social-provider-buttons__button {
+    .login-form-methods__button {
       justify-content: center;
       align-items: center;
     }
@@ -36,19 +40,20 @@
     align-items: center;
     gap: 0.5rem;
     margin-block: 0;
-
-    &--icon-only {
-      .admin-social-provider-buttons__icon {
-        margin: 0;
-      }
-      span {
-        display: none;
-      }
-    }
   }
 
   &__icon {
     height: 1.25rem;
     width: 1.25rem;
   }
+
+  &__divider {
+    text-align: center;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    margin-top: -0.5rem;
+    color: var(--theme-elevation-450);
+    margin-bottom: 1.5rem;
+  }
 }
+

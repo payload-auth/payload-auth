@@ -7,10 +7,20 @@ import { ModelKey } from '../generated-types'
 import { DBAdapter } from '@better-auth/core/db/adapter'
 
 export const BETTER_AUTH_CONTEXT_KEY = 'payload-db-adapter'
-const PAYLOAD_QUERY_DEPTH = 0
+const PAYLOAD_QUERY_DEPTH = 1
+const CREATE_QUERY_DEPTH = 0
+
+/** Better Auth join option type (not exported from better-auth yet) */
+type JoinOption = {
+  [modelKey: string]:
+    | boolean
+    | {
+        limit?: number
+      }
+}
 
 /**
- * Payload adapter for Better Auth
+ * Payload adapter for Better Auth.
  *
  * This adapter connects Better Auth to Payload CMS, allowing authentication
  * operations to be performed against Payload collections.
@@ -92,6 +102,40 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
     const { transformInput, transformOutput, convertWhereClause, convertSelect, convertSort, getCollectionSlug, singleIdQuery } =
       createTransform(options, adapterConfig.enableDebugLogs ?? false)
 
+    function getJoinFieldNames(payload: any, collectionSlug: string) {
+      const collection = payload.collections?.[collectionSlug]?.config
+      if (!collection?.flattenedFields) return new Set<string>()
+      return new Set(collection.flattenedFields.filter((f: any) => f.type === 'join').map((f: any) => f.name))
+    }
+
+    function buildPayloadJoins(join: JoinOption | undefined, payload: any, collectionSlug: string) {
+      if (!join) return undefined
+      const allowedJoinFields = getJoinFieldNames(payload, collectionSlug)
+      const joins: Record<string, any> = {}
+
+      Object.entries(join).forEach(([modelKey, config]) => {
+        if (config === false) return
+
+        // Translate Better Auth model key (e.g. 'account') to Payload join field name (e.g. 'accounts')
+        const joinFieldName = getCollectionSlug(modelKey as ModelKey)
+
+        if (!allowedJoinFields.has(joinFieldName)) {
+          debugLog([`join skipped: no join field '${joinFieldName}' (from model '${modelKey}') on ${collectionSlug}`])
+          return
+        }
+
+        if (config === true) {
+          joins[joinFieldName] = {}
+          return
+        }
+        if (config && typeof config === 'object') {
+          joins[joinFieldName] = { ...config }
+        }
+      })
+
+      return Object.keys(joins).length ? joins : undefined
+    }
+
     return {
       id: 'payload-adapter',
       async transaction<R>(callback: (tx: Omit<DBAdapter, 'transaction'>) => Promise<R>): Promise<R> {
@@ -123,12 +167,15 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         debugLog(['create', { collectionSlug, transformedInput, select }])
 
         try {
+          // Use depth: 0 for create to avoid populating relationship fields.
+          // Populated relationships would bloat the session data stored in cookie cache.
+          // This needs more testing and validation.
           const result = await payload.create({
             collection: collectionSlug,
             data: transformedInput,
             select: convertSelect(model as ModelKey, select),
             context: createAdapterContext({ model, operation: 'create' }),
-            depth: PAYLOAD_QUERY_DEPTH
+            depth: CREATE_QUERY_DEPTH
           })
 
           const transformedResult = transformOutput({
@@ -152,7 +199,17 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           return null as R
         }
       },
-      async findOne<R>({ model, where, select }: { model: string; where: Where[]; select?: string[] }): Promise<R | null> {
+      async findOne<R>({
+        model,
+        where,
+        select,
+        join
+      }: {
+        model: string
+        where: Where[]
+        select?: string[]
+        join?: JoinOption
+      }): Promise<R | null> {
         const start = Date.now()
         const payload = await resolvePayloadClient()
         const collectionSlug = getCollectionSlug(model as ModelKey)
@@ -167,11 +224,12 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           payload
         })
 
-        debugLog(['findOne', { collectionSlug }])
+        debugLog(['findOne', { collectionSlug, join }])
 
         try {
           const singleId = singleIdQuery(payloadWhere)
           let result: Record<string, any> | null = null
+          const payloadJoins = buildPayloadJoins(join, payload, collectionSlug)
 
           if (singleId) {
             debugLog(['findOneByID', { collectionSlug, id: singleId }])
@@ -179,6 +237,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               collection: collectionSlug,
               id: singleId,
               select: convertSelect(model as ModelKey, select),
+              ...(payloadJoins && Object.keys(payloadJoins).length > 0 && { joins: payloadJoins }),
               context: createAdapterContext({
                 model,
                 operation: 'findOneByID'
@@ -191,6 +250,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               collection: collectionSlug,
               where: payloadWhere,
               select: convertSelect(model as ModelKey, select),
+              ...(payloadJoins && Object.keys(payloadJoins).length > 0 && { joins: payloadJoins }),
               context: createAdapterContext({
                 model,
                 operation: 'findOneByWhere'
@@ -230,7 +290,8 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         where,
         limit = 10,
         sortBy,
-        offset = 0
+        offset = 0,
+        join
       }: {
         model: string
         where?: Where[]
@@ -240,6 +301,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           direction: 'asc' | 'desc'
         }
         offset?: number
+        join?: JoinOption
       }): Promise<R[]> {
         const start = Date.now()
         const payload = await resolvePayloadClient()
@@ -264,11 +326,13 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           } | null = null
 
           const singleId = singleIdQuery(payloadWhere)
+          const payloadJoins = buildPayloadJoins(join, payload, collectionSlug)
           if (singleId) {
             debugLog(['findManyBySingleID', { collectionSlug, id: singleId }])
             const doc = await payload.findByID({
               collection: collectionSlug,
               id: singleId,
+              ...(payloadJoins && Object.keys(payloadJoins).length > 0 && { joins: payloadJoins }),
               depth: PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({
                 model,
@@ -288,6 +352,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               limit: fetchLimit,
               page: page,
               sort: convertSort(model as ModelKey, sortBy),
+              ...(payloadJoins && Object.keys(payloadJoins).length > 0 && { joins: payloadJoins }),
               depth: PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({
                 model,

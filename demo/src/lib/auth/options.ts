@@ -13,7 +13,7 @@ import {
   twoFactor,
   username
 } from 'better-auth/plugins'
-import { passkey } from 'better-auth/plugins/passkey'
+import { passkey } from '@better-auth/passkey'
 import { createAuthMiddleware } from 'better-auth/api'
 import { nextCookies } from 'better-auth/next-js'
 import type { BetterAuthPlugin as BetterAuthPluginType } from 'better-auth/types'

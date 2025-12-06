@@ -93,9 +93,14 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
   const prefillPassword = prefillAutoLogin && typeof config.admin?.autoLogin === 'object' ? config.admin?.autoLogin.password : undefined
   const hasUsernamePlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.username)
   const hasPasskeyPlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.passkey)
+  const hasMagicLinkPlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.magicLink)
   const loginMethods = pluginOptions.admin?.loginMethods ?? []
   const loginWithUsername = collections?.[userSlug]?.config.auth.loginWithUsername
-  const canLoginWithUsername = (hasUsernamePlugin && loginWithUsername) ?? false
+  const loginIdentifiers: ('email' | 'username')[] = (() => {
+    if (!hasUsernamePlugin || !loginWithUsername) return ['email']
+    const allowEmail = typeof loginWithUsername === 'object' ? loginWithUsername.allowEmailLogin !== false : true
+    return allowEmail ? ['email', 'username'] as const : ['username'] as const
+  })()
 
   return (
     <MinimalTemplate className={loginBaseClass}>
@@ -124,13 +129,10 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
         } satisfies ServerProps
       })}
       <AdminLoginClient
-        loginWithUsername={canLoginWithUsername}
-        hasUsernamePlugin={hasUsernamePlugin}
-        hasPasskeyPlugin={hasPasskeyPlugin}
+        loginIdentifiers={loginIdentifiers}
+        plugins={{ username: hasUsernamePlugin, passkey: hasPasskeyPlugin, magicLink: hasMagicLinkPlugin }}
         loginMethods={loginMethods}
-        prefillEmail={prefillEmail}
-        prefillPassword={prefillPassword}
-        prefillUsername={prefillUsername}
+        prefill={{ email: prefillEmail, password: prefillPassword, username: prefillUsername }}
         searchParams={searchParams ?? {}}
         baseURL={pluginOptions.betterAuthOptions?.baseURL}
         basePath={pluginOptions.betterAuthOptions?.basePath}

@@ -326,6 +326,32 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
   }
 
   /**
+   * Checks if a value is a Payload join result (has docs array structure)
+   */
+  function isJoinResult(value: any): value is { docs: any[]; hasNextPage?: boolean; totalDocs?: number } {
+    return (
+      value !== null &&
+      typeof value === 'object' &&
+      'docs' in value &&
+      Array.isArray(value.docs)
+    )
+  }
+
+  /**
+   * Flattens a Payload join result to just the array of documents.
+   * Handles both direct documents and polymorphic { relationTo, value } format.
+   */
+  function flattenJoinResult(joinResult: { docs: any[] }): any[] {
+    return joinResult.docs.map((item) => {
+      // Handle polymorphic join format: { relationTo: string, value: doc }
+      if (item && typeof item === 'object' && 'value' in item && 'relationTo' in item) {
+        return item.value
+      }
+      return item
+    })
+  }
+
+  /**
    * Transforms Payload CMS document output to match BetterAuth schema expectations.
    *
    * This function handles several critical transformations:
@@ -337,6 +363,8 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
    *    and ensures proper ID type handling
    *
    * 3. Date Conversion: Transforms date strings from Payload into Date objects for BetterAuth
+   *
+   * 4. Join Result Flattening: Converts Payload's { docs: [...] } join format to plain arrays
    *
    * Note: While setting depth: 1 in Payload operations simplifies this process by avoiding
    * deeply nested objects, we maintain comprehensive checks for robustness.
@@ -375,9 +403,18 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
     Object.entries(doc).forEach(([key, value]) => {
       if (value === null || value === undefined) return
 
+      const targetFieldKey = getFieldKeyByCollectionFieldName(getCollectionByModelKey(payload.collections, model), key)
+
       // Convert ID fields to strings for BetterAuth compatibility
       if (['id', '_id'].includes(key)) {
-        result[key] = String(value)
+        result[targetFieldKey] = String(value)
+        return
+      }
+
+      // Flatten join results from { docs: [...] } to plain arrays
+      if (isJoinResult(value)) {
+        debugLog(['transformOutput: flattening join result', { key, targetFieldKey, isArray: Array.isArray(value.docs) }])
+        result[targetFieldKey] = flattenJoinResult(value)
         return
       }
 
@@ -391,7 +428,7 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
       const originalDateFieldKey = Object.keys(dateFields).find((k) => dateFields[k].fieldName === key)
       if (originalDateFieldKey) {
         // Convert ISO date strings to Date objects for BetterAuth
-        result[key] = new Date(value)
+        result[targetFieldKey] = new Date(value)
         return
       }
     })
@@ -427,11 +464,14 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
     }
 
     // Case 2: Object with ID property
-    if (typeof value === 'object' && value !== null && 'id' in value) {
+    if (typeof value === 'object' && value !== null && !Array.isArray(value) && 'id' in value) {
       // For BetterAuth: Extract and stringify the ID
       result[originalKey] = String(value.id)
-      // For Payload: Extract ID but preserve type
-      result[fieldName] = value.id
+      // Preserve the populated relationship object so joins return full documents
+      result[fieldName] = {
+        ...value,
+        id: String(value.id)
+      }
       return
     }
 
@@ -441,7 +481,11 @@ export const createTransform = (options: BetterAuthOptions, enableDebugLogs: boo
       if (value.every((item) => typeof item === 'object' && item !== null && 'id' in item)) {
         // Array of objects with IDs
         result[originalKey] = value.map((item) => String(item.id))
-        result[fieldName] = value.map((item) => item.id)
+        // Keep joined documents intact while normalizing ID type
+        result[fieldName] = value.map((item) => ({
+          ...item,
+          id: String(item.id)
+        }))
       } else {
         // Array of primitive IDs
         result[originalKey] = value.map((item) => String(item))

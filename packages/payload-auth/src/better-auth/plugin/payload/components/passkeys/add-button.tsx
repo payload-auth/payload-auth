@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react'
 import { useAppForm } from '@/shared/form'
 import { Form, FormInputWrap } from '@/shared/form/ui'
 import { Button, Modal, toast, useModal } from '@payloadcms/ui'
-import { passkeyClient } from 'better-auth/client/plugins'
+import { passkeyClient } from "@better-auth/passkey/client"
 import { createAuthClient } from 'better-auth/react'
 import { XIcon } from 'lucide-react'
 import { z } from 'zod'

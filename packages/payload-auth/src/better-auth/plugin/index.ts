@@ -41,7 +41,8 @@ function buildBetterAuthData({ payloadConfig, pluginOptions }: { payloadConfig: 
   const sanitizedBetterAuthOptions = sanitizeBetterAuthOptions({
     config: payloadConfig,
     pluginOptions,
-    resolvedSchemas: resolvedBetterAuthSchemas
+    resolvedSchemas: resolvedBetterAuthSchemas,
+    collections: Object.values(collectionMap)
   })
 
   pluginOptions.betterAuthOptions = sanitizedBetterAuthOptions

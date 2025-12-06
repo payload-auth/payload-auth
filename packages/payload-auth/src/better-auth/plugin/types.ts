@@ -1,4 +1,4 @@
-import type { AuthContext, PrettifyDeep } from 'better-auth'
+import type { AuthContext } from 'better-auth'
 import type { DBFieldAttribute } from 'better-auth/db'
 import type {
   BetterAuthOptions as BetterAuthOptionsType,
@@ -385,6 +385,9 @@ export type EndpointWithBetterAuth<O extends BetterAuthPluginOptions> = Omit<End
 }
 
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
+type PrettifyDeep<T> = {
+  [K in keyof T]: T[K] extends (...args: any[]) => any ? T[K] : T[K] extends object ? T[K] extends Array<any> ? T[K] : T[K] extends Date ? T[K] : PrettifyDeep<T[K]> : T[K];
+} & {};
 type InferPluginErrorCodes<O extends BetterAuthOptions> =
   O['plugins'] extends Array<infer P>
     ? UnionToIntersection<

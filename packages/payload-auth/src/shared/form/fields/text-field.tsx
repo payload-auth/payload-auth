@@ -7,13 +7,15 @@ export function TextField({
   label,
   required = false,
   type = 'text',
-  autoComplete = 'off'
+  autoComplete = 'off',
+  onValueChange
 }: {
   className: string
   label: string
   required?: boolean
   type?: string
   autoComplete?: string
+  onValueChange?: (value: string) => void
 }) {
   const field = useFieldContext<string>()
   const meta = useStore(field.store, (state) => state.meta)
@@ -30,7 +32,10 @@ export function TextField({
           id={field.name}
           name={field.name}
           value={field.state.value}
-          onChange={(e) => field.handleChange(e.target.value)}
+          onChange={(e) => {
+            field.handleChange(e.target.value)
+            onValueChange?.(e.target.value)
+          }}
           onBlur={field.handleBlur}
           required={required}
           className="text-field"

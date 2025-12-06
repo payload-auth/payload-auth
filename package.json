@@ -35,5 +35,10 @@
     "semantic-release": "^24.2.3",
     "turbo": "^2.5"
   },
-  "packageManager": "pnpm@10.5.1"
+  "packageManager": "pnpm@10.5.1",
+  "workspaces": [
+    "docs",
+    "demo",
+    "packages/payload-auth"
+  ]
 }

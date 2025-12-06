@@ -33,7 +33,8 @@ export function getAfterLoginHook() {
         token: generateId(32),
         expiresAt: new Date(Date.now() + sessionExpiration * 1000)
       },
-      req
+      req,
+      depth: 0
     })) as Session
 
     const betterAuthHandleRequest = createAuthMiddleware(async (ctx): Promise<Headers | null> => {
