@@ -38,9 +38,9 @@ export function getSyncAccountHook(): CollectionAfterChangeHook {
             [userIdFieldName]: doc.id,
             [accountIdFieldName]: doc.id.toString(),
             [providerIdFieldName]: 'credential',
-            [passwordFieldName]: passwordValue,
-            context: { syncAccountHook: true }
+            [passwordFieldName]: passwordValue
           },
+          context: { syncAccountHook: true },
           req
         })
       } catch (error) {

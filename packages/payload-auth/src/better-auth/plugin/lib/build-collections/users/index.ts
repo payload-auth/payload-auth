@@ -20,13 +20,15 @@ import {
   getOnVerifiedChangeHook
 } from './hooks'
 
-import type { CollectionConfig, UIField } from 'payload'
+import type { CollectionConfig, JoinField, UIField } from 'payload'
 import type { BuildCollectionProps, FieldOverrides, FieldRule } from '../../../types'
 import type { User } from '@/better-auth/generated-types'
 
 export function buildUsersCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
   const userSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.user)
   const passkeySlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.passkey)
+  const sessionSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.session)
+  const accountSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.account)
   const passkeyUserIdFieldName = getSchemaFieldName(resolvedSchemas, baModelKey.passkey, baModelFieldKeys.passkey.userId)
   const userSchema = resolvedSchemas[baModelKey.user]
   const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
@@ -137,6 +139,34 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
     additionalProperties: fieldOverrides
   })
 
+  const joinFields: JoinField[] = [
+    // Better Auth’s internal adapter renames `account` => `accounts` via
+    // `const { account: accounts, ...user } = result`
+    // @see https://github.com/better-auth/better-auth/blob/28654734e13dc0bb22d5623722e97b9a8dbc1b37/packages/better-auth/src/db/internal-adapter.ts#L760-L761
+    // The join field name must therefore stay exactly `account` to be picked up.
+    {
+      label: 'Accounts',
+      name: baModelKey.account,
+      type: 'join',
+      hasMany: true,
+      collection: accountSlug,
+      on: getSchemaFieldName(resolvedSchemas, baModelKey.account, baModelFieldKeys.account.userId),
+      maxDepth: 1,
+      saveToJWT: false
+    },
+    // Sessions use the same pattern; keep the singular model key for the join name.
+    {
+      label: 'Sessions',
+      name: baModelKey.session,
+      type: 'join',
+      hasMany: true,
+      collection: sessionSlug,
+      on: getSchemaFieldName(resolvedSchemas, baModelKey.session, baModelFieldKeys.session.userId),
+      maxDepth: 1,
+      saveToJWT: false
+    }
+  ]
+
   let usersCollection: CollectionConfig = {
     ...existingUserCollection,
     slug: userSlug,
@@ -236,6 +266,7 @@ export function buildUsersCollection({ incomingCollections, pluginOptions, resol
     fields: [
       ...(existingUserCollection?.fields ?? []),
       ...(collectionFields ?? []),
+      ...joinFields,
       ...(checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.passkey)
         ? [
             {

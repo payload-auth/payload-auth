@@ -1,7 +1,6 @@
 import { createAuthClient } from 'better-auth/react'
 import {
   organizationClient,
-  passkeyClient,
   twoFactorClient,
   adminClient,
   multiSessionClient,
@@ -16,6 +15,7 @@ import {
   apiKeyClient,
   inferAdditionalFields
 } from 'better-auth/client/plugins'
+import { passkeyClient } from "@better-auth/passkey/client"
 import { toast } from 'sonner'
 import { betterAuthOptions } from './options'
 
