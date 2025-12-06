@@ -1,6 +1,26 @@
 {
   "name": "payload-auth",
   "version": "1.0.1",
+  "description": "The most powerful authentication solution for Payload CMS",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/payload-auth/payload-auth.git",
+    "directory": "packages/payload-auth"
+  },
+  "bugs": {
+    "url": "https://github.com/payload-auth/payload-auth/issues"
+  },
+  "homepage": "https://github.com/payload-auth/payload-auth#readme",
+  "license": "MIT",
+  "author": "forrestdevs <luke.gannon@me.com>",
+  "keywords": [
+    "payload-cms",
+    "better-auth",
+    "plugin",
+    "adapter",
+    "authentication",
+    "payload-plugin"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
