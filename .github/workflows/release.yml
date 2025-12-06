@@ -49,7 +49,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20 # Use the Node.js version required by your project
+          node-version: 22 # LTS
           cache: 'pnpm'
 
       - name: Install dependencies
