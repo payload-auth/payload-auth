@@ -18,11 +18,11 @@
   "dependencies": {
     "@better-auth/passkey": "^1.4.5",
     "@daveyplate/better-auth-ui": "3.2.13",
-    "@payloadcms/db-mongodb": "3.66.0",
-    "@payloadcms/db-vercel-postgres": "3.66.0",
-    "@payloadcms/next": "3.66.0",
-    "@payloadcms/richtext-lexical": "3.66.0",
-    "@payloadcms/ui": "3.66.0",
+    "@payloadcms/db-mongodb": "3.67.0",
+    "@payloadcms/db-vercel-postgres": "3.67.0",
+    "@payloadcms/next": "3.67.0",
+    "@payloadcms/richtext-lexical": "3.67.0",
+    "@payloadcms/ui": "3.67.0",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-alert-dialog": "^1.1.6",
     "@radix-ui/react-aspect-ratio": "^1.1.2",
@@ -67,7 +67,7 @@
     "next": "^15.4.8",
     "next-themes": "0.4.6",
     "open": "^10.1.0",
-    "payload": "^3.66.0",
+    "payload": "^3.67.0",
     "payload-auth": "workspace:*",
     "qs-esm": "7.0.2",
     "react": "^19.2.1",
@@ -86,7 +86,7 @@
     "three": "0.175.0",
     "ua-parser-js": "2.0.2",
     "vaul": "1.1.2",
-    "zod": "^3.24.2"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.5.4",

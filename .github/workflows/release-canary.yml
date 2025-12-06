@@ -11,6 +11,7 @@ on:
       - canary
     paths:
       - 'packages/**'
+  workflow_dispatch:
 
 jobs:
   commitlint:
@@ -43,13 +44,16 @@ jobs:
           # Ensure full history for semantic-release
           fetch-depth: 0
 
+      - name: Fetch all tags
+        run: git fetch --tags --force
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -63,8 +67,12 @@ jobs:
       - name: Archive distribution files
         run: (cd packages/payload-auth/dist && zip -r ../../../payload-auth-distribution.zip .)
 
+      - name: Remove .npmrc
+        run: rm -f .npmrc
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: pnpm exec semantic-release 
+          NPM_CONFIG_LEGACY_PEER_DEPS: true
+        run: node ./node_modules/semantic-release/bin/semantic-release.js

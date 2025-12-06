@@ -74,9 +74,9 @@ export interface Config {
     twoFactors: TwoFactor;
     passkeys: Passkey;
     apiKeys: ApiKey;
+    organizations: Organization;
     teams: Team;
     teamMembers: TeamMember;
-    organizations: Organization;
     members: Member;
     invitations: Invitation;
     'admin-invitations': AdminInvitation;
@@ -86,7 +86,12 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    users: {
+      account: 'accounts';
+      session: 'sessions';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     sessions: SessionsSelect<false> | SessionsSelect<true>;
@@ -95,9 +100,9 @@ export interface Config {
     twoFactors: TwoFactorsSelect<false> | TwoFactorsSelect<true>;
     passkeys: PasskeysSelect<false> | PasskeysSelect<true>;
     apiKeys: ApiKeysSelect<false> | ApiKeysSelect<true>;
+    organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
     teams: TeamsSelect<false> | TeamsSelect<true>;
     teamMembers: TeamMembersSelect<false> | TeamMembersSelect<true>;
-    organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
     invitations: InvitationsSelect<false> | InvitationsSelect<true>;
     'admin-invitations': AdminInvitationsSelect<false> | AdminInvitationsSelect<true>;
@@ -108,8 +113,9 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: number;
+    defaultIDType: string;
   };
+  fallbackLocale: null;
   globals: {};
   globalsSelect: {};
   locale: null;
@@ -156,7 +162,7 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: number;
+  id: string;
   /**
    * Users chosen display name
    */
@@ -219,95 +225,16 @@ export interface User {
    * The date and time when the ban will expire
    */
   banExpires?: string | null;
-}
-/**
- * Sessions are active sessions for users. They are used to authenticate users with a session token
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "sessions".
- */
-export interface Session {
-  id: number;
-  /**
-   * The date and time when the session will expire
-   */
-  expiresAt: string;
-  /**
-   * The unique session token
-   */
-  token: string;
-  createdAt: string;
-  updatedAt: string;
-  /**
-   * The IP address of the device
-   */
-  ipAddress?: string | null;
-  /**
-   * The user agent information of the device
-   */
-  userAgent?: string | null;
-  /**
-   * The user that the session belongs to
-   */
-  user: number | User;
-  /**
-   * The admin who is impersonating this session
-   */
-  impersonatedBy?: (number | null) | User;
-  /**
-   * The currently active organization for the session
-   */
-  activeOrganization?: (number | null) | Organization;
-  /**
-   * The currently active team for the session
-   */
-  activeTeam?: (number | null) | Team;
-}
-/**
- * Organizations are groups of users that share access to certain resources.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organizations".
- */
-export interface Organization {
-  id: number;
-  /**
-   * The name of the organization.
-   */
-  name: string;
-  /**
-   * The slug of the organization.
-   */
-  slug: string;
-  /**
-   * The logo of the organization.
-   */
-  logo?: string | null;
-  createdAt: string;
-  /**
-   * Additional metadata for the organization.
-   */
-  metadata?: string | null;
-  updatedAt: string;
-}
-/**
- * Teams are groups of users that share access to certain resources.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "teams".
- */
-export interface Team {
-  id: number;
-  /**
-   * The name of the team.
-   */
-  name: string;
-  /**
-   * The organization that the team belongs to.
-   */
-  organization: number | Organization;
-  createdAt: string;
-  updatedAt: string;
+  account?: {
+    docs?: (string | Account)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  session?: {
+    docs?: (string | Session)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
 }
 /**
  * Accounts are used to store user accounts for authentication providers
@@ -316,7 +243,7 @@ export interface Team {
  * via the `definition` "accounts".
  */
 export interface Account {
-  id: number;
+  id: string;
   /**
    * The id of the account as provided by the SSO or equal to userId for credential accounts
    */
@@ -328,7 +255,7 @@ export interface Account {
   /**
    * The user that the account belongs to
    */
-  user: number | User;
+  user: string | User;
   /**
    * The access token of the account. Returned by the provider
    */
@@ -361,13 +288,102 @@ export interface Account {
   updatedAt: string;
 }
 /**
+ * Sessions are active sessions for users. They are used to authenticate users with a session token
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sessions".
+ */
+export interface Session {
+  id: string;
+  /**
+   * The date and time when the session will expire
+   */
+  expiresAt: string;
+  /**
+   * The unique session token
+   */
+  token: string;
+  createdAt: string;
+  updatedAt: string;
+  /**
+   * The IP address of the device
+   */
+  ipAddress?: string | null;
+  /**
+   * The user agent information of the device
+   */
+  userAgent?: string | null;
+  /**
+   * The user that the session belongs to
+   */
+  user: string | User;
+  /**
+   * The admin who is impersonating this session
+   */
+  impersonatedBy?: (string | null) | User;
+  /**
+   * The currently active organization for the session
+   */
+  activeOrganization?: (string | null) | Organization;
+  /**
+   * The currently active team for the session
+   */
+  activeTeam?: (string | null) | Team;
+}
+/**
+ * Organizations are groups of users that share access to certain resources.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: string;
+  /**
+   * The name of the organization.
+   */
+  name: string;
+  /**
+   * The slug of the organization.
+   */
+  slug: string;
+  /**
+   * The logo of the organization.
+   */
+  logo?: string | null;
+  createdAt: string;
+  /**
+   * Additional metadata for the organization.
+   */
+  metadata?: string | null;
+  updatedAt: string;
+}
+/**
+ * Teams are groups of users that share access to certain resources.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teams".
+ */
+export interface Team {
+  id: string;
+  /**
+   * The name of the team.
+   */
+  name: string;
+  /**
+   * The organization that the team belongs to.
+   */
+  organization: string | Organization;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
  * Verifications are used to verify authentication requests
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "verifications".
  */
 export interface Verification {
-  id: number;
+  id: string;
   /**
    * The identifier of the verification request
    */
@@ -390,7 +406,7 @@ export interface Verification {
  * via the `definition` "twoFactors".
  */
 export interface TwoFactor {
-  id: number;
+  id: string;
   /**
    * The secret used to generate the TOTP code.
    */
@@ -402,7 +418,7 @@ export interface TwoFactor {
   /**
    * The user that the two factor authentication secret belongs to
    */
-  user: number | User;
+  user: string | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -413,7 +429,7 @@ export interface TwoFactor {
  * via the `definition` "passkeys".
  */
 export interface Passkey {
-  id: number;
+  id: string;
   /**
    * The name of the passkey
    */
@@ -425,7 +441,7 @@ export interface Passkey {
   /**
    * The user that the passkey belongs to
    */
-  user: number | User;
+  user: string | User;
   /**
    * The unique identifier of the registered credential
    */
@@ -457,7 +473,7 @@ export interface Passkey {
  * via the `definition` "apiKeys".
  */
 export interface ApiKey {
-  id: number;
+  id: string;
   /**
    * The name of the API key.
    */
@@ -477,7 +493,7 @@ export interface ApiKey {
   /**
    * The user associated with the API key.
    */
-  user: number | User;
+  user: string | User;
   /**
    * The interval to refill the key in milliseconds.
    */
@@ -540,15 +556,15 @@ export interface ApiKey {
  * via the `definition` "teamMembers".
  */
 export interface TeamMember {
-  id: number;
+  id: string;
   /**
    * The team that the membership belongs to.
    */
-  team: number | Team;
+  team: string | Team;
   /**
    * The user that is a member of the team.
    */
-  user: number | User;
+  user: string | User;
   createdAt: string;
   updatedAt: string;
 }
@@ -559,15 +575,15 @@ export interface TeamMember {
  * via the `definition` "members".
  */
 export interface Member {
-  id: number;
+  id: string;
   /**
    * The organization that the member belongs to.
    */
-  organization: number | Organization;
+  organization: string | Organization;
   /**
    * The user that is a member of the organization.
    */
-  user: number | User;
+  user: string | User;
   /**
    * The role of the member in the organization.
    */
@@ -582,11 +598,11 @@ export interface Member {
  * via the `definition` "invitations".
  */
 export interface Invitation {
-  id: number;
+  id: string;
   /**
    * The organization that the user is being invited to.
    */
-  organization: number | Organization;
+  organization: string | Organization;
   /**
    * The email of the user being invited.
    */
@@ -607,19 +623,19 @@ export interface Invitation {
    * The date and time when the invitation will expire.
    */
   expiresAt: string;
+  createdAt: string;
   /**
    * The user who invited the user.
    */
-  inviter: number | User;
+  inviter: string | User;
   updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "admin-invitations".
  */
 export interface AdminInvitation {
-  id: number;
+  id: string;
   role: 'admin' | 'user' | 'publisher';
   token: string;
   url?: string | null;
@@ -631,7 +647,7 @@ export interface AdminInvitation {
  * via the `definition` "projects".
  */
 export interface Project {
-  id: number;
+  id: string;
   name?: string | null;
   description?: string | null;
   status?: ('active' | 'inactive') | null;
@@ -643,7 +659,7 @@ export interface Project {
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: number;
+  id: string;
   key: string;
   data:
     | {
@@ -660,68 +676,68 @@ export interface PayloadKv {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: number;
+  id: string;
   document?:
     | ({
         relationTo: 'users';
-        value: number | User;
+        value: string | User;
       } | null)
     | ({
         relationTo: 'sessions';
-        value: number | Session;
+        value: string | Session;
       } | null)
     | ({
         relationTo: 'accounts';
-        value: number | Account;
+        value: string | Account;
       } | null)
     | ({
         relationTo: 'verifications';
-        value: number | Verification;
+        value: string | Verification;
       } | null)
     | ({
         relationTo: 'twoFactors';
-        value: number | TwoFactor;
+        value: string | TwoFactor;
       } | null)
     | ({
         relationTo: 'passkeys';
-        value: number | Passkey;
+        value: string | Passkey;
       } | null)
     | ({
         relationTo: 'apiKeys';
-        value: number | ApiKey;
-      } | null)
-    | ({
-        relationTo: 'teams';
-        value: number | Team;
-      } | null)
-    | ({
-        relationTo: 'teamMembers';
-        value: number | TeamMember;
+        value: string | ApiKey;
       } | null)
     | ({
         relationTo: 'organizations';
-        value: number | Organization;
+        value: string | Organization;
+      } | null)
+    | ({
+        relationTo: 'teams';
+        value: string | Team;
+      } | null)
+    | ({
+        relationTo: 'teamMembers';
+        value: string | TeamMember;
       } | null)
     | ({
         relationTo: 'members';
-        value: number | Member;
+        value: string | Member;
       } | null)
     | ({
         relationTo: 'invitations';
-        value: number | Invitation;
+        value: string | Invitation;
       } | null)
     | ({
         relationTo: 'admin-invitations';
-        value: number | AdminInvitation;
+        value: string | AdminInvitation;
       } | null)
     | ({
         relationTo: 'projects';
-        value: number | Project;
+        value: string | Project;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -731,10 +747,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: number;
+  id: string;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   key?: string | null;
   value?:
@@ -754,7 +770,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: number;
+  id: string;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -782,6 +798,8 @@ export interface UsersSelect<T extends boolean = true> {
   banned?: T;
   banReason?: T;
   banExpires?: T;
+  account?: T;
+  session?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -884,6 +902,18 @@ export interface ApiKeysSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations_select".
+ */
+export interface OrganizationsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  logo?: T;
+  createdAt?: T;
+  metadata?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "teams_select".
  */
 export interface TeamsSelect<T extends boolean = true> {
@@ -900,18 +930,6 @@ export interface TeamMembersSelect<T extends boolean = true> {
   team?: T;
   user?: T;
   createdAt?: T;
-  updatedAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organizations_select".
- */
-export interface OrganizationsSelect<T extends boolean = true> {
-  name?: T;
-  slug?: T;
-  logo?: T;
-  createdAt?: T;
-  metadata?: T;
   updatedAt?: T;
 }
 /**
@@ -936,9 +954,9 @@ export interface InvitationsSelect<T extends boolean = true> {
   team?: T;
   status?: T;
   expiresAt?: T;
+  createdAt?: T;
   inviter?: T;
   updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

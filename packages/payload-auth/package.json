@@ -89,6 +89,8 @@
     "@better-auth/sso": "1.4.5",
     "@better-auth/stripe": "1.4.5",
     "@payloadcms/db-postgres": ">=3.55 <4",
+    "@payloadcms/next": ">=3.55 <4",
+    "@payloadcms/ui": ">=3.55 <4",
     "@polar-sh/better-auth": "1.5.0",
     "@polar-sh/sdk": "^0.41.5",
     "better-auth": "^1.4.5",
