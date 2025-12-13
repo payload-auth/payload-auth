@@ -15,7 +15,7 @@ export function adminBeforeRoleMiddleware({ sanitizedOptions }: { sanitizedOptio
       }
     }
     if (typeof originalBefore === 'function') {
-      originalBefore(ctx)
+      return originalBefore(ctx)
     }
   })
 }
