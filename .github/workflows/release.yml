@@ -43,13 +43,16 @@ jobs:
           # Required for semantic-release to analyze the full commit history
           fetch-depth: 0
 
+      - name: Fetch all tags
+        run: git fetch --tags --force
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20 # Use the Node.js version required by your project
+          node-version: 22
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -63,8 +66,12 @@ jobs:
       - name: Archive distribution files
         run: (cd packages/payload-auth/dist && zip -r ../../../payload-auth-distribution.zip .)
 
+      - name: Remove .npmrc
+        run: rm -f .npmrc
+
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Token for GitHub authentication (provided by Actions)
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }} # Token for npm authentication (needs to be created in GitHub secrets)
-        run: pnpm exec semantic-release
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_LEGACY_PEER_DEPS: true
+        run: node ./node_modules/semantic-release/bin/semantic-release.js

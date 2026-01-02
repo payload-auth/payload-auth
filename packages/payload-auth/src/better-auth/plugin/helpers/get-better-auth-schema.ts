@@ -1,7 +1,7 @@
 import { ModelKey } from '@/better-auth/generated-types'
 import { type DBFieldAttribute, getAuthTables } from 'better-auth/db'
 import { baModelFieldKeysToFieldNames, baModelKey, defaults } from '../constants'
-import { BetterAuthPluginOptions, BetterAuthSchemas } from '../types'
+import { PayloadAuthOptions, BetterAuthSchemas } from '../types'
 import { getDefaultCollectionSlug } from './get-collection-slug'
 import { set } from '../utils/set'
 
@@ -21,7 +21,7 @@ import { set } from '../utils/set'
  * @param config - The BetterAuth options fed into `getAuthTables`.
  * @returns A map keyed by static table keys, each value containing `{ modelName, fields, order }`.
  */
-export function getDefaultBetterAuthSchema(pluginOptions: BetterAuthPluginOptions): BetterAuthSchemas {
+export function getDefaultBetterAuthSchema(pluginOptions: PayloadAuthOptions): BetterAuthSchemas {
   const betterAuthOptions = pluginOptions.betterAuthOptions ?? {}
 
   // We need to add the additional role field to the user schema here or else the built collections will not pick it up.

@@ -1,2 +1,2 @@
-// These re-exports will be used by consumers of the library
+// Package exports for payload-auth
 export * from './better-auth'

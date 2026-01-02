@@ -1,9 +1,9 @@
 import { betterAuth } from 'better-auth'
 import type { BasePayload } from 'payload'
 import { payloadAdapter } from 'payload-auth/better-auth/adapter'
-import type { BetterAuthFunctionOptions, BetterAuthPluginOptions, BetterAuthReturn } from '../types'
+import type { BetterAuthFunctionOptions, PayloadAuthOptions, BetterAuthReturn } from '../types'
 
-export function initBetterAuth<O extends BetterAuthPluginOptions>({
+export function initBetterAuth<O extends PayloadAuthOptions>({
   payload,
   idType,
   options: { enableDebugLogs = false, ...restOptions }

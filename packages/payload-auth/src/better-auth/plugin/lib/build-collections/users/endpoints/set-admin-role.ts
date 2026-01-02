@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { type Endpoint } from 'payload'
 import { status as httpStatus } from 'http-status'
-import { BetterAuthPluginOptions } from '../../../../types'
+import { PayloadAuthOptions } from '../../../../types'
 import { getPayloadAuth } from '../../../get-payload-auth'
 import { adminEndpoints, baseSlugs } from '@/better-auth/plugin/constants'
 
@@ -10,7 +10,7 @@ const setAdminRoleSchema = z.object({
   redirect: z.string().optional()
 })
 
-export const getSetAdminRoleEndpoint = (pluginOptions: BetterAuthPluginOptions, userSlug: string): Endpoint => {
+export const getSetAdminRoleEndpoint = (pluginOptions: PayloadAuthOptions, userSlug: string): Endpoint => {
   const endpoint: Endpoint = {
     path: adminEndpoints.setAdminRole,
     method: 'get',

@@ -175,6 +175,18 @@ const config = {
         }
       }
     ],
+    // Use exec to update version and publish FIRST (before GitHub creates the tag)
+    // Check if version exists on npm first - skip publish if it does (handles recovery from partial failures)
+    [
+      '@semantic-release/exec',
+      {
+        prepareCmd:
+          'node -e "const p=require(\'./packages/payload-auth/package.json\');p.version=\'${nextRelease.version}\';require(\'fs\').writeFileSync(\'./packages/payload-auth/package.json\',JSON.stringify(p,null,2)+\'\\n\')"',
+        publishCmd:
+          'echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc && cd packages/payload-auth && (npm view payload-auth@${nextRelease.version} version >/dev/null 2>&1 && echo "Version ${nextRelease.version} already published, skipping npm publish" || npm publish --access public --tag ${nextRelease.channel || "latest"})'
+      }
+    ],
+    // GitHub release runs AFTER npm publish succeeds - creates the tag only when everything worked
     [
       '@semantic-release/github',
       {
@@ -188,15 +200,7 @@ const config = {
         addBranchProtectionRules: false,
         githubAssets: false
       }
-    ],
-    [
-      '@semantic-release/git',
-      {
-        assets: ['package.json'],
-        message: 'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}'
-      }
-    ],
-    ['@semantic-release/npm', { pkgRoot: './packages/payload-auth' }]
+    ]
   ]
 }
 

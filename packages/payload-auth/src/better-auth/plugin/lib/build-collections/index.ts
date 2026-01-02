@@ -1,7 +1,7 @@
 import type { ModelKey } from '@/better-auth/generated-types'
 import type { CollectionConfig } from 'payload'
 import { baModelKey, baseSlugs } from '../../constants'
-import type { BetterAuthPluginOptions, BuildCollectionProps, BetterAuthSchemas } from '../../types'
+import type { PayloadAuthOptions, BuildCollectionProps, BetterAuthSchemas } from '../../types'
 import { buildAccountsCollection } from './accounts/index'
 import { buildAdminInvitationsCollection } from './admin-invitations'
 import { buildApiKeysCollection } from './api-keys'
@@ -24,6 +24,8 @@ import { buildVerificationsCollection } from './verifications'
 import { buildTeamMembersCollection } from './team-members'
 import { buildDeviceCodeCollection } from './device-code'
 import { buildRateLimitCollection } from './rate-limit'
+import { buildScimProviderCollection } from './scim-provider'
+import { buildOrganizationRolesCollection } from './organization-roles'
 
 /**
  * Builds the required collections based on the BetterAuth options and plugins
@@ -34,7 +36,7 @@ export function buildCollections({
   resolvedSchemas
 }: {
   incomingCollections: CollectionConfig[]
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: PayloadAuthOptions
   resolvedSchemas: BetterAuthSchemas
 }): Record<string, CollectionConfig> {
   const collectionBuilders: Record<ModelKey, (props: BuildCollectionProps) => CollectionConfig> = {
@@ -58,6 +60,8 @@ export function buildCollections({
     [baModelKey.subscription]: (props: BuildCollectionProps) => buildSubscriptionsCollection(props),
     [baModelKey.deviceCode]: (props: BuildCollectionProps) => buildDeviceCodeCollection(props),
     [baModelKey.rateLimit]: (props: BuildCollectionProps) => buildRateLimitCollection(props)
+    [baModelKey.scimProvider]: (props: BuildCollectionProps) => buildScimProviderCollection(props),
+    [baModelKey.organizationRole]: (props: BuildCollectionProps) => buildOrganizationRolesCollection(props)
   }
 
   const collectionMap: Record<string, CollectionConfig> = {}
