@@ -6,3 +6,4 @@ dist
 .vscode
 .turbo
 .backups
+package-lock.json

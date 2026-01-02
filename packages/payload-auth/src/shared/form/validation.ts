@@ -89,33 +89,32 @@ export const createLoginSchema = ({
   usernameSettings?: UsernameSettings
 }) =>
   z.object({
-    login: z.string().refine(
-      (val) => {
-        if (!val) return false
-        if (loginType === 'email') return isValidEmail(val)
-        if (loginType === 'username') return isValidUsername(val, usernameSettings)
-        return isValidEmail(val) || isValidUsername(val, usernameSettings)
-      },
-      (val) => {
-        if (!val) return { message: t('validation:required') }
+    login: z.string().superRefine((val, ctx) => {
+      const emailValid = isValidEmail(val)
+      const usernameValid = isValidUsername(val, usernameSettings)
 
-        const isProbablyEmail = val.includes('@') || !canLoginWithUsername
+      const passes =
+        loginType === 'email'
+          ? emailValid
+          : loginType === 'username'
+            ? usernameValid
+            : emailValid || usernameValid
 
-        if (loginType === 'email') {
-          return { message: t('authentication:emailNotValid') || 'Email is not valid' }
-        }
+      if (passes) return
 
-        if (loginType === 'username') {
-          return { message: t('authentication:usernameNotValid') || 'Username is not valid' }
-        }
-
-        return {
-          message: isProbablyEmail
+      const message =
+        !val
+          ? t('validation:required')
+          : loginType === 'email'
             ? t('authentication:emailNotValid') || 'Email is not valid'
-            : t('authentication:usernameNotValid') || 'Username is not valid'
-        }
-      }
-    ),
+            : loginType === 'username'
+              ? t('authentication:usernameNotValid') || 'Username is not valid'
+              : val.includes('@') || !canLoginWithUsername
+                ? t('authentication:emailNotValid') || 'Email is not valid'
+                : t('authentication:usernameNotValid') || 'Username is not valid'
+
+      ctx.addIssue({ code: 'custom', message: message || 'Invalid login value' })
+    }),
     password: passwordField({ t })
   })
 

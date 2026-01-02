@@ -24,10 +24,16 @@ export const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ baseURL, baseP
   const authClient = useMemo(() => createAuthClient({ baseURL, basePath }), [])
 
   const forgotSchema = z.object({
-    email: z.string().refine(
-      (val) => emailRegex.test(val),
-      (val) => ({ message: val ? t('authentication:emailNotValid') || 'Invalid email' : t('validation:required') })
-    )
+    email: z.string().superRefine((val, ctx) => {
+      if (!val) {
+        ctx.addIssue({ code: 'custom', message: t('validation:required') || 'Required' })
+        return
+      }
+
+      if (!emailRegex.test(val)) {
+        ctx.addIssue({ code: 'custom', message: t('authentication:emailNotValid') || 'Invalid email' })
+      }
+    })
   })
 
   const form = useAppForm({

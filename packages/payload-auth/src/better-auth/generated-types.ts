@@ -139,7 +139,7 @@ export type OauthApplicationPluginFields = {
     metadata?: string
     clientId?: string
     clientSecret?: string
-    redirectURLs?: string
+    redirectUrls?: string
     type?: string
     disabled?: boolean
     userId?: string
@@ -152,7 +152,7 @@ export type OauthApplicationPluginFields = {
     metadata?: string
     clientId?: string
     clientSecret?: string
-    redirectURLs?: string
+    redirectUrls?: string
     type?: string
     disabled?: boolean
     userId?: string
@@ -223,6 +223,16 @@ export type SsoProviderFields = {
 
 export type SsoProvider = SsoProviderFields
 
+export type OrganizationFields = {
+  name: string
+  slug: string
+  logo?: string
+  createdAt: Date
+  metadata?: string
+}
+
+export type Organization = OrganizationFields
+
 export type TeamFields = {
   name: string
   organizationId: string
@@ -240,16 +250,6 @@ export type TeamMemberFields = {
 
 export type TeamMember = TeamMemberFields
 
-export type OrganizationFields = {
-  name: string
-  slug: string
-  logo?: string
-  createdAt: Date
-  metadata?: string
-}
-
-export type Organization = OrganizationFields
-
 export type MemberFields = {
   organizationId: string
   userId: string
@@ -266,6 +266,7 @@ export type InvitationFields = {
   teamId?: string
   status: string
   expiresAt: Date
+  createdAt: Date
   inviterId: string
 }
 
@@ -275,6 +276,7 @@ export type JwksFields = {
   publicKey: string
   privateKey: string
   createdAt: Date
+  expiresAt?: Date
 }
 
 export type Jwks = JwksFields
@@ -330,9 +332,9 @@ export type BetterAuthFullSchema = {
   "oauthAccessToken": OauthAccessToken
   "oauthConsent": OauthConsent
   "ssoProvider": SsoProvider
+  "organization": Organization
   "team": Team
   "teamMember": TeamMember
-  "organization": Organization
   "member": Member
   "invitation": Invitation
   "jwks": Jwks
