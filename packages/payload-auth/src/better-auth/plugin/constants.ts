@@ -92,7 +92,8 @@ export const baPluginSlugs = {
   members: 'members',
   teams: 'teams',
   teamMembers: 'teamMembers',
-  scim: 'scimProvider'
+  scim: 'scimProvider',
+  rateLimit: 'rateLimit',
 } as const
 
 export const baModelKey = {

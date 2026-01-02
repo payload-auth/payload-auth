@@ -10,6 +10,7 @@ import { RateLimit } from '@/better-auth/generated-types'
 export function buildRateLimitCollection({ incomingCollections, pluginOptions, resolvedSchemas }: BuildCollectionProps): CollectionConfig {
   const slug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.rateLimit)
   const schema = resolvedSchemas[baModelKey.rateLimit]
+
   const existingRateLimitCollection = incomingCollections.find((collection) => collection.slug === slug) as CollectionConfig | undefined
 
   const fieldOverrides: FieldOverrides<keyof RateLimit> = {
@@ -43,6 +44,13 @@ export function buildRateLimitCollection({ incomingCollections, pluginOptions, r
       betterAuthModelKey: baModelKey.rateLimit
     },
     fields: [...(existingRateLimitCollection?.fields ?? []), ...(collectionFields ?? [])]
+  }
+
+
+  if (typeof pluginOptions.pluginCollectionOverrides?.rateLimit === 'function') {
+    rateLimitCollection = pluginOptions.pluginCollectionOverrides.rateLimit({
+      collection: rateLimitCollection
+    })
   }
 
   assertAllSchemaFields(rateLimitCollection, schema)

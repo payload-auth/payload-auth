@@ -59,7 +59,7 @@ export function buildCollections({
     [baModelKey.ssoProvider]: (props: BuildCollectionProps) => buildSsoProvidersCollection(props),
     [baModelKey.subscription]: (props: BuildCollectionProps) => buildSubscriptionsCollection(props),
     [baModelKey.deviceCode]: (props: BuildCollectionProps) => buildDeviceCodeCollection(props),
-    [baModelKey.rateLimit]: (props: BuildCollectionProps) => buildRateLimitCollection(props)
+    [baModelKey.rateLimit]: (props: BuildCollectionProps) => buildRateLimitCollection(props),
     [baModelKey.scimProvider]: (props: BuildCollectionProps) => buildScimProviderCollection(props),
     [baModelKey.organizationRole]: (props: BuildCollectionProps) => buildOrganizationRolesCollection(props)
   }
