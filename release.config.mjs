@@ -191,8 +191,9 @@ const config = {
       {
         pkgRoot: 'packages/payload-auth',
         npmPublish: true,
+        
       }
-    ]
+    ],
     // GitHub release runs AFTER npm publish succeeds - creates the tag only when everything worked
     [
       '@semantic-release/github',
