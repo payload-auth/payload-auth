@@ -23,6 +23,7 @@ import { getSchemaCollectionSlug } from './utils/collection-schema'
 import { buildVerificationsCollection } from './verifications'
 import { buildTeamMembersCollection } from './team-members'
 import { buildDeviceCodeCollection } from './device-code'
+import { buildRateLimitCollection } from './rate-limit'
 import { buildScimProviderCollection } from './scim-provider'
 import { buildOrganizationRolesCollection } from './organization-roles'
 
@@ -58,6 +59,7 @@ export function buildCollections({
     [baModelKey.ssoProvider]: (props: BuildCollectionProps) => buildSsoProvidersCollection(props),
     [baModelKey.subscription]: (props: BuildCollectionProps) => buildSubscriptionsCollection(props),
     [baModelKey.deviceCode]: (props: BuildCollectionProps) => buildDeviceCodeCollection(props),
+    [baModelKey.rateLimit]: (props: BuildCollectionProps) => buildRateLimitCollection(props)
     [baModelKey.scimProvider]: (props: BuildCollectionProps) => buildScimProviderCollection(props),
     [baModelKey.organizationRole]: (props: BuildCollectionProps) => buildOrganizationRolesCollection(props)
   }

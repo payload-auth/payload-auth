@@ -92,6 +92,14 @@ export type BaseVerificationFields = {
 
 export type Verification = BaseVerificationFields
 
+export type BaseRateLimitFields = {
+  key?: string
+  count?: number
+  lastRequest?: number
+}
+
+export type RateLimit = BaseRateLimitFields
+
 export type ApikeyFields = {
   name?: string
   start?: string
@@ -347,6 +355,7 @@ export type BetterAuthFullSchema = {
   "session": Session
   "account": Account
   "verification": Verification
+  "rateLimit": RateLimit
   "apikey": Apikey
   "passkey": Passkey
   "oauthApplication": OauthApplication

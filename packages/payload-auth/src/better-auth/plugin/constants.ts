@@ -116,6 +116,7 @@ export const baModelKey = {
   apikey: 'apikey',
   jwks: 'jwks',
   deviceCode: 'deviceCode',
+  rateLimit: 'rateLimit',
   scimProvider: 'scimProvider'
 } as const
 

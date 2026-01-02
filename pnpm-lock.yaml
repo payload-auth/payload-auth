@@ -469,6 +469,9 @@ importers:
       uncrypto:
         specifier: ^0.1.3
         version: 0.1.3
+      zod:
+        specifier: ^3.24.2
+        version: 3.25.76
     devDependencies:
       '@better-auth/core':
         specifier: 1.4.10

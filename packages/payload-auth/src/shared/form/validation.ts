@@ -89,23 +89,28 @@ export const createLoginSchema = ({
   usernameSettings?: UsernameSettings
 }) =>
   z.object({
-    login: z.string().superRefine((val, ctx) => {
-      const emailValid = isValidEmail(val)
-      const usernameValid = isValidUsername(val, usernameSettings)
+    login: z.string().refine(
+      (val: string) => {
+        if (!val) return false
+        if (loginType === 'email') return isValidEmail(val)
+        if (loginType === 'username') return isValidUsername(val, usernameSettings)
+        return isValidEmail(val) || isValidUsername(val, usernameSettings)
+      },
+      (val: string) => {
+        if (!val) return { message: t('validation:required') }
 
-      const passes =
-        loginType === 'email'
-          ? emailValid
-          : loginType === 'username'
-            ? usernameValid
-            : emailValid || usernameValid
+        const isProbablyEmail = val.includes('@') || !canLoginWithUsername
 
-      if (passes) return
+        if (loginType === 'email') {
+          return { message: t('authentication:emailNotValid') || 'Email is not valid' }
+        }
 
-      const message =
-        !val
-          ? t('validation:required')
-          : loginType === 'email'
+        if (loginType === 'username') {
+          return { message: t('authentication:usernameNotValid') || 'Username is not valid' }
+        }
+
+        return {
+          message: isProbablyEmail
             ? t('authentication:emailNotValid') || 'Email is not valid'
             : loginType === 'username'
               ? t('authentication:usernameNotValid') || 'Username is not valid'
