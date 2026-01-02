@@ -33,6 +33,7 @@ jobs:
     needs: commitlint
     runs-on: ubuntu-latest
     permissions:
+      id-token: write  # Required for OIDC
       contents: write # Needed by semantic-release to create releases, push tags/commits
       issues: write # Needed by semantic-release to comment on issues/PRs (optional but recommended)
       pull-requests: write
