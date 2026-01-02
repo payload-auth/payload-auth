@@ -1,6 +1,7 @@
 import { draftMode, headers as requestHeaders } from 'next/headers'
 import { AdminBarClient } from './client'
 import { getPayload } from '@/lib/payload'
+import { userHasRole } from '@/access/userHasRole'
 
 export interface AdminBarProps {
   path?: string | string[]
@@ -11,7 +12,7 @@ export async function AdminBar({ path }: AdminBarProps) {
   const headers = await requestHeaders()
   const { user } = await payload.auth({ headers })
 
-  if (user?.role !== 'admin') {
+  if (!user || !userHasRole(user, ['admin'])) {
     return null
   }
 

@@ -1,15 +1,13 @@
+import { AppSidebar } from '@/components/app-sidebar'
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { getPayload } from '@/lib/payload'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { AppSidebar } from '@/components/app-sidebar'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Separator } from '@/components/ui/separator'
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 
 export default async function DashboardPage({ children }: { children: React.ReactNode }) {
   const payload = await getPayload()
   const session = await payload.betterAuth.api.getSession({
-    headers: await headers()
+    headers: await headers(),
   })
 
   if (!session) {
