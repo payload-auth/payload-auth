@@ -233,6 +233,16 @@ export type OrganizationFields = {
 
 export type Organization = OrganizationFields
 
+export type OrganizationRoleFields = {
+  organizationId: string
+  role: string
+  permission: string
+  createdAt: Date
+  updatedAt?: Date
+}
+
+export type OrganizationRole = OrganizationRoleFields
+
 export type TeamFields = {
   name: string
   organizationId: string
@@ -289,6 +299,14 @@ export type TwoFactorFields = {
 
 export type TwoFactor = TwoFactorFields
 
+export type ScimProviderFields = {
+  providerId: string
+  scimToken: string
+  organizationId?: string
+}
+
+export type ScimProvider = ScimProviderFields
+
 export type DeviceCodeFields = {
   deviceCode: string
   userCode: string
@@ -314,12 +332,15 @@ export type SubscriptionFields = {
   trialStart?: Date
   trialEnd?: Date
   cancelAtPeriodEnd?: boolean
+  cancelAt?: Date
+  canceledAt?: Date
+  endedAt?: Date
   seats?: number
 }
 
 export type Subscription = SubscriptionFields
 
-export type PluginId = "username" | "admin" | "api-key" | "passkey" | "harmony-email" | "harmony-phone-number" | "bearer" | "email-otp" | "magic-link" | "phone-number" | "one-tap" | "anonymous" | "multi-session" | "one-time-token" | "oidc" | "sso" | "generic-oauth" | "open-api" | "organization" | "jwt" | "two-factor" | "next-cookies" | "custom-session" | "mcp" | "device-authorization" | "last-login-method" | "stripe" | "polar"
+export type PluginId = "username" | "admin" | "api-key" | "passkey" | "harmony-email" | "harmony-phone-number" | "bearer" | "email-otp" | "magic-link" | "phone-number" | "one-tap" | "anonymous" | "multi-session" | "one-time-token" | "oidc" | "sso" | "generic-oauth" | "open-api" | "organization" | "jwt" | "two-factor" | "next-cookies" | "custom-session" | "scim" | "mcp" | "device-authorization" | "last-login-method" | "stripe" | "polar"
 
 export type BetterAuthFullSchema = {
   "user": User
@@ -333,12 +354,14 @@ export type BetterAuthFullSchema = {
   "oauthConsent": OauthConsent
   "ssoProvider": SsoProvider
   "organization": Organization
+  "organizationRole": OrganizationRole
   "team": Team
   "teamMember": TeamMember
   "member": Member
   "invitation": Invitation
   "jwks": Jwks
   "twoFactor": TwoFactor
+  "scimProvider": ScimProvider
   "deviceCode": DeviceCode
   "subscription": Subscription
 }

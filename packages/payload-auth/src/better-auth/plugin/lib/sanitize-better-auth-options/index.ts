@@ -11,7 +11,7 @@ import { ensurePasswordSetBeforeUserCreate } from './utils/ensure-password-set-b
 import { hashPassword, verifyPassword } from './utils/password'
 import { applySaveToJwtReturned } from './utils/apply-save-to-jwt-returned'
 
-import type { BetterAuthPluginOptions, BetterAuthSchemas, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
+import type { PayloadAuthOptions, BetterAuthSchemas, SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
 import type { Config, Payload } from 'payload'
 import { configureTwoFactorPlugin } from './two-factor-plugin'
 import { requireAdminInviteForSignUpMiddleware } from './utils/require-admin-invite-for-sign-up-middleware'
@@ -33,7 +33,7 @@ export function sanitizeBetterAuthOptions({
   collections
 }: {
   config: Payload['config'] | Config | Promise<Payload['config'] | Config>
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: PayloadAuthOptions
   resolvedSchemas: BetterAuthSchemas
   collections: CollectionConfig[]
 }): SanitizedBetterAuthOptions {

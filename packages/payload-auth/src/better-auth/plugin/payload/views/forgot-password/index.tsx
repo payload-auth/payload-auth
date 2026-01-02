@@ -6,11 +6,11 @@ import { formatAdminURL } from 'payload/shared'
 import { FormHeader } from '@/shared/form/ui/header'
 import { ForgotPasswordForm } from './client'
 import { adminRoutes } from '@/better-auth/plugin/constants'
-import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+import type { PayloadAuthOptions } from '@/better-auth/plugin/types'
 import { MinimalTemplate } from '@payloadcms/next/templates'
 
 type ForgotPasswordProps = AdminViewServerProps & {
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: PayloadAuthOptions
 }
 
 const ForgotPassword: React.FC<ForgotPasswordProps> = ({ pluginOptions, initPageResult }) => {

@@ -1,11 +1,11 @@
-import type { BetterAuthPluginOptions } from '../types'
+import type { PayloadAuthOptions } from '../types'
 import { baseSlugs, baModelKeyToSlug } from '../constants'
 
 export function getDefaultCollectionSlug({
   pluginOptions,
   modelKey
 }: {
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: PayloadAuthOptions
   modelKey: string
 }): string {
   const baseSlug = baModelKeyToSlug[modelKey as keyof typeof baModelKeyToSlug] ?? modelKey

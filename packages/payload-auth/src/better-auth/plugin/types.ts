@@ -32,7 +32,7 @@ export interface BetterAuthOptions
   advanced?: Omit<NonNullable<BetterAuthOptionsType['advanced']>, 'generateId'> | undefined
 }
 
-export interface SanitizedBetterAuthOptions extends Omit<BetterAuthOptionsType, 'database'> {}
+export interface SanitizedBetterAuthOptions extends Omit<BetterAuthOptionsType, 'database'> { }
 
 export type SocialProvider = (typeof socialProviders)[number]
 
@@ -42,7 +42,7 @@ type PluginCollectionOverrides = {
   [K in keyof typeof baPluginSlugs]?: (options: { collection: CollectionConfig }) => CollectionConfig
 }
 
-export interface BetterAuthPluginOptions {
+export interface PayloadAuthOptions {
   /**
    * Disable the plugin
    * @default false
@@ -365,22 +365,22 @@ export type ConfigAdminCustom = {
 
 export interface BetterAuthPlugin {
   (config: Config): Config
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: PayloadAuthOptions
 }
 
-export interface PayloadRequestWithBetterAuth<O extends BetterAuthPluginOptions> extends PayloadRequest {
+export interface PayloadRequestWithBetterAuth<O extends PayloadAuthOptions> extends PayloadRequest {
   payload: BasePayload & {
     betterAuth: BetterAuthReturn<O>
   }
 }
 
-export type CollectionHookWithBetterAuth<O extends BetterAuthPluginOptions, T extends (args: any) => any> = T extends (
+export type CollectionHookWithBetterAuth<O extends PayloadAuthOptions, T extends (args: any) => any> = T extends (
   args: infer A
 ) => infer R
   ? (args: Omit<A, 'req'> & { req: PayloadRequestWithBetterAuth<O> }) => R
   : never
 
-export type EndpointWithBetterAuth<O extends BetterAuthPluginOptions> = Omit<Endpoint, 'handler'> & {
+export type EndpointWithBetterAuth<O extends PayloadAuthOptions> = Omit<Endpoint, 'handler'> & {
   handler: (req: PayloadRequestWithBetterAuth<O>) => Promise<Response> | Response
 }
 
@@ -388,28 +388,29 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
 type PrettifyDeep<T> = {
   [K in keyof T]: T[K] extends (...args: any[]) => any ? T[K] : T[K] extends object ? T[K] extends Array<any> ? T[K] : T[K] extends Date ? T[K] : PrettifyDeep<T[K]> : T[K];
 } & {};
+
 type InferPluginErrorCodes<O extends BetterAuthOptions> =
   O['plugins'] extends Array<infer P>
-    ? UnionToIntersection<
-        P extends BetterAuthPluginType ? (P['$ERROR_CODES'] extends Record<string, any> ? P['$ERROR_CODES'] : never) : never
-      > extends infer R
-      ? [R] extends [never]
-        ? {}
-        : R
-      : {}
-    : {}
+  ? UnionToIntersection<
+    P extends BetterAuthPluginType ? (P['$ERROR_CODES'] extends Record<string, any> ? P['$ERROR_CODES'] : never) : never
+  > extends infer R
+  ? [R] extends [never]
+  ? {}
+  : R
+  : {}
+  : {}
 
 export type RoleArray<O extends readonly string[] = readonly [typeof defaults.userRole]> = O[number][] | null
 type OverrideRole<T, O extends readonly string[]> = T extends object ? Omit<T, 'role'> & { role: RoleArray<O> } : T
-type ExtractBA<O extends BetterAuthPluginOptions> = NonNullable<O['betterAuthOptions']>
+type ExtractBA<O extends PayloadAuthOptions> = NonNullable<O['betterAuthOptions']>
 type ExtractRoles<O> = O extends { users?: { roles?: infer R } }
   ? R extends readonly string[]
-    ? R
-    : readonly []
+  ? R
+  : readonly []
   : readonly [typeof defaults.userRole]
 type BaseErrorCodes = typeof BASE_ERROR_CODES
 
-export type BetterAuthReturn<O extends BetterAuthPluginOptions = BetterAuthPluginOptions> = {
+export type BetterAuthReturn<O extends PayloadAuthOptions = PayloadAuthOptions> = {
   handler: (request: Request) => Promise<Response>
   api: InferAPI<ReturnType<typeof router<ExtractBA<O>>>>['endpoints']
   options: ExtractBA<O>
@@ -418,16 +419,16 @@ export type BetterAuthReturn<O extends BetterAuthPluginOptions = BetterAuthPlugi
   $Infer: InferPluginTypes<ExtractBA<O>> extends {
     Session: any
   }
-    ? InferPluginTypes<ExtractBA<O>>
-    : {
-        Session: {
-          session: PrettifyDeep<InferSession<ExtractBA<O>>>
-          user: OverrideRole<PrettifyDeep<InferUser<ExtractBA<O>>>, ExtractRoles<O>>
-        }
-      } & InferPluginTypes<ExtractBA<O>>
+  ? InferPluginTypes<ExtractBA<O>>
+  : {
+    Session: {
+      session: PrettifyDeep<InferSession<ExtractBA<O>>>
+      user: OverrideRole<PrettifyDeep<InferUser<ExtractBA<O>>>, ExtractRoles<O>>
+    }
+  } & InferPluginTypes<ExtractBA<O>>
 }
 
-export type BetterAuthFunctionOptions<O extends BetterAuthPluginOptions> = Omit<ExtractBA<O>, 'database' | 'plugins'> & {
+export type BetterAuthFunctionOptions<O extends PayloadAuthOptions> = Omit<ExtractBA<O>, 'database' | 'plugins'> & {
   enableDebugLogs?: boolean
   plugins: ExtractBA<O>['plugins']
 }
@@ -442,7 +443,7 @@ export type BetterAuthSchemas = Record<ModelKey, BuiltBetterAuthSchema>
 
 export interface BuildCollectionProps {
   resolvedSchemas: BetterAuthSchemas
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: PayloadAuthOptions
   incomingCollections: CollectionConfig[]
 }
 

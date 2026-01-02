@@ -1,4 +1,4 @@
-import type { BetterAuthOptions, BetterAuthPluginOptions } from 'payload-auth/better-auth'
+import type { BetterAuthOptions, PayloadAuthOptions } from 'payload-auth/better-auth'
 import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
 import {
   admin,
@@ -177,6 +177,6 @@ export const betterAuthPluginOptions = {
     }
   },
   betterAuthOptions: betterAuthOptions
-} satisfies BetterAuthPluginOptions
+} satisfies PayloadAuthOptions
 
 export type ConstructedBetterAuthPluginOptions = typeof betterAuthPluginOptions

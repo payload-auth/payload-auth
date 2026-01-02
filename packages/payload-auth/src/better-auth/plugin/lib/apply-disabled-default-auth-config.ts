@@ -1,6 +1,6 @@
 import { adminRoutes, baModelKey, baseSlugs, supportedBAPluginIds } from '../constants'
 import { checkPluginExists } from '../helpers/check-plugin-exists'
-import type { BetterAuthPluginOptions, BetterAuthSchemas } from '../types'
+import type { PayloadAuthOptions, BetterAuthSchemas } from '../types'
 import type { Config, CollectionConfig } from 'payload'
 
 /**
@@ -14,7 +14,7 @@ export function applyDisabledDefaultAuthConfig({
   resolvedBetterAuthSchemas
 }: {
   config: Config
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: PayloadAuthOptions
   collectionMap: Record<string, CollectionConfig>
   resolvedBetterAuthSchemas: BetterAuthSchemas
 }): void {
