@@ -64,7 +64,8 @@ export const supportedBAPluginIds = {
   dodopayments: 'dodopayments',
   dubAnalytics: 'dub-analytics',
   deviceAuthorization: 'device-authorization',
-  lastLoginMethod: 'last-login-method'
+  lastLoginMethod: 'last-login-method',
+  scim: 'scim'
 } as const
 
 export const baseSlugs = {
@@ -86,10 +87,13 @@ export const baPluginSlugs = {
   oauthConsents: 'oauthConsents',
   ssoProviders: 'ssoProviders',
   organizations: 'organizations',
+  organizationRoles: 'organizationRoles',
   invitations: 'invitations',
   members: 'members',
   teams: 'teams',
-  teamMembers: 'teamMembers'
+  teamMembers: 'teamMembers',
+  scim: 'scimProvider',
+  rateLimit: 'rateLimit',
 } as const
 
 export const baModelKey = {
@@ -104,6 +108,7 @@ export const baModelKey = {
   oauthConsent: 'oauthConsent',
   ssoProvider: 'ssoProvider',
   organization: 'organization',
+  organizationRole: 'organizationRole',
   invitation: 'invitation',
   member: 'member',
   team: 'team',
@@ -111,7 +116,9 @@ export const baModelKey = {
   subscription: 'subscription',
   apikey: 'apikey',
   jwks: 'jwks',
-  deviceCode: 'deviceCode'
+  deviceCode: 'deviceCode',
+  rateLimit: 'rateLimit',
+  scimProvider: 'scimProvider'
 } as const
 
 export const baModelFieldKeysToFieldNames = {
@@ -163,6 +170,9 @@ export const baModelFieldKeysToFieldNames = {
 } as const
 
 export const baModelFieldKeys = {
+  organizationRole: {
+    organizationId: 'organizationId'
+  },
   teamMember: {
     teamId: 'teamId',
     userId: 'userId'

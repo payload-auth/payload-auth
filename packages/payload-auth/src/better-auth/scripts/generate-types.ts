@@ -27,6 +27,7 @@ import {
 } from 'better-auth/plugins'
 import { nextCookies } from 'better-auth/next-js'
 import { passkey } from "@better-auth/passkey"
+import { scim } from "@better-auth/scim";
 import { sso } from '@better-auth/sso'
 import { polar, checkout } from '@polar-sh/better-auth'
 import { Polar } from '@polar-sh/sdk'
@@ -35,6 +36,17 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import Stripe from 'stripe'
+import { createAccessControl } from "better-auth/plugins/access";
+import { defaultStatements as defaultOrganizationStatements } from "better-auth/plugins/organization/access";
+import { defaultStatements as defaultAdminStatements } from "better-auth/plugins/admin/access";
+
+
+
+
+const ac = createAccessControl({
+  ...defaultOrganizationStatements,
+  ...defaultAdminStatements,
+});
 
 const client = new Polar({
   accessToken: 'pk_test_1234567890',
@@ -49,9 +61,9 @@ const plugins = [
   emailHarmony(),
   phoneHarmony(),
   bearer(),
-  emailOTP({ sendVerificationOTP: async () => {} }),
-  magicLink({ sendMagicLink: async () => {} }),
-  phoneNumber({ sendOTP: async () => {} }),
+  emailOTP({ sendVerificationOTP: async () => { } }),
+  magicLink({ sendMagicLink: async () => { } }),
+  phoneNumber({ sendOTP: async () => { } }),
   oneTap(),
   anonymous(),
   multiSession(),
@@ -60,12 +72,19 @@ const plugins = [
   sso(),
   genericOAuth({ config: [{ providerId: 'typescript', clientId: 'typescript', clientSecret: 'typescript' }] }),
   openAPI(),
-  organization({ teams: { enabled: true } }),
+  organization({
+    teams: { enabled: true },
+    ac,
+    dynamicAccessControl: {
+      enabled: true,
+    },
+  }),
   jwt(),
   twoFactor(),
   phoneNumber(),
   nextCookies(),
   customSession(async () => ({})),
+  scim(),
   mcp({ loginPage: '' }),
   deviceAuthorization(),
   lastLoginMethod({ storeInDatabase: true }),
@@ -110,6 +129,7 @@ const plugins = [
 
 const betterAuthConfig: SanitizedBetterAuthOptions = {
   emailAndPassword: { enabled: true },
+  rateLimit: { enabled: true, storage: 'database', max: 5, window: 10 },
   user: { additionalFields: { role: { type: 'string', defaultValue: 'user', input: false } } },
   plugins
 }
@@ -225,8 +245,8 @@ const gen = (): string => {
 const generated = gen()
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-;(async () => {
-  const file = path.resolve(__dirname, '../generated-types.ts')
-  await fs.writeFile(file, generated, 'utf8')
-  console.log(`Generated types written to ${file}`)
-})()
+  ; (async () => {
+    const file = path.resolve(__dirname, '../generated-types.ts')
+    await fs.writeFile(file, generated, 'utf8')
+    console.log(`Generated types written to ${file}`)
+  })()

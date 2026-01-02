@@ -6,11 +6,11 @@ import { cookies } from 'next/headers'
 import { getSafeRedirect } from '../../utils/get-safe-redirect'
 import { valueOrDefaultString } from '@/shared/utils/value-or-default'
 import { adminRoutes, supportedBAPluginIds } from '@/better-auth/plugin/constants'
-import { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+import { PayloadAuthOptions } from '@/better-auth/plugin/types'
 import { MinimalTemplate } from '@payloadcms/next/templates'
 
 interface TwoFactorVerifyProps extends AdminViewServerProps {
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: PayloadAuthOptions
   verificationsSlug: string
 }
 

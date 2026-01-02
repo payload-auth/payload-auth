@@ -1,6 +1,6 @@
-import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+import type { PayloadAuthOptions } from '@/better-auth/plugin/types'
 
-export function getAllRoleOptions(pluginOptions: BetterAuthPluginOptions) {
+export function getAllRoleOptions(pluginOptions: PayloadAuthOptions) {
   const adminRoles = pluginOptions.users?.adminRoles ?? ['admin']
   const roles = pluginOptions.users?.roles ?? ['user']
   const allRoleOptions = [...new Set([...adminRoles, ...roles])].map((role) => ({

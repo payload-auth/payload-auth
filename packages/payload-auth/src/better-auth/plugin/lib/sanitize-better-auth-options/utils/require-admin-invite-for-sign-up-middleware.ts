@@ -1,5 +1,5 @@
 import { baseSlugs } from '@/better-auth/plugin/constants'
-import { BetterAuthPluginOptions } from '@/better-auth/types'
+import { PayloadAuthOptions } from '@/better-auth/types'
 import { createAuthMiddleware } from 'better-auth/api'
 import type { Where } from 'better-auth'
 import type { SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
@@ -20,7 +20,7 @@ export const requireAdminInviteForSignUpMiddleware = async ({
   pluginOptions
 }: {
   options: SanitizedBetterAuthOptions
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: PayloadAuthOptions
 }) => {
   options.hooks = options.hooks || {}
   const originalBefore = options.hooks.before

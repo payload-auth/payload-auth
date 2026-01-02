@@ -8,13 +8,13 @@ import { RenderServerComponent } from '@payloadcms/ui/elements/RenderServerCompo
 import { adminRoutes, defaults, supportedBAPluginIds } from '@/better-auth/plugin/constants'
 import { MinimalTemplate } from '@payloadcms/next/templates'
 import { type AdminViewServerProps, type ServerProps } from 'payload'
-import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+import type { PayloadAuthOptions } from '@/better-auth/plugin/types'
 
 export const loginBaseClass = 'login'
 
 interface AdminLoginProps extends AdminViewServerProps {
   adminInvitationsSlug: string
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: PayloadAuthOptions
 }
 
 const AdminLogin: React.FC<AdminLoginProps> = async ({

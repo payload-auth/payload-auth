@@ -4,14 +4,14 @@ import { getUrlBeforeChangeHook } from './hooks/get-url-before-change'
 import { getAdminInviteUrlAfterReadHook } from './hooks/get-url-after-read'
 import { baseSlugs, defaults } from '@/better-auth/plugin/constants'
 import type { CollectionConfig } from 'payload'
-import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+import type { PayloadAuthOptions } from '@/better-auth/plugin/types'
 
 export function buildAdminInvitationsCollection({
   incomingCollections,
   pluginOptions
 }: {
   incomingCollections: CollectionConfig[]
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: PayloadAuthOptions
 }): CollectionConfig {
   const generateAdminInviteUrlFn = pluginOptions.adminInvitations?.generateInviteUrl ?? generateAdminInviteUrl
   const adminInvitationSlug = pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations

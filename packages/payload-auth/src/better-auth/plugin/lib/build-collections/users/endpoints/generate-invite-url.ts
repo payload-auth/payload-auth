@@ -1,5 +1,5 @@
 import { status as httpStatus } from 'http-status'
-import { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+import { PayloadAuthOptions } from '@/better-auth/plugin/types'
 import { addDataAndFileToRequest } from 'payload'
 import { generateAdminInviteUrl } from '@/better-auth/plugin/payload/utils/generate-admin-invite-url'
 
@@ -8,7 +8,7 @@ import { adminEndpoints, baseSlugs } from '@/better-auth/plugin/constants'
 
 type InviteEndpointProps = {
   roles: { label: string; value: string }[]
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: PayloadAuthOptions
 }
 
 export const getGenerateInviteUrlEndpoint = ({ roles, pluginOptions }: InviteEndpointProps): Endpoint => {

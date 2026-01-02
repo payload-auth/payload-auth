@@ -1,4 +1,4 @@
-import type { AdapterInstance } from 'better-auth'
+import { DBAdapterInstance } from '@better-auth/core/db/adapter';
 import type { BasePayload } from 'payload'
 
 export type PayloadAdapterParams = {
@@ -7,8 +7,6 @@ export type PayloadAdapterParams = {
     enableDebugLogs?: boolean;
     idType: 'number' | 'text';
   };
-  // enableDebugLogs?: boolean;
-  // idType: 'number' | 'text';
 }
 
-export type PayloadAdapter = (options: PayloadAdapterParams) => AdapterInstance
+export type PayloadAdapter = (options: PayloadAdapterParams) => DBAdapterInstance

@@ -6,7 +6,7 @@ import { FormHeader } from '@/shared/form/ui/header'
 import { supportedBAPluginIds } from '@/better-auth/plugin/constants'
 import { MinimalTemplate } from '@payloadcms/next/templates'
 import type { AdminViewServerProps } from 'payload'
-import type { BetterAuthPluginOptions } from '../../../types'
+import type { PayloadAuthOptions } from '../../../types'
 import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exists'
 
 //  Avoid the need for custom styles
@@ -18,7 +18,7 @@ const searchParamsSchema = z.object({
 
 interface AdminSignupProps extends AdminViewServerProps {
   adminInvitationsSlug: string
-  pluginOptions: BetterAuthPluginOptions
+  pluginOptions: PayloadAuthOptions
 }
 
 const AdminSignup: React.FC<AdminSignupProps> = async ({

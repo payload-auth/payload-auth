@@ -2,14 +2,14 @@ import { addDataAndFileToRequest, Endpoint, headersWithCors, killTransaction } f
 import { status as httpStatus } from 'http-status'
 import { z } from 'zod'
 import { adminEndpoints } from '@/better-auth/plugin/constants'
-import type { BetterAuthPluginOptions } from '@/better-auth/plugin/types'
+import type { PayloadAuthOptions } from '@/better-auth/plugin/types'
 
 const requestSchema = z.object({
   email: z.string().email(),
   link: z.string()
 })
 
-export const getSendInviteUrlEndpoint = (pluginOptions: BetterAuthPluginOptions): Endpoint => {
+export const getSendInviteUrlEndpoint = (pluginOptions: PayloadAuthOptions): Endpoint => {
   const endpoint: Endpoint = {
     path: adminEndpoints.sendInvite,
     method: 'post',

@@ -8,7 +8,7 @@ import { buildCollections } from './lib/build-collections/index'
 import { initBetterAuth } from './lib/init-better-auth'
 import { sanitizeBetterAuthOptions } from './lib/sanitize-better-auth-options/index'
 import { setLoginMethods } from './lib/set-login-methods'
-import type { BetterAuthPluginOptions } from './types'
+import type { PayloadAuthOptions } from './types'
 import { set } from './utils/set'
 
 export * from './helpers/index'
@@ -16,7 +16,7 @@ export { getPayloadAuth } from './lib/get-payload-auth'
 export { sanitizeBetterAuthOptions } from './lib/sanitize-better-auth-options/index'
 export * from './types'
 
-function buildBetterAuthData({ payloadConfig, pluginOptions }: { payloadConfig: SanitizedConfig; pluginOptions: BetterAuthPluginOptions }) {
+function buildBetterAuthData({ payloadConfig, pluginOptions }: { payloadConfig: SanitizedConfig; pluginOptions: PayloadAuthOptions }) {
   pluginOptions = setLoginMethods({ pluginOptions })
 
   const defaultBetterAuthSchemas = getDefaultBetterAuthSchema(pluginOptions)
@@ -55,7 +55,7 @@ function buildBetterAuthData({ payloadConfig, pluginOptions }: { payloadConfig: 
   }
 }
 
-export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
+export function betterAuthPlugin(pluginOptions: PayloadAuthOptions) {
   return (config: Config): Config => {
     if (pluginOptions.disabled) {
       return config
@@ -70,8 +70,6 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
       payloadConfig: config as SanitizedConfig,
       pluginOptions
     })
-
-    set(config, 'custom.betterAuth.config', sanitizedBetterAuthOptions)
 
     // ---------------------- Finalize config -----------------
     if (pluginOptions.disableDefaultPayloadAuth) {
@@ -117,27 +115,7 @@ export function betterAuthPlugin(pluginOptions: BetterAuthPluginOptions) {
         throw error
       }
     }
+
     return config
   }
-}
-
-export function withPayloadAuth({ payloadConfig }: { payloadConfig: SanitizedConfig }): BetterAuthOptions {
-  const betterAuthConfig = payloadConfig.custom.betterAuth.config as BetterAuthOptions
-
-  if (!betterAuthConfig) {
-    throw new Error('BetterAuth config not found. Not set payloadConfig.custom.betterAuth.config')
-  }
-
-  const optionsWithAdapter: BetterAuthOptions = {
-    ...betterAuthConfig,
-    database: payloadAdapter({
-      payloadClient: async () => await getPayload({ config: payloadConfig }),
-      adapterConfig: {
-        enableDebugLogs: false,
-        idType: payloadConfig.db.defaultIDType
-      }
-    })
-  }
-
-  return optionsWithAdapter
 }
