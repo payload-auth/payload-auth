@@ -112,14 +112,9 @@ export const createLoginSchema = ({
         return {
           message: isProbablyEmail
             ? t('authentication:emailNotValid') || 'Email is not valid'
-            : loginType === 'username'
-              ? t('authentication:usernameNotValid') || 'Username is not valid'
-              : val.includes('@') || !canLoginWithUsername
-                ? t('authentication:emailNotValid') || 'Email is not valid'
-                : t('authentication:usernameNotValid') || 'Username is not valid'
-
-      ctx.addIssue({ code: 'custom', message: message || 'Invalid login value' })
-    }),
+            : t('authentication:usernameNotValid') || 'Username is not valid'
+        }
+      }),
     password: passwordField({ t })
   })
 
