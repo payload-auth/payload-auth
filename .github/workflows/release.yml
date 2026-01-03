@@ -57,7 +57,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       # Build the specific package required for release
       - name: Build payload-auth package
