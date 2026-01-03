@@ -198,7 +198,7 @@ const config = {
     [
       '@semantic-release/npm',
       {
-        pkgRoot: 'packages/payload-auth',
+        pkgRoot: './packages/payload-auth',
         npmPublish: true,
       }
     ],
