@@ -5,13 +5,13 @@ on:
     branches:
       - main # Trigger on pushes to the main branch
     paths:
-      - 'packages/**' # Only trigger when files in packages directory change
+      - "packages/**" # Only trigger when files in packages directory change
   workflow_dispatch:
     inputs:
       package:
-        description: 'Package to release'
+        description: "Package to release"
         required: false
-        default: 'payload-auth'
+        default: "payload-auth"
 jobs:
   commitlint:
     name: Lint Commit Messages
@@ -32,8 +32,9 @@ jobs:
     name: Publish Release
     needs: commitlint
     runs-on: ubuntu-latest
+
     permissions:
-      id-token: write  # Required for OIDC
+      id-token: write # Required for OIDC
       contents: write # Needed by semantic-release to create releases, push tags/commits
       issues: write # Needed by semantic-release to comment on issues/PRs (optional but recommended)
       pull-requests: write
@@ -54,10 +55,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: 'pnpm'
-
-      - name: Unset NODE_AUTH_TOKEN for OIDC
-        run: unset NODE_AUTH_TOKEN || true
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
@@ -69,9 +68,6 @@ jobs:
       # Create an archive of the distribution files
       - name: Archive distribution files
         run: (cd packages/payload-auth/dist && zip -r ../../../payload-auth-distribution.zip .)
-
-      - name: Remove .npmrc
-        run: rm -f .npmrc
 
       - name: Release
         env:
