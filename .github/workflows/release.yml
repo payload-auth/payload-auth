@@ -58,6 +58,9 @@ jobs:
           cache: "pnpm"
           registry-url: "https://registry.npmjs.org"
 
+      - name: Downgrade npm to fix workspace bug
+        run: npm install -g npm@10.8.2
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
@@ -69,19 +72,15 @@ jobs:
       - name: Archive distribution files
         run: (cd packages/payload-auth/dist && zip -r ../../../payload-auth-distribution.zip .)
 
-      - name: Remove .npmrc
-        run: rm -f .npmrc
-
-      - name: Temporarily remove pnpm-workspace.yaml
-        run: mv ./pnpm-workspace.yaml ./pnpm-workspace.yaml.bak
+        # Remove pnpm files to isolate from workspace
+      - name: Isolate from pnpm workspace
+        run: |
+          rm -f pnpm-lock.yaml
+          rm -f pnpm-workspace.yaml
 
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_LEGACY_PEER_DEPS: true
           NODE_AUTH_TOKEN: ""
-        run: node ./node_modules/semantic-release/bin/semantic-release.js
-        # Restore workspace file (runs even if release fails)
-      - name: Restore pnpm-workspace.yaml
-        if: always()
-        run: mv ./pnpm-workspace.yaml.bak ./pnpm-workspace.yaml || true
+        run: npx semantic-release
