@@ -72,9 +72,16 @@ jobs:
       - name: Remove .npmrc
         run: rm -f .npmrc
 
+      - name: Temporarily remove pnpm-workspace.yaml
+        run: mv ./pnpm-workspace.yaml ./pnpm-workspace.yaml.bak
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_LEGACY_PEER_DEPS: true
           NODE_AUTH_TOKEN: ""
         run: node ./node_modules/semantic-release/bin/semantic-release.js
+        # Restore workspace file (runs even if release fails)
+      - name: Restore pnpm-workspace.yaml
+        if: always()
+        run: mv ./pnpm-workspace.yaml.bak ./pnpm-workspace.yaml || true
