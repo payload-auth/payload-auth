@@ -19,7 +19,6 @@
 import type { BetterAuthOptions } from "better-auth";
 import { getAuthTables } from "better-auth/db";
 import type { CollectionConfig, Field } from "payload";
-import { format } from "prettier";
 
 export const generateSchemaBuilderStage = async ({
   BAOptions,
@@ -28,6 +27,8 @@ export const generateSchemaBuilderStage = async ({
   code: string;
   BAOptions: BetterAuthOptions;
 }) => {
+  const { format } = await import("prettier");
+  
   const formattedCode = await format(code, { filepath: "schema.ts" });
 
   const { post, collections } = parseExistingSchema(formattedCode);
