@@ -186,7 +186,7 @@ const config = {
     //       'echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc && cd packages/payload-auth && (npm view payload-auth@${nextRelease.version} version >/dev/null 2>&1 && echo "Version ${nextRelease.version} already published, skipping npm publish" || npm publish --access public --tag ${nextRelease.channel || "latest"})'
     //   }
     // ],
-    // [
+    [
       '@semantic-release/exec',
       {
         prepareCmd:
