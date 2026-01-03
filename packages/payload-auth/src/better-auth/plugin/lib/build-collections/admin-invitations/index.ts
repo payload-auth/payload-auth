@@ -1,40 +1,44 @@
-import { isAdminWithRoles } from '../utils/payload-access'
-import { generateAdminInviteUrl } from '../../../payload/utils/generate-admin-invite-url'
-import { getUrlBeforeChangeHook } from './hooks/get-url-before-change'
-import { getAdminInviteUrlAfterReadHook } from './hooks/get-url-after-read'
-import { baseSlugs, defaults } from '@/better-auth/plugin/constants'
-import type { CollectionConfig } from 'payload'
-import type { PayloadAuthOptions } from '@/better-auth/plugin/types'
+import type { CollectionConfig } from "payload";
+import { baseSlugs, defaults } from "@/better-auth/plugin/constants";
+import type { PayloadAuthOptions } from "@/better-auth/plugin/types";
+import { generateAdminInviteUrl } from "../../../payload/utils/generate-admin-invite-url";
+import { isAdminWithRoles } from "../utils/payload-access";
+import { getAdminInviteUrlAfterReadHook } from "./hooks/get-url-after-read";
+import { getUrlBeforeChangeHook } from "./hooks/get-url-before-change";
 
 export function buildAdminInvitationsCollection({
   incomingCollections,
   pluginOptions
 }: {
-  incomingCollections: CollectionConfig[]
-  pluginOptions: PayloadAuthOptions
+  incomingCollections: CollectionConfig[];
+  pluginOptions: PayloadAuthOptions;
 }): CollectionConfig {
-  const generateAdminInviteUrlFn = pluginOptions.adminInvitations?.generateInviteUrl ?? generateAdminInviteUrl
-  const adminInvitationSlug = pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations
-  const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole]
-  const roles = pluginOptions.users?.roles ?? [defaults.userRole]
-  const allRoleOptions = [...new Set([...adminRoles, ...roles])].map((role) => ({
-    label: role
-      .split(/[-_\s]/)
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' '),
-    value: role
-  }))
-  const existingAdminInvitationCollection = incomingCollections.find((collection) => collection.slug === adminInvitationSlug) as
-    | CollectionConfig
-    | undefined
+  const generateAdminInviteUrlFn =
+    pluginOptions.adminInvitations?.generateInviteUrl ?? generateAdminInviteUrl;
+  const adminInvitationSlug =
+    pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations;
+  const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole];
+  const roles = pluginOptions.users?.roles ?? [defaults.userRole];
+  const allRoleOptions = [...new Set([...adminRoles, ...roles])].map(
+    (role) => ({
+      label: role
+        .split(/[-_\s]/)
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" "),
+      value: role
+    })
+  );
+  const existingAdminInvitationCollection = incomingCollections.find(
+    (collection) => collection.slug === adminInvitationSlug
+  ) as CollectionConfig | undefined;
 
   let adminInvitationsCollection: CollectionConfig = {
     ...existingAdminInvitationCollection,
     slug: adminInvitationSlug,
     admin: {
-      defaultColumns: ['role', 'token', 'url'],
-      useAsTitle: 'token',
-      group: pluginOptions?.collectionAdminGroup ?? 'Auth',
+      defaultColumns: ["role", "token", "url"],
+      useAsTitle: "token",
+      group: pluginOptions?.collectionAdminGroup ?? "Auth",
       hidden: pluginOptions.adminInvitations?.hidden,
       ...existingAdminInvitationCollection?.admin
     },
@@ -48,24 +52,25 @@ export function buildAdminInvitationsCollection({
     timestamps: true,
     fields: [
       {
-        label: 'Role',
-        name: 'role',
-        type: 'select',
+        label: "Role",
+        name: "role",
+        type: "select",
         options: allRoleOptions,
         required: true,
-        defaultValue: pluginOptions.users?.defaultAdminRole ?? defaults.adminRole
+        defaultValue:
+          pluginOptions.users?.defaultAdminRole ?? defaults.adminRole
       },
       {
-        name: 'token',
-        label: 'Token',
+        name: "token",
+        label: "Token",
         index: true,
-        type: 'text',
+        type: "text",
         admin: {
           readOnly: true,
           components: {
             afterInput: [
               {
-                path: 'payload-auth/shared/payload/fields#GenerateUuidButton'
+                path: "payload-auth/shared/payload/fields#GenerateUuidButton"
               }
             ]
           }
@@ -73,9 +78,9 @@ export function buildAdminInvitationsCollection({
         required: true
       },
       {
-        name: 'url',
-        label: 'URL',
-        type: 'text',
+        name: "url",
+        label: "URL",
+        type: "text",
         hooks: {
           beforeChange: [getUrlBeforeChangeHook()],
           afterRead: [
@@ -89,7 +94,7 @@ export function buildAdminInvitationsCollection({
           components: {
             afterInput: [
               {
-                path: 'payload-auth/shared/payload/fields#FieldCopyButton'
+                path: "payload-auth/shared/payload/fields#FieldCopyButton"
               }
             ]
           }
@@ -97,13 +102,14 @@ export function buildAdminInvitationsCollection({
         virtual: true
       }
     ]
-  }
+  };
 
   if (pluginOptions.adminInvitations?.collectionOverrides) {
-    adminInvitationsCollection = pluginOptions.adminInvitations.collectionOverrides({
-      collection: adminInvitationsCollection
-    })
+    adminInvitationsCollection =
+      pluginOptions.adminInvitations.collectionOverrides({
+        collection: adminInvitationsCollection
+      });
   }
 
-  return adminInvitationsCollection
+  return adminInvitationsCollection;
 }

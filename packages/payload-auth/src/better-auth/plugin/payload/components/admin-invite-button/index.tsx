@@ -1,27 +1,35 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { usePathname } from 'next/navigation'
-import { Copy, Loader2, XIcon } from 'lucide-react'
-import type { Option } from '@payloadcms/ui/elements/ReactSelect'
-import { Button, Modal, Select, TextInput, toast, useConfig, useModal } from '@payloadcms/ui'
-import { adminEndpoints } from '@/better-auth/plugin/constants'
+import {
+  Button,
+  Modal,
+  Select,
+  TextInput,
+  toast,
+  useConfig,
+  useModal
+} from "@payloadcms/ui";
+import type { Option } from "@payloadcms/ui/elements/ReactSelect";
+import { Copy, Loader2, XIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
+import React, { useState } from "react";
+import { adminEndpoints } from "@/better-auth/plugin/constants";
 
-import './index.scss'
+import "./index.scss";
 
-const baseClass = 'admin-invite-modal'
+const baseClass = "admin-invite-modal";
 
-type AdminInviteButtonProps = {
-  roles: { label: string; value: string }[]
+interface AdminInviteButtonProps {
+  roles: { label: string; value: string }[];
 }
 
-export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) => {
-  const [role, setRole] = useState<Option | undefined>(undefined)
-  const [email, setEmail] = useState('')
-  const [inviteLink, setInviteLink] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [isCopyLoading, setIsCopyLoading] = useState(false)
-  const { toggleModal } = useModal()
+export function AdminInviteButton({ roles }: AdminInviteButtonProps) {
+  const [role, setRole] = useState<Option | undefined>(undefined);
+  const [email, setEmail] = useState("");
+  const [inviteLink, setInviteLink] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCopyLoading, setIsCopyLoading] = useState(false);
+  const { toggleModal } = useModal();
 
   const {
     config: {
@@ -29,119 +37,144 @@ export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) =
       routes: { api: apiRoute, admin: adminRoute },
       admin: { user: userSlug }
     }
-  } = useConfig()
+  } = useConfig();
 
   // Only render invite button in list view.
-  const pathname = usePathname()
-  if (pathname !== `${adminRoute}/collections/${userSlug}`) return null
+  const pathname = usePathname();
+  if (pathname !== `${adminRoute}/collections/${userSlug}`) return null;
 
   const handleGenerateInvite = async () => {
     if (!role) {
-      toast.error('Please select a role first')
-      return null
+      toast.error("Please select a role first");
+      return null;
     }
 
     try {
-      const url = `${serverURL}${apiRoute}/${userSlug}${adminEndpoints.generateInviteUrl}`
+      const url = `${serverURL}${apiRoute}/${userSlug}${adminEndpoints.generateInviteUrl}`;
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({ role }),
-        credentials: 'include'
-      })
-      if (!response.ok) throw new Error('Failed to generate invite')
-      const data = await response.json()
-      setInviteLink(data.inviteLink)
-      return data.inviteLink
+        credentials: "include"
+      });
+      if (!response.ok) throw new Error("Failed to generate invite");
+      const data = await response.json();
+      setInviteLink(data.inviteLink);
+      return data.inviteLink;
     } catch (error) {
-      toast.error('Failed to generate invite link')
-      return null
+      toast.error("Failed to generate invite link");
+      return null;
     }
-  }
+  };
 
   const handleSendEmail = async () => {
     if (!role) {
-      toast.error('Please select a role first')
-      return
+      toast.error("Please select a role first");
+      return;
     }
 
     if (!email) {
-      toast.error('Please enter an email address')
-      return
+      toast.error("Please enter an email address");
+      return;
     }
 
     try {
-      setIsLoading(true)
-      let linkToCopy = inviteLink
+      setIsLoading(true);
+      let linkToCopy = inviteLink;
       if (!linkToCopy) {
-        linkToCopy = await handleGenerateInvite()
+        linkToCopy = await handleGenerateInvite();
       }
       if (linkToCopy) {
-        const response = await fetch(`${serverURL}${apiRoute}/${userSlug}${adminEndpoints.sendInvite}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ email, link: linkToCopy }),
-          credentials: 'include'
-        })
-        if (!response.ok) throw new Error('Failed to send invite')
-        toast.success('Invite sent successfully')
-        handleToggleModal()
+        const response = await fetch(
+          `${serverURL}${apiRoute}/${userSlug}${adminEndpoints.sendInvite}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, link: linkToCopy }),
+            credentials: "include"
+          }
+        );
+        if (!response.ok) throw new Error("Failed to send invite");
+        toast.success("Invite sent successfully");
+        handleToggleModal();
       }
     } catch (error) {
-      toast.error('Failed to send invite email')
+      toast.error("Failed to send invite email");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleCopyLink = async () => {
     if (!role) {
-      toast.error('Please select a role first')
-      return
+      toast.error("Please select a role first");
+      return;
     }
 
     try {
-      setIsCopyLoading(true)
-      let linkToCopy = inviteLink
+      setIsCopyLoading(true);
+      let linkToCopy = inviteLink;
 
       if (!linkToCopy) {
-        linkToCopy = await handleGenerateInvite()
+        linkToCopy = await handleGenerateInvite();
       }
 
       if (linkToCopy) {
-        await navigator.clipboard.writeText(linkToCopy)
-        toast.success('Invite link copied to clipboard')
-        toggleModal('admin-invite-modal')
+        await navigator.clipboard.writeText(linkToCopy);
+        toast.success("Invite link copied to clipboard");
+        toggleModal("admin-invite-modal");
       }
     } catch (error) {
-      toast.error('Failed to copy invite link')
+      toast.error("Failed to copy invite link");
     } finally {
-      setIsCopyLoading(false)
+      setIsCopyLoading(false);
     }
-  }
+  };
 
   const handleToggleModal = () => {
-    toggleModal('admin-invite-modal')
-  }
+    toggleModal("admin-invite-modal");
+  };
 
   return (
     <>
-      <Button onClick={handleToggleModal} type="button" size="small" buttonStyle="pill" className="admin-invite-button">
+      <Button
+        onClick={handleToggleModal}
+        type="button"
+        size="small"
+        buttonStyle="pill"
+        className="admin-invite-button"
+      >
         Invite User
       </Button>
       <Modal slug="admin-invite-modal" className={`${baseClass}`} closeOnBlur>
         <div className={`${baseClass}__wrapper`}>
-          <Button onClick={handleToggleModal} buttonStyle="icon-label" size="small" className={`${baseClass}__close-button`}>
+          <Button
+            onClick={handleToggleModal}
+            buttonStyle="icon-label"
+            size="small"
+            className={`${baseClass}__close-button`}
+          >
             <XIcon size={24} />
           </Button>
-          <div className={`${baseClass}__content`} style={{ maxWidth: '38rem' }}>
+          <div
+            className={`${baseClass}__content`}
+            style={{ maxWidth: "38rem" }}
+          >
             <h2>Invite User</h2>
-            <p>Invite a user to your application. Select the role of the user and send the invite via email or copy the invite link.</p>
-            <Select options={roles} value={role} placeholder="Select Role" onChange={(option: any) => setRole(option)} />
+            <p>
+              Invite a user to your application. Select the role of the user and
+              send the invite via email or copy the invite link.
+            </p>
+            <Select
+              options={roles}
+              value={role}
+              placeholder="Select Role"
+              onChange={(option: any) => setRole(option)}
+            />
 
             <div className={`${baseClass}__invite-controls`}>
               <div className={`${baseClass}__email-field`}>
@@ -155,8 +188,14 @@ export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) =
               </div>
 
               <div className={`${baseClass}__buttons`}>
-                <Button type="button" onClick={handleSendEmail} disabled={isLoading || !role || !email}>
-                  {isLoading ? <Loader2 size={24} className="mr-2 animate-spin" /> : null}
+                <Button
+                  type="button"
+                  onClick={handleSendEmail}
+                  disabled={isLoading || !role || !email}
+                >
+                  {isLoading ? (
+                    <Loader2 size={24} className="mr-2 animate-spin" />
+                  ) : null}
                   Send Email
                 </Button>
 
@@ -166,8 +205,17 @@ export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) =
                   className={`${baseClass}__copy-button`}
                   type="button"
                   onClick={handleCopyLink}
-                  disabled={isCopyLoading || !role}>
-                  {isCopyLoading ? <Loader2 size={20} strokeWidth={1.5} className="animate-spin" /> : <Copy size={20} strokeWidth={1.5} />}
+                  disabled={isCopyLoading || !role}
+                >
+                  {isCopyLoading ? (
+                    <Loader2
+                      size={20}
+                      strokeWidth={1.5}
+                      className="animate-spin"
+                    />
+                  ) : (
+                    <Copy size={20} strokeWidth={1.5} />
+                  )}
                   Generate Link
                 </Button>
               </div>
@@ -176,5 +224,5 @@ export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({ roles }) =
         </div>
       </Modal>
     </>
-  )
+  );
 }

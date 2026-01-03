@@ -1,8 +1,14 @@
-import type { Session, User } from 'better-auth'
-import type { CollectionConfig } from 'payload'
-import { getFieldsToSign } from 'payload'
+import type { Session, User } from "better-auth";
+import type { CollectionConfig } from "payload";
+import { getFieldsToSign } from "payload";
 
-export async function prepareUser({ user, userCollection }: { user: User & Record<string, any>; userCollection: CollectionConfig }) {
+export async function prepareUser({
+  user,
+  userCollection
+}: {
+  user: User & Record<string, any>;
+  userCollection: CollectionConfig;
+}) {
   const newUser = getFieldsToSign({
     collectionConfig: userCollection,
     email: user.email,
@@ -10,34 +16,34 @@ export async function prepareUser({ user, userCollection }: { user: User & Recor
       ...user,
       collection: userCollection.slug
     }
-  })
+  });
 
-  return newUser as User & Record<string, any>
+  return newUser as User & Record<string, any>;
 }
 
 export async function prepareSession({
   session,
   sessionCollection
 }: {
-  session: Session & Record<string, any>
-  sessionCollection: CollectionConfig
+  session: Session & Record<string, any>;
+  sessionCollection: CollectionConfig;
 }) {
   const filteredSession = getFieldsToSign({
     collectionConfig: sessionCollection,
-    email: '',
+    email: "",
     user: {
       ...session,
       collection: sessionCollection.slug
     }
-  })
+  });
 
-  delete filteredSession.email
-  delete filteredSession.collection
+  delete filteredSession.email;
+  delete filteredSession.collection;
   Object.assign(filteredSession, {
     userId: session.userId
-  })
+  });
 
-  return filteredSession as Session & Record<string, any>
+  return filteredSession as Session & Record<string, any>;
 }
 
 /**
@@ -50,21 +56,27 @@ export async function prepareSessionData({
   sessionsCollection
 }: {
   sessionData: {
-    session: Session & Record<string, any>
-    user: User & Record<string, any>
-  }
-  usersCollection: CollectionConfig
-  sessionsCollection: CollectionConfig
+    session: Session & Record<string, any>;
+    user: User & Record<string, any>;
+  };
+  usersCollection: CollectionConfig;
+  sessionsCollection: CollectionConfig;
 }) {
-  if (!sessionData || !sessionData.user) return null
+  if (!sessionData || !sessionData.user) return null;
 
-  const newUser = await prepareUser({ user: sessionData.user, userCollection: usersCollection })
-  const newSession = await prepareSession({ session: sessionData.session, sessionCollection: sessionsCollection })
+  const newUser = await prepareUser({
+    user: sessionData.user,
+    userCollection: usersCollection
+  });
+  const newSession = await prepareSession({
+    session: sessionData.session,
+    sessionCollection: sessionsCollection
+  });
 
   const newSessionData = {
     session: newSession,
     user: newUser
-  }
+  };
 
-  return newSessionData
+  return newSessionData;
 }

@@ -1,46 +1,61 @@
-import { redirect } from 'next/navigation'
-import type { AdminViewServerProps } from 'payload'
-import React from 'react'
-import { TwoFactorVerifyForm } from './client'
-import { cookies } from 'next/headers'
-import { getSafeRedirect } from '../../utils/get-safe-redirect'
-import { valueOrDefaultString } from '@/shared/utils/value-or-default'
-import { adminRoutes, supportedBAPluginIds } from '@/better-auth/plugin/constants'
-import { PayloadAuthOptions } from '@/better-auth/plugin/types'
-import { MinimalTemplate } from '@payloadcms/next/templates'
+import { MinimalTemplate } from "@payloadcms/next/templates";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import type { AdminViewServerProps } from "payload";
+import React from "react";
+import {
+  adminRoutes,
+  supportedBAPluginIds
+} from "@/better-auth/plugin/constants";
+import { PayloadAuthOptions } from "@/better-auth/plugin/types";
+import { valueOrDefaultString } from "@/shared/utils/value-or-default";
+import { getSafeRedirect } from "../../utils/get-safe-redirect";
+import { TwoFactorVerifyForm } from "./client";
 
 interface TwoFactorVerifyProps extends AdminViewServerProps {
-  pluginOptions: PayloadAuthOptions
-  verificationsSlug: string
+  pluginOptions: PayloadAuthOptions;
+  verificationsSlug: string;
 }
 
-const TwoFactorVerify: React.FC<TwoFactorVerifyProps> = async ({ searchParams, initPageResult, pluginOptions, verificationsSlug }) => {
-  const { req } = initPageResult
+async function TwoFactorVerify({
+  searchParams,
+  initPageResult,
+  pluginOptions,
+  verificationsSlug
+}: TwoFactorVerifyProps) {
+  const { req } = initPageResult;
   const {
     payload: { config },
     payload
-  } = req
+  } = req;
 
   const {
     admin: {
       routes: { login }
     },
     routes: { admin: adminRoute }
-  } = config
-  const cookieStore = await cookies()
-  const loginRoute = valueOrDefaultString(login, adminRoutes.adminLogin)
-  const redirectUrl = getSafeRedirect(searchParams?.redirect as string, adminRoute)
+  } = config;
+  const cookieStore = await cookies();
+  const loginRoute = valueOrDefaultString(login, adminRoutes.adminLogin);
+  const redirectUrl = getSafeRedirect(
+    searchParams?.redirect as string,
+    adminRoute
+  );
 
   const twoFactorOptions =
-    pluginOptions.betterAuthOptions?.plugins?.find((plugin) => plugin.id === supportedBAPluginIds.twoFactor)?.options ?? {}
+    pluginOptions.betterAuthOptions?.plugins?.find(
+      (plugin) => plugin.id === supportedBAPluginIds.twoFactor
+    )?.options ?? {};
 
-  const twoFactorCookie = cookieStore.get(`${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}better-auth.two_factor`)?.value
+  const twoFactorCookie = cookieStore.get(
+    `${process.env.NODE_ENV === "production" ? "__Secure-" : ""}better-auth.two_factor`
+  )?.value;
   if (!twoFactorCookie) {
-    redirect(`${adminRoute}${loginRoute}`)
+    redirect(`${adminRoute}${loginRoute}`);
   }
-  const twoFactorVerifyToken = twoFactorCookie.split('.').at(0)
+  const twoFactorVerifyToken = twoFactorCookie.split(".").at(0);
   if (!twoFactorVerifyToken) {
-    redirect(`${adminRoute}${loginRoute}`)
+    redirect(`${adminRoute}${loginRoute}`);
   }
   const { totalDocs: isValidTwoFactorToken } = await payload.count({
     collection: verificationsSlug,
@@ -49,9 +64,9 @@ const TwoFactorVerify: React.FC<TwoFactorVerifyProps> = async ({ searchParams, i
         equals: twoFactorVerifyToken
       }
     }
-  })
+  });
   if (!isValidTwoFactorToken) {
-    redirect(`${adminRoute}${loginRoute}`)
+    redirect(`${adminRoute}${loginRoute}`);
   }
 
   return (
@@ -63,7 +78,7 @@ const TwoFactorVerify: React.FC<TwoFactorVerifyProps> = async ({ searchParams, i
         basePath={pluginOptions.betterAuthOptions?.basePath}
       />
     </MinimalTemplate>
-  )
+  );
 }
 
-export default TwoFactorVerify
+export default TwoFactorVerify;

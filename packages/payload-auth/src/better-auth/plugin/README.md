@@ -2,7 +2,7 @@
 > This plugin is currently in beta.
 > If you encounter any issues, please report them in the [Issues](https://github.com/forrestdevs/payload-better-auth/issues) section.
 
-# @payload-better-auth/plugin
+# payload-auth
 
 A plugin for [Payload CMS](https://payloadcms.com) that integrates with [Better Auth](https://github.com/better-auth/better-auth) to provide enhanced authentication capabilities for your Payload applications.
 

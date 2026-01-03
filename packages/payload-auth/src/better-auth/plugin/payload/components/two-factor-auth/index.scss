@@ -27,7 +27,7 @@
       background-color: var(--theme-elevation-50);
       min-width: 340px;
       max-width: 90vw;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
     }
 
     &__close-button {
@@ -36,6 +36,7 @@
       right: 0;
       margin-block: 0 !important;
       padding: 10px !important;
+
       svg {
         width: 24px;
         height: 24px;
@@ -47,11 +48,13 @@
       flex-direction: column;
       gap: 1.5rem;
       padding: 1.5rem 1.5rem 1rem 1.5rem;
+
       h2 {
         font-size: 1.5rem;
         font-weight: 600;
         margin: 0;
       }
+
       p {
         margin: 0;
         color: var(--theme-elevation-500);
@@ -66,7 +69,7 @@
     }
 
     &__backup-codes {
-      > ul {
+      >ul {
         padding: 1rem;
         background-color: var(--theme-elevation-50);
         border: 1px solid var(--theme-elevation-100);
@@ -110,4 +113,4 @@
       vertical-align: middle;
     }
   }
-} 
+}

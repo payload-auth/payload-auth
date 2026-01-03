@@ -1,17 +1,17 @@
-import React, { type ComponentPropsWithoutRef } from 'react'
+import React from "react";
 
-import './index.scss'
+import "./index.scss";
 
-const baseClass = 'form-header'
+const baseClass = "form-header";
 
-type Props = ComponentPropsWithoutRef<'div'> & {
-  description?: React.ReactNode | string
-  heading: string
+interface Props extends React.ComponentProps<"div"> {
+  description?: React.ReactNode | string;
+  heading: string;
 }
 
-const FormHeader: React.FC<Props> = ({ description, heading, ...props }) => {
+export function FormHeader({ description, heading, ...props }: Props) {
   if (!heading) {
-    return null
+    return null;
   }
 
   return (
@@ -19,7 +19,5 @@ const FormHeader: React.FC<Props> = ({ description, heading, ...props }) => {
       <h1>{heading}</h1>
       {Boolean(description) && <p>{description}</p>}
     </div>
-  )
+  );
 }
-
-export { FormHeader }

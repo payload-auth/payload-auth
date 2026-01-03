@@ -30,13 +30,13 @@
   z-index: 3;
 }
 
-.field-copy-text__tooltip[data-visible='true'] {
+.field-copy-text__tooltip[data-visible="true"] {
   opacity: 1;
   transform: translateX(50%) translateY(0);
 }
 
 .field-copy-text__tooltip::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 100%;
   left: 50%;

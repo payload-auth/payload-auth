@@ -1,27 +1,31 @@
-'use client'
+"use client";
 
-import React, { useMemo } from 'react'
-import { z } from 'zod'
-import { Form, FormInputWrap } from '@/shared/form/ui'
-import { useRouter } from 'next/navigation.js'
-import { formatAdminURL } from 'payload/shared'
-import { createAuthClient } from 'better-auth/react'
-import { useAuth, useConfig, useTranslation, toast } from '@payloadcms/ui'
-import { useAppForm } from '@/shared/form'
+import { toast, useAuth, useConfig, useTranslation } from "@payloadcms/ui";
+import { createAuthClient } from "better-auth/react";
+import { useRouter } from "next/navigation.js";
+import { formatAdminURL } from "payload/shared";
+import React, { useMemo } from "react";
+import { z } from "zod";
+import { useAppForm } from "@/shared/form";
+import { Form, FormInputWrap } from "@/shared/form/ui";
 
-type PasswordResetFormArgs = {
-  readonly token: string
-  readonly minPasswordLength?: number
-  readonly maxPasswordLength?: number
-  readonly baseURL?: string
-  readonly basePath?: string
+interface PasswordResetFormProps {
+  readonly token: string;
+  readonly minPasswordLength?: number;
+  readonly maxPasswordLength?: number;
+  readonly baseURL?: string;
+  readonly basePath?: string;
 }
 
-export const PasswordResetForm: React.FC<PasswordResetFormArgs> = ({ token, baseURL, basePath }) => {
-  const { t } = useTranslation()
-  const history = useRouter()
-  const { fetchFullUser } = useAuth()
-  const authClient = useMemo(() => createAuthClient({ baseURL, basePath }), [])
+export function PasswordResetForm({
+  token,
+  baseURL,
+  basePath
+}: PasswordResetFormProps) {
+  const { t } = useTranslation();
+  const history = useRouter();
+  const { fetchFullUser } = useAuth();
+  const authClient = useMemo(() => createAuthClient({ baseURL, basePath }), []);
   const {
     config: {
       admin: {
@@ -29,86 +33,110 @@ export const PasswordResetForm: React.FC<PasswordResetFormArgs> = ({ token, base
       },
       routes: { admin: adminRoute }
     }
-  } = useConfig()
+  } = useConfig();
 
   const resetPasswordSchema = z
     .object({
-      password: z.string().min(1, t('validation:required') || 'Password is required'),
-      confirmPassword: z.string().min(1, t('validation:required') || 'Confirm password is required')
+      password: z
+        .string()
+        .min(1, t("validation:required") || "Password is required"),
+      confirmPassword: z
+        .string()
+        .min(1, t("validation:required") || "Confirm password is required")
     })
     .refine(
       (data) => {
         // Only validate matching passwords if both fields have values
         if (data.password && data.confirmPassword) {
-          return data.password === data.confirmPassword
+          return data.password === data.confirmPassword;
         }
         // If one or both fields are empty, validation will be handled by the min(1) validators
-        return true
+        return true;
       },
       {
-        message: t('fields:passwordsDoNotMatch') || 'Passwords do not match',
-        path: ['confirmPassword']
+        message: t("fields:passwordsDoNotMatch") || "Passwords do not match",
+        path: ["confirmPassword"]
       }
-    )
+    );
 
   const form = useAppForm({
     defaultValues: {
-      password: '',
-      confirmPassword: ''
+      password: "",
+      confirmPassword: ""
     },
     onSubmit: async ({ value }) => {
-      const { password } = value
+      const { password } = value;
       try {
         const { data, error } = await authClient.resetPassword({
           newPassword: password,
           token
-        })
+        });
         if (error) {
-          toast.error(error.message || 'Error resetting password')
-          return
+          toast.error(error.message || "Error resetting password");
+          return;
         }
         if (data?.status) {
-          const user = await fetchFullUser()
+          const user = await fetchFullUser();
           if (user) {
-            history.push(adminRoute)
+            history.push(adminRoute);
           } else {
             history.push(
               formatAdminURL({
                 adminRoute,
                 path: loginRoute
               })
-            )
+            );
           }
-          toast.success(t('authentication:passwordResetSuccessfully'))
+          toast.success(t("authentication:passwordResetSuccessfully"));
         }
       } catch (e) {
-        toast.error('An unexpected error occurred')
+        toast.error("An unexpected error occurred");
       }
     },
     validators: {
       onSubmit: resetPasswordSchema
     }
-  })
+  });
 
   return (
     <Form
       onSubmit={(e) => {
-        e.preventDefault()
-        void form.handleSubmit()
-      }}>
+        e.preventDefault();
+        void form.handleSubmit();
+      }}
+    >
       <FormInputWrap className="login__form">
         <form.AppField
           name="password"
-          children={(field) => <field.TextField type="password" className="password" label={t('authentication:newPassword')} required />}
+          children={(field) => (
+            <field.TextField
+              type="password"
+              className="password"
+              label={t("authentication:newPassword")}
+              required
+            />
+          )}
         />
         <form.AppField
           name="confirmPassword"
           children={(field) => (
-            <field.TextField type="password" className="password" label={t('authentication:confirmPassword')} required />
+            <field.TextField
+              type="password"
+              className="password"
+              label={t("authentication:confirmPassword")}
+              required
+            />
           )}
         />
       </FormInputWrap>
-      <form.AppForm children={<form.Submit label={t('authentication:resetPassword')} loadingLabel={t('general:loading')} />} />
+      <form.AppForm
+        children={
+          <form.Submit
+            label={t("authentication:resetPassword")}
+            loadingLabel={t("general:loading")}
+          />
+        }
+      />
     </Form>
-  )
+  );
 }

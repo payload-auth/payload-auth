@@ -1,21 +1,38 @@
-import type { CollectionAfterChangeHook } from 'payload'
-import type { BetterAuthSchemas } from '@/better-auth/plugin/types'
-import { baModelKey } from '@/better-auth/plugin/constants'
-import { getSchemaCollectionSlug, getSchemaFieldName } from '../../utils/collection-schema'
+import type { CollectionAfterChangeHook } from "payload";
+import { baModelKey } from "@/better-auth/plugin/constants";
+import type { BetterAuthSchemas } from "@/better-auth/plugin/types";
+import {
+  getSchemaCollectionSlug,
+  getSchemaFieldName
+} from "../../utils/collection-schema";
 
-export function getSyncPasswordToUserHook(resolvedSchemas: BetterAuthSchemas): CollectionAfterChangeHook {
-  const hook: CollectionAfterChangeHook = async ({ doc, req, operation, context }) => {
-    if (context?.syncAccountHook) return doc
+export function getSyncPasswordToUserHook(
+  resolvedSchemas: BetterAuthSchemas
+): CollectionAfterChangeHook {
+  const hook: CollectionAfterChangeHook = async ({
+    doc,
+    req,
+    operation,
+    context
+  }) => {
+    if (context?.syncAccountHook) return doc;
 
-    if (operation !== 'create' && operation !== 'update') {
-      return doc
+    if (operation !== "create" && operation !== "update") {
+      return doc;
     }
-    const userSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.user)
-    const accountSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.account)
-    const userField = getSchemaFieldName(resolvedSchemas, baModelKey.account, 'userId')
+    const userSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.user);
+    const accountSlug = getSchemaCollectionSlug(
+      resolvedSchemas,
+      baModelKey.account
+    );
+    const userField = getSchemaFieldName(
+      resolvedSchemas,
+      baModelKey.account,
+      "userId"
+    );
 
     if (!doc[userField]) {
-      return doc
+      return doc;
     }
 
     const account = await req.payload.findByID({
@@ -24,19 +41,20 @@ export function getSyncPasswordToUserHook(resolvedSchemas: BetterAuthSchemas): C
       depth: 0,
       req,
       showHiddenFields: true
-    })
+    });
 
     if (!account || !account.password) {
-      return doc
+      return doc;
     }
 
-    const [salt, hash] = account.password.split(':')
+    const [salt, hash] = account.password.split(":");
 
     if (!salt || !hash) {
-      return doc
+      return doc;
     }
 
-    const userId = typeof doc[userField] === 'object' ? doc[userField]?.id : doc[userField]
+    const userId =
+      typeof doc[userField] === "object" ? doc[userField]?.id : doc[userField];
 
     try {
       await req.payload.update({
@@ -48,13 +66,13 @@ export function getSyncPasswordToUserHook(resolvedSchemas: BetterAuthSchemas): C
         },
         req,
         context: { syncPasswordToUser: true }
-      })
+      });
     } catch (error) {
-      console.error('Failed to sync password to user:', error)
+      console.error("Failed to sync password to user:", error);
     }
 
-    return doc
-  }
+    return doc;
+  };
 
-  return hook as CollectionAfterChangeHook
+  return hook as CollectionAfterChangeHook;
 }

@@ -1,16 +1,20 @@
-import { betterAuth } from 'better-auth'
-import type { BasePayload } from 'payload'
-import { payloadAdapter } from 'payload-auth/better-auth/adapter'
-import type { BetterAuthFunctionOptions, PayloadAuthOptions, BetterAuthReturn } from '../types'
+import { betterAuth } from "better-auth";
+import type { BasePayload } from "payload";
+import { payloadAdapter } from "payload-auth/better-auth/adapter";
+import type {
+  BetterAuthFunctionOptions,
+  BetterAuthReturn,
+  PayloadAuthOptions
+} from "../types";
 
 export function initBetterAuth<O extends PayloadAuthOptions>({
   payload,
   idType,
   options: { enableDebugLogs = false, ...restOptions }
 }: {
-  payload: BasePayload
-  idType: 'number' | 'text'
-  options: BetterAuthFunctionOptions<O>
+  payload: BasePayload;
+  idType: "number" | "text";
+  options: BetterAuthFunctionOptions<O>;
 }): BetterAuthReturn<O> {
   return betterAuth({
     ...restOptions,
@@ -21,5 +25,5 @@ export function initBetterAuth<O extends PayloadAuthOptions>({
         idType
       }
     })
-  }) as unknown as BetterAuthReturn<O>
+  }) as unknown as BetterAuthReturn<O>;
 }

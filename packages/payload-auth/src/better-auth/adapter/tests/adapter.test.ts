@@ -1,112 +1,119 @@
-import { betterAuth, type BetterAuthOptions } from 'better-auth'
-import { afterAll, beforeAll, describe, expect, it, test } from 'vitest'
-import { payloadAdapter } from '../index'
-import { runBaseCollectionsNumberIdTests, runBaseCollectionsTests } from './base-collections-tests'
-import { getPayload } from './dev'
-import { BasePayload } from 'payload'
+import { betterAuth } from "better-auth";
+import { BasePayload } from "payload";
+import { afterAll, beforeAll, describe, expect, it, test } from "vitest";
+import { payloadAdapter } from "../index";
+import {
+  runBaseCollectionsNumberIdTests,
+  runBaseCollectionsTests
+} from "./base-collections-tests";
+import { getPayload } from "./dev";
 
-describe('Handle Payload Adapter', async () => {
-  it('should successfully add the Payload Adapter', async () => {
-    const payload = await getPayload()
+describe("Handle Payload Adapter", async () => {
+  it("should successfully add the Payload Adapter", async () => {
+    const payload = await getPayload();
 
     const auth = betterAuth({
       database: payloadAdapter({
         payloadClient: payload,
-        idType: 'number'
+        adapterConfig: {
+          idType: "number"
+        }
       })
-    })
+    });
 
-    expect(auth).toBeDefined()
-    expect(auth.options.database).toBeDefined()
-    expect(auth.options.database({}).id).toEqual('payload-adapter')
-  })
-})
+    expect(auth).toBeDefined();
+    expect(auth.options.database).toBeDefined();
+    expect(auth.options.database({}).id).toEqual("payload-adapter");
+  });
+});
 
 function deleteAll(payload: BasePayload) {
   beforeAll(async () => {
     await payload.delete({
-      collection: 'users',
+      collection: "users",
       where: {
         id: {
           exists: true
         }
       }
-    })
+    });
 
     await payload.delete({
-      collection: 'sessions',
+      collection: "sessions",
       where: {
         id: {
           exists: true
         }
       }
-    })
+    });
 
     await payload.delete({
-      collection: 'accounts',
+      collection: "accounts",
       where: {
         id: {
           exists: true
         }
       }
-    })
+    });
 
     await payload.delete({
-      collection: 'verifications',
+      collection: "verifications",
       where: {
         id: {
           exists: true
         }
       }
-    })
-  })
+    });
+  });
   afterAll(async () => {
     await payload.delete({
-      collection: 'sessions',
+      collection: "sessions",
       where: {
         id: {
           exists: true
         }
       }
-    })
+    });
 
     await payload.delete({
-      collection: 'accounts',
+      collection: "accounts",
       where: {
         id: {
           exists: true
         }
       }
-    })
+    });
     await payload.delete({
-      collection: 'users',
+      collection: "users",
       where: {
         id: {
           exists: true
         }
       }
-    })
+    });
 
     await payload.delete({
-      collection: 'verifications',
+      collection: "verifications",
       where: {
         id: {
           exists: true
         }
       }
-    })
-  })
+    });
+  });
 }
 
-describe('Run BetterAuth Base Collections Adapter tests', async () => {
-  const payload = await getPayload()
+describe("Run BetterAuth Base Collections Adapter tests", async () => {
+  const payload = await getPayload();
 
-  deleteAll(payload)
+  deleteAll(payload);
 
   const adapter = payloadAdapter({
     payloadClient: payload,
-    idType: 'number'
-  })
+    adapterConfig: {
+      idType: "number"
+    }
+  });
 
   await runBaseCollectionsTests({
     getAdapter: async (
@@ -114,23 +121,25 @@ describe('Run BetterAuth Base Collections Adapter tests', async () => {
         ...payload.betterAuth.options
       }
     ) => {
-      return adapter({ ...customOptions })
+      return adapter({ ...customOptions });
     },
     disableTests: {
       SHOULD_PREFER_GENERATE_ID_IF_PROVIDED: true
     }
-  })
-})
+  });
+});
 
-describe('Run BetterAuth Base Collections Adapter tests with number id', async () => {
-  const payload = await getPayload()
+describe("Run BetterAuth Base Collections Adapter tests with number id", async () => {
+  const payload = await getPayload();
 
-  deleteAll(payload)
+  deleteAll(payload);
 
   const adapter = payloadAdapter({
     payloadClient: payload,
-    idType: 'number'
-  })
+    adapterConfig: {
+      idType: "number"
+    }
+  });
 
   await runBaseCollectionsNumberIdTests(
     {
@@ -144,7 +153,7 @@ describe('Run BetterAuth Base Collections Adapter tests with number id', async (
           }
         }
       ) => {
-        return adapter({ ...customOptions })
+        return adapter({ ...customOptions });
       },
       disableTests: {
         SHOULD_PREFER_GENERATE_ID_IF_PROVIDED: true
@@ -160,39 +169,39 @@ describe('Run BetterAuth Base Collections Adapter tests with number id', async (
         }
       }
     }
-  )
-})
+  );
+});
 
-describe('Authentication Flow Tests', async () => {
+describe("Authentication Flow Tests", async () => {
   const testUser = {
-    email: 'test-email@email.com',
-    password: 'password12345',
-    name: 'Test Name'
-  }
-  const payload = await getPayload()
+    email: "test-email@email.com",
+    password: "password12345",
+    name: "Test Name"
+  };
+  const payload = await getPayload();
 
-  deleteAll(payload)
+  deleteAll(payload);
 
-  it('should successfully sign up a new user', async () => {
+  it("should successfully sign up a new user", async () => {
     const user = await payload.betterAuth.api.signUpEmail({
       body: {
         email: testUser.email,
         password: testUser.password,
         name: testUser.name
       }
-    })
-    expect(user).toBeDefined()
-  })
+    });
+    expect(user).toBeDefined();
+  });
 
-  it('should successfully sign in an existing user', async () => {
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+  it("should successfully sign in an existing user", async () => {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     const user = await payload.betterAuth.api.signInEmail({
       body: {
         email: testUser.email,
         password: testUser.password
       }
-    })
+    });
 
-    expect(user.user).toBeDefined()
-  })
-})
+    expect(user.user).toBeDefined();
+  });
+});

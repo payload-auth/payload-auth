@@ -1,2 +1,2 @@
-export * from './field-copy-button'
-export * from './generate-uuid-button'
+export * from "./field-copy-button";
+export * from "./generate-uuid-button";

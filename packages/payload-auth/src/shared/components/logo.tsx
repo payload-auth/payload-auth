@@ -1,11 +1,10 @@
-import type { ServerProps } from 'payload'
-import type React from 'react'
+import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
+import { PayloadLogo } from "@payloadcms/ui/shared";
+import type { ServerProps } from "payload";
 
-import { RenderServerComponent } from '@payloadcms/ui/elements/RenderServerComponent'
-import { PayloadLogo } from '@payloadcms/ui/shared'
-
-export const Logo: React.FC<ServerProps> = (props) => {
-  const { i18n, locale, params, payload, permissions, searchParams, user } = props
+export function Logo(props: ServerProps) {
+  const { i18n, locale, params, payload, permissions, searchParams, user } =
+    props;
 
   const {
     admin: {
@@ -15,7 +14,7 @@ export const Logo: React.FC<ServerProps> = (props) => {
         }
       } = {}
     } = {}
-  } = payload.config
+  } = payload.config;
 
   return RenderServerComponent({
     Component: CustomLogo,
@@ -30,5 +29,5 @@ export const Logo: React.FC<ServerProps> = (props) => {
       searchParams,
       user
     }
-  })
+  });
 }

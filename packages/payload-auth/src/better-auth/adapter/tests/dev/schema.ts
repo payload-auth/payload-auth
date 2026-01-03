@@ -14,152 +14,152 @@
  *   ],
  * },
  */
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig } from "payload";
 
 const User: CollectionConfig = {
-  slug: 'user',
+  slug: "user",
   admin: {
-    useAsTitle: 'name'
+    useAsTitle: "name"
   },
   fields: [
     {
-      name: 'name',
-      type: 'text',
+      name: "name",
+      type: "text",
       required: true
     },
     {
-      name: 'email',
-      type: 'email',
+      name: "email",
+      type: "email",
       required: true,
       unique: true
     },
     {
-      name: 'emailVerified',
-      type: 'checkbox',
+      name: "emailVerified",
+      type: "checkbox",
       required: true,
       defaultValue: false
     },
     {
-      name: 'image',
-      type: 'upload',
-      relationTo: 'media'
+      name: "image",
+      type: "upload",
+      relationTo: "media"
     }
   ],
   timestamps: true
-} as const
+} as const;
 
 const Session: CollectionConfig = {
-  slug: 'session',
+  slug: "session",
   admin: {
-    useAsTitle: 'expiresAt'
+    useAsTitle: "expiresAt"
   },
   fields: [
     {
-      name: 'expiresAt',
-      type: 'date',
+      name: "expiresAt",
+      type: "date",
       required: true
     },
     {
-      name: 'token',
-      type: 'text',
+      name: "token",
+      type: "text",
       required: true,
       unique: true
     },
     {
-      name: 'ipAddress',
-      type: 'text'
+      name: "ipAddress",
+      type: "text"
     },
     {
-      name: 'userAgent',
-      type: 'text'
+      name: "userAgent",
+      type: "text"
     },
     {
-      name: 'userId',
-      type: 'relationship',
-      relationTo: 'user',
+      name: "userId",
+      type: "relationship",
+      relationTo: "user",
       required: true
     }
   ],
   timestamps: true
-} as const
+} as const;
 
 const Account: CollectionConfig = {
-  slug: 'account',
+  slug: "account",
   admin: {
-    useAsTitle: 'accountId'
+    useAsTitle: "accountId"
   },
   fields: [
     {
-      name: 'accountId',
-      type: 'text',
+      name: "accountId",
+      type: "text",
       required: true
     },
     {
-      name: 'providerId',
-      type: 'text',
+      name: "providerId",
+      type: "text",
       required: true
     },
     {
-      name: 'userId',
-      type: 'relationship',
-      relationTo: 'user',
+      name: "userId",
+      type: "relationship",
+      relationTo: "user",
       required: true
     },
     {
-      name: 'accessToken',
-      type: 'text'
+      name: "accessToken",
+      type: "text"
     },
     {
-      name: 'refreshToken',
-      type: 'text'
+      name: "refreshToken",
+      type: "text"
     },
     {
-      name: 'idToken',
-      type: 'text'
+      name: "idToken",
+      type: "text"
     },
     {
-      name: 'accessTokenExpiresAt',
-      type: 'date'
+      name: "accessTokenExpiresAt",
+      type: "date"
     },
     {
-      name: 'refreshTokenExpiresAt',
-      type: 'date'
+      name: "refreshTokenExpiresAt",
+      type: "date"
     },
     {
-      name: 'scope',
-      type: 'text'
+      name: "scope",
+      type: "text"
     },
     {
-      name: 'password',
-      type: 'text'
+      name: "password",
+      type: "text"
     }
   ],
   timestamps: true
-} as const
+} as const;
 
 const Verification: CollectionConfig = {
-  slug: 'verification',
+  slug: "verification",
   admin: {
-    useAsTitle: 'identifier'
+    useAsTitle: "identifier"
   },
   fields: [
     {
-      name: 'identifier',
-      type: 'text',
+      name: "identifier",
+      type: "text",
       required: true
     },
     {
-      name: 'value',
-      type: 'text',
+      name: "value",
+      type: "text",
       required: true
     },
     {
-      name: 'expiresAt',
-      type: 'date',
+      name: "expiresAt",
+      type: "date",
       required: true
     }
   ],
   timestamps: true
-} as const
+} as const;
 
-export { User, Session, Account, Verification }
+export { User, Session, Account, Verification };

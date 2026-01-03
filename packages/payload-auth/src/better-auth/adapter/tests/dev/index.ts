@@ -1,12 +1,16 @@
-import { getPayload as getPayloadBase } from 'payload'
-import { buildConfig } from 'payload'
-import { postgresAdapter } from '@payloadcms/db-postgres'
-import { BetterAuthOptions, betterAuthPlugin, BetterAuthPluginOptions, getPayloadAuth } from '../../../plugin'
+import { postgresAdapter } from "@payloadcms/db-postgres";
+import { buildConfig } from "payload";
+import {
+  BetterAuthOptions,
+  betterAuthPlugin,
+  getPayloadAuth,
+  PayloadAuthOptions
+} from "../../../plugin";
 
 export const betterAuthOptions: BetterAuthOptions = {
-  appName: 'payload-better-auth',
-  baseURL: 'http://localhost:3000',
-  trustedOrigins: ['http://localhost:3000'],
+  appName: "payload-better-auth",
+  baseURL: "http://localhost:3000",
+  trustedOrigins: ["http://localhost:3000"],
   emailAndPassword: {
     enabled: true
   },
@@ -20,7 +24,7 @@ export const betterAuthOptions: BetterAuthOptions = {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     async sendVerificationEmail({ user, url }) {
-      console.log('Send verification email for user: ', url)
+      console.log("Send verification email for user: ", url);
     }
   },
 
@@ -28,7 +32,13 @@ export const betterAuthOptions: BetterAuthOptions = {
     changeEmail: {
       enabled: true,
       sendChangeEmailVerification: async ({ user, newEmail, url, token }) => {
-        console.log('Send change email verification for user: ', user, newEmail, url, token)
+        console.log(
+          "Send change email verification for user: ",
+          user,
+          newEmail,
+          url,
+          token
+        );
       }
     },
     deleteUser: {
@@ -45,8 +55,8 @@ export const betterAuthOptions: BetterAuthOptions = {
     },
     additionalFields: {
       role: {
-        type: 'string',
-        defaultValue: 'user',
+        type: "string",
+        defaultValue: "user",
         input: false
       }
     }
@@ -60,12 +70,12 @@ export const betterAuthOptions: BetterAuthOptions = {
   account: {
     accountLinking: {
       enabled: true,
-      trustedProviders: ['google', 'email-password']
+      trustedProviders: ["google", "email-password"]
     }
   }
-}
+};
 
-export const betterAuthPluginOptions: BetterAuthPluginOptions = {
+export const betterAuthPluginOptions: PayloadAuthOptions = {
   disabled: false,
   debug: {
     logTables: false,
@@ -75,37 +85,37 @@ export const betterAuthPluginOptions: BetterAuthPluginOptions = {
   hidePluginCollections: true,
   users: {
     hidden: false,
-    adminRoles: ['admin'],
-    allowedFields: ['name']
+    adminRoles: ["admin"],
+    allowedFields: ["name"]
   },
   adminInvitations: {
     sendInviteEmail: async ({ payload, email, url }) => {
-      console.log('Send admin invite: ', email, url)
+      console.log("Send admin invite: ", email, url);
       return {
         success: true
-      }
+      };
     }
   },
   betterAuthOptions: betterAuthOptions
-}
+};
 
 export const payloadConfig = buildConfig({
   admin: {
-    user: 'users'
+    user: "users"
   },
-  secret: 'super-secret-payload-key',
+  secret: "super-secret-payload-key",
   db: postgresAdapter({
     pool: {
-      connectionString: 'postgres://forrestdevs:@localhost:5432/pba-tests'
+      connectionString: "postgres://forrestdevs:@localhost:5432/pba-tests"
     },
     push: false,
     transactionOptions: false
   }),
   plugins: [betterAuthPlugin(betterAuthPluginOptions)]
-})
+});
 
 export async function getPayload() {
-  return await getPayloadAuth(payloadConfig)
+  return await getPayloadAuth(payloadConfig);
 }
 
-export default payloadConfig
+export default payloadConfig;

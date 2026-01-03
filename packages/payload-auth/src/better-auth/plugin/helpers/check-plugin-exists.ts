@@ -1,4 +1,4 @@
-import type { BetterAuthOptions } from '../types'
+import type { BetterAuthOptions } from "../types";
 
 /**
  * Checks if a plugin with the specified ID exists in the Better Auth options
@@ -10,6 +10,9 @@ import type { BetterAuthOptions } from '../types'
  * @param pluginId - The unique identifier of the plugin to check for
  * @returns `true` if a plugin with the specified ID exists, `false` otherwise
  */
-export function checkPluginExists(options: BetterAuthOptions, pluginId: string): boolean {
-  return options.plugins?.some((plugin) => plugin.id === pluginId) || false
+export function checkPluginExists(
+  options: BetterAuthOptions,
+  pluginId: string
+): boolean {
+  return options.plugins?.some((plugin) => plugin.id === pluginId) || false;
 }

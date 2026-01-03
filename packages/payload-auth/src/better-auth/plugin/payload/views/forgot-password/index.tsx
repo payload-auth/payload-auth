@@ -1,19 +1,22 @@
-import React, { Fragment } from 'react'
-import { Button, Translation } from '@payloadcms/ui'
-import Link from 'next/link'
-import type { AdminViewServerProps } from 'payload'
-import { formatAdminURL } from 'payload/shared'
-import { FormHeader } from '@/shared/form/ui/header'
-import { ForgotPasswordForm } from './client'
-import { adminRoutes } from '@/better-auth/plugin/constants'
-import type { PayloadAuthOptions } from '@/better-auth/plugin/types'
-import { MinimalTemplate } from '@payloadcms/next/templates'
+import { MinimalTemplate } from "@payloadcms/next/templates";
+import { Button, Translation } from "@payloadcms/ui";
+import Link from "next/link";
+import type { AdminViewServerProps } from "payload";
+import { formatAdminURL } from "payload/shared";
+import React, { Fragment } from "react";
+import { adminRoutes } from "@/better-auth/plugin/constants";
+import type { PayloadAuthOptions } from "@/better-auth/plugin/types";
+import { FormHeader } from "@/shared/form/ui/header";
+import { ForgotPasswordForm } from "./client";
 
-type ForgotPasswordProps = AdminViewServerProps & {
-  pluginOptions: PayloadAuthOptions
+interface ForgotPasswordProps extends AdminViewServerProps {
+  pluginOptions: PayloadAuthOptions;
 }
 
-const ForgotPassword: React.FC<ForgotPasswordProps> = ({ pluginOptions, initPageResult }) => {
+function ForgotPassword({
+  pluginOptions,
+  initPageResult
+}: ForgotPasswordProps) {
   const {
     req: {
       payload: {
@@ -27,7 +30,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ pluginOptions, initPage
       user,
       i18n
     }
-  } = initPageResult
+  } = initPageResult;
 
   if (user) {
     return (
@@ -36,13 +39,14 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ pluginOptions, initPage
           description={
             <Translation
               elements={{
-                '0': ({ children }) => (
+                "0": ({ children }) => (
                   <Link
                     href={formatAdminURL({
                       adminRoute,
                       path: accountRoute
                     })}
-                    prefetch={false}>
+                    prefetch={false}
+                  >
                     {children}
                   </Link>
                 )
@@ -51,28 +55,32 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ pluginOptions, initPage
               t={i18n.t}
             />
           }
-          heading={i18n.t('authentication:alreadyLoggedIn')}
+          heading={i18n.t("authentication:alreadyLoggedIn")}
         />
         <Button buttonStyle="secondary" el="link" size="large" to={adminRoute}>
-          {i18n.t('general:backToDashboard')}
+          {i18n.t("general:backToDashboard")}
         </Button>
       </Fragment>
-    )
+    );
   }
 
   return (
     <MinimalTemplate>
-      <ForgotPasswordForm baseURL={pluginOptions.betterAuthOptions?.baseURL} basePath={pluginOptions.betterAuthOptions?.basePath} />
+      <ForgotPasswordForm
+        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        basePath={pluginOptions.betterAuthOptions?.basePath}
+      />
       <Link
         href={formatAdminURL({
           adminRoute,
           path: adminRoutes.adminLogin as `/${string}`
         })}
-        prefetch={false}>
-        {i18n.t('authentication:backToLogin')}
+        prefetch={false}
+      >
+        {i18n.t("authentication:backToLogin")}
       </Link>
     </MinimalTemplate>
-  )
+  );
 }
 
-export default ForgotPassword
+export default ForgotPassword;

@@ -1,33 +1,33 @@
-import React from 'react'
-import { z } from 'zod'
-import { Logo } from '@/shared/components/logo'
-import { AdminSignupClient } from './client'
-import { FormHeader } from '@/shared/form/ui/header'
-import { supportedBAPluginIds } from '@/better-auth/plugin/constants'
-import { MinimalTemplate } from '@payloadcms/next/templates'
-import type { AdminViewServerProps } from 'payload'
-import type { PayloadAuthOptions } from '../../../types'
-import { checkPluginExists } from '@/better-auth/plugin/helpers/check-plugin-exists'
+import { MinimalTemplate } from "@payloadcms/next/templates";
+import type { AdminViewServerProps } from "payload";
+import React from "react";
+import { z } from "zod";
+import { supportedBAPluginIds } from "@/better-auth/plugin/constants";
+import { checkPluginExists } from "@/better-auth/plugin/helpers/check-plugin-exists";
+import { Logo } from "@/shared/components/logo";
+import { FormHeader } from "@/shared/form/ui/header";
+import type { PayloadAuthOptions } from "../../../types";
+import { AdminSignupClient } from "./client";
 
 //  Avoid the need for custom styles
-const baseClass = 'login'
+const baseClass = "login";
 
 const searchParamsSchema = z.object({
   token: z.string()
-})
+});
 
 interface AdminSignupProps extends AdminViewServerProps {
-  adminInvitationsSlug: string
-  pluginOptions: PayloadAuthOptions
+  adminInvitationsSlug: string;
+  pluginOptions: PayloadAuthOptions;
 }
 
-const AdminSignup: React.FC<AdminSignupProps> = async ({
+async function AdminSignup({
   initPageResult,
   params,
   searchParams,
   pluginOptions,
   adminInvitationsSlug
-}: AdminSignupProps) => {
+}: AdminSignupProps) {
   const {
     locale,
     permissions,
@@ -42,33 +42,48 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
         }
       }
     }
-  } = initPageResult
+  } = initPageResult;
 
-  const { success, data } = searchParamsSchema.safeParse(searchParams)
+  const { success, data } = searchParamsSchema.safeParse(searchParams);
 
-  let hasInvalidToken = false
+  let hasInvalidToken = false;
   if (!success) {
-    hasInvalidToken = true
+    hasInvalidToken = true;
   } else {
     const { totalDocs: isValidInvite } = await req.payload.count({
       collection: adminInvitationsSlug,
       where: { token: { equals: data.token } }
-    })
+    });
     if (!isValidInvite) {
-      hasInvalidToken = true
+      hasInvalidToken = true;
     }
   }
 
-  const loginMethods = pluginOptions.admin?.loginMethods ?? []
-  const hasUsernamePlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.username)
-  const hasPasskeyPlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.passkey)
-  const hasMagicLinkPlugin = checkPluginExists(pluginOptions.betterAuthOptions ?? {}, supportedBAPluginIds.magicLink)
-  const loginWithUsername = collections?.[userSlug]?.config.auth.loginWithUsername
-  const loginIdentifiers: ('email' | 'username')[] = (() => {
-    if (!hasUsernamePlugin || !loginWithUsername) return ['email']
-    const allowEmail = typeof loginWithUsername === 'object' ? loginWithUsername.allowEmailLogin !== false : true
-    return allowEmail ? ['email', 'username'] as const : ['username'] as const
-  })()
+  const loginMethods = pluginOptions.admin?.loginMethods ?? [];
+  const hasUsernamePlugin = checkPluginExists(
+    pluginOptions.betterAuthOptions ?? {},
+    supportedBAPluginIds.username
+  );
+  const hasPasskeyPlugin = checkPluginExists(
+    pluginOptions.betterAuthOptions ?? {},
+    supportedBAPluginIds.passkey
+  );
+  const hasMagicLinkPlugin = checkPluginExists(
+    pluginOptions.betterAuthOptions ?? {},
+    supportedBAPluginIds.magicLink
+  );
+  const loginWithUsername =
+    collections?.[userSlug]?.config.auth.loginWithUsername;
+  const loginIdentifiers: ("email" | "username")[] = (() => {
+    if (!hasUsernamePlugin || !loginWithUsername) return ["email"];
+    const allowEmail =
+      typeof loginWithUsername === "object"
+        ? loginWithUsername.allowEmailLogin !== false
+        : true;
+    return allowEmail
+      ? (["email", "username"] as const)
+      : (["username"] as const);
+  })();
 
   return (
     <MinimalTemplate className={`${baseClass} admin-signup`}>
@@ -85,7 +100,7 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
       </div>
       {hasInvalidToken ? (
         <FormHeader
-          style={{ textAlign: 'center' }}
+          style={{ textAlign: "center" }}
           heading="Invalid or expired token"
           description="You need to get a new invite to sign up."
         />
@@ -96,16 +111,22 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
             userSlug={userSlug}
             loginMethods={loginMethods}
             searchParams={searchParams ?? {}}
-            loginWithUsername={hasUsernamePlugin ? loginWithUsername ?? false : false}
+            loginWithUsername={
+              hasUsernamePlugin ? (loginWithUsername ?? false) : false
+            }
             loginIdentifiers={loginIdentifiers}
-            plugins={{ username: hasUsernamePlugin, passkey: hasPasskeyPlugin, magicLink: hasMagicLinkPlugin }}
+            plugins={{
+              username: hasUsernamePlugin,
+              passkey: hasPasskeyPlugin,
+              magicLink: hasMagicLinkPlugin
+            }}
             baseURL={pluginOptions.betterAuthOptions?.baseURL}
             basePath={pluginOptions.betterAuthOptions?.basePath}
           />
         )
       )}
     </MinimalTemplate>
-  )
+  );
 }
 
-export default AdminSignup
+export default AdminSignup;

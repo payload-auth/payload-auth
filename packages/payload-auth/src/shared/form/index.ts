@@ -1,8 +1,9 @@
-import { createFormHookContexts, createFormHook } from '@tanstack/react-form'
-import { TextField } from './fields/text-field'
-import { Submit } from './components/submit'
+import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
+import { Submit } from "./components/submit";
+import { TextField } from "./fields/text-field";
 
-const { fieldContext, formContext, useFieldContext, useFormContext } = createFormHookContexts()
+const { fieldContext, formContext, useFieldContext, useFormContext } =
+  createFormHookContexts();
 
 const { useAppForm, withForm } = createFormHook({
   fieldContext,
@@ -13,6 +14,13 @@ const { useAppForm, withForm } = createFormHook({
   formComponents: {
     Submit
   }
-})
+});
 
-export { useAppForm, withForm, fieldContext, formContext, useFieldContext, useFormContext }
+export {
+  fieldContext,
+  formContext,
+  useAppForm,
+  useFieldContext,
+  useFormContext,
+  withForm
+};

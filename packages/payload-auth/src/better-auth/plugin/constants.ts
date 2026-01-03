@@ -1,228 +1,228 @@
 export const socialProviders = [
-  'apple',
-  'discord',
-  'facebook',
-  'github',
-  'google',
-  'linkedin',
-  'microsoft',
-  'spotify',
-  'tiktok',
-  'twitter',
-  'twitch',
-  'zoom',
-  'gitlab',
-  'roblox',
-  'vk',
-  'kick',
-  'reddit'
-] as const
+  "apple",
+  "discord",
+  "facebook",
+  "github",
+  "google",
+  "linkedin",
+  "microsoft",
+  "spotify",
+  "tiktok",
+  "twitter",
+  "twitch",
+  "zoom",
+  "gitlab",
+  "roblox",
+  "vk",
+  "kick",
+  "reddit"
+] as const;
 
 export const loginMethods = [
-  'emailPassword',
-  'magicLink',
-  'emailOTP',
-  'phonePassword',
-  'phoneOTP',
-  'phoneMagicLink',
-  'passkey',
+  "emailPassword",
+  "magicLink",
+  "emailOTP",
+  "phonePassword",
+  "phoneOTP",
+  "phoneMagicLink",
+  "passkey",
   ...socialProviders
-] as const
+] as const;
 
 export const supportedBAPluginIds = {
-  oneTimeToken: 'one-time-token',
-  oAuthProxy: 'oauth-proxy',
-  haveIBeenPwned: 'haveIBeenPwned',
-  captcha: 'captcha',
-  bearer: 'bearer',
-  genericOAuth: 'generic-oauth',
-  customSession: 'custom-session',
-  harmonyEmail: 'harmony-email',
-  harmonyPhoneNumber: 'harmony-phone-number',
-  twoFactor: 'two-factor',
-  username: 'username',
-  anonymous: 'anonymous',
-  phoneNumber: 'phone-number',
-  magicLink: 'magic-link',
-  emailOtp: 'email-otp',
-  passkey: 'passkey',
-  oneTap: 'one-tap',
-  admin: 'admin',
-  apiKey: 'api-key',
-  mcp: 'mcp',
-  organization: 'organization',
-  multiSession: 'multi-session',
-  openApi: 'open-api',
-  jwt: 'jwt',
-  nextCookies: 'next-cookies',
-  sso: 'sso',
-  oidc: 'oidc',
-  expo: 'expo',
-  polar: 'polar',
-  stripe: 'stripe',
-  autumn: 'autumn',
-  dodopayments: 'dodopayments',
-  dubAnalytics: 'dub-analytics',
-  deviceAuthorization: 'device-authorization',
-  lastLoginMethod: 'last-login-method',
-  scim: 'scim'
-} as const
+  oneTimeToken: "one-time-token",
+  oAuthProxy: "oauth-proxy",
+  haveIBeenPwned: "haveIBeenPwned",
+  captcha: "captcha",
+  bearer: "bearer",
+  genericOAuth: "generic-oauth",
+  customSession: "custom-session",
+  harmonyEmail: "harmony-email",
+  harmonyPhoneNumber: "harmony-phone-number",
+  twoFactor: "two-factor",
+  username: "username",
+  anonymous: "anonymous",
+  phoneNumber: "phone-number",
+  magicLink: "magic-link",
+  emailOtp: "email-otp",
+  passkey: "passkey",
+  oneTap: "one-tap",
+  admin: "admin",
+  apiKey: "api-key",
+  mcp: "mcp",
+  organization: "organization",
+  multiSession: "multi-session",
+  openApi: "open-api",
+  jwt: "jwt",
+  nextCookies: "next-cookies",
+  sso: "sso",
+  oidc: "oidc",
+  expo: "expo",
+  polar: "polar",
+  stripe: "stripe",
+  autumn: "autumn",
+  dodopayments: "dodopayments",
+  dubAnalytics: "dub-analytics",
+  deviceAuthorization: "device-authorization",
+  lastLoginMethod: "last-login-method",
+  scim: "scim"
+} as const;
 
 export const baseSlugs = {
-  users: 'users',
-  sessions: 'sessions',
-  accounts: 'accounts',
-  verifications: 'verifications',
-  adminInvitations: 'admin-invitations'
-} as const
+  users: "users",
+  sessions: "sessions",
+  accounts: "accounts",
+  verifications: "verifications",
+  adminInvitations: "admin-invitations"
+} as const;
 
 export const baPluginSlugs = {
-  subscriptions: 'subscriptions',
-  apiKeys: 'apiKeys',
-  jwks: 'jwks',
-  twoFactors: 'twoFactors',
-  passkeys: 'passkeys',
-  oauthApplications: 'oauthApplications',
-  oauthAccessTokens: 'oauthAccessTokens',
-  oauthConsents: 'oauthConsents',
-  ssoProviders: 'ssoProviders',
-  organizations: 'organizations',
-  organizationRoles: 'organizationRoles',
-  invitations: 'invitations',
-  members: 'members',
-  teams: 'teams',
-  teamMembers: 'teamMembers',
-  scim: 'scimProvider',
-  rateLimit: 'rateLimit',
-} as const
+  subscriptions: "subscriptions",
+  apiKeys: "apiKeys",
+  jwks: "jwks",
+  twoFactors: "twoFactors",
+  passkeys: "passkeys",
+  oauthApplications: "oauthApplications",
+  oauthAccessTokens: "oauthAccessTokens",
+  oauthConsents: "oauthConsents",
+  ssoProviders: "ssoProviders",
+  organizations: "organizations",
+  organizationRoles: "organizationRoles",
+  invitations: "invitations",
+  members: "members",
+  teams: "teams",
+  teamMembers: "teamMembers",
+  scim: "scimProvider",
+  rateLimit: "rateLimit"
+} as const;
 
 export const baModelKey = {
-  user: 'user',
-  session: 'session',
-  account: 'account',
-  verification: 'verification',
-  twoFactor: 'twoFactor',
-  passkey: 'passkey',
-  oauthApplication: 'oauthApplication',
-  oauthAccessToken: 'oauthAccessToken',
-  oauthConsent: 'oauthConsent',
-  ssoProvider: 'ssoProvider',
-  organization: 'organization',
-  organizationRole: 'organizationRole',
-  invitation: 'invitation',
-  member: 'member',
-  team: 'team',
-  teamMember: 'teamMember',
-  subscription: 'subscription',
-  apikey: 'apikey',
-  jwks: 'jwks',
-  deviceCode: 'deviceCode',
-  rateLimit: 'rateLimit',
-  scimProvider: 'scimProvider'
-} as const
+  user: "user",
+  session: "session",
+  account: "account",
+  verification: "verification",
+  twoFactor: "twoFactor",
+  passkey: "passkey",
+  oauthApplication: "oauthApplication",
+  oauthAccessToken: "oauthAccessToken",
+  oauthConsent: "oauthConsent",
+  ssoProvider: "ssoProvider",
+  organization: "organization",
+  organizationRole: "organizationRole",
+  invitation: "invitation",
+  member: "member",
+  team: "team",
+  teamMember: "teamMember",
+  subscription: "subscription",
+  apikey: "apikey",
+  jwks: "jwks",
+  deviceCode: "deviceCode",
+  rateLimit: "rateLimit",
+  scimProvider: "scimProvider"
+} as const;
 
 export const baModelFieldKeysToFieldNames = {
   user: {
-    role: 'role'
+    role: "role"
   },
   account: {
-    userId: 'user'
+    userId: "user"
   },
   session: {
-    userId: 'user',
+    userId: "user"
   },
   member: {
-    organizationId: 'organization',
-    userId: 'user',
-    teamId: 'team'
+    organizationId: "organization",
+    userId: "user",
+    teamId: "team"
   },
   invitation: {
-    organizationId: 'organization',
-    inviterId: 'inviter',
-    teamId: 'team'
+    organizationId: "organization",
+    inviterId: "inviter",
+    teamId: "team"
   },
   team: {
-    organizationId: 'organization'
+    organizationId: "organization"
   },
   apikey: {
-    userId: 'user'
+    userId: "user"
   },
   twoFactor: {
-    userId: 'user'
+    userId: "user"
   },
   passkey: {
-    userId: 'user'
+    userId: "user"
   },
   ssoProvider: {
-    userId: 'user'
+    userId: "user"
   },
   oauthApplication: {
-    userId: 'user'
+    userId: "user"
   },
   oauthAccessToken: {
-    userId: 'user',
-    clientId: 'client'
+    userId: "user",
+    clientId: "client"
   },
   oauthConsent: {
-    userId: 'user',
-    clientId: 'client'
+    userId: "user",
+    clientId: "client"
   }
-} as const
+} as const;
 
 export const baModelFieldKeys = {
   organizationRole: {
-    organizationId: 'organizationId'
+    organizationId: "organizationId"
   },
   teamMember: {
-    teamId: 'teamId',
-    userId: 'userId'
+    teamId: "teamId",
+    userId: "userId"
   },
   account: {
-    userId: 'userId'
+    userId: "userId"
   },
   session: {
-    userId: 'userId',
-    activeOrganizationId: 'activeOrganizationId',
-    impersonatedBy: 'impersonatedBy',
-    activeTeamId: 'activeTeamId'
+    userId: "userId",
+    activeOrganizationId: "activeOrganizationId",
+    impersonatedBy: "impersonatedBy",
+    activeTeamId: "activeTeamId"
   },
   member: {
-    organizationId: 'organizationId',
-    userId: 'userId',
-    teamId: 'teamId'
+    organizationId: "organizationId",
+    userId: "userId",
+    teamId: "teamId"
   },
   invitation: {
-    organizationId: 'organizationId',
-    inviterId: 'inviterId',
-    teamId: 'teamId'
+    organizationId: "organizationId",
+    inviterId: "inviterId",
+    teamId: "teamId"
   },
   team: {
-    organizationId: 'organizationId'
+    organizationId: "organizationId"
   },
   apikey: {
-    userId: 'userId'
+    userId: "userId"
   },
   twoFactor: {
-    userId: 'userId'
+    userId: "userId"
   },
   passkey: {
-    userId: 'userId'
+    userId: "userId"
   },
   ssoProvider: {
-    userId: 'userId'
+    userId: "userId"
   },
   oauthApplication: {
-    userId: 'userId'
+    userId: "userId"
   },
   oauthAccessToken: {
-    userId: 'userId',
-    clientId: 'clientId'
+    userId: "userId",
+    clientId: "clientId"
   },
   oauthConsent: {
-    userId: 'userId',
-    clientId: 'clientId'
+    userId: "userId",
+    clientId: "clientId"
   }
-} as const
+} as const;
 
 export const baModelKeyToSlug = {
   user: baseSlugs.users,
@@ -243,26 +243,26 @@ export const baModelKeyToSlug = {
   subscription: baPluginSlugs.subscriptions,
   apikey: baPluginSlugs.apiKeys,
   jwks: baPluginSlugs.jwks
-} as const
+} as const;
 
 export const adminRoutes = {
-  forgotPassword: '/forgot-password',
-  resetPassword: '/reset-password',
-  adminSignup: '/signup',
-  adminLogin: '/login',
-  loginRedirect: '/login-redirect',
-  twoFactorVerify: '/two-factor-verify'
-} as const
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
+  adminSignup: "/signup",
+  adminLogin: "/login",
+  loginRedirect: "/login-redirect",
+  twoFactorVerify: "/two-factor-verify"
+} as const;
 
 export const adminEndpoints = {
-  setAdminRole: '/set-admin-role',
-  refreshToken: '/refresh-token',
-  sendInvite: '/send-invite',
-  generateInviteUrl: '/generate-invite-url',
-  signup: '/signup'
-} as const
+  setAdminRole: "/set-admin-role",
+  refreshToken: "/refresh-token",
+  sendInvite: "/send-invite",
+  generateInviteUrl: "/generate-invite-url",
+  signup: "/signup"
+} as const;
 
 export const defaults = {
-  adminRole: 'admin',
-  userRole: 'user'
-} as const
+  adminRole: "admin",
+  userRole: "user"
+} as const;

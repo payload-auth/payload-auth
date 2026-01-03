@@ -1,5 +1,5 @@
-import type { SanitizedBetterAuthOptions } from '@/better-auth/plugin/types'
-import { createAuthMiddleware } from 'better-auth/api'
+import { createAuthMiddleware } from "better-auth/api";
+import type { SanitizedBetterAuthOptions } from "@/better-auth/plugin/types";
 
 /**
  * Modifies options object and adds a middleware to check for admin invite for sign up
@@ -9,68 +9,69 @@ export const useAdminInviteAfterEmailSignUpMiddleware = async ({
   adminInvitationCollectionSlug,
   userCollectionSlug
 }: {
-  options: SanitizedBetterAuthOptions
-  adminInvitationCollectionSlug: string
-  userCollectionSlug: string
+  options: SanitizedBetterAuthOptions;
+  adminInvitationCollectionSlug: string;
+  userCollectionSlug: string;
 }) => {
-  options.hooks = options.hooks || {}
-  const originalAfter = options.hooks.after
+  options.hooks = options.hooks || {};
+  const originalAfter = options.hooks.after;
   options.hooks.after = createAuthMiddleware(async (ctx) => {
-    const adapter = ctx.context.adapter
-    const internalAdapter = ctx.context.internalAdapter
+    const adapter = ctx.context.adapter;
+    const internalAdapter = ctx.context.internalAdapter;
 
-    if (ctx.path !== '/sign-up/email') {
-      if (typeof originalAfter === 'function') originalAfter(ctx)
-      return
+    if (ctx.path !== "/sign-up/email") {
+      if (typeof originalAfter === "function") originalAfter(ctx);
+      return;
     }
-    const email = ctx.body.email
-    const adminInviteToken = ctx?.query?.adminInviteToken ?? ctx.body.adminInviteToken
+    const email = ctx.body.email;
+    const adminInviteToken =
+      ctx?.query?.adminInviteToken ?? ctx.body.adminInviteToken;
     const adminInvitation = (await adapter.findOne({
       model: adminInvitationCollectionSlug,
       where: [
         {
-          field: 'token',
+          field: "token",
           value: adminInviteToken,
-          operator: 'eq'
+          operator: "eq"
         }
       ]
-    })) as any
+    })) as any;
     if (!adminInvitation || !adminInvitation?.role || !email) {
-      if (typeof originalAfter === 'function') originalAfter(ctx)
-      return
+      if (typeof originalAfter === "function") originalAfter(ctx);
+      return;
     }
 
-    const newlyCreatedUser = await internalAdapter.findUserByEmail(email)
+    const newlyCreatedUser = await internalAdapter.findUserByEmail(email);
     if (!newlyCreatedUser) {
-      if (typeof originalAfter === 'function') originalAfter(ctx)
-      return
+      if (typeof originalAfter === "function") originalAfter(ctx);
+      return;
     }
 
     await adapter.update({
       model: userCollectionSlug,
       where: [
         {
-          field: 'id',
+          field: "id",
           value: newlyCreatedUser.user.id,
-          operator: 'eq'
+          operator: "eq"
         }
       ],
       update: {
         role: adminInvitation?.role
       }
-    })
+    });
 
     await adapter.delete({
       model: adminInvitationCollectionSlug,
       where: [
         {
-          field: 'id',
+          field: "id",
           value: adminInvitation.id,
-          operator: 'eq'
+          operator: "eq"
         }
       ]
-    })
+    });
 
-    if (typeof originalAfter === 'function') originalAfter(ctx)
-  })
-}
+    if (typeof originalAfter === "function") originalAfter(ctx);
+  });
+};

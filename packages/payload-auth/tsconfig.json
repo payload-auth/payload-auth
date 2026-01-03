@@ -28,7 +28,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@/shared/*": ["./src/shared/*"],
-      "@/better-auth/*": ["./src/better-auth/*"],
+      "@/better-auth/*": ["./src/better-auth/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts", "src/**/*.json"],

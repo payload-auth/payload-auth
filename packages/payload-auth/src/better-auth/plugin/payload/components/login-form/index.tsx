@@ -1,6 +1,9 @@
-'use client'
+"use client";
 
-export { LoginFormProvider, useLoginForm, type LoginFormProviderProps } from './context'
-export { CredentialsForm } from './credentials-form'
-export { AlternativeMethods } from './alternative-methods'
-
+export { AlternativeMethods } from "./alternative-methods";
+export {
+  LoginFormProvider,
+  useLoginForm
+} from "./context";
+export type { LoginFormProviderProps } from "./context";
+export { CredentialsForm } from "./credentials-form";

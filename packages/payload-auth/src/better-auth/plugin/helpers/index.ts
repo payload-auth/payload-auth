@@ -1,1 +1,1 @@
-export { generateVerifyEmailUrl } from './generate-verify-email-url'
+export { generateVerifyEmailUrl } from "./generate-verify-email-url";

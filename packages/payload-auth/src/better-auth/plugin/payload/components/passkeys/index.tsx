@@ -1,12 +1,20 @@
-import React from 'react'
-import { PasskeysClient } from './client'
-import './index.scss'
-import type { PasskeysServerComponentProps, PasskeyWithId } from './types'
+import React from "react";
+import { PasskeysClient } from "./client";
+import "./index.scss";
+import type { PasskeysServerComponentProps, PasskeyWithId } from "./types";
 
-export const Passkeys: React.FC<PasskeysServerComponentProps> = async (props) => {
-  const { id, passkeySlug, payload, passkeyUserIdFieldName, req, user, pluginOptions } = props
+export async function Passkeys({ ...props }: PasskeysServerComponentProps) {
+  const {
+    id,
+    passkeySlug,
+    payload,
+    passkeyUserIdFieldName,
+    req,
+    user,
+    pluginOptions
+  } = props;
 
-  if (!id || !passkeySlug || !passkeyUserIdFieldName) return null
+  if (!id || !passkeySlug || !passkeyUserIdFieldName) return null;
 
   const { docs: userPasskeys } = (await payload.find({
     collection: passkeySlug,
@@ -16,11 +24,11 @@ export const Passkeys: React.FC<PasskeysServerComponentProps> = async (props) =>
     limit: 100,
     req,
     depth: 0
-  })) as unknown as { docs: PasskeyWithId[] }
+  })) as unknown as { docs: PasskeyWithId[] };
 
   return (
     <div className="passkeys-field">
-      <h3 className="passkeys-field__title" style={{ marginBottom: '0.7rem' }}>
+      <h3 className="passkeys-field__title" style={{ marginBottom: "0.7rem" }}>
         Passkeys
       </h3>
       <PasskeysClient
@@ -33,5 +41,5 @@ export const Passkeys: React.FC<PasskeysServerComponentProps> = async (props) =>
         basePath={pluginOptions.betterAuthOptions?.basePath}
       />
     </div>
-  )
+  );
 }

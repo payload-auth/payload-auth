@@ -1,4 +1,4 @@
-import { SignJWT } from 'jose'
+import { SignJWT } from "jose";
 
 /**
  * Generates a verification URL for email verification
@@ -27,24 +27,26 @@ export const generateVerifyEmailUrl = async ({
   secret,
   expiresIn = 3600,
   verifyRouteUrl,
-  callbackURL = '/'
+  callbackURL = "/"
 }: {
-  userEmail: string
-  secret: string
-  expiresIn?: number
-  verifyRouteUrl: string
-  callbackURL?: string
+  userEmail: string;
+  secret: string;
+  expiresIn?: number;
+  verifyRouteUrl: string;
+  callbackURL?: string;
 }): Promise<string> => {
   if (!userEmail) {
-    throw new Error('userEmail is required to generate a verification URL')
+    throw new Error("userEmail is required to generate a verification URL");
   }
 
   if (!secret) {
-    throw new Error('secret is required to sign the JWT token')
+    throw new Error("secret is required to sign the JWT token");
   }
 
   if (!verifyRouteUrl) {
-    throw new Error('verifyRouteUrl is required to generate a verification URL')
+    throw new Error(
+      "verifyRouteUrl is required to generate a verification URL"
+    );
   }
 
   // Create and sign the JWT token
@@ -53,11 +55,11 @@ export const generateVerifyEmailUrl = async ({
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + expiresIn
   })
-    .setProtectedHeader({ alg: 'HS256' })
-    .sign(new TextEncoder().encode(secret))
+    .setProtectedHeader({ alg: "HS256" })
+    .sign(new TextEncoder().encode(secret));
 
   // Build the verification URL
-  const verifyUrl = `${verifyRouteUrl}?token=${jwt}${callbackURL ? `&callbackURL=${encodeURIComponent(callbackURL)}` : ''}`
+  const verifyUrl = `${verifyRouteUrl}?token=${jwt}${callbackURL ? `&callbackURL=${encodeURIComponent(callbackURL)}` : ""}`;
 
-  return verifyUrl
-}
+  return verifyUrl;
+};

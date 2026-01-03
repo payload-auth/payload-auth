@@ -1,16 +1,29 @@
-import type { BetterAuthFullSchema, ModelKey } from '@/better-auth/generated-types'
-import { flattenAllFields, type Collection, type CollectionConfig } from 'payload'
+import {
+  type Collection,
+  type CollectionConfig,
+  flattenAllFields
+} from "payload";
+import type {
+  BetterAuthFullSchema,
+  ModelKey
+} from "@/better-auth/generated-types";
 
-export function getCollectionByModelKey(collections: Record<string, Collection>, modelKey: ModelKey | string): CollectionConfig {
+export function getCollectionByModelKey(
+  collections: Record<string, Collection>,
+  modelKey: ModelKey | string
+): CollectionConfig {
   const collection = Object.values(collections).find((c) => {
-    return c.config?.custom?.betterAuthModelKey === modelKey || c.config?.slug === modelKey
-  })
+    return (
+      c.config?.custom?.betterAuthModelKey === modelKey ||
+      c.config?.slug === modelKey
+    );
+  });
 
   if (!collection) {
-    throw new Error(`Collection with key ${modelKey} not found`)
+    throw new Error(`Collection with key ${modelKey} not found`);
   }
 
-  return collection.config
+  return collection.config;
 }
 
 /**
@@ -29,13 +42,23 @@ export function getCollectionFieldNameByFieldKey<M extends ModelKey>(
   model: M,
   fieldKey: Extract<keyof BetterAuthFullSchema[M], string>
 ): string {
-  const fields = flattenAllFields({ fields: collection.fields })
-  return fields.find((f) => f.custom?.betterAuthFieldKey === fieldKey)?.name ?? fieldKey
+  const fields = flattenAllFields({ fields: collection.fields });
+  return (
+    fields.find((f) => f.custom?.betterAuthFieldKey === fieldKey)?.name ??
+    fieldKey
+  );
 }
 
-export function getCollectionFieldNameByFieldKeyUntyped(collection: CollectionConfig, fieldKey: string): string {
-  const fields = flattenAllFields({ fields: collection.fields })
-  return fields.find((f) => f.custom?.betterAuthFieldKey === fieldKey || f.name === fieldKey)?.name ?? fieldKey
+export function getCollectionFieldNameByFieldKeyUntyped(
+  collection: CollectionConfig,
+  fieldKey: string
+): string {
+  const fields = flattenAllFields({ fields: collection.fields });
+  return (
+    fields.find(
+      (f) => f.custom?.betterAuthFieldKey === fieldKey || f.name === fieldKey
+    )?.name ?? fieldKey
+  );
 }
 
 /**
@@ -48,7 +71,13 @@ export function getCollectionFieldNameByFieldKeyUntyped(collection: CollectionCo
  * @param fieldName - The name of the field to search for
  * @returns The key of the field if found, otherwise the field name itself
  */
-export function getFieldKeyByCollectionFieldName(collection: CollectionConfig, fieldName: string): string {
-  const fields = flattenAllFields({ fields: collection.fields })
-  return fields.find((f) => f.name === fieldName)?.custom?.betterAuthFieldKey ?? fieldName
+export function getFieldKeyByCollectionFieldName(
+  collection: CollectionConfig,
+  fieldName: string
+): string {
+  const fields = flattenAllFields({ fields: collection.fields });
+  return (
+    fields.find((f) => f.name === fieldName)?.custom?.betterAuthFieldKey ??
+    fieldName
+  );
 }
