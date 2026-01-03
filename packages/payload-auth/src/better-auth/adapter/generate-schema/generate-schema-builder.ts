@@ -27,11 +27,7 @@ export const generateSchemaBuilderStage = async ({
   code: string;
   BAOptions: BetterAuthOptions;
 }) => {
-  const { format } = await import("prettier");
-  
-  const formattedCode = await format(code, { filepath: "schema.ts" });
-
-  const { post, collections } = parseExistingSchema(formattedCode);
+  const { post, collections } = parseExistingSchema(code);
 
   const payloadSchemaStr = generatePayloadCollectionConfigs({
     options: BAOptions,
@@ -39,9 +35,7 @@ export const generateSchemaBuilderStage = async ({
     exports: post
   });
 
-  return await format(`${payloadSchemaStr}`, {
-    filepath: "schema.ts"
-  });
+  return payloadSchemaStr;
 };
 
 function parseExistingSchema(code: string): {
