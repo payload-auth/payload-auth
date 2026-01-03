@@ -186,12 +186,20 @@ const config = {
     //       'echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc && cd packages/payload-auth && (npm view payload-auth@${nextRelease.version} version >/dev/null 2>&1 && echo "Version ${nextRelease.version} already published, skipping npm publish" || npm publish --access public --tag ${nextRelease.channel || "latest"})'
     //   }
     // ],
+    // [
+    //   '@semantic-release/exec',
+    //   {
+    //     prepareCmd:
+    //       'node -e "const fs=require(\'fs\');const p=JSON.parse(fs.readFileSync(\'./packages/payload-auth/package.json\'));p.version=\'${nextRelease.version}\';fs.writeFileSync(\'./packages/payload-auth/package.json\',JSON.stringify(p,null,2)+\'\\n\')"',
+    //     publishCmd:
+    //       'cd packages/payload-auth && npm publish --access public --provenance --tag ${nextRelease.channel || "latest"}'
+    //   }
+    // ],
     [
       '@semantic-release/npm',
       {
         pkgRoot: 'packages/payload-auth',
         npmPublish: true,
-        
       }
     ],
     // GitHub release runs AFTER npm publish succeeds - creates the tag only when everything worked
