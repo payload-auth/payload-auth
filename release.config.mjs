@@ -140,40 +140,40 @@ const config = {
   plugins: [
     [
       '@semantic-release/commit-analyzer',
-      {
-        preset: 'angular',
-        releaseRules: [
-          { type: 'docs', scope: 'README', release: 'patch' },
-          { type: 'docs', release: 'patch' },
-          { type: 'chore', release: 'patch' },
-          { type: 'examples', release: 'patch' },
-          { type: 'perf', release: 'patch' },
-          { type: 'ui', release: 'patch' },
-          { type: 'feat', release: 'minor' },
-          { type: 'fix', release: 'patch' },
-          { breaking: true, release: 'major' }
-        ],
-        parserOpts: { noteKeywords: ['BREAKING CHANGE', 'BREAKING CHANGES'] }
-      }
+      // {
+      //   preset: 'angular',
+      //   releaseRules: [
+      //     { type: 'docs', scope: 'README', release: 'patch' },
+      //     { type: 'docs', release: 'patch' },
+      //     { type: 'chore', release: 'patch' },
+      //     { type: 'examples', release: 'patch' },
+      //     { type: 'perf', release: 'patch' },
+      //     { type: 'ui', release: 'patch' },
+      //     { type: 'feat', release: 'minor' },
+      //     { type: 'fix', release: 'patch' },
+      //     { breaking: true, release: 'major' }
+      //   ],
+      //   parserOpts: { noteKeywords: ['BREAKING CHANGE', 'BREAKING CHANGES'] }
+      // }
     ],
     [
       '@semantic-release/release-notes-generator',
-      {
-        preset: 'angular',
-        parserOpts: { noteKeywords: ['BREAKING CHANGE', 'BREAKING CHANGES'] },
-        // writerOpts: {
-        //   commitsSort: ['subject', 'scope'],
-        //   types: Object.entries(typeMapping).map(([type, section]) => ({ type, section })),
-        //   commitGroupsSort: 'title',
-        //   // commitPartial remains unchanged.
-        //   commitPartial:
-        //     '*{{#if scope}} **{{scope}}:**{{/if}} {{subject}} {{#if hash}} · {{hash}}{{/if}}\n\n' +
-        //     '{{#if references}}, closes{{#each references}} [{{this.issue}}]({{this.issueUrl}}){{/each}}{{/if}}\n\n',
-        //   groupBy: 'type',
-        //   transform: transformCommit,
-        //   finalizeContext
-        // }
-      }
+      // {
+      //   preset: 'angular',
+      //   parserOpts: { noteKeywords: ['BREAKING CHANGE', 'BREAKING CHANGES'] },
+      //   // writerOpts: {
+      //   //   commitsSort: ['subject', 'scope'],
+      //   //   types: Object.entries(typeMapping).map(([type, section]) => ({ type, section })),
+      //   //   commitGroupsSort: 'title',
+      //   //   // commitPartial remains unchanged.
+      //   //   commitPartial:
+      //   //     '*{{#if scope}} **{{scope}}:**{{/if}} {{subject}} {{#if hash}} · {{hash}}{{/if}}\n\n' +
+      //   //     '{{#if references}}, closes{{#each references}} [{{this.issue}}]({{this.issueUrl}}){{/each}}{{/if}}\n\n',
+      //   //   groupBy: 'type',
+      //   //   transform: transformCommit,
+      //   //   finalizeContext
+      //   // }
+      // }
     ],
     // Use exec to update version and publish FIRST (before GitHub creates the tag)
     // Check if version exists on npm first - skip publish if it does (handles recovery from partial failures)
@@ -195,11 +195,15 @@ const config = {
     //       'cd packages/payload-auth && npm publish --access public --provenance --tag ${nextRelease.channel || "latest"}'
     //   }
     // ],
+   // Use exec to update version (avoids npm version bug)
+    // and publish with native OIDC provenance
     [
-      '@semantic-release/npm',
+      '@semantic-release/exec',
       {
-        pkgRoot: './packages/payload-auth',
-        npmPublish: true,
+        prepareCmd:
+          'node -e "const fs=require(\'fs\');const p=JSON.parse(fs.readFileSync(\'./packages/payload-auth/package.json\'));p.version=\'${nextRelease.version}\';fs.writeFileSync(\'./packages/payload-auth/package.json\',JSON.stringify(p,null,2)+\'\\n\')"',
+        publishCmd:
+          'cd packages/payload-auth && npm publish --access public --provenance --tag ${nextRelease.channel || "latest"}'
       }
     ],
     // GitHub release runs AFTER npm publish succeeds - creates the tag only when everything worked

@@ -56,10 +56,6 @@ jobs:
         with:
           node-version: 20
           cache: "pnpm"
-          registry-url: "https://registry.npmjs.org"
-
-      - name: Downgrade npm to fix workspace bug
-        run: npm install -g npm@10.8.2
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
@@ -73,14 +69,13 @@ jobs:
         run: (cd packages/payload-auth/dist && zip -r ../../../payload-auth-distribution.zip .)
 
         # Remove pnpm files to isolate from workspace
-      - name: Isolate from pnpm workspace
+      - name: Clean npm auth config
         run: |
-          rm -f pnpm-lock.yaml
-          rm -f pnpm-workspace.yaml
+          rm -f .npmrc
+          rm -f ~/.npmrc
+          rm -f packages/payload-auth/.npmrc
 
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_LEGACY_PEER_DEPS: true
-          NODE_AUTH_TOKEN: ""
         run: npx semantic-release
