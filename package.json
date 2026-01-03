@@ -41,6 +41,11 @@
       "@better-fetch/fetch": "1.1.18"
     }
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest",
+    "provenance": true
+  },
   "workspaces": [
     "docs",
     "demo",
