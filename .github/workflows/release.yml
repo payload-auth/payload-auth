@@ -53,8 +53,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: 'pnpm'
+
+      - name: Unset NODE_AUTH_TOKEN for OIDC
+        run: unset NODE_AUTH_TOKEN || true
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
@@ -74,4 +77,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_LEGACY_PEER_DEPS: true
+          NODE_AUTH_TOKEN: ""
         run: npx semantic-release
