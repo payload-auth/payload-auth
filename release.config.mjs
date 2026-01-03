@@ -161,18 +161,18 @@ const config = {
       {
         preset: 'angular',
         parserOpts: { noteKeywords: ['BREAKING CHANGE', 'BREAKING CHANGES'] },
-        writerOpts: {
-          commitsSort: ['subject', 'scope'],
-          types: Object.entries(typeMapping).map(([type, section]) => ({ type, section })),
-          commitGroupsSort: 'title',
-          // commitPartial remains unchanged.
-          commitPartial:
-            '*{{#if scope}} **{{scope}}:**{{/if}} {{subject}} {{#if hash}} · {{hash}}{{/if}}\n\n' +
-            '{{#if references}}, closes{{#each references}} [{{this.issue}}]({{this.issueUrl}}){{/each}}{{/if}}\n\n',
-          groupBy: 'type',
-          transform: transformCommit,
-          finalizeContext
-        }
+        // writerOpts: {
+        //   commitsSort: ['subject', 'scope'],
+        //   types: Object.entries(typeMapping).map(([type, section]) => ({ type, section })),
+        //   commitGroupsSort: 'title',
+        //   // commitPartial remains unchanged.
+        //   commitPartial:
+        //     '*{{#if scope}} **{{scope}}:**{{/if}} {{subject}} {{#if hash}} · {{hash}}{{/if}}\n\n' +
+        //     '{{#if references}}, closes{{#each references}} [{{this.issue}}]({{this.issueUrl}}){{/each}}{{/if}}\n\n',
+        //   groupBy: 'type',
+        //   transform: transformCommit,
+        //   finalizeContext
+        // }
       }
     ],
     // Use exec to update version and publish FIRST (before GitHub creates the tag)

@@ -15,22 +15,22 @@ importers:
         specifier: 2.3.10
         version: 2.3.10
       '@semantic-release/commit-analyzer':
-        specifier: ^13.0.1
+        specifier: 13.0.1
         version: 13.0.1(semantic-release@25.0.2(typescript@5.9.3))
       '@semantic-release/exec':
-        specifier: ^7.0.3
+        specifier: 7.1.0
         version: 7.1.0(semantic-release@25.0.2(typescript@5.9.3))
       '@semantic-release/github':
-        specifier: ^12.0.2
+        specifier: 12.0.2
         version: 12.0.2(semantic-release@25.0.2(typescript@5.9.3))
       '@semantic-release/release-notes-generator':
-        specifier: ^14.0.3
+        specifier: 14.1.0
         version: 14.1.0(semantic-release@25.0.2(typescript@5.9.3))
       semantic-release:
-        specifier: ^25.0.2
+        specifier: 25.0.2
         version: 25.0.2(typescript@5.9.3)
       turbo:
-        specifier: ^2.6.3
+        specifier: 2.7.2
         version: 2.7.2
 
   demo:
