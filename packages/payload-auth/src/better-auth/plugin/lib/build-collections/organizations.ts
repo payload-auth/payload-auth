@@ -37,14 +37,7 @@ export function buildOrganizationsCollection({
     baModelKey.invitation
   );
   const teamSlug = getSchemaCollectionSlug(resolvedSchemas, baModelKey.team);
-  const teamMemberSlug = getSchemaCollectionSlug(
-    resolvedSchemas,
-    baModelKey.teamMember
-  );
-  const scimProviderSlug = getSchemaCollectionSlug(
-    resolvedSchemas,
-    baModelKey.scimProvider
-  );
+
 
   const existingOrganizationCollection = incomingCollections.find(
     (collection) => collection.slug === organizationSlug
@@ -97,20 +90,6 @@ export function buildOrganizationsCollection({
         resolvedSchemas,
         baModelKey.invitation,
         baModelFieldKeys.invitation.organizationId
-      ),
-      maxDepth: 1,
-      saveToJWT: false
-    },
-    {
-      label: "Teams",
-      name: baModelKey.team,
-      type: "join",
-      hasMany: true,
-      collection: teamSlug,
-      on: getSchemaFieldName(
-        resolvedSchemas,
-        baModelKey.team,
-        baModelFieldKeys.team.organizationId
       ),
       maxDepth: 1,
       saveToJWT: false
