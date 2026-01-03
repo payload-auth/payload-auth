@@ -77,4 +77,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_LEGACY_PEER_DEPS: true
           NODE_AUTH_TOKEN: ""
-        run: npx semantic-release
+        run: node ./node_modules/semantic-release/bin/semantic-release.js
