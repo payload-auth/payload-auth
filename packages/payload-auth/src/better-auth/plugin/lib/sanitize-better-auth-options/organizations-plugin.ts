@@ -156,4 +156,9 @@ export function configureOrganizationPlugin(
       baModelFieldKeys.session.activeTeamId
     )
   );
+  set(
+    plugin,
+    `schema.${baModelKey.organizationRole}.modelName`,
+    getSchemaCollectionSlug(resolvedSchemas, baModelKey.organizationRole)
+  );
 }
