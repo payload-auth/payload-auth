@@ -1,0 +1,174 @@
+---
+title: Roles & Permissions
+description: Managing user roles and access control
+---
+
+# Roles & Permissions
+
+payload-auth provides role-based access control integrated with Payload's access system.
+
+## Defining Roles
+
+Configure roles in the plugin options:
+
+```ts
+betterAuthPlugin({
+  users: {
+    roles: ['user', 'editor', 'publisher'],
+    adminRoles: ['admin', 'superadmin'],
+    defaultRole: 'user',
+    defaultAdminRole: 'admin',
+  },
+})
+```
+
+### Role Types
+
+| Option | Description |
+|--------|-------------|
+| `roles` | All available roles in the system |
+| `adminRoles` | Roles that grant Payload admin access |
+| `defaultRole` | Assigned to new users on signup |
+| `defaultAdminRole` | Assigned to invited admins |
+
+## Admin Panel Access
+
+Users with any role in `adminRoles` can access Payload admin:
+
+```ts
+// Built-in access function
+hasAdminRoles(['admin', 'superadmin'])
+```
+
+## Collection Access
+
+Access functions are automatically applied to the users collection:
+
+```ts
+access: {
+  admin: hasAdminRoles(adminRoles),
+  read: isAdminOrCurrentUserWithRoles({ adminRoles }),
+  create: isAdminWithRoles({ adminRoles }),
+  update: isAdminOrCurrentUserUpdateWithAllowedFields({
+    allowedFields: ['name'], // Non-admins can only update these
+    adminRoles,
+  }),
+  delete: isAdminOrCurrentUserWithRoles({ adminRoles }),
+}
+```
+
+## Custom Access Functions
+
+Import access helpers for your own collections:
+
+```ts
+import { hasAdminRoles, isAdminWithRoles } from 'payload-auth/better-auth'
+
+// In your collection
+const Posts = {
+  slug: 'posts',
+  access: {
+    read: () => true,
+    create: ({ req }) => {
+      // Only authenticated users can create
+      return !!req.user
+    },
+    update: ({ req }) => {
+      if (hasAdminRoles(['admin'])({ req })) return true
+      // Users can only update their own posts
+      return {
+        author: { equals: req.user?.id }
+      }
+    },
+    delete: isAdminWithRoles({ adminRoles: ['admin'] }),
+  },
+  fields: [
+    { name: 'title', type: 'text' },
+    { name: 'author', type: 'relationship', relationTo: 'users' },
+  ],
+}
+```
+
+## Role Checking in Code
+
+### Server-Side
+
+```ts
+import { getPayloadAuth } from 'payload-auth/better-auth'
+import config from '@payload-config'
+import { headers } from 'next/headers'
+
+export async function adminOnlyAction() {
+  const { betterAuth } = await getPayloadAuth(config)
+  
+  const session = await betterAuth.api.getSession({
+    headers: await headers(),
+  })
+  
+  if (!session?.user.role?.includes('admin')) {
+    throw new Error('Forbidden: Admin access required')
+  }
+  
+  // Admin-only logic
+}
+```
+
+### Client-Side
+
+```tsx
+'use client'
+
+import { authClient } from '@/lib/auth/client'
+
+export function AdminOnly({ children }: { children: React.ReactNode }) {
+  const { data: session } = authClient.useSession()
+  
+  const isAdmin = session?.user.role?.includes('admin')
+  
+  if (!isAdmin) {
+    return null
+  }
+  
+  return <>{children}</>
+}
+```
+
+## Using with Better Auth Admin Plugin
+
+When using the admin plugin from Better Auth:
+
+```ts
+import { admin } from 'better-auth/plugins'
+
+betterAuthPlugin({
+  betterAuthOptions: {
+    plugins: [
+      admin({
+        impersonationSessionDuration: 60 * 60, // 1 hour
+      }),
+    ],
+  },
+  users: {
+    adminRoles: ['admin'], // Synced with admin plugin
+  },
+})
+```
+
+This enables:
+- User impersonation
+- User banning
+- Role management via API
+
+## Self-Update Permissions
+
+Control what fields users can update on their own profile:
+
+```ts
+betterAuthPlugin({
+  users: {
+    allowedFields: ['name', 'image', 'bio'],
+  },
+})
+```
+
+Users can always update their password (with current password verification).

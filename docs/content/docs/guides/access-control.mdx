@@ -1,0 +1,281 @@
+---
+title: Access Control
+description: Implementing role-based access control with payload-auth
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Access Control Guide
+
+Implement granular access control using payload-auth's role system.
+
+## Understanding Access Control
+
+Payload uses access control functions to determine:
+- Who can read documents
+- Who can create documents
+- Who can update documents
+- Who can delete documents
+- Who can access the admin panel
+
+## Built-in Access Helpers
+
+payload-auth provides several access control helpers:
+
+```ts
+import {
+  hasAdminRoles,
+  isAdminWithRoles,
+  isAdminOrCurrentUserWithRoles,
+  isAdminOrCurrentUserUpdateWithAllowedFields,
+} from 'payload-auth/better-auth'
+```
+
+### hasAdminRoles
+
+Check if user has any admin role:
+
+```ts
+const Posts = {
+  slug: 'posts',
+  access: {
+    admin: hasAdminRoles(['admin', 'editor']),
+    // Returns true if user.role includes 'admin' or 'editor'
+  },
+}
+```
+
+### isAdminWithRoles
+
+Admin-only access:
+
+```ts
+const Settings = {
+  slug: 'settings',
+  access: {
+    read: isAdminWithRoles({ adminRoles: ['admin'] }),
+    create: isAdminWithRoles({ adminRoles: ['admin'] }),
+    update: isAdminWithRoles({ adminRoles: ['admin'] }),
+    delete: isAdminWithRoles({ adminRoles: ['admin'] }),
+  },
+}
+```
+
+### isAdminOrCurrentUserWithRoles
+
+Admins or the document owner:
+
+```ts
+const Profiles = {
+  slug: 'profiles',
+  access: {
+    read: isAdminOrCurrentUserWithRoles({ adminRoles: ['admin'] }),
+    // Admins can read all, users can only read their own
+  },
+}
+```
+
+### isAdminOrCurrentUserUpdateWithAllowedFields
+
+Restrict what non-admins can update:
+
+```ts
+const Users = {
+  slug: 'users',
+  access: {
+    update: isAdminOrCurrentUserUpdateWithAllowedFields({
+      adminRoles: ['admin'],
+      allowedFields: ['name', 'image', 'bio'],
+      // Non-admins can only update these fields on their own profile
+    }),
+  },
+}
+```
+
+## Custom Access Functions
+
+### Basic Pattern
+
+```ts
+const Projects = {
+  slug: 'projects',
+  access: {
+    read: ({ req }) => {
+      // Public read
+      return true
+    },
+    create: ({ req }) => {
+      // Only authenticated users
+      return !!req.user
+    },
+    update: ({ req }) => {
+      // Admins can update all
+      if (req.user?.role?.includes('admin')) {
+        return true
+      }
+      // Others can only update their own
+      return {
+        createdBy: { equals: req.user?.id },
+      }
+    },
+    delete: ({ req }) => {
+      // Only admins
+      return req.user?.role?.includes('admin')
+    },
+  },
+  fields: [
+    { name: 'title', type: 'text' },
+    { name: 'createdBy', type: 'relationship', relationTo: 'users' },
+  ],
+}
+```
+
+### Field-Level Access
+
+```ts
+const Users = {
+  slug: 'users',
+  fields: [
+    {
+      name: 'email',
+      type: 'email',
+    },
+    {
+      name: 'role',
+      type: 'select',
+      options: ['user', 'admin'],
+      access: {
+        update: ({ req }) => {
+          // Only admins can change roles
+          return req.user?.role?.includes('admin')
+        },
+      },
+    },
+    {
+      name: 'salary',
+      type: 'number',
+      access: {
+        read: ({ req }) => {
+          // Only HR and admins can see salary
+          return req.user?.role?.some(r => 
+            ['admin', 'hr'].includes(r)
+          )
+        },
+      },
+    },
+  ],
+}
+```
+
+## Organization-Based Access
+
+Using the organization plugin:
+
+```ts
+import { getPayloadAuth } from 'payload-auth/better-auth'
+import config from '@payload-config'
+
+const TeamDocuments = {
+  slug: 'team-documents',
+  access: {
+    read: async ({ req }) => {
+      const { betterAuth } = await getPayloadAuth(config)
+      const session = await betterAuth.api.getSession({
+        headers: req.headers,
+      })
+      
+      if (!session?.session.activeOrganizationId) {
+        return false
+      }
+      
+      return {
+        organization: {
+          equals: session.session.activeOrganizationId,
+        },
+      }
+    },
+    create: async ({ req, data }) => {
+      const { betterAuth } = await getPayloadAuth(config)
+      const session = await betterAuth.api.getSession({
+        headers: req.headers,
+      })
+      
+      // Auto-set organization on create
+      if (session?.session.activeOrganizationId) {
+        data.organization = session.session.activeOrganizationId
+        return true
+      }
+      
+      return false
+    },
+  },
+  fields: [
+    { name: 'title', type: 'text' },
+    { name: 'content', type: 'richText' },
+    { name: 'organization', type: 'relationship', relationTo: 'organizations' },
+  ],
+}
+```
+
+## Hook-Based Validation
+
+Use hooks for complex access logic:
+
+```ts
+const Orders = {
+  slug: 'orders',
+  hooks: {
+    beforeChange: [
+      async ({ req, data, operation }) => {
+        if (operation === 'create') {
+          // Set owner automatically
+          data.customer = req.user?.id
+        }
+        
+        if (operation === 'update') {
+          // Prevent status changes by non-admins
+          if (!req.user?.role?.includes('admin')) {
+            delete data.status
+          }
+        }
+        
+        return data
+      },
+    ],
+  },
+}
+```
+
+<Callout type="info">
+Access control functions receive `req` which includes the authenticated `user` object with roles.
+</Callout>
+
+## Testing Access Control
+
+```ts
+// In your tests
+import { getPayload } from 'payload'
+import config from '@payload-config'
+
+describe('Access Control', () => {
+  it('prevents non-admins from deleting', async () => {
+    const payload = await getPayload({ config })
+    
+    // Create user without admin role
+    const user = await payload.create({
+      collection: 'users',
+      data: { email: 'user@test.com', role: ['user'] },
+    })
+    
+    // Attempt delete
+    await expect(
+      payload.delete({
+        collection: 'posts',
+        id: 'some-id',
+        overrideAccess: false,
+        user,
+      })
+    ).rejects.toThrow()
+  })
+})
+```

@@ -1,0 +1,145 @@
+---
+title: Admin UI Overview
+description: Integrating Better Auth with Payload's admin panel
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Admin UI Overview
+
+payload-auth can customize or completely replace Payload's admin authentication.
+
+## Two Modes
+
+### Mode 1: Hybrid (Default)
+
+Use Payload's default auth with Better Auth for frontend:
+
+```ts
+betterAuthPlugin({
+  // disableDefaultPayloadAuth: false (default)
+  betterAuthOptions: { ... },
+})
+```
+
+**What you get:**
+- Payload admin uses built-in email/password login
+- Better Auth handles frontend authentication
+- Session data synchronized between systems
+- Best compatibility with Payload features
+
+### Mode 2: Full Better Auth
+
+Replace Payload's auth entirely with Better Auth:
+
+```ts
+betterAuthPlugin({
+  disableDefaultPayloadAuth: true,
+  admin: {
+    loginMethods: ['emailPassword', 'google', 'passkey'],
+  },
+  betterAuthOptions: { ... },
+})
+```
+
+**What you get:**
+- Custom login page with all Better Auth methods
+- Social login in admin panel
+- Two-factor authentication in admin
+- Passkey support in admin
+- Consistent authentication across app and admin
+
+## Choosing a Mode
+
+| Use Case | Recommended Mode |
+|----------|-----------------|
+| Simple admin access | Hybrid |
+| Social login for admins | Full Better Auth |
+| 2FA required for admin | Full Better Auth |
+| Passkey-only authentication | Full Better Auth |
+| Maximum Payload compatibility | Hybrid |
+| Migrating from existing Payload app | Hybrid (initially) |
+
+## Admin Login Methods
+
+When using `disableDefaultPayloadAuth: true`, configure available login methods:
+
+```ts
+betterAuthPlugin({
+  disableDefaultPayloadAuth: true,
+  admin: {
+    loginMethods: [
+      'emailPassword',
+      'magicLink',
+      'passkey',
+      'google',
+      'github',
+      'discord',
+    ],
+  },
+})
+```
+
+Available methods:
+- `emailPassword` - Traditional email/password
+- `magicLink` - Email link login
+- `emailOTP` - Email code login
+- `passkey` - WebAuthn authentication
+- Any configured social provider (e.g., `google`, `github`)
+
+## Admin Roles
+
+Control who can access the admin panel:
+
+```ts
+betterAuthPlugin({
+  users: {
+    adminRoles: ['admin', 'editor', 'superadmin'],
+  },
+})
+```
+
+Only users with a role in `adminRoles` can access `/admin`.
+
+## First User Setup
+
+When `disableDefaultPayloadAuth` is enabled and no admin users exist:
+
+1. Navigate to `/admin`
+2. You're redirected to signup page
+3. First user automatically gets `defaultAdminRole`
+4. Subsequent signups require invitation
+
+<Callout type="info">
+To require invitations for all users including the first admin, set `requireAdminInviteForSignUp: true` and create an invitation manually.
+</Callout>
+
+## Admin Invitations
+
+Invite new administrators:
+
+```ts
+betterAuthPlugin({
+  requireAdminInviteForSignUp: true,
+  users: {
+    defaultAdminRole: 'admin',
+  },
+  adminInvitations: {
+    generateInviteUrl: ({ payload, token }) => {
+      return `${process.env.APP_URL}/admin/signup?token=${token}`
+    },
+    sendInviteEmail: async ({ payload, email, url }) => {
+      await payload.sendEmail({
+        to: email,
+        subject: 'Admin Access Invitation',
+        html: `<a href="${url}">Accept Invitation</a>`,
+      })
+      return { success: true }
+    },
+  },
+})
+```
+
+Create invitations from:
+- Payload admin UI (users collection)
+- Programmatically via API

@@ -1,0 +1,9 @@
+{
+  "title": "Plugins",
+  "pages": [
+    "overview",
+    "admin",
+    "organization",
+    "api-keys"
+  ]
+}

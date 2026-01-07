@@ -1,0 +1,160 @@
+---
+title: Collections
+description: Understanding the collections created by payload-auth
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Collections
+
+payload-auth automatically generates and manages several collections for authentication.
+
+## Core Collections
+
+These collections are always created:
+
+### Users Collection
+
+Stores user accounts with authentication data.
+
+```ts
+// Default fields added
+{
+  email: string          // User's email (unique, indexed)
+  emailVerified: boolean // Email verification status
+  name: string           // Display name
+  image?: string         // Profile image URL
+  role: string[]         // User roles (default: ['user'])
+  createdAt: Date
+  updatedAt: Date
+  
+  // Plugin-specific fields added when enabled:
+  twoFactorEnabled?: boolean    // Two-factor plugin
+  phoneNumber?: string          // Phone plugin
+  banned?: boolean              // Admin plugin
+  username?: string             // Username plugin
+}
+```
+
+### Sessions Collection
+
+Stores active user sessions.
+
+```ts
+{
+  token: string          // Session token (indexed)
+  user: relationship     // Reference to user
+  expiresAt: Date        // Session expiration
+  ipAddress?: string     // Client IP
+  userAgent?: string     // Browser/client info
+  
+  // Plugin-specific:
+  impersonatedBy?: relationship  // Admin plugin
+  activeOrganizationId?: string  // Organization plugin
+}
+```
+
+### Accounts Collection
+
+Links users to authentication providers.
+
+```ts
+{
+  accountId: string      // Provider's user ID
+  providerId: string     // Provider name (e.g., 'google')
+  user: relationship     // Reference to user
+  accessToken?: string   // OAuth access token
+  refreshToken?: string  // OAuth refresh token
+  password?: string      // Hashed password (for email provider)
+}
+```
+
+### Verifications Collection
+
+Stores temporary verification tokens.
+
+```ts
+{
+  identifier: string     // What's being verified
+  value: string          // Verification token
+  expiresAt: Date        // Token expiration
+}
+```
+
+## Plugin Collections
+
+Additional collections created based on enabled plugins:
+
+| Plugin | Collections Created |
+|--------|-------------------|
+| `admin` | - (adds user fields only) |
+| `twoFactor` | `twoFactors` |
+| `passkey` | `passkeys` |
+| `apiKey` | `apiKeys` |
+| `organization` | `organizations`, `members`, `invitations`, `teams`, `teamMembers` |
+| `oidc` | `oauthApplications`, `oauthAccessTokens`, `oauthConsents` |
+| `sso` | `ssoProviders` |
+| `jwt` | `jwks` |
+| `stripe` | `subscriptions` |
+
+## Admin Invitations Collection
+
+payload-auth adds an `admin-invitations` collection for inviting users:
+
+```ts
+{
+  token: string     // Invite token
+  role: string      // Role to assign
+  url: string       // Generated invite URL (virtual)
+}
+```
+
+## Customizing Collections
+
+### Changing Slugs
+
+```ts
+betterAuthPlugin({
+  users: { slug: 'customers' },
+  sessions: { slug: 'user-sessions' },
+  accounts: { slug: 'auth-accounts' },
+})
+```
+
+### Adding Fields
+
+Use `collectionOverrides` to add custom fields:
+
+```ts
+betterAuthPlugin({
+  users: {
+    collectionOverrides: ({ collection }) => ({
+      ...collection,
+      fields: [
+        ...collection.fields,
+        {
+          name: 'dateOfBirth',
+          type: 'date',
+        },
+        {
+          name: 'bio',
+          type: 'textarea',
+        },
+      ],
+    }),
+  },
+})
+```
+
+### Hiding Collections
+
+```ts
+betterAuthPlugin({
+  hidePluginCollections: true, // Hide all plugin collections
+  sessions: { hidden: true },  // Or hide specific ones
+})
+```
+
+<Callout type="warn">
+Don't remove fields that payload-auth depends on. The plugin validates that all required fields exist.
+</Callout>

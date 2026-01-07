@@ -1,20 +1,25 @@
+# Introduction Documentation
+
+## File: `introduction.mdx`
+
+### Content Outline
+
+```mdx
 ---
 title: Introduction
 description: The most powerful authentication solution for Payload CMS
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 # Introduction
 
-**payload-auth** is a Payload CMS plugin that integrates [Better Auth](https://better-auth.com), providing a comprehensive authentication solution with support for social providers, two-factor authentication, organizations, passkeys, and more.
+payload-auth is a Payload CMS plugin that integrates Better Auth, providing a comprehensive authentication solution with support for social providers, two-factor authentication, organizations, passkeys, and more.
 
 ## Why payload-auth?
 
 ### The Problem
 
 Payload CMS provides basic authentication out of the box, but modern applications often need:
-- Social login (Google, GitHub, Discord, etc.)
+- Social login (Google, GitHub, etc.)
 - Two-factor authentication
 - Organization/team management
 - API key authentication
@@ -32,15 +37,26 @@ payload-auth bridges Payload CMS with Better Auth, giving you:
 
 ## Key Features
 
-| Feature | Description |
-|---------|-------------|
-| **Email & Password** | Traditional email/password authentication with email verification |
-| **Social Providers** | Google, GitHub, Discord, and 15+ OAuth providers |
-| **Two-Factor Auth** | TOTP, SMS, and email-based 2FA |
-| **Passkeys** | WebAuthn/FIDO2 passwordless authentication |
-| **Organizations** | Multi-tenant organization and team management |
-| **API Keys** | Secure API key generation and management |
-| **Admin Integration** | Full control over Payload admin authentication |
+<Cards>
+  <Card title="Email & Password" icon="mail">
+    Traditional email/password authentication with email verification
+  </Card>
+  <Card title="Social Providers" icon="users">
+    Google, GitHub, Discord, and 15+ OAuth providers
+  </Card>
+  <Card title="Two-Factor Auth" icon="shield">
+    TOTP, SMS, and email-based 2FA
+  </Card>
+  <Card title="Passkeys" icon="key">
+    WebAuthn/FIDO2 passwordless authentication
+  </Card>
+  <Card title="Organizations" icon="building">
+    Multi-tenant organization and team management
+  </Card>
+  <Card title="API Keys" icon="code">
+    Secure API key generation and management
+  </Card>
+</Cards>
 
 ## How It Works
 
@@ -56,7 +72,8 @@ payload-auth bridges Payload CMS with Better Auth, giving you:
 
 ## Quick Example
 
-```ts title="payload.config.ts"
+\`\`\`typescript
+// payload.config.ts
 import { buildConfig } from 'payload'
 import { betterAuthPlugin } from 'payload-auth/better-auth'
 
@@ -65,7 +82,6 @@ export default buildConfig({
   plugins: [
     betterAuthPlugin({
       betterAuthOptions: {
-        baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
         emailAndPassword: { enabled: true },
         socialProviders: {
           google: {
@@ -77,7 +93,7 @@ export default buildConfig({
     }),
   ],
 })
-```
+\`\`\`
 
 ## Comparison
 
@@ -95,6 +111,15 @@ export default buildConfig({
 
 ## Next Steps
 
-- [Installation](/docs/installation) - Get started with payload-auth
-- [Basic Usage](/docs/basic-usage) - Learn the fundamentals
-- [Configuration](/docs/configuration) - Explore all options
+<Cards>
+  <Card title="Installation" href="/docs/installation">
+    Get started with payload-auth in your project
+  </Card>
+  <Card title="Basic Usage" href="/docs/basic-usage">
+    Learn the fundamentals with a quick start guide
+  </Card>
+  <Card title="Configuration" href="/docs/configuration/plugin-options">
+    Explore all configuration options
+  </Card>
+</Cards>
+```

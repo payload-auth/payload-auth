@@ -1,0 +1,146 @@
+---
+title: Custom Login
+description: Customizing the admin login experience
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Custom Login
+
+When `disableDefaultPayloadAuth: true`, payload-auth provides custom admin views.
+
+## Custom Views
+
+The following views are replaced:
+
+| Payload View | Replaced With |
+|--------------|---------------|
+| `/admin/login` | Custom login with configured methods |
+| `/admin/signup` | Signup with invitation support |
+| `/admin/forgot-password` | Password reset request |
+| `/admin/reset-password` | Password reset form |
+| 2FA verification | Two-factor verification page |
+
+## Login Flow
+
+```
+1. User visits /admin
+   ↓
+2. Not authenticated → redirect to /admin/login
+   ↓
+3. User selects login method (email, social, passkey)
+   ↓
+4. If 2FA enabled → redirect to 2FA verification
+   ↓
+5. Authenticated → redirect to /admin
+```
+
+## Customizing Login Methods
+
+```ts
+betterAuthPlugin({
+  disableDefaultPayloadAuth: true,
+  admin: {
+    loginMethods: [
+      'emailPassword',
+      'google',
+      'github',
+      'passkey',
+    ],
+  },
+})
+```
+
+The login page shows buttons for each method.
+
+## Social Login Buttons
+
+Social providers appear as buttons on the login page:
+
+```tsx
+// Built-in buttons styling matches Payload admin theme
+<GoogleButton />
+<GitHubButton />
+<DiscordButton />
+```
+
+## Passkey Support
+
+When passkey is in `loginMethods`:
+
+1. "Sign in with Passkey" button appears
+2. Conditional UI (autofill) is enabled in email field
+3. Users can register passkeys from their profile
+
+## Two-Factor Authentication
+
+When a user with 2FA signs in:
+
+1. Email/password validated
+2. Redirect to `/admin/two-factor-verify`
+3. User enters TOTP code
+4. Access granted on success
+
+## Password Reset Flow
+
+1. User clicks "Forgot password?"
+2. Enter email on `/admin/forgot-password`
+3. Reset email sent
+4. Click link → `/admin/reset-password?token=xxx`
+5. Enter new password
+6. Redirect to login
+
+## Styling
+
+Custom admin views use Payload's built-in styling:
+
+```tsx
+// Views use Payload's admin CSS variables
+// - var(--theme-elevation-100)
+// - var(--theme-text)
+// - var(--theme-success)
+// etc.
+```
+
+## Custom Branding
+
+Payload's admin branding still applies:
+
+```ts
+// payload.config.ts
+export default buildConfig({
+  admin: {
+    meta: {
+      titleSuffix: '- My App Admin',
+      icons: [{ url: '/favicon.ico' }],
+    },
+    components: {
+      graphics: {
+        Logo: '/path/to/Logo',
+        Icon: '/path/to/Icon',
+      },
+    },
+  },
+  // ...
+})
+```
+
+<Callout type="info">
+Custom login views inherit the admin theme (light/dark) automatically.
+</Callout>
+
+## Redirect Behavior
+
+After successful login:
+
+```ts
+// Default: redirect to /admin
+// Can be customized via query params:
+// /admin/login?redirect=/admin/collections/posts
+```
+
+After logout:
+
+```ts
+// Default: redirect to /admin/login
+```

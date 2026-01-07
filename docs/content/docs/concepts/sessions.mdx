@@ -1,0 +1,201 @@
+---
+title: Sessions
+description: Understanding session management in payload-auth
+---
+
+# Sessions
+
+payload-auth uses Better Auth's session system with Payload as the storage backend.
+
+## Session Lifecycle
+
+1. **Creation** - Session created on successful login
+2. **Validation** - Token checked on each authenticated request
+3. **Refresh** - Session updated to extend expiration
+4. **Termination** - Session deleted on logout or expiration
+
+## Session Storage
+
+Sessions are stored in the `sessions` collection:
+
+```ts
+{
+  token: string        // Unique session token (indexed)
+  user: relationship   // Link to user
+  expiresAt: Date      // When session expires
+  ipAddress: string    // Client IP (if available)
+  userAgent: string    // Browser info
+  createdAt: Date
+  updatedAt: Date
+}
+```
+
+## Session Configuration
+
+### Expiration
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    session: {
+      expiresIn: 60 * 60 * 24 * 7, // 7 days (in seconds)
+      updateAge: 60 * 60 * 24,     // Refresh daily
+    },
+  },
+})
+```
+
+### Cookie Caching
+
+Better Auth supports cookie caching to reduce database lookups:
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    session: {
+      cookieCache: {
+        enabled: true,
+        maxAge: 5 * 60, // 5 minutes
+      },
+    },
+  },
+})
+```
+
+#### How Cookie Caching Works
+
+1. Session data is signed and stored in a cookie
+2. On requests within `maxAge`, cookie data is used directly
+3. After `maxAge`, database is queried and cookie refreshed
+
+This significantly reduces database load for authenticated requests.
+
+## Controlling Cookie Content
+
+Control what's included in the session cookie with `saveToJWT`:
+
+```ts
+betterAuthPlugin({
+  users: {
+    collectionOverrides: ({ collection }) => ({
+      ...collection,
+      fields: collection.fields.map(field => {
+        if (field.name === 'sensitiveData') {
+          return { ...field, saveToJWT: false }
+        }
+        return field
+      }),
+    }),
+  },
+})
+```
+
+## Multi-Session Support
+
+Enable multiple sessions per user:
+
+```ts
+import { multiSession } from 'better-auth/plugins'
+
+betterAuthPlugin({
+  betterAuthOptions: {
+    plugins: [multiSession()],
+  },
+})
+```
+
+This allows users to:
+- Be logged in on multiple devices
+- Switch between sessions
+- View all active sessions
+- Revoke specific sessions
+
+### Managing Sessions
+
+```ts
+// List all sessions
+const sessions = await authClient.session.listSessions()
+
+// Revoke a specific session
+await authClient.session.revokeSession({
+  sessionId: 'session-id',
+})
+
+// Revoke all other sessions
+await authClient.session.revokeOtherSessions()
+```
+
+## Session in Server Components
+
+```tsx
+import { getPayloadAuth } from 'payload-auth/better-auth'
+import config from '@payload-config'
+import { headers } from 'next/headers'
+
+export default async function Page() {
+  const { betterAuth } = await getPayloadAuth(config)
+  
+  const session = await betterAuth.api.getSession({
+    headers: await headers(),
+  })
+  
+  if (!session) {
+    return <div>Not logged in</div>
+  }
+  
+  return (
+    <div>
+      <p>User: {session.user.name}</p>
+      <p>Session expires: {session.session.expiresAt}</p>
+    </div>
+  )
+}
+```
+
+## Session in Client Components
+
+```tsx
+'use client'
+
+import { authClient } from '@/lib/auth/client'
+
+export function SessionInfo() {
+  const { data: session, isPending } = authClient.useSession()
+  
+  if (isPending) return <div>Loading...</div>
+  if (!session) return <div>Not logged in</div>
+  
+  return (
+    <div>
+      <p>User: {session.user.name}</p>
+      <p>Email: {session.user.email}</p>
+      <p>Role: {session.user.role?.join(', ')}</p>
+    </div>
+  )
+}
+```
+
+## Organization Sessions
+
+When using the organization plugin, sessions include active organization:
+
+```ts
+session.session.activeOrganizationId // Current active org
+session.session.activeTeamId         // Current active team (if teams enabled)
+```
+
+Switch organizations:
+
+```ts
+await authClient.organization.setActive({
+  organizationId: 'org-id',
+})
+```
+
+## Impersonation Sessions
+
+When using the admin plugin and impersonating a user:
+
+```ts
+session.session.impersonatedBy // ID of admin who is impersonating
+```

@@ -39,7 +39,7 @@ const defaultProperties = {
       opacity: 1,
     },
   },
-  springConfig: { type: "spring", stiffness: 250, damping: 35, mass: 4 },
+  springConfig: { type: "spring" as const, stiffness: 250, damping: 35, mass: 4 },
 };
 
 export function ThemeToggle() {

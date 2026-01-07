@@ -1,0 +1,244 @@
+---
+title: Social Providers
+description: OAuth authentication with Google, GitHub, Discord, and more
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Social Providers
+
+Enable OAuth authentication with popular providers.
+
+## Supported Providers
+
+| Provider | Key | Configuration Guide |
+|----------|-----|---------------------|
+| Google | `google` | [Console](https://console.cloud.google.com) |
+| GitHub | `github` | [Settings](https://github.com/settings/developers) |
+| Discord | `discord` | [Portal](https://discord.com/developers) |
+| Apple | `apple` | [Developer](https://developer.apple.com) |
+| Microsoft | `microsoft` | [Azure Portal](https://portal.azure.com) |
+| Twitter | `twitter` | [Developer](https://developer.twitter.com) |
+| Facebook | `facebook` | [Developers](https://developers.facebook.com) |
+| LinkedIn | `linkedin` | [Developers](https://developers.linkedin.com) |
+| Spotify | `spotify` | [Dashboard](https://developer.spotify.com) |
+| Twitch | `twitch` | [Console](https://dev.twitch.tv/console) |
+| GitLab | `gitlab` | [Applications](https://gitlab.com/-/profile/applications) |
+| Slack | `slack` | [API](https://api.slack.com/apps) |
+
+## Configuration
+
+### Single Provider
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    socialProviders: {
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID!,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      },
+    },
+  },
+})
+```
+
+### Multiple Providers
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    socialProviders: {
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID!,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        scope: ['email', 'profile', 'openid'],
+      },
+      github: {
+        clientId: process.env.GITHUB_CLIENT_ID!,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+        scope: ['user:email', 'read:user'],
+      },
+      discord: {
+        clientId: process.env.DISCORD_CLIENT_ID!,
+        clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+        scope: ['identify', 'email'],
+      },
+    },
+  },
+})
+```
+
+## OAuth Callback URL
+
+Set your OAuth callback URL to:
+
+```
+https://your-domain.com/api/auth/callback/{provider}
+```
+
+For example:
+- Google: `https://your-domain.com/api/auth/callback/google`
+- GitHub: `https://your-domain.com/api/auth/callback/github`
+
+## Sign In with Social
+
+### Client-Side
+
+```tsx
+'use client'
+
+import { authClient } from '@/lib/auth/client'
+
+export function SocialButtons() {
+  const handleGoogle = () => {
+    authClient.signIn.social({
+      provider: 'google',
+      callbackURL: '/dashboard',
+    })
+  }
+  
+  const handleGitHub = () => {
+    authClient.signIn.social({
+      provider: 'github',
+      callbackURL: '/dashboard',
+    })
+  }
+  
+  return (
+    <div className="flex flex-col gap-2">
+      <button onClick={handleGoogle}>
+        Continue with Google
+      </button>
+      <button onClick={handleGitHub}>
+        Continue with GitHub
+      </button>
+    </div>
+  )
+}
+```
+
+### Using Sign In Buttons
+
+```tsx
+import { GoogleButton, GitHubButton } from 'payload-auth/better-auth/client'
+
+export function LoginPage() {
+  return (
+    <div>
+      <GoogleButton callbackURL="/dashboard" />
+      <GitHubButton callbackURL="/dashboard" />
+    </div>
+  )
+}
+```
+
+## Account Linking
+
+Enable account linking to allow users to connect multiple providers:
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    account: {
+      accountLinking: {
+        enabled: true,
+        trustedProviders: ['google', 'github', 'email-password'],
+      },
+    },
+  },
+})
+```
+
+### How Account Linking Works
+
+1. User signs up with Google (`john@gmail.com`)
+2. Later signs in with GitHub (same email)
+3. Both accounts linked to same user
+
+### Manual Linking
+
+```tsx
+// Link a new provider to existing account
+await authClient.linkSocial({
+  provider: 'github',
+  callbackURL: '/settings',
+})
+```
+
+## Provider-Specific Options
+
+### Google
+
+```ts
+google: {
+  clientId: process.env.GOOGLE_CLIENT_ID!,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+  scope: ['email', 'profile', 'openid'],
+  accessType: 'offline', // Get refresh token
+  prompt: 'select_account', // Always show account chooser
+}
+```
+
+### Apple
+
+```ts
+apple: {
+  clientId: process.env.APPLE_CLIENT_ID!,
+  clientSecret: process.env.APPLE_CLIENT_SECRET!,
+  teamId: process.env.APPLE_TEAM_ID!,
+  keyId: process.env.APPLE_KEY_ID!,
+  privateKey: process.env.APPLE_PRIVATE_KEY!,
+}
+```
+
+<Callout type="warn">
+Apple Sign In requires additional configuration. See [Apple's documentation](https://developer.apple.com/documentation/sign_in_with_apple).
+</Callout>
+
+### Microsoft
+
+```ts
+microsoft: {
+  clientId: process.env.MICROSOFT_CLIENT_ID!,
+  clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
+  tenantId: process.env.MICROSOFT_TENANT_ID, // 'common' for multi-tenant
+  scope: ['openid', 'profile', 'email', 'User.Read'],
+}
+```
+
+## Admin Panel Social Login
+
+Enable social login in Payload admin:
+
+```ts
+betterAuthPlugin({
+  disableDefaultPayloadAuth: true,
+  admin: {
+    loginMethods: ['emailPassword', 'google', 'github'],
+  },
+  betterAuthOptions: {
+    socialProviders: {
+      google: { /* ... */ },
+      github: { /* ... */ },
+    },
+  },
+})
+```
+
+## Environment Variables
+
+```bash title=".env"
+# Google
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# GitHub
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+
+# Discord
+DISCORD_CLIENT_ID=your-discord-client-id
+DISCORD_CLIENT_SECRET=your-discord-client-secret
+```

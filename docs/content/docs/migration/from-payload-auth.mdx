@@ -1,0 +1,295 @@
+---
+title: From Payload Default Auth
+description: Migrating from Payload's built-in authentication
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+# Migration from Payload Default Auth
+
+Migrate your existing Payload CMS project to use payload-auth.
+
+## Overview
+
+This guide covers migrating from Payload's default authentication to payload-auth with Better Auth integration.
+
+<Callout type="info">
+payload-auth is designed to work alongside existing Payload auth. You can migrate gradually.
+</Callout>
+
+## Migration Strategies
+
+### Strategy 1: Hybrid Mode (Recommended)
+
+Keep Payload's admin auth, use Better Auth for frontend.
+
+**Pros:**
+- Minimal changes to existing admin workflow
+- Existing users continue to work
+- Low risk migration
+
+**Cons:**
+- Two auth systems to manage
+
+### Strategy 2: Full Migration
+
+Replace Payload auth entirely with Better Auth.
+
+**Pros:**
+- Single unified auth system
+- Full feature set (social, 2FA, passkeys)
+
+**Cons:**
+- Requires more changes
+- Existing passwords may need migration
+
+## Hybrid Mode Migration
+
+<Steps>
+<Step>
+### Install payload-auth
+
+```bash
+pnpm add payload-auth better-auth
+```
+</Step>
+
+<Step>
+### Add Plugin to Config
+
+```ts title="payload.config.ts"
+import { betterAuthPlugin } from 'payload-auth/better-auth'
+
+export default buildConfig({
+  // Keep existing config
+  admin: {
+    user: 'users', // Existing users collection
+  },
+  plugins: [
+    betterAuthPlugin({
+      // Don't disable default auth
+      betterAuthOptions: {
+        baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+        emailAndPassword: { enabled: true },
+      },
+    }),
+  ],
+})
+```
+</Step>
+
+<Step>
+### Create Auth API Route
+
+```ts title="app/api/auth/[...all]/route.ts"
+import { getPayloadAuth } from 'payload-auth/better-auth'
+import config from '@payload-config'
+
+const handler = async (request: Request) => {
+  const { betterAuth } = await getPayloadAuth(config)
+  return betterAuth.handler(request)
+}
+
+export { handler as GET, handler as POST }
+```
+</Step>
+
+<Step>
+### Run Migrations
+
+```bash
+pnpm payload migrate:create
+pnpm payload migrate
+```
+
+This adds `sessions`, `accounts`, and `verifications` collections.
+</Step>
+
+<Step>
+### Create Auth Client
+
+```ts title="lib/auth/client.ts"
+import { createAuthClient } from 'better-auth/react'
+
+export const authClient = createAuthClient({
+  baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+})
+```
+</Step>
+
+<Step>
+### Update Frontend Auth
+
+Replace Payload API calls with Better Auth:
+
+```tsx
+// Before
+const response = await fetch('/api/users/login', {
+  method: 'POST',
+  body: JSON.stringify({ email, password }),
+})
+
+// After
+const { data, error } = await authClient.signIn.email({
+  email,
+  password,
+})
+```
+</Step>
+</Steps>
+
+## Full Migration
+
+<Steps>
+<Step>
+### Enable Full Better Auth Mode
+
+```ts
+betterAuthPlugin({
+  disableDefaultPayloadAuth: true,
+  admin: {
+    loginMethods: ['emailPassword'],
+  },
+  // ...
+})
+```
+</Step>
+
+<Step>
+### Migrate User Passwords
+
+Existing Payload passwords use scrypt. Better Auth uses bcrypt by default.
+
+Option A: Configure Better Auth to use scrypt:
+
+```ts
+betterAuthOptions: {
+  advanced: {
+    password: {
+      hash: async (password) => {
+        // Use Payload's hashing
+        return await hashPassword(password)
+      },
+      verify: async (password, hash) => {
+        return await verifyPassword(password, hash)
+      },
+    },
+  },
+}
+```
+
+Option B: Force password reset for all users.
+</Step>
+
+<Step>
+### Migrate Sessions
+
+Old Payload sessions won't work. Users will need to re-login.
+
+To minimize disruption:
+1. Keep old sessions table temporarily
+2. On first Better Auth login, migrate user data
+3. Remove old sessions after transition period
+</Step>
+
+<Step>
+### Update Admin Access
+
+Ensure admin users have the correct role:
+
+```ts
+betterAuthPlugin({
+  users: {
+    adminRoles: ['admin'],
+    defaultAdminRole: 'admin',
+  },
+})
+```
+
+Verify existing admin users have the `admin` role:
+
+```sql
+UPDATE users SET role = ARRAY['admin'] WHERE is_admin = true;
+```
+</Step>
+</Steps>
+
+## Data Migration Script
+
+```ts
+// scripts/migrate-users.ts
+import { getPayload } from 'payload'
+import config from '@payload-config'
+
+async function migrateUsers() {
+  const payload = await getPayload({ config })
+  
+  const users = await payload.find({
+    collection: 'users',
+    limit: 1000,
+  })
+  
+  for (const user of users.docs) {
+    // Add default role if missing
+    if (!user.role || user.role.length === 0) {
+      await payload.update({
+        collection: 'users',
+        id: user.id,
+        data: {
+          role: ['user'],
+        },
+      })
+    }
+    
+    // Create account record for email provider
+    const existingAccount = await payload.find({
+      collection: 'accounts',
+      where: {
+        and: [
+          { user: { equals: user.id } },
+          { providerId: { equals: 'credential' } },
+        ],
+      },
+    })
+    
+    if (existingAccount.totalDocs === 0) {
+      await payload.create({
+        collection: 'accounts',
+        data: {
+          accountId: user.id,
+          providerId: 'credential',
+          user: user.id,
+          password: user.password, // Already hashed
+        },
+      })
+    }
+  }
+  
+  console.log('Migration complete')
+}
+
+migrateUsers()
+```
+
+## Troubleshooting Migration
+
+### Users can't login
+
+- Check password hashing is compatible
+- Verify accounts collection has entries
+- Check role field is populated
+
+### Admin access lost
+
+- Verify `adminRoles` config matches user roles
+- Check user has role in roles array
+
+### Old sessions still active
+
+- Clear `sessions` collection
+- Users will need to re-login
+
+<Callout type="warn">
+Always backup your database before running migrations.
+</Callout>

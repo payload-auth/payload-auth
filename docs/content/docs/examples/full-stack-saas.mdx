@@ -1,0 +1,341 @@
+---
+title: Full-Stack SaaS
+description: Multi-tenant SaaS application with organizations
+---
+
+# Full-Stack SaaS Example
+
+Building a multi-tenant SaaS application with payload-auth.
+
+## Features Demonstrated
+
+- Organization-based multi-tenancy
+- Role-based access control
+- Team management
+- Subscription tiers (optional Stripe integration)
+
+## Configuration
+
+```ts title="payload.config.ts"
+import { buildConfig } from 'payload'
+import { postgresAdapter } from '@payloadcms/db-postgres'
+import { betterAuthPlugin } from 'payload-auth/better-auth'
+import { admin, twoFactor, organization } from 'better-auth/plugins'
+import path from 'path'
+
+export default buildConfig({
+  admin: {
+    user: 'users',
+    importMap: {
+      baseDir: path.resolve(__dirname),
+    },
+  },
+  db: postgresAdapter({
+    pool: { connectionString: process.env.DATABASE_URI },
+  }),
+  secret: process.env.PAYLOAD_SECRET!,
+  collections: [Projects, Documents, Invoices],
+  plugins: [
+    betterAuthPlugin({
+      disableDefaultPayloadAuth: true,
+      admin: {
+        loginMethods: ['emailPassword', 'google', 'passkey'],
+      },
+      users: {
+        adminRoles: ['superadmin'],
+        roles: ['user', 'admin', 'superadmin'],
+      },
+      betterAuthOptions: {
+        baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+        emailAndPassword: { enabled: true },
+        socialProviders: {
+          google: {
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+          },
+        },
+        plugins: [
+          admin({
+            impersonationSessionDuration: 60 * 60,
+          }),
+          twoFactor({
+            issuer: 'SaaS App',
+          }),
+          organization({
+            teams: { enabled: true },
+            sendInvitationEmail: async ({ email, organization, url }) => {
+              // Send invitation email
+            },
+          }),
+        ],
+      },
+    }),
+  ],
+})
+```
+
+## Organization-Scoped Collection
+
+```ts title="collections/Projects.ts"
+import { CollectionConfig } from 'payload'
+import { getActiveOrganization } from '@/lib/auth/server'
+
+export const Projects: CollectionConfig = {
+  slug: 'projects',
+  fields: [
+    { name: 'name', type: 'text', required: true },
+    { name: 'description', type: 'textarea' },
+    { name: 'status', type: 'select', options: ['active', 'completed', 'archived'] },
+    {
+      name: 'organization',
+      type: 'relationship',
+      relationTo: 'organizations',
+      required: true,
+      admin: { readOnly: true },
+    },
+    {
+      name: 'team',
+      type: 'relationship',
+      relationTo: 'teams',
+      admin: { condition: (data) => !!data?.organization },
+    },
+  ],
+  access: {
+    read: async ({ req }) => {
+      const orgId = await getActiveOrganization(req)
+      if (!orgId) return false
+      return { organization: { equals: orgId } }
+    },
+    create: async ({ req }) => !!(await getActiveOrganization(req)),
+    update: async ({ req }) => {
+      const orgId = await getActiveOrganization(req)
+      if (!orgId) return false
+      return { organization: { equals: orgId } }
+    },
+    delete: async ({ req }) => {
+      // Only org admins can delete
+      const member = await getOrgMembership(req)
+      return member?.role === 'owner' || member?.role === 'admin'
+    },
+  },
+  hooks: {
+    beforeChange: [
+      async ({ req, data, operation }) => {
+        if (operation === 'create') {
+          data.organization = await getActiveOrganization(req)
+        }
+        return data
+      },
+    ],
+  },
+}
+```
+
+## Auth Helpers
+
+```ts title="lib/auth/server.ts"
+import { getPayloadAuth } from 'payload-auth/better-auth'
+import config from '@payload-config'
+import { headers } from 'next/headers'
+import { cache } from 'react'
+
+export const getSession = cache(async () => {
+  const { betterAuth } = await getPayloadAuth(config)
+  return betterAuth.api.getSession({
+    headers: await headers(),
+  })
+})
+
+export const getActiveOrganization = cache(async (req?: any) => {
+  if (req) {
+    const { betterAuth } = await getPayloadAuth(config)
+    const session = await betterAuth.api.getSession({
+      headers: req.headers,
+    })
+    return session?.session.activeOrganizationId ?? null
+  }
+  
+  const session = await getSession()
+  return session?.session.activeOrganizationId ?? null
+})
+
+export const getOrgMembership = cache(async (req?: any) => {
+  const { payload } = await getPayloadAuth(config)
+  const session = await getSession()
+  
+  if (!session?.session.activeOrganizationId) return null
+  
+  const members = await payload.find({
+    collection: 'members',
+    where: {
+      and: [
+        { organization: { equals: session.session.activeOrganizationId } },
+        { user: { equals: session.user.id } },
+      ],
+    },
+    limit: 1,
+  })
+  
+  return members.docs[0] ?? null
+})
+```
+
+## Organization Switcher Component
+
+```tsx title="components/org-switcher.tsx"
+'use client'
+
+import { authClient } from '@/lib/auth/client'
+import { useRouter } from 'next/navigation'
+
+export function OrganizationSwitcher() {
+  const { data: orgs } = authClient.organization.useListOrganizations()
+  const { data: session } = authClient.useSession()
+  const router = useRouter()
+  
+  const activeOrgId = session?.session.activeOrganizationId
+  const activeOrg = orgs?.find(o => o.id === activeOrgId)
+  
+  const handleSwitch = async (orgId: string) => {
+    await authClient.organization.setActive({ organizationId: orgId })
+    router.refresh()
+  }
+  
+  const handleCreate = async () => {
+    const name = prompt('Organization name:')
+    if (!name) return
+    
+    const { data } = await authClient.organization.create({
+      name,
+      slug: name.toLowerCase().replace(/\s+/g, '-'),
+    })
+    
+    if (data) {
+      await handleSwitch(data.id)
+    }
+  }
+  
+  return (
+    <div className="relative">
+      <select
+        value={activeOrgId ?? ''}
+        onChange={(e) => handleSwitch(e.target.value)}
+        className="p-2 border rounded"
+      >
+        <option value="" disabled>Select organization</option>
+        {orgs?.map(org => (
+          <option key={org.id} value={org.id}>
+            {org.name}
+          </option>
+        ))}
+      </select>
+      <button onClick={handleCreate} className="ml-2 p-2">
+        + New
+      </button>
+    </div>
+  )
+}
+```
+
+## Team Management
+
+```tsx title="app/(frontend)/settings/team/page.tsx"
+import { getSession, getPayload, getActiveOrganization } from '@/lib/auth/server'
+import { redirect } from 'next/navigation'
+import { InviteMemberForm } from '@/components/invite-member-form'
+
+export default async function TeamPage() {
+  const session = await getSession()
+  if (!session) redirect('/login')
+  
+  const orgId = await getActiveOrganization()
+  if (!orgId) redirect('/organizations')
+  
+  const payload = await getPayload()
+  
+  const members = await payload.find({
+    collection: 'members',
+    where: { organization: { equals: orgId } },
+    depth: 2,
+  })
+  
+  return (
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-6">Team Members</h1>
+      
+      <div className="grid gap-4 mb-8">
+        {members.docs.map(member => (
+          <div key={member.id} className="flex items-center justify-between p-4 border rounded">
+            <div>
+              <p className="font-medium">{member.user.name}</p>
+              <p className="text-sm text-gray-500">{member.user.email}</p>
+            </div>
+            <span className="px-2 py-1 bg-gray-100 rounded text-sm">
+              {member.role}
+            </span>
+          </div>
+        ))}
+      </div>
+      
+      <InviteMemberForm organizationId={orgId} />
+    </div>
+  )
+}
+```
+
+## Dashboard with Organization Context
+
+```tsx title="app/(frontend)/dashboard/page.tsx"
+import { getSession, getPayload, getActiveOrganization } from '@/lib/auth/server'
+import { redirect } from 'next/navigation'
+import { OrganizationSwitcher } from '@/components/org-switcher'
+
+export default async function DashboardPage() {
+  const session = await getSession()
+  if (!session) redirect('/login')
+  
+  const orgId = await getActiveOrganization()
+  
+  // If no org selected, show org selection
+  if (!orgId) {
+    return (
+      <div className="p-8">
+        <h1 className="text-2xl font-bold mb-4">Select an Organization</h1>
+        <OrganizationSwitcher />
+      </div>
+    )
+  }
+  
+  const payload = await getPayload()
+  
+  const [projects, org] = await Promise.all([
+    payload.find({
+      collection: 'projects',
+      where: { organization: { equals: orgId } },
+    }),
+    payload.findByID({
+      collection: 'organizations',
+      id: orgId,
+    }),
+  ])
+  
+  return (
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">{org.name} Dashboard</h1>
+        <OrganizationSwitcher />
+      </div>
+      
+      <div className="grid grid-cols-3 gap-4">
+        <div className="p-4 bg-blue-50 rounded">
+          <p className="text-3xl font-bold">{projects.totalDocs}</p>
+          <p className="text-gray-600">Projects</p>
+        </div>
+        {/* More stats */}
+      </div>
+    </div>
+  )
+}
+```
+
+This example demonstrates a complete multi-tenant SaaS setup with organization switching, team management, and scoped data access.

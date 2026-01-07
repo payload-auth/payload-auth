@@ -1,0 +1,143 @@
+---
+title: Architecture
+description: Understanding how payload-auth integrates Better Auth with Payload CMS
+---
+
+# Architecture
+
+payload-auth consists of three main components that work together to provide authentication.
+
+## Component Overview
+
+### 1. The Adapter
+
+The adapter acts as a bridge between Better Auth and Payload's database layer.
+
+```
+Better Auth ──▶ Adapter ──▶ Payload DB Operations
+              (transform)
+```
+
+Key responsibilities:
+- Translates Better Auth queries to Payload operations
+- Handles field name mapping (e.g., `userId` → `user` relationship)
+- Converts ID types between systems
+- Manages schema synchronization
+
+### 2. The Plugin
+
+The Payload plugin that configures collections and integrates with the Payload lifecycle.
+
+```ts
+betterAuthPlugin(options) → (config: Config) → Config
+```
+
+Key responsibilities:
+- Builds auth-related collections automatically
+- Sanitizes Better Auth options
+- Configures custom admin views (when using Better Auth for admin)
+- Sets up hooks and endpoints
+
+### 3. Shared Components
+
+UI components and utilities used across both frontend and admin.
+
+## Data Flow
+
+### Authentication Flow
+
+```
+1. User submits credentials
+   ↓
+2. Request hits /api/auth/[...all]
+   ↓
+3. Better Auth processes request
+   ↓
+4. Adapter translates to Payload operations
+   ↓
+5. Payload performs database operations
+   ↓
+6. Response returned through Better Auth
+```
+
+### Initialization Flow
+
+```
+1. Payload loads config
+   ↓
+2. betterAuthPlugin() called
+   ↓
+3. buildBetterAuthData() generates schemas
+   ↓
+4. buildCollections() creates collection configs
+   ↓
+5. sanitizeBetterAuthOptions() configures Better Auth
+   ↓
+6. onInit: initBetterAuth() creates auth instance
+   ↓
+7. payload.betterAuth is available
+```
+
+## Schema Mapping
+
+payload-auth maintains a mapping between Better Auth's schema and Payload's collections.
+
+### Model Keys vs Collection Slugs
+
+| Better Auth Model | Default Payload Slug |
+|-------------------|---------------------|
+| `user` | `users` |
+| `session` | `sessions` |
+| `account` | `accounts` |
+| `verification` | `verifications` |
+| `organization` | `organizations` |
+| `member` | `members` |
+
+### Field Mapping
+
+Some fields are renamed for Payload conventions:
+
+| Better Auth Field | Payload Field |
+|-------------------|---------------|
+| `userId` | `user` (relationship) |
+| `organizationId` | `organization` (relationship) |
+| `inviterId` | `inviter` (relationship) |
+
+## The BetterAuth Instance
+
+After initialization, `payload.betterAuth` provides access to:
+
+```ts
+interface BetterAuthReturn {
+  handler: (request: Request) => Promise<Response>
+  api: { /* All Better Auth API methods */ }
+  options: BetterAuthOptions
+  $Infer: { Session, User, ... }
+}
+```
+
+### Accessing in Payload
+
+```ts
+// In a hook or endpoint
+const auth = req.payload.betterAuth
+
+// Get session
+const session = await auth.api.getSession({
+  headers: req.headers
+})
+
+// Create user programmatically  
+const user = await auth.api.signUpEmail({
+  body: { email, password, name }
+})
+```
+
+### Accessing in Next.js
+
+```ts
+import { getPayloadAuth } from 'payload-auth/better-auth'
+import config from '@payload-config'
+
+const { payload, betterAuth } = await getPayloadAuth(config)
+```

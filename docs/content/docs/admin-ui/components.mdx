@@ -1,0 +1,234 @@
+---
+title: UI Components
+description: Reusable components provided by payload-auth
+---
+
+# UI Components
+
+payload-auth provides pre-built components for authentication flows.
+
+## Client Components
+
+Import from `payload-auth/better-auth/client`:
+
+```ts
+import {
+  LoginForm,
+  LogoutButton,
+  ManagePasskeys,
+  GoogleButton,
+  GitHubButton,
+  DiscordButton,
+  // ... other social buttons
+} from 'payload-auth/better-auth/client'
+```
+
+### LoginForm
+
+Complete login form with email/password:
+
+```tsx
+import { LoginForm } from 'payload-auth/better-auth/client'
+
+export function LoginPage() {
+  return (
+    <LoginForm
+      onSuccess={() => {
+        window.location.href = '/dashboard'
+      }}
+      onError={(error) => {
+        console.error(error)
+      }}
+    />
+  )
+}
+```
+
+### LogoutButton
+
+Button to sign out:
+
+```tsx
+import { LogoutButton } from 'payload-auth/better-auth/client'
+
+export function Header() {
+  return (
+    <nav>
+      <LogoutButton 
+        redirectTo="/login"
+        className="btn-secondary"
+      >
+        Sign Out
+      </LogoutButton>
+    </nav>
+  )
+}
+```
+
+### ManagePasskeys
+
+UI for managing user passkeys:
+
+```tsx
+import { ManagePasskeys } from 'payload-auth/better-auth/client'
+
+export function SecuritySettings() {
+  return (
+    <section>
+      <h2>Passkeys</h2>
+      <ManagePasskeys />
+    </section>
+  )
+}
+```
+
+Shows:
+- List of registered passkeys
+- Button to add new passkey
+- Delete passkey option
+
+### Social Buttons
+
+Pre-styled OAuth buttons:
+
+```tsx
+import {
+  GoogleButton,
+  GitHubButton,
+  DiscordButton,
+  AppleButton,
+  MicrosoftButton,
+  TwitterButton,
+} from 'payload-auth/better-auth/client'
+
+export function SocialLogin() {
+  return (
+    <div className="flex flex-col gap-2">
+      <GoogleButton callbackURL="/dashboard">
+        Continue with Google
+      </GoogleButton>
+      <GitHubButton callbackURL="/dashboard">
+        Continue with GitHub
+      </GitHubButton>
+      <DiscordButton callbackURL="/dashboard">
+        Continue with Discord
+      </DiscordButton>
+    </div>
+  )
+}
+```
+
+## Server Components
+
+Import from `payload-auth/better-auth/rsc`:
+
+```ts
+import {
+  RSCRedirect,
+  // ... other RSC components
+} from 'payload-auth/better-auth/rsc'
+```
+
+### RSCRedirect
+
+Server-side redirect component:
+
+```tsx
+import { RSCRedirect } from 'payload-auth/better-auth/rsc'
+import { getPayloadAuth } from 'payload-auth/better-auth'
+import config from '@payload-config'
+import { headers } from 'next/headers'
+
+export default async function ProtectedPage() {
+  const { betterAuth } = await getPayloadAuth(config)
+  const session = await betterAuth.api.getSession({
+    headers: await headers(),
+  })
+  
+  if (!session) {
+    return <RSCRedirect url="/login" />
+  }
+  
+  return <div>Protected content</div>
+}
+```
+
+## Admin-Specific Components
+
+Used internally by custom admin views:
+
+### AdminInviteButton
+
+Add to users collection for invite functionality:
+
+```tsx
+import { AdminInviteButton } from 'payload-auth/better-auth/client'
+
+// In users collection config
+admin: {
+  components: {
+    beforeListTable: [AdminInviteButton],
+  },
+}
+```
+
+### TokenField
+
+Read-only field for displaying tokens:
+
+```tsx
+import { TokenField } from 'payload-auth/better-auth/client'
+
+// In admin-invitations collection
+fields: [
+  {
+    name: 'token',
+    type: 'text',
+    admin: {
+      components: {
+        Field: TokenField,
+      },
+    },
+  },
+]
+```
+
+## Component Customization
+
+Override default components via collection config:
+
+```ts
+betterAuthPlugin({
+  users: {
+    collectionOverrides: ({ collection }) => ({
+      ...collection,
+      admin: {
+        ...collection.admin,
+        components: {
+          ...collection.admin?.components,
+          beforeListTable: [
+            // Your custom components
+          ],
+        },
+      },
+    }),
+  },
+})
+```
+
+## Styling Components
+
+Components accept standard React props:
+
+```tsx
+<LoginForm 
+  className="my-login-form"
+  style={{ maxWidth: 400 }}
+/>
+
+<LogoutButton className="btn btn-danger">
+  Sign Out
+</LogoutButton>
+```
+
+For admin components, styles use Payload CSS variables for theme consistency.

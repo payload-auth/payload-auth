@@ -1,0 +1,10 @@
+{
+  "title": "Authentication",
+  "pages": [
+    "email-password",
+    "social-providers",
+    "magic-link",
+    "passkeys",
+    "two-factor"
+  ]
+}

@@ -1,0 +1,239 @@
+---
+title: Passkeys
+description: WebAuthn passwordless authentication
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Passkeys
+
+Enable passwordless authentication using WebAuthn/FIDO2 with biometrics, hardware keys, or device authentication.
+
+## Installation
+
+```bash
+pnpm add @better-auth/passkey
+```
+
+## Configuration
+
+```ts
+import { passkey } from '@better-auth/passkey'
+
+betterAuthPlugin({
+  betterAuthOptions: {
+    plugins: [
+      passkey({
+        rpID: 'your-domain.com', // Relying Party ID
+        rpName: 'Your App Name',
+        origin: 'https://your-domain.com',
+      }),
+    ],
+  },
+})
+```
+
+### Options
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `rpID` | `string` | Yes | Your domain (e.g., `example.com`) |
+| `rpName` | `string` | Yes | Display name for your app |
+| `origin` | `string` | Yes | Full origin URL |
+| `crossOrigin` | `boolean` | No | Allow cross-origin passkeys |
+
+## Client Setup
+
+```ts title="lib/auth/client.ts"
+import { createAuthClient } from 'better-auth/react'
+import { passkeyClient } from '@better-auth/passkey/client'
+
+export const authClient = createAuthClient({
+  baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+  plugins: [passkeyClient()],
+})
+```
+
+## Registering a Passkey
+
+```tsx
+'use client'
+
+import { authClient } from '@/lib/auth/client'
+import { useState } from 'react'
+
+export function RegisterPasskey() {
+  const [name, setName] = useState('')
+  const { data: session } = authClient.useSession()
+  
+  const handleRegister = async () => {
+    const { error } = await authClient.passkey.addPasskey({
+      name: name || 'My Device',
+    })
+    
+    if (error) {
+      console.error('Failed to register passkey:', error.message)
+      return
+    }
+    
+    // Passkey registered successfully
+  }
+  
+  if (!session) {
+    return <p>Sign in to add a passkey</p>
+  }
+  
+  return (
+    <div>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Passkey name (e.g., MacBook Pro)"
+      />
+      <button onClick={handleRegister}>
+        Add Passkey
+      </button>
+    </div>
+  )
+}
+```
+
+## Sign In with Passkey
+
+### Passwordless Sign In
+
+```tsx
+'use client'
+
+import { authClient } from '@/lib/auth/client'
+
+export function PasskeySignIn() {
+  const handleSignIn = async () => {
+    const { data, error } = await authClient.signIn.passkey()
+    
+    if (error) {
+      console.error('Passkey sign in failed:', error.message)
+      return
+    }
+    
+    // User signed in
+    window.location.href = '/dashboard'
+  }
+  
+  return (
+    <button onClick={handleSignIn}>
+      Sign in with Passkey
+    </button>
+  )
+}
+```
+
+### With Conditional UI (Autofill)
+
+Enable passkey autofill suggestions in email fields:
+
+```tsx
+'use client'
+
+import { authClient } from '@/lib/auth/client'
+import { useEffect, useRef } from 'react'
+
+export function LoginForm() {
+  const abortRef = useRef<AbortController | null>(null)
+  
+  useEffect(() => {
+    // Start conditional UI when component mounts
+    abortRef.current = new AbortController()
+    
+    authClient.signIn.passkey({
+      autoFill: true,
+      signal: abortRef.current.signal,
+    }).catch(() => {
+      // User may have cancelled or no passkey available
+    })
+    
+    return () => {
+      abortRef.current?.abort()
+    }
+  }, [])
+  
+  return (
+    <form>
+      <input
+        type="email"
+        autoComplete="username webauthn"
+        placeholder="Email"
+      />
+      {/* Other form fields */}
+    </form>
+  )
+}
+```
+
+## Managing Passkeys
+
+### List User's Passkeys
+
+```tsx
+const passkeys = await authClient.passkey.listUserPasskeys()
+
+// Returns array of:
+// { id, name, createdAt, deviceType }
+```
+
+### Delete a Passkey
+
+```tsx
+await authClient.passkey.deletePasskey({
+  passkeyId: 'passkey-id',
+})
+```
+
+## Admin Panel Passkey Support
+
+Enable passkey login in Payload admin:
+
+```ts
+betterAuthPlugin({
+  disableDefaultPayloadAuth: true,
+  admin: {
+    loginMethods: ['emailPassword', 'passkey'],
+  },
+  betterAuthOptions: {
+    plugins: [
+      passkey({
+        rpID: 'your-domain.com',
+        rpName: 'Admin',
+        origin: 'https://your-domain.com',
+      }),
+    ],
+  },
+})
+```
+
+## Passkey UI Component
+
+payload-auth provides a passkey management component:
+
+```tsx
+import { ManagePasskeys } from 'payload-auth/better-auth/client'
+
+export function SecuritySettings() {
+  return (
+    <div>
+      <h2>Passkeys</h2>
+      <ManagePasskeys />
+    </div>
+  )
+}
+```
+
+<Callout type="warn" title="HTTPS Required">
+WebAuthn requires HTTPS in production. For development, `localhost` works.
+</Callout>
+
+<Callout type="info">
+Passkeys are stored in the `passkeys` collection, automatically created when the plugin is enabled.
+</Callout>

@@ -1,0 +1,190 @@
+---
+title: Magic Link
+description: Passwordless authentication via email links
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Magic Link
+
+Enable passwordless authentication by sending login links via email.
+
+## Configuration
+
+```ts
+import { magicLink } from 'better-auth/plugins'
+
+betterAuthPlugin({
+  betterAuthOptions: {
+    plugins: [
+      magicLink({
+        sendMagicLink: async ({ email, token, url }) => {
+          // Send email with magic link
+          await payload.sendEmail({
+            to: email,
+            subject: 'Sign In to Your Account',
+            html: `
+              <h1>Sign In</h1>
+              <p>Click the link below to sign in:</p>
+              <a href="${url}">Sign In</a>
+              <p>This link expires in 10 minutes.</p>
+            `,
+          })
+        },
+        expiresIn: 600, // 10 minutes
+      }),
+    ],
+  },
+})
+```
+
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `expiresIn` | `number` | `300` | Link expiration in seconds |
+| `sendMagicLink` | `function` | Required | Email sending function |
+
+## Requesting a Magic Link
+
+### Client-Side
+
+```tsx
+'use client'
+
+import { authClient } from '@/lib/auth/client'
+import { useState } from 'react'
+
+export function MagicLinkForm() {
+  const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    const { error } = await authClient.signIn.magicLink({
+      email,
+      callbackURL: '/dashboard',
+    })
+    
+    if (!error) {
+      setSent(true)
+    }
+  }
+  
+  if (sent) {
+    return (
+      <div>
+        <h2>Check your email!</h2>
+        <p>We sent a sign-in link to {email}</p>
+      </div>
+    )
+  }
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Enter your email"
+        required
+      />
+      <button type="submit">Send Magic Link</button>
+    </form>
+  )
+}
+```
+
+## Magic Link Callback
+
+When users click the magic link, they're redirected to your callback URL with the session already established.
+
+```tsx title="app/dashboard/page.tsx"
+import { getPayloadAuth } from 'payload-auth/better-auth'
+import config from '@payload-config'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
+
+export default async function DashboardPage() {
+  const { betterAuth } = await getPayloadAuth(config)
+  
+  const session = await betterAuth.api.getSession({
+    headers: await headers(),
+  })
+  
+  if (!session) {
+    redirect('/login')
+  }
+  
+  return <div>Welcome, {session.user.email}!</div>
+}
+```
+
+## Combining with Email/Password
+
+Magic link can work alongside email/password:
+
+```ts
+betterAuthPlugin({
+  admin: {
+    loginMethods: ['emailPassword', 'magicLink'],
+  },
+  betterAuthOptions: {
+    emailAndPassword: { enabled: true },
+    plugins: [
+      magicLink({
+        sendMagicLink: async ({ email, url }) => { /* ... */ },
+      }),
+    ],
+  },
+})
+```
+
+## Email OTP Alternative
+
+For a code-based approach instead of links:
+
+```ts
+import { emailOTP } from 'better-auth/plugins'
+
+betterAuthPlugin({
+  betterAuthOptions: {
+    plugins: [
+      emailOTP({
+        sendVerificationOTP: async ({ email, otp }) => {
+          await payload.sendEmail({
+            to: email,
+            subject: 'Your Sign In Code',
+            html: `
+              <h1>Your Code: ${otp}</h1>
+              <p>Enter this code to sign in. It expires in 5 minutes.</p>
+            `,
+          })
+        },
+        expiresIn: 300, // 5 minutes
+        otpLength: 6,
+      }),
+    ],
+  },
+})
+```
+
+### Using Email OTP
+
+```tsx
+// Request OTP
+await authClient.signIn.emailOTP({
+  email: 'user@example.com',
+})
+
+// Verify OTP
+const { data, error } = await authClient.signIn.emailOTP.verify({
+  email: 'user@example.com',
+  otp: '123456',
+})
+```
+
+<Callout type="info">
+Magic link and email OTP are great for users who prefer not to remember passwords, but ensure your email delivery is reliable.
+</Callout>

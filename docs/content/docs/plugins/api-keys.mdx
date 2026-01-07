@@ -1,0 +1,221 @@
+---
+title: API Keys
+description: Generate and manage API keys for programmatic access
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# API Keys
+
+Enable API key authentication for programmatic access to your application.
+
+## Installation
+
+```bash
+pnpm add @better-auth/api-key
+```
+
+## Configuration
+
+```ts
+import { apiKey } from '@better-auth/api-key'
+
+betterAuthPlugin({
+  betterAuthOptions: {
+    plugins: [
+      apiKey({
+        rateLimit: {
+          enabled: true,
+          max: 1000,
+          window: 60, // seconds
+        },
+        expiresIn: 30 * 24 * 60 * 60, // 30 days
+        prefix: 'pk_', // Key prefix
+      }),
+    ],
+  },
+})
+```
+
+### Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `rateLimit.enabled` | `boolean` | Enable rate limiting per key |
+| `rateLimit.max` | `number` | Max requests per window |
+| `rateLimit.window` | `number` | Window size in seconds |
+| `expiresIn` | `number` | Default key expiration |
+| `prefix` | `string` | Prefix for generated keys |
+
+## Client Setup
+
+```ts
+import { createAuthClient } from 'better-auth/react'
+import { apiKeyClient } from '@better-auth/api-key/client'
+
+export const authClient = createAuthClient({
+  baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+  plugins: [apiKeyClient()],
+})
+```
+
+## Creating API Keys
+
+```tsx
+'use client'
+
+import { authClient } from '@/lib/auth/client'
+import { useState } from 'react'
+
+export function CreateAPIKey() {
+  const [keyName, setKeyName] = useState('')
+  const [generatedKey, setGeneratedKey] = useState<string | null>(null)
+  
+  const handleCreate = async () => {
+    const { data, error } = await authClient.apiKey.create({
+      name: keyName,
+      expiresIn: 90 * 24 * 60 * 60, // 90 days
+    })
+    
+    if (error) {
+      console.error(error.message)
+      return
+    }
+    
+    // IMPORTANT: This is the only time the full key is shown
+    setGeneratedKey(data.key)
+  }
+  
+  if (generatedKey) {
+    return (
+      <div>
+        <h3>Your API Key</h3>
+        <p>Copy this now - it won't be shown again:</p>
+        <code>{generatedKey}</code>
+      </div>
+    )
+  }
+  
+  return (
+    <div>
+      <input
+        type="text"
+        value={keyName}
+        onChange={(e) => setKeyName(e.target.value)}
+        placeholder="Key name (e.g., Production API)"
+      />
+      <button onClick={handleCreate}>Create Key</button>
+    </div>
+  )
+}
+```
+
+## Listing API Keys
+
+```tsx
+const { data: keys } = await authClient.apiKey.list()
+
+// Returns array of:
+// { id, name, prefix, createdAt, expiresAt, lastUsed }
+```
+
+<Callout type="info">
+The full key is only returned on creation. After that, only the prefix is stored.
+</Callout>
+
+## Revoking API Keys
+
+```tsx
+await authClient.apiKey.revoke({
+  keyId: 'key-id',
+})
+```
+
+## Using API Keys
+
+### In HTTP Headers
+
+```bash
+curl -X GET https://api.example.com/data \
+  -H "Authorization: Bearer pk_xxxxxxxxxxxxx"
+```
+
+### Validating API Keys in Payload
+
+```ts
+import { getPayloadAuth } from 'payload-auth/better-auth'
+import config from '@payload-config'
+
+export async function validateApiKey(request: Request) {
+  const { betterAuth } = await getPayloadAuth(config)
+  
+  const authHeader = request.headers.get('authorization')
+  const key = authHeader?.replace('Bearer ', '')
+  
+  if (!key) {
+    return null
+  }
+  
+  const { data, error } = await betterAuth.api.validateApiKey({
+    body: { key },
+  })
+  
+  if (error) {
+    return null
+  }
+  
+  return data.user
+}
+```
+
+### Middleware Example
+
+```ts title="middleware.ts"
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith('/api/v1')) {
+    const authHeader = request.headers.get('authorization')
+    
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Missing API key' },
+        { status: 401 }
+      )
+    }
+    
+    // Forward to API route for validation
+    return NextResponse.next()
+  }
+  
+  return NextResponse.next()
+}
+```
+
+## API Key Scopes
+
+Limit what an API key can access:
+
+```tsx
+await authClient.apiKey.create({
+  name: 'Read-only key',
+  scopes: ['read:users', 'read:posts'],
+})
+```
+
+Then validate scopes:
+
+```ts
+const { data } = await betterAuth.api.validateApiKey({
+  body: { key, requiredScopes: ['read:users'] },
+})
+```
+
+## Best Practices
+
+1. **Never log full API keys** - Only log prefixes for debugging
+2. **Set expiration** - Rotate keys regularly
+3. **Use scopes** - Limit key capabilities
+4. **Rate limit** - Protect against abuse
+5. **Monitor usage** - Track `lastUsed` timestamps

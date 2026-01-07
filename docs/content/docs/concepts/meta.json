@@ -1,0 +1,9 @@
+{
+  "title": "Concepts",
+  "pages": [
+    "architecture",
+    "collections",
+    "roles-permissions",
+    "sessions"
+  ]
+}

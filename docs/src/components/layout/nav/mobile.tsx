@@ -30,7 +30,7 @@ export function MobileNavbarBtn() {
     },
   };
 
-  const transition = { duration: 0.3, ease: [0.6, 0.05, 0.01, 0.9] };
+  const transition = { duration: 0.3, ease: [0.6, 0.05, 0.01, 0.9] as const };
 
   return (
     <motion.button

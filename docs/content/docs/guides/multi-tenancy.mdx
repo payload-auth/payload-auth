@@ -1,0 +1,263 @@
+---
+title: Multi-Tenancy
+description: Building multi-tenant applications with organizations
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Multi-Tenancy Guide
+
+Build SaaS applications with organization-scoped data using payload-auth.
+
+## Overview
+
+Multi-tenancy isolates data between organizations. Each organization sees only their own data.
+
+```
+Organization A          Organization B
+├── Users              ├── Users
+├── Projects           ├── Projects
+├── Documents          ├── Documents
+└── Settings           └── Settings
+```
+
+## Setup
+
+### Enable Organization Plugin
+
+```ts
+import { organization } from 'better-auth/plugins'
+
+betterAuthPlugin({
+  betterAuthOptions: {
+    plugins: [
+      organization({
+        teams: { enabled: true },
+        invitationExpiresIn: 7 * 24 * 60 * 60,
+        sendInvitationEmail: async ({ email, organization, url }) => {
+          // Send invite email
+        },
+      }),
+    ],
+  },
+})
+```
+
+### Create Tenant-Scoped Collections
+
+```ts
+const Projects = {
+  slug: 'projects',
+  fields: [
+    { name: 'name', type: 'text', required: true },
+    { name: 'description', type: 'textarea' },
+    {
+      name: 'organization',
+      type: 'relationship',
+      relationTo: 'organizations',
+      required: true,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+  ],
+  access: {
+    read: async ({ req }) => {
+      const orgId = await getActiveOrganization(req)
+      if (!orgId) return false
+      return { organization: { equals: orgId } }
+    },
+    create: async ({ req }) => {
+      return !!(await getActiveOrganization(req))
+    },
+    update: async ({ req }) => {
+      const orgId = await getActiveOrganization(req)
+      if (!orgId) return false
+      return { organization: { equals: orgId } }
+    },
+    delete: async ({ req }) => {
+      const orgId = await getActiveOrganization(req)
+      if (!orgId) return false
+      return { organization: { equals: orgId } }
+    },
+  },
+  hooks: {
+    beforeChange: [
+      async ({ req, data, operation }) => {
+        if (operation === 'create') {
+          const orgId = await getActiveOrganization(req)
+          data.organization = orgId
+        }
+        return data
+      },
+    ],
+  },
+}
+```
+
+### Helper Function
+
+```ts
+// lib/get-active-organization.ts
+import { getPayloadAuth } from 'payload-auth/better-auth'
+import config from '@payload-config'
+
+export async function getActiveOrganization(req: any) {
+  const { betterAuth } = await getPayloadAuth(config)
+  
+  const session = await betterAuth.api.getSession({
+    headers: req.headers,
+  })
+  
+  return session?.session.activeOrganizationId ?? null
+}
+```
+
+## User Flow
+
+### 1. Create Organization
+
+```tsx
+async function createOrganization(name: string) {
+  const { data, error } = await authClient.organization.create({
+    name,
+    slug: name.toLowerCase().replace(/\s+/g, '-'),
+  })
+  
+  if (!error) {
+    // Set as active organization
+    await authClient.organization.setActive({
+      organizationId: data.id,
+    })
+  }
+  
+  return data
+}
+```
+
+### 2. Invite Members
+
+```tsx
+async function inviteMember(email: string, role: 'admin' | 'member') {
+  const { data: session } = authClient.useSession()
+  
+  await authClient.organization.inviteMember({
+    organizationId: session?.session.activeOrganizationId!,
+    email,
+    role,
+  })
+}
+```
+
+### 3. Switch Organizations
+
+```tsx
+function OrganizationSwitcher() {
+  const { data: orgs } = authClient.organization.listOrganizations()
+  const { data: session } = authClient.useSession()
+  
+  const handleSwitch = async (orgId: string) => {
+    await authClient.organization.setActive({
+      organizationId: orgId,
+    })
+    // Refresh page to reload data with new org context
+    window.location.reload()
+  }
+  
+  return (
+    <select
+      value={session?.session.activeOrganizationId}
+      onChange={(e) => handleSwitch(e.target.value)}
+    >
+      {orgs?.map(org => (
+        <option key={org.id} value={org.id}>
+          {org.name}
+        </option>
+      ))}
+    </select>
+  )
+}
+```
+
+## Domain-Based Tenancy
+
+Route to organizations based on subdomain:
+
+```ts title="middleware.ts"
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+export function middleware(request: NextRequest) {
+  const host = request.headers.get('host') || ''
+  const subdomain = host.split('.')[0]
+  
+  // Skip for main domain
+  if (subdomain === 'app' || subdomain === 'www') {
+    return NextResponse.next()
+  }
+  
+  // Set organization slug in header for later lookup
+  const response = NextResponse.next()
+  response.headers.set('x-organization-slug', subdomain)
+  
+  return response
+}
+```
+
+Then resolve in your app:
+
+```ts
+async function getOrganizationFromRequest(req: Request) {
+  const slug = req.headers.get('x-organization-slug')
+  
+  if (slug) {
+    const org = await payload.find({
+      collection: 'organizations',
+      where: { slug: { equals: slug } },
+      limit: 1,
+    })
+    return org.docs[0] ?? null
+  }
+  
+  return null
+}
+```
+
+## Team-Based Permissions
+
+With teams enabled, scope access further:
+
+```ts
+access: {
+  read: async ({ req }) => {
+    const session = await getSession(req)
+    const orgId = session?.session.activeOrganizationId
+    const teamId = session?.session.activeTeamId
+    
+    if (teamId) {
+      // Team-scoped access
+      return { team: { equals: teamId } }
+    }
+    
+    if (orgId) {
+      // Org-wide access
+      return { organization: { equals: orgId } }
+    }
+    
+    return false
+  },
+}
+```
+
+<Callout type="info">
+Active organization and team are stored in the session, making them available on every request without additional queries.
+</Callout>
+
+## Data Isolation Best Practices
+
+1. **Always filter by organization** in access functions
+2. **Auto-set organization** in beforeChange hooks
+3. **Validate membership** before allowing operations
+4. **Index organization field** for query performance
+5. **Test with multiple organizations** to verify isolation

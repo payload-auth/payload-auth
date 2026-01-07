@@ -1,0 +1,8 @@
+{
+  "title": "Guides",
+  "pages": [
+    "access-control",
+    "email-setup",
+    "multi-tenancy"
+  ]
+}

@@ -1,13 +1,22 @@
 {
-	"title:": "guide",
-	"root": true,
-	"pages": [
-		"introduction",
-		"installation",
-		"basic-usage",
-		"email-password/sign-in-and-sign-up",
-		"email-password/password-reset",
-		"email-password/configuration",
-		"social-sign-on/apple"
-	]
+  "title": "payload-auth",
+  "root": true,
+  "pages": [
+    "introduction",
+    "installation",
+    "basic-usage",
+    "---Getting Started---",
+    "concepts",
+    "configuration",
+    "---Authentication---",
+    "authentication",
+    "---Features---",
+    "plugins",
+    "admin-ui",
+    "---Resources---",
+    "guides",
+    "reference",
+    "examples",
+    "migration"
+  ]
 }

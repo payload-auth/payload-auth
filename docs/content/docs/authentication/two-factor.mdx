@@ -1,0 +1,288 @@
+---
+title: Two-Factor Authentication
+description: Secure accounts with TOTP, SMS, or email verification
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Two-Factor Authentication
+
+Add an extra layer of security with two-factor authentication (2FA).
+
+## Configuration
+
+```ts
+import { twoFactor } from 'better-auth/plugins'
+
+betterAuthPlugin({
+  betterAuthOptions: {
+    plugins: [
+      twoFactor({
+        issuer: 'Your App Name',
+        
+        // Optional: Send OTP via email
+        otpOptions: {
+          sendOTP: async ({ user, otp }) => {
+            await payload.sendEmail({
+              to: user.email,
+              subject: 'Your verification code',
+              html: `<p>Your code is: <strong>${otp}</strong></p>`,
+            })
+          },
+        },
+      }),
+    ],
+  },
+})
+```
+
+### Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `issuer` | `string` | Name shown in authenticator apps |
+| `backupCodes` | `object` | Backup code configuration |
+| `otpOptions` | `object` | Email/SMS OTP configuration |
+
+## Client Setup
+
+```ts title="lib/auth/client.ts"
+import { createAuthClient } from 'better-auth/react'
+import { twoFactorClient } from 'better-auth/plugins/two-factor/client'
+
+export const authClient = createAuthClient({
+  baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+  plugins: [twoFactorClient()],
+})
+```
+
+## Enabling 2FA
+
+### Generate TOTP Secret
+
+```tsx
+'use client'
+
+import { authClient } from '@/lib/auth/client'
+import { useState } from 'react'
+
+export function Enable2FA() {
+  const [totpURI, setTotpURI] = useState<string | null>(null)
+  const [backupCodes, setBackupCodes] = useState<string[]>([])
+  
+  const handleEnable = async () => {
+    const { data, error } = await authClient.twoFactor.generateTOTP({
+      password: 'current-password', // Verify identity
+    })
+    
+    if (error) {
+      console.error(error.message)
+      return
+    }
+    
+    setTotpURI(data.totpURI)
+    setBackupCodes(data.backupCodes)
+  }
+  
+  if (totpURI) {
+    return (
+      <div>
+        <h3>Scan this QR code</h3>
+        <QRCode value={totpURI} />
+        
+        <h3>Backup Codes</h3>
+        <p>Save these codes in a safe place:</p>
+        <ul>
+          {backupCodes.map(code => (
+            <li key={code}>{code}</li>
+          ))}
+        </ul>
+        
+        <VerifySetup />
+      </div>
+    )
+  }
+  
+  return (
+    <button onClick={handleEnable}>
+      Enable Two-Factor Authentication
+    </button>
+  )
+}
+```
+
+### Verify Setup
+
+```tsx
+function VerifySetup() {
+  const [code, setCode] = useState('')
+  
+  const handleVerify = async () => {
+    const { error } = await authClient.twoFactor.verifyTOTP({
+      code,
+    })
+    
+    if (error) {
+      console.error('Invalid code')
+      return
+    }
+    
+    // 2FA is now enabled
+  }
+  
+  return (
+    <div>
+      <input
+        type="text"
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        placeholder="Enter code from app"
+        maxLength={6}
+      />
+      <button onClick={handleVerify}>Verify & Enable</button>
+    </div>
+  )
+}
+```
+
+## 2FA Login Flow
+
+When a user with 2FA enabled signs in, the initial sign-in returns a flag indicating 2FA is required:
+
+```tsx
+'use client'
+
+import { authClient } from '@/lib/auth/client'
+import { useState } from 'react'
+
+export function LoginWithTwoFactor() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [requires2FA, setRequires2FA] = useState(false)
+  const [code, setCode] = useState('')
+  
+  const handleLogin = async () => {
+    const { data, error } = await authClient.signIn.email({
+      email,
+      password,
+    })
+    
+    if (error?.code === 'TWO_FACTOR_REQUIRED') {
+      setRequires2FA(true)
+      return
+    }
+    
+    // Logged in (no 2FA required)
+  }
+  
+  const handleVerify2FA = async () => {
+    const { data, error } = await authClient.twoFactor.verifyTOTP({
+      code,
+    })
+    
+    if (error) {
+      console.error('Invalid code')
+      return
+    }
+    
+    // Logged in successfully
+  }
+  
+  if (requires2FA) {
+    return (
+      <div>
+        <h3>Enter verification code</h3>
+        <input
+          type="text"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder="6-digit code"
+          maxLength={6}
+        />
+        <button onClick={handleVerify2FA}>Verify</button>
+      </div>
+    )
+  }
+  
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); handleLogin() }}>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email"
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Password"
+      />
+      <button type="submit">Sign In</button>
+    </form>
+  )
+}
+```
+
+## Backup Codes
+
+Users can use backup codes when they don't have access to their authenticator:
+
+```tsx
+await authClient.twoFactor.verifyBackupCode({
+  code: 'BACKUP-CODE-HERE',
+})
+```
+
+### Regenerate Backup Codes
+
+```tsx
+const { data } = await authClient.twoFactor.regenerateBackupCodes({
+  password: 'current-password',
+})
+
+// data.backupCodes contains new codes
+```
+
+## Disabling 2FA
+
+```tsx
+await authClient.twoFactor.disable({
+  password: 'current-password',
+})
+```
+
+## Admin Panel 2FA
+
+When using `disableDefaultPayloadAuth`, the admin panel automatically handles 2FA:
+
+```ts
+betterAuthPlugin({
+  disableDefaultPayloadAuth: true,
+  betterAuthOptions: {
+    plugins: [
+      twoFactor({
+        issuer: 'My App Admin',
+      }),
+    ],
+  },
+})
+```
+
+Users with 2FA enabled will see a verification screen after entering their password.
+
+<Callout type="info">
+The `twoFactors` collection stores encrypted TOTP secrets and is automatically created when the plugin is enabled.
+</Callout>
+
+## Trusted Devices
+
+Mark a device as trusted to skip 2FA for a period:
+
+```tsx
+await authClient.twoFactor.verifyTOTP({
+  code: '123456',
+  trustDevice: true, // Skip 2FA for 30 days on this device
+})
+```

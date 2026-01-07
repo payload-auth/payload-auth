@@ -1,0 +1,252 @@
+---
+title: Plugin Options
+description: Complete reference for PayloadAuthOptions
+---
+
+# Plugin Options
+
+The `betterAuthPlugin` function accepts a `PayloadAuthOptions` object.
+
+## Complete Options Reference
+
+```ts
+interface PayloadAuthOptions {
+  // Core Settings
+  disabled?: boolean
+  disableDefaultPayloadAuth?: boolean
+  hidePluginCollections?: boolean
+  collectionAdminGroup?: string
+  requireAdminInviteForSignUp?: boolean
+  
+  // Debug
+  debug?: {
+    enableDebugLogs?: boolean
+    logTables?: boolean
+  }
+  
+  // Admin UI
+  admin?: {
+    loginMethods?: LoginMethod[]
+  }
+  
+  // Collection Configuration
+  users?: UserCollectionConfig
+  accounts?: CollectionConfig
+  sessions?: CollectionConfig
+  verifications?: CollectionConfig
+  adminInvitations?: AdminInvitationConfig
+  
+  // Plugin Collection Overrides
+  pluginCollectionOverrides?: PluginCollectionOverrides
+  
+  // Better Auth Options
+  betterAuthOptions?: BetterAuthOptions
+}
+```
+
+## Core Settings
+
+### `disabled`
+
+Completely disable the plugin. Useful for testing.
+
+```ts
+betterAuthPlugin({
+  disabled: process.env.NODE_ENV === 'test',
+})
+```
+
+### `disableDefaultPayloadAuth`
+
+Use Better Auth for admin panel authentication instead of Payload's built-in auth.
+
+```ts
+betterAuthPlugin({
+  disableDefaultPayloadAuth: true,
+})
+```
+
+When enabled:
+- Custom login/signup views are added
+- Better Auth handles all authentication
+- Social login works in admin panel
+- Two-factor auth works in admin panel
+
+See [Admin UI](/docs/admin-ui) for more details.
+
+### `hidePluginCollections`
+
+Hide all plugin-generated collections from admin UI.
+
+```ts
+betterAuthPlugin({
+  hidePluginCollections: true,
+})
+```
+
+### `collectionAdminGroup`
+
+Group name for auth collections in admin sidebar.
+
+```ts
+betterAuthPlugin({
+  collectionAdminGroup: 'Authentication', // Default: 'Auth'
+})
+```
+
+### `requireAdminInviteForSignUp`
+
+Require an admin invitation for any signup (including social providers).
+
+```ts
+betterAuthPlugin({
+  requireAdminInviteForSignUp: true,
+})
+```
+
+## Debug Options
+
+```ts
+betterAuthPlugin({
+  debug: {
+    enableDebugLogs: process.env.NODE_ENV === 'development',
+    logTables: true, // Log generated table structure on init
+  },
+})
+```
+
+## Users Configuration
+
+```ts
+betterAuthPlugin({
+  users: {
+    // Collection slug
+    slug: 'users',
+    
+    // Hide from admin
+    hidden: false,
+    
+    // Roles
+    roles: ['user', 'editor'],
+    adminRoles: ['admin'],
+    defaultRole: 'user',
+    defaultAdminRole: 'admin',
+    
+    // Self-update permissions
+    allowedFields: ['name', 'image'],
+    
+    // Email handling
+    blockFirstBetterAuthVerificationEmail: false,
+    
+    // Customization
+    collectionOverrides: ({ collection }) => collection,
+  },
+})
+```
+
+### Role Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `roles` | All available roles | `['user']` |
+| `adminRoles` | Roles with admin access | `['admin']` |
+| `defaultRole` | Role for new users | `'user'` |
+| `defaultAdminRole` | Role for invited admins | `'admin'` |
+
+### `allowedFields`
+
+Fields non-admin users can update on their own profile:
+
+```ts
+allowedFields: ['name', 'image', 'bio']
+```
+
+Password is always allowed (with current password verification).
+
+## Collection Configurations
+
+All collection configs support:
+
+```ts
+{
+  slug?: string           // Override collection slug
+  hidden?: boolean        // Hide from admin
+  collectionOverrides?: (options: { collection }) => CollectionConfig
+}
+```
+
+### Accounts
+
+```ts
+betterAuthPlugin({
+  accounts: {
+    slug: 'accounts',
+    hidden: true,
+  },
+})
+```
+
+### Sessions
+
+```ts
+betterAuthPlugin({
+  sessions: {
+    slug: 'sessions',
+    hidden: true,
+  },
+})
+```
+
+### Verifications
+
+```ts
+betterAuthPlugin({
+  verifications: {
+    slug: 'verifications',
+    hidden: true,
+  },
+})
+```
+
+## Admin Invitations
+
+```ts
+betterAuthPlugin({
+  adminInvitations: {
+    slug: 'admin-invitations',
+    hidden: false,
+    
+    generateInviteUrl: ({ payload, token }) => {
+      return `${process.env.APP_URL}/admin/signup?token=${token}`
+    },
+    
+    sendInviteEmail: async ({ payload, email, url }) => {
+      await payload.sendEmail({
+        to: email,
+        subject: 'Admin Invitation',
+        html: `<a href="${url}">Accept Invitation</a>`,
+      })
+      return { success: true }
+    },
+  },
+})
+```
+
+## Admin Login Methods
+
+Control which login methods appear in admin:
+
+```ts
+betterAuthPlugin({
+  admin: {
+    loginMethods: ['emailPassword', 'google', 'github', 'passkey'],
+  },
+})
+```
+
+Available methods:
+- `emailPassword`
+- `magicLink`
+- `emailOTP`
+- `passkey`
+- Social providers: `google`, `github`, `discord`, `apple`, etc.

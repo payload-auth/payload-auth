@@ -1,0 +1,307 @@
+---
+title: Next.js App Router
+description: Complete Next.js App Router integration example
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+# Next.js App Router Example
+
+A complete example of integrating payload-auth with Next.js App Router.
+
+## Project Structure
+
+```
+my-app/
+├── app/
+│   ├── (frontend)/
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   ├── login/
+│   │   │   └── page.tsx
+│   │   └── dashboard/
+│   │       └── page.tsx
+│   ├── (payload)/
+│   │   ├── admin/
+│   │   │   └── [[...segments]]/
+│   │   │       └── page.tsx
+│   │   └── api/
+│   │       └── [...slug]/
+│   │           └── route.ts
+│   └── api/
+│       └── auth/
+│           └── [...all]/
+│               └── route.ts
+├── lib/
+│   └── auth/
+│       ├── client.ts
+│       └── server.ts
+├── payload.config.ts
+└── package.json
+```
+
+## Payload Configuration
+
+```ts title="payload.config.ts"
+import { buildConfig } from 'payload'
+import { postgresAdapter } from '@payloadcms/db-postgres'
+import { resendAdapter } from '@payloadcms/email-resend'
+import { betterAuthPlugin } from 'payload-auth/better-auth'
+import path from 'path'
+
+export default buildConfig({
+  admin: {
+    user: 'users',
+    importMap: {
+      baseDir: path.resolve(__dirname),
+    },
+  },
+  db: postgresAdapter({
+    pool: { connectionString: process.env.DATABASE_URI },
+  }),
+  email: resendAdapter({
+    defaultFromAddress: 'noreply@yourapp.com',
+    defaultFromName: 'Your App',
+    apiKey: process.env.RESEND_API_KEY!,
+  }),
+  secret: process.env.PAYLOAD_SECRET!,
+  plugins: [
+    betterAuthPlugin({
+      disableDefaultPayloadAuth: true,
+      admin: {
+        loginMethods: ['emailPassword', 'google'],
+      },
+      users: {
+        adminRoles: ['admin'],
+      },
+      betterAuthOptions: {
+        baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+        emailAndPassword: { enabled: true },
+        emailVerification: {
+          sendOnSignUp: true,
+          sendVerificationEmail: async ({ user, url }) => {
+            // Email sending handled automatically via Payload
+          },
+        },
+        socialProviders: {
+          google: {
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+          },
+        },
+      },
+    }),
+  ],
+})
+```
+
+## Auth API Route
+
+```ts title="app/api/auth/[...all]/route.ts"
+import { getPayloadAuth } from 'payload-auth/better-auth'
+import config from '@payload-config'
+
+const handler = async (request: Request) => {
+  const { betterAuth } = await getPayloadAuth(config)
+  return betterAuth.handler(request)
+}
+
+export { handler as GET, handler as POST }
+```
+
+## Auth Client
+
+```ts title="lib/auth/client.ts"
+'use client'
+
+import { createAuthClient } from 'better-auth/react'
+
+export const authClient = createAuthClient({
+  baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+})
+
+export const { signIn, signUp, signOut, useSession } = authClient
+```
+
+## Auth Server Helpers
+
+```ts title="lib/auth/server.ts"
+import { getPayloadAuth } from 'payload-auth/better-auth'
+import config from '@payload-config'
+import { headers } from 'next/headers'
+import { cache } from 'react'
+
+export const getSession = cache(async () => {
+  const { betterAuth } = await getPayloadAuth(config)
+  return betterAuth.api.getSession({
+    headers: await headers(),
+  })
+})
+
+export const getPayload = cache(async () => {
+  const { payload } = await getPayloadAuth(config)
+  return payload
+})
+```
+
+## Login Page
+
+```tsx title="app/(frontend)/login/page.tsx"
+'use client'
+
+import { authClient } from '@/lib/auth/client'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+
+export default function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const router = useRouter()
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const { error } = await authClient.signIn.email({ email, password })
+    if (error) {
+      setError(error.message)
+    } else {
+      router.push('/dashboard')
+    }
+  }
+
+  const handleGoogleLogin = () => {
+    authClient.signIn.social({
+      provider: 'google',
+      callbackURL: '/dashboard',
+    })
+  }
+
+  return (
+    <div className="max-w-md mx-auto mt-20">
+      <h1 className="text-2xl font-bold mb-6">Sign In</h1>
+      
+      {error && (
+        <div className="bg-red-100 text-red-600 p-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+      
+      <form onSubmit={handleEmailLogin} className="space-y-4">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+          className="w-full p-3 border rounded"
+          required
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+          className="w-full p-3 border rounded"
+          required
+        />
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white p-3 rounded"
+        >
+          Sign In
+        </button>
+      </form>
+      
+      <div className="my-4 text-center text-gray-500">or</div>
+      
+      <button
+        onClick={handleGoogleLogin}
+        className="w-full border p-3 rounded flex items-center justify-center gap-2"
+      >
+        <GoogleIcon />
+        Continue with Google
+      </button>
+    </div>
+  )
+}
+```
+
+## Protected Dashboard
+
+```tsx title="app/(frontend)/dashboard/page.tsx"
+import { getSession, getPayload } from '@/lib/auth/server'
+import { redirect } from 'next/navigation'
+
+export default async function DashboardPage() {
+  const session = await getSession()
+  
+  if (!session) {
+    redirect('/login')
+  }
+  
+  const payload = await getPayload()
+  
+  // Fetch user's data
+  const posts = await payload.find({
+    collection: 'posts',
+    where: {
+      author: { equals: session.user.id },
+    },
+  })
+  
+  return (
+    <div className="p-8">
+      <h1 className="text-3xl font-bold mb-4">
+        Welcome, {session.user.name}
+      </h1>
+      
+      <div className="grid gap-4">
+        {posts.docs.map(post => (
+          <div key={post.id} className="p-4 border rounded">
+            <h2 className="font-semibold">{post.title}</h2>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+```
+
+## Middleware
+
+```ts title="middleware.ts"
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+export function middleware(request: NextRequest) {
+  const sessionCookie = request.cookies.get('better-auth.session_token')
+  
+  // Protect dashboard routes
+  if (!sessionCookie && request.nextUrl.pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+  
+  // Redirect logged in users from login page
+  if (sessionCookie && request.nextUrl.pathname === '/login') {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+  
+  return NextResponse.next()
+}
+
+export const config = {
+  matcher: ['/dashboard/:path*', '/login'],
+}
+```
+
+## Environment Variables
+
+```bash title=".env"
+DATABASE_URI=postgresql://...
+PAYLOAD_SECRET=your-secret-min-32-chars
+NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+
+RESEND_API_KEY=re_xxx
+
+GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=xxx
+```

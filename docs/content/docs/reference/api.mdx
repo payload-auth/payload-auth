@@ -1,0 +1,240 @@
+---
+title: API Reference
+description: Complete API reference for payload-auth
+---
+
+# API Reference
+
+## Package Exports
+
+### Main Package
+
+```ts
+// Plugin
+import { betterAuthPlugin } from 'payload-auth/better-auth'
+
+// Adapter (advanced)
+import { payloadAdapter } from 'payload-auth/better-auth/adapter'
+
+// Helper
+import { getPayloadAuth } from 'payload-auth/better-auth'
+
+// Types
+import type { 
+  PayloadAuthOptions,
+  BetterAuthOptions,
+  BetterAuthReturn,
+} from 'payload-auth/better-auth'
+```
+
+### Client Components
+
+```ts
+import {
+  LoginForm,
+  LogoutButton,
+  ManagePasskeys,
+  GoogleButton,
+  GitHubButton,
+  DiscordButton,
+  AppleButton,
+  MicrosoftButton,
+  // ... other social buttons
+} from 'payload-auth/better-auth/client'
+```
+
+### Server Components
+
+```ts
+import {
+  RSCRedirect,
+} from 'payload-auth/better-auth/rsc'
+```
+
+### Access Control
+
+```ts
+import {
+  hasAdminRoles,
+  isAdminWithRoles,
+  isAdminOrCurrentUserWithRoles,
+  isAdminOrCurrentUserUpdateWithAllowedFields,
+} from 'payload-auth/better-auth'
+```
+
+---
+
+## betterAuthPlugin
+
+The main Payload plugin function.
+
+```ts
+function betterAuthPlugin(options: PayloadAuthOptions): PayloadPlugin
+```
+
+### PayloadAuthOptions
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `disabled` | `boolean` | Disable the plugin |
+| `disableDefaultPayloadAuth` | `boolean` | Use Better Auth for admin |
+| `hidePluginCollections` | `boolean` | Hide plugin collections from admin |
+| `collectionAdminGroup` | `string` | Admin sidebar group name |
+| `requireAdminInviteForSignUp` | `boolean` | Require invitation for signup |
+| `debug` | `object` | Debug options |
+| `admin` | `object` | Admin UI configuration |
+| `users` | `UserCollectionConfig` | Users collection config |
+| `accounts` | `CollectionConfig` | Accounts collection config |
+| `sessions` | `CollectionConfig` | Sessions collection config |
+| `verifications` | `CollectionConfig` | Verifications collection config |
+| `adminInvitations` | `AdminInvitationConfig` | Invitation config |
+| `pluginCollectionOverrides` | `object` | Override plugin collections |
+| `betterAuthOptions` | `BetterAuthOptions` | Better Auth configuration |
+
+---
+
+## getPayloadAuth
+
+Get initialized Payload and Better Auth instances.
+
+```ts
+async function getPayloadAuth<T extends PayloadAuthOptions>(
+  config: PayloadConfig
+): Promise<{
+  payload: Payload & { betterAuth: BetterAuthReturn<T> }
+  betterAuth: BetterAuthReturn<T>
+}>
+```
+
+### Usage
+
+```ts
+import { getPayloadAuth } from 'payload-auth/better-auth'
+import config from '@payload-config'
+import { headers } from 'next/headers'
+
+// In a Server Component or Server Action
+const { payload, betterAuth } = await getPayloadAuth(config)
+
+// Get session
+const session = await betterAuth.api.getSession({
+  headers: await headers(),
+})
+
+// Use Payload
+const users = await payload.find({ collection: 'users' })
+```
+
+---
+
+## BetterAuthReturn
+
+The Better Auth instance type.
+
+```ts
+interface BetterAuthReturn<T> {
+  handler: (request: Request) => Promise<Response>
+  api: BetterAuthAPI
+  options: BetterAuthOptions
+  $Infer: {
+    Session: SessionType
+    User: UserType
+    // Plugin-specific types
+  }
+}
+```
+
+### handler
+
+Handle authentication requests:
+
+```ts
+// app/api/auth/[...all]/route.ts
+const handler = async (req: Request) => {
+  const { betterAuth } = await getPayloadAuth(config)
+  return betterAuth.handler(req)
+}
+
+export { handler as GET, handler as POST }
+```
+
+### api
+
+Server-side API methods:
+
+```ts
+// Get session
+await betterAuth.api.getSession({ headers })
+
+// Sign up
+await betterAuth.api.signUpEmail({
+  body: { email, password, name }
+})
+
+// Sign in
+await betterAuth.api.signInEmail({
+  body: { email, password }
+})
+
+// List sessions
+await betterAuth.api.listSessions({ headers })
+
+// Revoke session
+await betterAuth.api.revokeSession({
+  body: { sessionId }
+})
+```
+
+---
+
+## Access Control Functions
+
+### hasAdminRoles
+
+```ts
+function hasAdminRoles(
+  adminRoles: string[]
+): (args: { req: PayloadRequest }) => boolean
+```
+
+### isAdminWithRoles
+
+```ts
+function isAdminWithRoles(options: {
+  adminRoles: string[]
+}): AccessFunction
+```
+
+### isAdminOrCurrentUserWithRoles
+
+```ts
+function isAdminOrCurrentUserWithRoles(options: {
+  adminRoles: string[]
+}): AccessFunction
+```
+
+### isAdminOrCurrentUserUpdateWithAllowedFields
+
+```ts
+function isAdminOrCurrentUserUpdateWithAllowedFields(options: {
+  adminRoles: string[]
+  allowedFields: string[]
+}): AccessFunction
+```
+
+---
+
+## payloadAdapter
+
+Database adapter for Better Auth (advanced usage).
+
+```ts
+function payloadAdapter(options: {
+  payload: Payload | (() => Promise<Payload>)
+  idType?: 'text' | 'number'
+  resolvedSchemas?: BetterAuthSchemas
+  enableDebugLogs?: boolean
+}): BetterAuthAdapter
+```
+
+Used internally by the plugin. Only use directly if building custom integrations.

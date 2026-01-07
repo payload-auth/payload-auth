@@ -1,0 +1,239 @@
+---
+title: Better Auth Options
+description: Configuring Better Auth within payload-auth
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Better Auth Options
+
+The `betterAuthOptions` property configures Better Auth. Most options are passed through directly.
+
+<Callout type="info">
+Some Better Auth options are managed internally by payload-auth and cannot be overridden.
+</Callout>
+
+## Managed Options
+
+| Option | Status |
+|--------|--------|
+| `database` | Set automatically via adapter |
+| `user.modelName` | Set via plugin config |
+| `session.modelName` | Set via plugin config |
+| `account.modelName` | Set via plugin config |
+| `advanced.generateId` | Uses Payload's ID generation |
+
+## Base Configuration
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+    basePath: '/api/auth', // Default
+    appName: 'My App',
+    trustedOrigins: ['https://myapp.com'],
+  },
+})
+```
+
+## Email & Password
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: true,
+      autoSignIn: false,
+      minPasswordLength: 8,
+      maxPasswordLength: 128,
+      
+      sendResetPassword: async ({ user, url, token }) => {
+        await sendEmail({
+          to: user.email,
+          subject: 'Reset Your Password',
+          html: `<a href="${url}">Reset Password</a>`,
+        })
+      },
+    },
+  },
+})
+```
+
+## Email Verification
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    emailVerification: {
+      sendOnSignUp: true,
+      autoSignInAfterVerification: true,
+      
+      sendVerificationEmail: async ({ user, url, token }) => {
+        await sendEmail({
+          to: user.email,
+          subject: 'Verify Your Email',
+          html: `<a href="${url}">Verify Email</a>`,
+        })
+      },
+    },
+  },
+})
+```
+
+## Session Configuration
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    session: {
+      expiresIn: 60 * 60 * 24 * 7, // 7 days
+      updateAge: 60 * 60 * 24,     // 1 day
+      
+      cookieCache: {
+        enabled: true,
+        maxAge: 5 * 60, // 5 minutes
+      },
+    },
+  },
+})
+```
+
+## Social Providers
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    socialProviders: {
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID!,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        scope: ['email', 'profile'],
+      },
+      github: {
+        clientId: process.env.GITHUB_CLIENT_ID!,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      },
+      discord: {
+        clientId: process.env.DISCORD_CLIENT_ID!,
+        clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+      },
+    },
+  },
+})
+```
+
+See [Social Providers](/docs/authentication/social-providers) for all available providers.
+
+## Account Linking
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    account: {
+      accountLinking: {
+        enabled: true,
+        trustedProviders: ['google', 'github', 'email-password'],
+      },
+    },
+  },
+})
+```
+
+## Plugins
+
+```ts
+import { admin, twoFactor, organization } from 'better-auth/plugins'
+import { passkey } from '@better-auth/passkey'
+
+betterAuthPlugin({
+  betterAuthOptions: {
+    plugins: [
+      admin(),
+      twoFactor({
+        issuer: 'My App',
+      }),
+      passkey({
+        rpID: 'myapp.com',
+        rpName: 'My App',
+        origin: 'https://myapp.com',
+      }),
+      organization({
+        teams: { enabled: true },
+      }),
+    ],
+  },
+})
+```
+
+See [Plugins](/docs/plugins) for detailed plugin documentation.
+
+## Additional User Fields
+
+Add custom fields that Better Auth tracks:
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    user: {
+      additionalFields: {
+        bio: {
+          type: 'string',
+          required: false,
+          input: true, // Allow setting on signup
+        },
+        company: {
+          type: 'string',
+          required: false,
+          input: true,
+        },
+      },
+    },
+  },
+})
+```
+
+<Callout type="info">
+For Payload-specific field customization, use `users.collectionOverrides` instead.
+</Callout>
+
+## Rate Limiting
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    rateLimit: {
+      enabled: true,
+      storage: 'database', // Uses Payload DB
+      max: 100,
+      window: 60, // seconds
+    },
+  },
+})
+```
+
+## User Lifecycle Hooks
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    user: {
+      changeEmail: {
+        enabled: true,
+        sendChangeEmailVerification: async ({ user, newEmail, url }) => {
+          // Send verification email
+        },
+      },
+      deleteUser: {
+        enabled: true,
+        beforeDelete: async (user) => {
+          // Cleanup before deletion
+        },
+        afterDelete: async (user) => {
+          // Cleanup after deletion
+        },
+      },
+    },
+  },
+})
+```

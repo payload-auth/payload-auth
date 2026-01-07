@@ -1,0 +1,286 @@
+---
+title: Email Setup
+description: Configuring email for authentication flows
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Email Setup Guide
+
+Configure email for verification, password reset, and magic link authentication.
+
+## Email Adapter Configuration
+
+First, set up Payload's email adapter:
+
+<Tabs items={['Resend', 'Nodemailer', 'SendGrid']}>
+<Tab value="Resend">
+```ts title="payload.config.ts"
+import { buildConfig } from 'payload'
+import { resendAdapter } from '@payloadcms/email-resend'
+
+export default buildConfig({
+  email: resendAdapter({
+    defaultFromAddress: 'noreply@yourdomain.com',
+    defaultFromName: 'Your App',
+    apiKey: process.env.RESEND_API_KEY!,
+  }),
+  // ...
+})
+```
+</Tab>
+<Tab value="Nodemailer">
+```ts title="payload.config.ts"
+import { buildConfig } from 'payload'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+
+export default buildConfig({
+  email: nodemailerAdapter({
+    defaultFromAddress: 'noreply@yourdomain.com',
+    defaultFromName: 'Your App',
+    transportOptions: {
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    },
+  }),
+  // ...
+})
+```
+</Tab>
+<Tab value="SendGrid">
+```ts title="payload.config.ts"
+import { buildConfig } from 'payload'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+import nodemailer from 'nodemailer'
+
+const sendgridTransport = nodemailer.createTransport({
+  service: 'SendGrid',
+  auth: {
+    user: 'apikey',
+    pass: process.env.SENDGRID_API_KEY,
+  },
+})
+
+export default buildConfig({
+  email: nodemailerAdapter({
+    defaultFromAddress: 'noreply@yourdomain.com',
+    defaultFromName: 'Your App',
+    transport: sendgridTransport,
+  }),
+  // ...
+})
+```
+</Tab>
+</Tabs>
+
+## Email Verification
+
+Configure Better Auth to use Payload's email system:
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    emailVerification: {
+      sendOnSignUp: true,
+      autoSignInAfterVerification: true,
+      
+      sendVerificationEmail: async ({ user, url, token }) => {
+        // Get Payload instance
+        const payload = await getPayload({ config })
+        
+        await payload.sendEmail({
+          to: user.email,
+          subject: 'Verify Your Email Address',
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; }
+                .button { 
+                  background: #0070f3; 
+                  color: white; 
+                  padding: 12px 24px; 
+                  text-decoration: none; 
+                  border-radius: 6px;
+                  display: inline-block;
+                }
+              </style>
+            </head>
+            <body>
+              <h1>Verify Your Email</h1>
+              <p>Click the button below to verify your email address:</p>
+              <a href="${url}" class="button">Verify Email</a>
+              <p>Or copy this link: ${url}</p>
+              <p>This link expires in 24 hours.</p>
+            </body>
+            </html>
+          `,
+        })
+      },
+    },
+  },
+})
+```
+
+## Password Reset
+
+```ts
+betterAuthPlugin({
+  betterAuthOptions: {
+    emailAndPassword: {
+      enabled: true,
+      
+      sendResetPassword: async ({ user, url, token }) => {
+        const payload = await getPayload({ config })
+        
+        await payload.sendEmail({
+          to: user.email,
+          subject: 'Reset Your Password',
+          html: `
+            <h1>Password Reset Request</h1>
+            <p>You requested a password reset.</p>
+            <a href="${url}">Reset Password</a>
+            <p>This link expires in 1 hour.</p>
+            <p>If you didn't request this, ignore this email.</p>
+          `,
+        })
+      },
+    },
+  },
+})
+```
+
+## Magic Link
+
+```ts
+import { magicLink } from 'better-auth/plugins'
+
+betterAuthPlugin({
+  betterAuthOptions: {
+    plugins: [
+      magicLink({
+        sendMagicLink: async ({ email, url }) => {
+          const payload = await getPayload({ config })
+          
+          await payload.sendEmail({
+            to: email,
+            subject: 'Sign In to Your Account',
+            html: `
+              <h1>Sign In</h1>
+              <p>Click to sign in to your account:</p>
+              <a href="${url}">Sign In</a>
+              <p>This link expires in 10 minutes.</p>
+            `,
+          })
+        },
+      }),
+    ],
+  },
+})
+```
+
+## Organization Invitations
+
+```ts
+import { organization } from 'better-auth/plugins'
+
+betterAuthPlugin({
+  betterAuthOptions: {
+    plugins: [
+      organization({
+        sendInvitationEmail: async ({ email, inviter, organization, url }) => {
+          const payload = await getPayload({ config })
+          
+          await payload.sendEmail({
+            to: email,
+            subject: `Join ${organization.name}`,
+            html: `
+              <h1>You're Invited!</h1>
+              <p>${inviter.name} invited you to join ${organization.name}.</p>
+              <a href="${url}">Accept Invitation</a>
+            `,
+          })
+        },
+      }),
+    ],
+  },
+})
+```
+
+## Admin Invitations
+
+```ts
+betterAuthPlugin({
+  adminInvitations: {
+    sendInviteEmail: async ({ payload, email, url }) => {
+      await payload.sendEmail({
+        to: email,
+        subject: 'Admin Access Invitation',
+        html: `
+          <h1>Admin Invitation</h1>
+          <p>You've been invited to join as an administrator.</p>
+          <a href="${url}">Accept Invitation</a>
+        `,
+      })
+      return { success: true }
+    },
+  },
+})
+```
+
+## Two-Factor OTP
+
+```ts
+import { twoFactor } from 'better-auth/plugins'
+
+betterAuthPlugin({
+  betterAuthOptions: {
+    plugins: [
+      twoFactor({
+        otpOptions: {
+          sendOTP: async ({ user, otp }) => {
+            const payload = await getPayload({ config })
+            
+            await payload.sendEmail({
+              to: user.email,
+              subject: 'Your Verification Code',
+              html: `
+                <h1>Verification Code</h1>
+                <p style="font-size: 32px; font-weight: bold;">${otp}</p>
+                <p>This code expires in 5 minutes.</p>
+              `,
+            })
+          },
+        },
+      }),
+    ],
+  },
+})
+```
+
+<Callout type="warn" title="Email Deliverability">
+Use a reputable email service and configure SPF, DKIM, and DMARC records for your domain to ensure emails are delivered.
+</Callout>
+
+## Development Testing
+
+For development, use a service like [Mailpit](https://mailpit.axllent.org/):
+
+```ts
+email: nodemailerAdapter({
+  defaultFromAddress: 'dev@localhost',
+  transportOptions: {
+    host: 'localhost',
+    port: 1025,
+    ignoreTLS: true,
+  },
+}),
+```
+
+Or [Ethereal Email](https://ethereal.email/) for disposable inboxes.

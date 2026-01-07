@@ -1,0 +1,275 @@
+---
+title: Troubleshooting
+description: Common issues and solutions
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Troubleshooting
+
+Common issues and their solutions.
+
+## Installation Issues
+
+### "Collection 'users' already exists"
+
+This is expected. payload-auth merges with your existing users collection.
+
+**Solution:** Ensure your `admin.user` matches the users collection slug:
+
+```ts
+export default buildConfig({
+  admin: {
+    user: 'users', // Must match
+  },
+})
+```
+
+### "Cannot find module 'payload-auth'"
+
+**Solution:** Ensure the package is installed:
+
+```bash
+pnpm add payload-auth better-auth
+```
+
+### "importMap.baseDir is required"
+
+**Solution:** Add to your config:
+
+```ts
+admin: {
+  importMap: {
+    baseDir: path.resolve(__dirname),
+  },
+}
+```
+
+---
+
+## Database Issues
+
+### "Missing table/collection"
+
+**Solution:** Run migrations:
+
+```bash
+pnpm payload migrate:create
+pnpm payload migrate
+```
+
+### "Duplicate key error"
+
+The field has a unique constraint violation.
+
+**Possible causes:**
+- Email already exists
+- Duplicate session token
+
+### "Relation not found"
+
+**Solution:** Ensure collection slugs match between Better Auth and Payload:
+
+```ts
+betterAuthPlugin({
+  users: { slug: 'users' },
+  sessions: { slug: 'sessions' },
+  accounts: { slug: 'accounts' },
+})
+```
+
+---
+
+## Authentication Issues
+
+### "Session not found"
+
+**Possible causes:**
+1. Session expired
+2. Cookie not sent with request
+3. Wrong `baseURL` configuration
+
+**Solutions:**
+
+```ts
+// Ensure baseURL matches your domain
+betterAuthPlugin({
+  betterAuthOptions: {
+    baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+  },
+})
+```
+
+### "Invalid credentials"
+
+**Possible causes:**
+1. Wrong email or password
+2. User doesn't exist
+3. Account uses social login only
+
+### "Email not verified"
+
+Enable `requireEmailVerification` but user hasn't verified.
+
+**Solution:** Resend verification email:
+
+```ts
+await authClient.sendVerificationEmail({
+  email: 'user@example.com',
+})
+```
+
+### Social login not working
+
+**Check:**
+1. Callback URL matches OAuth app settings
+2. Client ID and secret are correct
+3. Scopes are configured
+
+```ts
+// Callback URL format:
+// https://your-domain.com/api/auth/callback/google
+```
+
+---
+
+## Admin Panel Issues
+
+### Can't access admin panel
+
+**Possible causes:**
+1. User doesn't have admin role
+2. `disableDefaultPayloadAuth` is true but no custom login
+
+**Solution:** Check user roles:
+
+```ts
+betterAuthPlugin({
+  users: {
+    adminRoles: ['admin'],
+  },
+})
+```
+
+### Custom login not appearing
+
+**Solution:** Ensure `disableDefaultPayloadAuth` is enabled:
+
+```ts
+betterAuthPlugin({
+  disableDefaultPayloadAuth: true,
+})
+```
+
+### 2FA verification loop
+
+**Possible causes:**
+1. Invalid TOTP secret
+2. Time sync issues
+
+**Solution:** Regenerate TOTP:
+
+```ts
+await authClient.twoFactor.disable({ password })
+await authClient.twoFactor.enable({ password })
+```
+
+---
+
+## Cookie Issues
+
+### "Session cookie not set"
+
+**Check:**
+1. HTTPS in production (cookies require secure context)
+2. SameSite settings
+3. Domain configuration
+
+```ts
+betterAuthOptions: {
+  advanced: {
+    cookiePrefix: 'my-app',
+    crossDomain: {
+      enabled: true,
+      domain: '.yourdomain.com',
+    },
+  },
+}
+```
+
+### Cookies too large
+
+Session data exceeding cookie limits.
+
+**Solution:** Disable cookie caching or reduce cached data:
+
+```ts
+betterAuthOptions: {
+  session: {
+    cookieCache: {
+      enabled: false, // Disable if cookies too large
+    },
+  },
+},
+```
+
+---
+
+## Type Errors
+
+### "Property does not exist on type"
+
+**Solution:** Ensure client has matching plugins:
+
+```ts
+// Server
+plugins: [twoFactor(), organization()]
+
+// Client - must match
+import { twoFactorClient } from 'better-auth/plugins/two-factor/client'
+import { organizationClient } from 'better-auth/plugins/organization/client'
+
+createAuthClient({
+  plugins: [twoFactorClient(), organizationClient()],
+})
+```
+
+---
+
+## Debug Mode
+
+Enable debug logging:
+
+```ts
+betterAuthPlugin({
+  debug: {
+    enableDebugLogs: true,
+    logTables: true,
+  },
+})
+```
+
+Check logs for:
+- Database queries
+- Schema generation
+- Authentication flows
+
+<Callout type="warn">
+Disable debug mode in production as it logs sensitive information.
+</Callout>
+
+---
+
+## Getting Help
+
+If issues persist:
+
+1. Check [GitHub Issues](https://github.com/your-repo/payload-auth/issues)
+2. Search existing discussions
+3. Create a new issue with:
+   - payload-auth version
+   - Payload CMS version
+   - Node.js version
+   - Database type
+   - Error message and stack trace
+   - Minimal reproduction
