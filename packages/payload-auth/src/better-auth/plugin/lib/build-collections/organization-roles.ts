@@ -1,9 +1,9 @@
-import type { CollectionConfig } from "payload";
 import type { OrganizationRole } from "@/better-auth/generated-types";
 import type {
   BuildCollectionProps,
   FieldOverrides
 } from "@/better-auth/plugin/types";
+import type { CollectionConfig } from "payload";
 import { baModelKey } from "../../constants";
 import { getAdminAccess } from "../../helpers/get-admin-access";
 import {
@@ -68,7 +68,7 @@ export function buildOrganizationRolesCollection({
     },
     custom: {
       ...(existingOrganizationRolesCollection?.custom ?? {}),
-      betterAuthModelKey: baModelKey.organization
+      betterAuthModelKey: baModelKey.organizationRole
     },
     fields: [
       ...(existingOrganizationRolesCollection?.fields ?? []),
