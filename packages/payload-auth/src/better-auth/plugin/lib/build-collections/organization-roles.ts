@@ -68,7 +68,7 @@ export function buildOrganizationRolesCollection({
     },
     custom: {
       ...(existingOrganizationRolesCollection?.custom ?? {}),
-      betterAuthModelKey: baModelKey.organization
+      betterAuthModelKey: baModelKey.organizationRole
     },
     fields: [
       ...(existingOrganizationRolesCollection?.fields ?? []),
