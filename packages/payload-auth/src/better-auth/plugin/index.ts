@@ -110,6 +110,7 @@ export function betterAuthPlugin(pluginOptions: PayloadAuthOptions) {
           options: {
             ...sanitizedBetterAuthOptions,
             enableDebugLogs: pluginOptions.debug?.enableDebugLogs ?? false,
+            queryDepth: pluginOptions.queryDepth,
             plugins: [...(sanitizedBetterAuthOptions.plugins ?? [])]
           }
         });

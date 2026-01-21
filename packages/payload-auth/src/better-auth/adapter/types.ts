@@ -9,6 +9,7 @@ export type PayloadAdapterParams = {
   adapterConfig: {
     enableDebugLogs?: boolean;
     idType: "number" | "text";
+    queryDepth?: number;
   };
 };
 

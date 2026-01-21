@@ -30,6 +30,9 @@ type JoinOption = {
  * @returns A function that creates a Better Auth adapter
  */
 const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
+  // Use configured queryDepth or fallback to default
+  const queryDepth = adapterConfig.queryDepth ?? PAYLOAD_QUERY_DEPTH;
+
   /**
    * Logs debug messages if debug logging is enabled
    * @param message - The message to log
@@ -275,7 +278,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
                 model,
                 operation: "findOneByID"
               }),
-              depth: PAYLOAD_QUERY_DEPTH
+              depth: queryDepth
             });
           } else {
             debugLog(["findOneByWhere", { collectionSlug, payloadWhere }]);
@@ -291,7 +294,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
                 model,
                 operation: "findOneByWhere"
               }),
-              depth: PAYLOAD_QUERY_DEPTH,
+              depth: queryDepth,
               limit: 1
             });
             result = docs.docs[0];
@@ -376,7 +379,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
                 Object.keys(payloadJoins).length > 0 && {
                   joins: payloadJoins
                 }),
-              depth: PAYLOAD_QUERY_DEPTH,
+              depth: queryDepth,
               context: createAdapterContext({
                 model,
                 operation: "findManyBySingleID"
@@ -399,7 +402,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
                 Object.keys(payloadJoins).length > 0 && {
                   joins: payloadJoins
                 }),
-              depth: PAYLOAD_QUERY_DEPTH,
+              depth: queryDepth,
               context: createAdapterContext({
                 model,
                 operation: "findManyByWhere"
@@ -484,7 +487,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               collection: collectionSlug,
               id,
               data: transformedInput,
-              depth: PAYLOAD_QUERY_DEPTH,
+              depth: queryDepth,
               context: createAdapterContext({ model, operation: "updateByID" })
             });
           } else {
@@ -493,7 +496,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               collection: collectionSlug,
               where: payloadWhere,
               data: transformedInput,
-              depth: PAYLOAD_QUERY_DEPTH,
+              depth: queryDepth,
               context: createAdapterContext({
                 model,
                 operation: "updateByWhere"
@@ -567,7 +570,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             collection: collectionSlug,
             where: payloadWhere,
             data: transformedInput,
-            depth: PAYLOAD_QUERY_DEPTH,
+            depth: queryDepth,
             context: createAdapterContext({ model, operation: "updateMany" })
           });
 
@@ -628,7 +631,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             const doc = await payload.delete({
               collection: collectionSlug,
               id: singleId,
-              depth: PAYLOAD_QUERY_DEPTH,
+              depth: queryDepth,
               context: createAdapterContext({ model, operation: "deleteByID" })
             });
             deleteResult = { doc, errors: [] };
@@ -637,7 +640,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             const doc = await payload.delete({
               collection: collectionSlug,
               where: payloadWhere,
-              depth: PAYLOAD_QUERY_DEPTH,
+              depth: queryDepth,
               context: createAdapterContext({
                 model,
                 operation: "deleteByWhere"
@@ -692,7 +695,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           const deleteResult = await payload.delete({
             collection: collectionSlug,
             where: payloadWhere,
-            depth: PAYLOAD_QUERY_DEPTH,
+            depth: queryDepth,
             context: createAdapterContext({ model, operation: "deleteMany" })
           });
 
@@ -745,7 +748,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           const result = await payload.count({
             collection: collectionSlug,
             where: payloadWhere,
-            depth: PAYLOAD_QUERY_DEPTH,
+            depth: queryDepth,
             context: createAdapterContext({ model, operation: "count" })
           });
 

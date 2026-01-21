@@ -22,7 +22,8 @@ export function initBetterAuth<O extends PayloadAuthOptions>({
       payloadClient: payload,
       adapterConfig: {
         enableDebugLogs,
-        idType
+        idType,
+        queryDepth: restOptions.queryDepth
       }
     })
   }) as unknown as BetterAuthReturn<O>;

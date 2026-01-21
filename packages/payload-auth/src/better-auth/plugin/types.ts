@@ -175,6 +175,11 @@ export interface PayloadAuthOptions {
    */
   pluginCollectionOverrides?: PluginCollectionOverrides;
   /**
+   * Sets the query depth for the users collection when fetching related data.
+   * @default 1
+   */
+  queryDepth?: number;
+  /**
    * Configure the Users collections:
    */
   users?: {
@@ -522,6 +527,7 @@ export type BetterAuthFunctionOptions<O extends PayloadAuthOptions> = Omit<
 > & {
   enableDebugLogs?: boolean;
   plugins: ExtractBA<O>["plugins"];
+  queryDepth?: number;
 };
 
 export interface BuiltBetterAuthSchema {
