@@ -93,8 +93,14 @@ export function buildOrganizationsCollection({
       ),
       maxDepth: 1,
       saveToJWT: false
-    },
-    {
+    }
+  ];
+
+  // Only add organizationRole join if the schema exists and has the organizationId field
+  // This prevents InvalidFieldJoin errors when dynamicAccessControl is not enabled
+  const organizationRoleSchema = resolvedSchemas[baModelKey.organizationRole];
+  if (organizationRoleSchema?.fields?.organizationId) {
+    joinFields.push({
       label: "Organization Roles",
       name: baModelKey.organizationRole,
       type: "join",
@@ -107,8 +113,8 @@ export function buildOrganizationsCollection({
       ),
       maxDepth: 1,
       saveToJWT: false
-    }
-  ];
+    });
+  }
 
   let organizationCollection: CollectionConfig = {
     ...existingOrganizationCollection,
