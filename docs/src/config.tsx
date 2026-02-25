@@ -1,48 +1,20 @@
-import {
-  CircleHelp,
-  Gauge,
-  Key,
-  LucideAArrowDown,
-  Mail,
-  Mailbox,
-  Phone,
-  ScanFace,
-  ShieldCheck,
-  UserCircle,
-  Users2,
-  UserSquare2,
-  Database,
-  KeyRound,
-  Layers,
-  Building2,
-  Settings,
-  BookOpen,
-  Code,
-  Wrench,
-  FileText,
-  ArrowRight,
-  Shield,
-  Lock,
-  Fingerprint,
-  Globe,
-} from "lucide-react";
-import { Icons } from "@/components/ui/icons";
-import { DocLink, NavItem } from "./types";
+import { NavItem } from './types'
+import type { SVGProps } from 'react'
 
 export const navMenu: NavItem[] = [
   {
-    name: "home",
-    path: "/",
+    name: 'home',
+    path: '/'
   },
   {
-    name: "docs",
-    path: "/docs/introduction",
+    name: 'docs',
+    path: '/docs'
   },
   {
-    name: "changelogs",
-    path: "/changelogs",
-  },
-];
+    name: 'changelogs',
+    path: '/changelogs'
+  }
+]
 
 export const logoAssets = {
   darkSvg: `
@@ -86,258 +58,102 @@ export const logoAssets = {
         <rect x="169.301" y="110.446" width="34.6988" height="38.6024" transform="rotate(90 169.301 110.446)" fill="black"/>
         <path d="M281.832 162V93.84H305.256C313.32 93.84 319.368 95.312 323.4 98.256C327.432 101.2 329.448 105.84 329.448 112.176C329.448 116.016 328.36 119.248 326.184 121.872C324.072 124.432 321.128 126.064 317.352 126.768C322.024 127.408 325.672 129.232 328.296 132.24C330.984 135.184 332.328 138.864 332.328 143.28C332.328 149.488 330.312 154.16 326.28 157.296C322.248 160.432 316.52 162 309.096 162H281.832ZM290.088 123.312H305.256C310.248 123.312 314.088 122.384 316.776 120.528C319.464 118.608 320.808 115.952 320.808 112.56C320.808 105.456 315.624 101.904 305.256 101.904H290.088V123.312ZM290.088 153.936H309.096C313.768 153.936 317.352 152.976 319.848 151.056C322.408 149.136 323.688 146.384 323.688 142.8C323.688 139.216 322.408 136.432 319.848 134.448C317.352 132.4 313.768 131.376 309.096 131.376H290.088V153.936ZM345.301 162V93.84H388.117V101.904H353.557V123.888H386.965V131.76H353.557V153.936H388.885V162H345.301ZM416.681 162V101.904H395.465V93.84H446.153V101.904H424.937V162H416.681ZM470.587 162V101.904H449.371V93.84H500.059V101.904H478.843V162H470.587ZM507.113 162V93.84H549.929V101.904H515.369V123.888H548.777V131.76H515.369V153.936H550.697V162H507.113ZM564.02 162V93.84H589.844C597.012 93.84 602.676 95.696 606.836 99.408C610.996 103.12 613.076 108.144 613.076 114.48C613.076 117.104 612.532 119.504 611.444 121.68C610.356 123.792 608.948 125.584 607.22 127.056C605.492 128.528 603.604 129.552 601.556 130.128C604.564 130.64 606.932 131.856 608.66 133.776C610.452 135.696 611.508 138.416 611.828 141.936L613.748 162H605.396L603.667 142.8C603.412 139.984 602.388 137.904 600.596 136.56C598.868 135.216 596.02 134.544 592.052 134.544H572.276V162H564.02ZM572.276 126.48H590.9C595.06 126.48 598.356 125.424 600.788 123.312C603.22 121.2 604.436 118.192 604.436 114.288C604.436 110.32 603.188 107.28 600.692 105.168C598.196 102.992 594.58 101.904 589.844 101.904H572.276V126.48ZM623.912 137.808V130.224H655.688V137.808H623.912ZM661.826 162L686.402 93.84H697.538L722.114 162H713.09L706.274 142.608H677.666L670.85 162H661.826ZM680.45 134.544H703.49L691.97 101.04L680.45 134.544ZM755.651 163.536C750.403 163.536 745.827 162.512 741.923 160.464C738.083 158.416 735.107 155.504 732.995 151.728C730.947 147.888 729.923 143.376 729.923 138.192V93.744H738.179V138.192C738.179 143.696 739.683 147.952 742.691 150.96C745.763 153.968 750.083 155.472 755.651 155.472C761.155 155.472 765.411 153.968 768.419 150.96C771.491 147.952 773.027 143.696 773.027 138.192V93.744H781.283V138.192C781.283 143.376 780.227 147.888 778.115 151.728C776.067 155.504 773.123 158.416 769.283 160.464C765.443 162.512 760.899 163.536 755.651 163.536ZM811.087 162V101.904H789.871V93.84H840.559V101.904H819.343V162H811.087ZM847.613 162V93.84H855.869V123.696H890.141V93.84H898.397V162H890.141V131.76H855.869V162H847.613ZM911.443 162V151.152H922.291V162H911.443Z" fill="black"/>
         </svg>
-        `,
-};
-
-export const docLinks: DocLink[] = [
-  {
-    title: "Get Started",
-    Icon: () => (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="1.4em"
-        height="1.4em"
-        viewBox="0 0 24 24"
-      >
-        <path
-          fill="currentColor"
-          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m-1 14H9V8h2zm1 0V8l5 4z"
-        />
-      </svg>
-    ),
-    list: [
-      {
-        title: "Introduction",
-        href: "/docs/introduction",
-        icon: BookOpen,
-      },
-      {
-        title: "Installation",
-        href: "/docs/installation",
-        icon: ArrowRight,
-      },
-      {
-        title: "Basic Usage",
-        href: "/docs/basic-usage",
-        icon: Code,
-      },
-    ],
-  },
-  {
-    title: "Concepts",
-    Icon: Layers,
-    list: [
-      {
-        href: "/docs/concepts/architecture",
-        title: "Architecture",
-        icon: Layers,
-      },
-      {
-        title: "Collections",
-        href: "/docs/concepts/collections",
-        icon: Database,
-      },
-      {
-        title: "Roles & Permissions",
-        href: "/docs/concepts/roles-permissions",
-        icon: Shield,
-      },
-      {
-        title: "Sessions",
-        href: "/docs/concepts/sessions",
-        icon: Key,
-      },
-    ],
-  },
-  {
-    title: "Configuration",
-    Icon: Settings,
-    list: [
-      {
-        title: "Plugin Options",
-        href: "/docs/configuration/plugin-options",
-        icon: Settings,
-      },
-      {
-        title: "Better Auth Options",
-        href: "/docs/configuration/better-auth-options",
-        icon: Wrench,
-      },
-      {
-        title: "Collection Overrides",
-        href: "/docs/configuration/collection-overrides",
-        icon: FileText,
-      },
-    ],
-  },
-  {
-    title: "Authentication",
-    Icon: Lock,
-    list: [
-      {
-        title: "Email & Password",
-        href: "/docs/authentication/email-password",
-        icon: Mail,
-      },
-      {
-        title: "Social Providers",
-        href: "/docs/authentication/social-providers",
-        icon: Globe,
-      },
-      {
-        title: "Magic Link",
-        href: "/docs/authentication/magic-link",
-        icon: Mailbox,
-      },
-      {
-        title: "Passkeys",
-        href: "/docs/authentication/passkeys",
-        icon: Fingerprint,
-      },
-      {
-        title: "Two-Factor Auth",
-        href: "/docs/authentication/two-factor",
-        icon: ShieldCheck,
-      },
-    ],
-  },
-  {
-    title: "Plugins",
-    Icon: Layers,
-    list: [
-      {
-        title: "Overview",
-        href: "/docs/plugins/overview",
-        icon: Layers,
-      },
-      {
-        title: "Admin",
-        href: "/docs/plugins/admin",
-        icon: UserCircle,
-      },
-      {
-        title: "Organization",
-        href: "/docs/plugins/organization",
-        icon: Building2,
-      },
-      {
-        title: "API Keys",
-        href: "/docs/plugins/api-keys",
-        icon: KeyRound,
-      },
-    ],
-  },
-  {
-    title: "Admin UI",
-    Icon: Gauge,
-    list: [
-      {
-        title: "Overview",
-        href: "/docs/admin-ui/overview",
-        icon: Gauge,
-      },
-      {
-        title: "Custom Login",
-        href: "/docs/admin-ui/custom-login",
-        icon: Lock,
-      },
-      {
-        title: "Components",
-        href: "/docs/admin-ui/components",
-        icon: Code,
-      },
-    ],
-  },
-  {
-    title: "Guides",
-    Icon: BookOpen,
-    list: [
-      {
-        title: "Access Control",
-        href: "/docs/guides/access-control",
-        icon: Shield,
-      },
-      {
-        title: "Email Setup",
-        href: "/docs/guides/email-setup",
-        icon: Mail,
-      },
-      {
-        title: "Multi-Tenancy",
-        href: "/docs/guides/multi-tenancy",
-        icon: Building2,
-      },
-    ],
-  },
-  {
-    title: "Reference",
-    Icon: FileText,
-    list: [
-      {
-        title: "API Reference",
-        href: "/docs/reference/api",
-        icon: Code,
-      },
-      {
-        title: "Troubleshooting",
-        href: "/docs/reference/troubleshooting",
-        icon: CircleHelp,
-      },
-    ],
-  },
-  {
-    title: "Resources",
-    Icon: BookOpen,
-    list: [
-      {
-        title: "Next.js Example",
-        href: "/docs/examples/nextjs-app-router",
-        icon: Code,
-      },
-      {
-        title: "SaaS Example",
-        href: "/docs/examples/full-stack-saas",
-        icon: Building2,
-      },
-      {
-        title: "Migration Guide",
-        href: "/docs/migration/from-payload-auth",
-        icon: ArrowRight,
-      },
-    ],
-  },
-];
-
-export const exampleLinks: DocLink[] = [
-  {
-    title: "Examples",
-    Icon: Code,
-    list: [
-      {
-        title: "Next.js App Router",
-        href: "/docs/examples/nextjs-app-router",
-        icon: Code,
-      },
-      {
-        title: "Full-Stack SaaS",
-        href: "/docs/examples/full-stack-saas",
-        icon: Building2,
-      },
-    ],
-  },
-];
+        `
+}
 
 export const sidebarTabs = [
   {
-    title: "Documentation",
-    value: "docs",
-    description: "Learn how to use payload-auth",
-    icon: <BookOpen className="w-4 h-4" />,
+    value: 'docs',
+    title: 'Welcome',
+    description: 'Get started, concepts, and plugins',
+    icon: (props: SVGProps<SVGSVGElement>) => {
+      return (
+        <div className="flex items-center gap-1">
+          <svg height={20} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" className="text-foreground" {...props}>
+            <g fill="currentColor">
+              <path d="m98.965 167.891-57.614-33.263a2.34 2.34 0 0 1-1.16-2.011V81.254c0-.89.967-1.451 1.74-1.005l8.493 3.324c.928.541 2.49.126 2.49-.957V58.871c0-1.005.085-1.22-.766-1.723L29.037 43.68a2.3 2.3 0 0 0-2.34 0L16.16 49.771A2.34 2.34 0 0 0 15 51.783v95.474c0 .832.445 1.605 1.16 2.011l82.65 47.727a2.3 2.3 0 0 0 2.34 0l69.406-40.088a1.397 1.397 0 0 0 0-2.417l-21.653-12.512a2.8 2.8 0 0 0-2.804 0l-44.815 25.875a2.3 2.3 0 0 1-2.34 0zm84.913-117.982L101.186 2.318a2.31 2.31 0 0 0-2.34 0L55.142 27.483a1.391 1.391 0 0 0 0 2.41l21.466 12.36c.87.501 1.934.501 2.804 0l19.571-11.261a2.31 2.31 0 0 1 2.34 0l57.628 33.167a2.33 2.33 0 0 1 1.16 2.006v51.486c0 1.003.541 1.909 1.392 2.41l21.427 12.341c.928.54 2.108-.135 2.108-1.215V51.934a2.31 2.31 0 0 0-1.16-2.006v-.02Z" />
+              <path d="M123.002 91.264h8.018c.068 0 .886.8.752 1.066l-.018 33.561c-.059.377-.21.588-.493.829-.432.367-5.014 3.043-5.444 3.153l-51.178.082c-.613-.075-5.274-2.738-5.858-3.236-.154-.131-.297-.258-.379-.448-.232-11.415-.156-22.92-.038-34.344.114-.115.612-.664.658-.664h8.018c.128-3.858-.249-7.799.186-11.635 2.259-19.926 27.416-27.159 40.405-12.174 6.018 6.943 5.508 15.12 5.371 23.81m-9.755 0V80.931c0-.951-.921-3.487-1.37-4.416-4.655-9.633-18.473-9.88-23.457-.406-.427.811-1.46 3.344-1.46 4.161v10.995h26.288Zm-7.936 9.424H94.73v10.25h2.976v8.928h4.63v-8.928h2.976z" />
+            </g>
+          </svg>
+          <span className="text-sm font-medium">Welcome</span>
+        </div>
+      )
+    }
   },
   {
-    title: "Examples",
-    value: "examples",
-    description: "Real-world implementations",
-    icon: <Code className="w-4 h-4" />,
+    value: 'docs/better-auth',
+    title: 'Better Auth',
+    description: 'Better Auth Plugin docs',
+    icon: (props: SVGProps<SVGSVGElement>) => {
+      return (
+        <svg viewBox="0 0 215 32" fill="none" xmlns="http://www.w3.org/2000/svg" height={16} className="text-foreground" {...props}>
+          <path fill="currentColor" d="M4 3.75h8.676v24.397H4zm26.783 0h9.219v24.397h-9.216z" />
+          <path
+            fill="currentColor"
+            d="M39.73 3.75v7.862H22.327V3.75zm.271 16.535v7.862H22.327v-7.862zm-17.674-8.676v8.676h-9.651v-8.676zm28.132 12.89V7.46h5.857q3.023 0 4.536 1.103t1.513 3.479q0 1.441-.817 2.424-.791.96-2.209 1.224 1.751.241 2.737 1.367 1.009 1.103 1.009 2.76 0 2.327-1.513 3.505T57.274 24.5zm2.063-9.672h3.791q1.871 0 2.88-.696 1.009-.719 1.009-1.992 0-2.665-3.889-2.665h-3.791zm0 7.657h4.751q1.751 0 2.688-.719.96-.719.96-2.063t-.96-2.089q-.937-.768-2.688-.768h-4.751zm13.804 2.015V7.46h10.703v2.015h-8.64v5.496h8.353v1.969h-8.353v5.545h8.832V24.5zm17.846 0V9.475h-5.305V7.46h12.672v2.015h-5.304V24.5zm13.476 0V9.475h-5.304V7.46h12.672v2.015h-5.304V24.5zm9.132 0V7.46h10.703v2.015h-8.64v5.496h8.353v1.969h-8.353v5.545h8.832V24.5zm14.226 0V7.46h6.456q2.688 0 4.247 1.393t1.559 3.768q0 .983-.407 1.8-.407.791-1.057 1.344t-1.416.768q1.129.192 1.777.911.673.719.791 2.04l.481 5.015h-2.089l-.433-4.8q-.095-1.057-.768-1.559-.648-.504-2.135-.504h-4.943v6.863zm2.063-8.881h4.657q1.559 0 2.473-.791t.911-2.255q0-1.487-.937-2.281-.937-.817-2.711-.817h-4.393zm12.91 2.831v-1.897h7.944v1.897zm9.477 6.049L151.6 7.459h2.783l6.147 17.039h-2.255l-1.705-4.849h-7.153l-1.702 4.849zm4.657-6.863h5.76l-2.88-8.376zm18.801 7.247q-1.969 0-3.433-.768-1.441-.768-2.232-2.184-.768-1.441-.768-3.384V7.436h2.063v11.113q0 2.063 1.129 3.192 1.152 1.129 3.241 1.129 2.063 0 3.192-1.129 1.152-1.129 1.152-3.192V7.437h2.063V18.55q0 1.943-.791 3.384-.768 1.416-2.209 2.184t-3.407.768m13.86-.387V9.475h-5.304V7.46h12.672v2.015h-5.304V24.5zm9.132 0V7.46h2.063v7.465h8.568V7.46h2.063v17.039h-2.063v-7.56h-8.568v7.56zm15.956 0v-2.711h2.711v2.711z"
+          />
+        </svg>
+      )
+    }
   },
-];
+  {
+    value: 'docs/clerk',
+    title: 'Clerk',
+    description: 'Clerk Plugin docs',
+    icon: (props: SVGProps<SVGSVGElement>) => {
+      return (
+        <svg height={16} viewBox="0 0 103.125 30" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-foreground" {...props}>
+          <path
+            fill="#6C47FF"
+            d="M19.688 15A4.687 4.687 0 0 1 15 19.688 4.687 4.687 0 0 1 10.313 15a4.687 4.688 0 0 1 9.375 0m3.759 11.098c.397.399.358 1.059-.111 1.373A14.93 14.93 0 0 1 14.999 30a14.94 14.94 0 0 1-8.337-2.528c-.469-.314-.508-.975-.11-1.373l3.426-3.426c.309-.309.789-.358 1.179-.159a8.4 8.4 0 0 0 3.843.924 8.4 8.4 0 0 0 3.842-.923c.39-.2.87-.151 1.179.159z"
+          />
+          <path
+            d="M23.337 2.528c.469.314.508.975.11 1.373l-3.426 3.426c-.309.309-.79.359-1.179.159A8.438 8.438 0 0 0 7.486 18.842c.2.39.15.87-.159 1.179l-3.426 3.426c-.398.398-1.059.359-1.373-.11A14.93 14.93 0 0 1 0 15C0 6.715 6.715 0 15 0c3.084 0 5.953.932 8.337 2.528"
+            fill="#BAB1FF"
+          />
+          <path
+            d="M94.13 19.921a.08.08 0 0 1 .056-.024.08.08 0 0 1 .064.036l4.446 7.145a.23.23 0 0 0 .199.111h3.997a.234.234 0 0 0 .2-.358l-6.099-9.839a.234.234 0 0 1 .026-.281l5.875-6.483a.234.234 0 0 0-.173-.392h-4.169a.23.23 0 0 0-.172.076l-6.799 7.411a.234.234 0 0 1-.407-.159V3.047a.234.234 0 0 0-.236-.234h-3.516a.234.234 0 0 0-.234.234v23.906c0 .129.105.234.234.234h3.516a.234.234 0 0 0 .234-.234v-3.762a.23.23 0 0 1 .063-.159zM48.984 3.047a.234.234 0 0 1 .235-.234h3.516a.234.234 0 0 1 .234.234v23.906a.234.234 0 0 1-.234.234h-3.516a.234.234 0 0 1-.234-.234zm-4.961 19.07a.24.24 0 0 0-.322.01 6.2 6.2 0 0 1-1.894 1.219 6.3 6.3 0 0 1-2.437.469 5.25 5.25 0 0 1-2.066-.354 5.2 5.2 0 0 1-1.753-1.129c-.907-.926-1.43-2.248-1.43-3.825 0-3.156 2.1-5.316 5.249-5.316a5.8 5.8 0 0 1 2.451.502 5.7 5.7 0 0 1 1.843 1.301.243.243 0 0 0 .334.021l2.374-2.053a.23.23 0 0 0 .022-.326c-1.785-1.995-4.582-3.025-7.241-3.025-5.355 0-9.153 3.612-9.153 8.927 0 2.629.944 4.842 2.535 6.405s3.859 2.481 6.475 2.481c3.28 0 5.92-1.258 7.468-2.872a.23.23 0 0 0-.019-.331zm28.313-2.44a.23.23 0 0 1-.232.205H59.789a.225.225 0 0 0-.222.283c.612 2.271 2.439 3.645 4.932 3.645a5.5 5.5 0 0 0 2.436-.505 5.4 5.4 0 0 0 1.846-1.383.17.17 0 0 1 .24-.022l2.476 2.156a.23.23 0 0 1 .026.321c-1.494 1.763-3.916 3.045-7.24 3.045-5.113 0-8.97-3.541-8.97-8.92 0-2.639.909-4.853 2.423-6.415a8.4 8.4 0 0 1 2.815-1.864 8.5 8.5 0 0 1 3.337-.611c5.182 0 8.533 3.644 8.533 8.678q-.009.695-.087 1.387m-12.695-3.266a.225.225 0 0 0 .218.285h8.189a.226.226 0 0 0 .221-.287c-.558-1.931-1.974-3.22-4.173-3.22a4.6 4.6 0 0 0-1.888.343 4.5 4.5 0 0 0-1.569 1.086 4.8 4.8 0 0 0-.998 1.793m24.966-6.798a.234.234 0 0 1 .237.234v3.934a.234.234 0 0 1-.252.234 15 15 0 0 0-.975-.052c-3.066 0-4.867 2.159-4.867 4.992v7.997a.234.234 0 0 1-.234.234H75a.234.234 0 0 1-.234-.234V10.089A.234.234 0 0 1 75 9.855h3.516a.234.234 0 0 1 .234.234v2.367a.024.024 0 0 0 .043.014c1.374-1.835 3.403-2.856 5.546-2.856z"
+            fill="currentColor"
+          />
+        </svg>
+      )
+    }
+  },
+  {
+    value: 'docs/authjs',
+    title: 'Auth.js',
+    description: 'Auth.js Plugin docs',
+    icon: (props: SVGProps<SVGSVGElement>) => {
+      return (
+        <div className="flex items-center gap-1">
+          <img src="/authjs.png" alt="Auth.js" width={16} height={16} />
+          <span className="text-sm font-medium">Auth.js</span>
+        </div>
+      )
+    }
+  },
+  {
+    value: 'docs/kinde',
+    title: 'Kinde',
+    description: 'Kinde Plugin docs',
+    icon: (props: SVGProps<SVGSVGElement>) => {
+      return (
+        <svg height={12} viewBox="0 0 90 30" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-foreground" {...props}>
+          <path
+            d="M21.918 29.081c-1.779 0-3.401.011-5.023-.011-.179 0-.403-.202-.537-.359-3.546-4.114-7.071-8.24-10.607-12.354-.112-.135-.235-.258-.448-.505v13.195H.951V.673h4.307v13.016c.235-.258.369-.392.481-.538 3.223-4.014 6.445-8.028 9.645-12.041.269-.336.537-.482.985-.482 1.499.034 2.998.011 4.666.011C17.107 5.37 13.247 10 9.376 14.653zm42.942-9.832c-.011-1.312-.213-2.321-.649-3.296-1.745-3.913-6.791-4.742-9.566-1.569-1.98 2.253-2.226 5.953-.559 8.453 1.734 2.59 4.923 3.464 7.53 1.984 2.249-1.278 3.144-3.352 3.245-5.572m-.459-8.543v-10h4.073v28.397c-.929 0-1.869.011-2.808-.011-.101 0-.224-.202-.291-.336a48 48 0 0 1-.75-1.637c-1.22 1.177-2.641 1.805-4.241 2.085-4.8.852-9.521-1.928-10.931-6.547-1.175-3.845-.761-7.5 1.857-10.706 2.708-3.307 7.653-4.35 11.289-2.444.615.325 1.175.774 1.801 1.2"
+            fill="currentColor"
+          />
+          <path
+            clipRule="evenodd"
+            d="M85.077 17.366c.011-2.579-2.529-4.877-5.404-4.922-2.864-.045-5.348 2.197-5.404 4.922zm-10.842 3.419c.101 2.029 1.801 3.991 3.927 4.518 2.294.561 4.263.023 5.852-1.76.112-.135.302-.28.47-.28 1.331-.022 2.674-.011 4.073-.011-.514 1.356-1.242 2.522-2.226 3.509-1.88 1.895-4.207 2.623-6.847 2.578-4.923-.09-8.917-3.722-9.51-8.587-.347-2.792.011-5.448 1.589-7.825 2.092-3.161 5.102-4.652 8.895-4.26 3.737.392 6.277 2.522 7.72 5.908.806 1.906 1.119 3.901.671 5.964-.011.067-.045.134-.078.258H74.237z"
+            fill="currentColor"
+          />
+          <path
+            d="M47.305 29.092h-4.084v-.617c0-3.733.011-7.466-.011-11.188-.011-2.063-1.477-4.014-3.401-4.63-2.786-.886-5.84.998-6.333 3.924a7.4 7.4 0 0 0-.09 1.211c-.011 3.531 0 7.074 0 10.605v.673h-4.05V8.834c.917 0 1.846-.011 2.764.011.112 0 .257.202.324.347.257.516.481 1.054.738 1.614 2.025-1.894 4.431-2.432 7.026-2.141 3.379.37 6.198 3.027 6.87 6.39.156.774.246 1.569.246 2.366.022 3.744.011 7.5.011 11.244.011.112 0 .235-.011.426m-24.334.001h4.039V8.845H22.97zm4.531-25.92c0 1.368-1.152 2.489-2.529 2.478-1.331-.011-2.484-1.143-2.506-2.466-.011-1.323 1.175-2.511 2.518-2.511 1.376 0 2.517 1.144 2.517 2.5"
+            fill="currentColor"
+          />
+        </svg>
+      )
+    }
+  }
+]

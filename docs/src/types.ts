@@ -5,9 +5,10 @@ import type { SVGProps } from "react";
 export interface DocLink {
   title: string;
   href?: string;
-  Icon: ((props?: SVGProps<any>) => ReactNode) | LucideIcon;
+  Icon?: ((props?: SVGProps<any>) => ReactNode) | LucideIcon;
   isNew?: boolean;
-  list: {
+  isSingle?: boolean;
+  list?: {
     title: string;
     href: string;
     icon: ((props?: SVGProps<any>) => ReactNode) | LucideIcon;
