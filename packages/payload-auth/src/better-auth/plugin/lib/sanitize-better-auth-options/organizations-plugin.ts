@@ -108,7 +108,7 @@ export function configureOrganizationPlugin(
   set(
     plugin,
     `schema.${baModelKey.team}.fields.organizationId.references.model`,
-    getSchemaCollectionSlug(resolvedSchemas, baModelKey.user)
+    getSchemaCollectionSlug(resolvedSchemas, baModelKey.organization)
   );
   set(
     plugin,

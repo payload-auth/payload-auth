@@ -6,8 +6,9 @@ import {
   killTransaction
 } from "payload";
 import { z } from "zod";
-import { adminEndpoints } from "@/better-auth/plugin/constants";
+import { adminEndpoints, defaults } from "@/better-auth/plugin/constants";
 import type { PayloadAuthOptions } from "@/better-auth/plugin/types";
+import { hasAdminRoles } from "../../utils/payload-access";
 
 const requestSchema = z.object({
   email: z.email(),
@@ -17,11 +18,27 @@ const requestSchema = z.object({
 export const getSendInviteUrlEndpoint = (
   pluginOptions: PayloadAuthOptions
 ): Endpoint => {
+  const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole];
+
   const endpoint: Endpoint = {
     path: adminEndpoints.sendInvite,
     method: "post",
     handler: async (req) => {
       await addDataAndFileToRequest(req);
+
+      if (!req.user) {
+        return Response.json(
+          { message: "Unauthorized" },
+          { status: httpStatus.UNAUTHORIZED }
+        );
+      }
+      if (!hasAdminRoles(adminRoles)({ req })) {
+        return Response.json(
+          { message: "Forbidden" },
+          { status: httpStatus.FORBIDDEN }
+        );
+      }
+
       const { t } = req;
       const body = requestSchema.safeParse(req.data);
       if (!body.success) {

@@ -81,7 +81,6 @@ export const betterAuthPluginOptions: PayloadAuthOptions = {
     logTables: false,
     enableDebugLogs: false
   },
-  disableDefaultPayloadAuth: true,
   hidePluginCollections: true,
   users: {
     hidden: false,
@@ -106,9 +105,9 @@ export const payloadConfig = buildConfig({
   secret: "super-secret-payload-key",
   db: postgresAdapter({
     pool: {
-      connectionString: "postgres://forrestdevs:@localhost:5432/pba-tests"
+      connectionString: "postgres://forrestdevs:@localhost:5432/padev-tests"
     },
-    push: false,
+    push: true,
     transactionOptions: false
   }),
   plugins: [betterAuthPlugin(betterAuthPluginOptions)]

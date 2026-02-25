@@ -73,6 +73,7 @@ export const isAdminOrCurrentUserUpdateWithAllowedFields = (
 
     if (user[idField] === id && data) {
       const dataKeys = Object.keys(data);
+      let effectiveAllowedFields = allowedFields;
 
       const hasCurrentPassword = dataKeys.includes("currentPassword");
       const hasPassword = dataKeys.includes("password");
@@ -92,14 +93,14 @@ export const isAdminOrCurrentUserUpdateWithAllowedFields = (
 
           if (!result) return false;
 
-          allowedFields.push("password", "currentPassword");
+          effectiveAllowedFields = [...allowedFields, "password", "currentPassword"];
         } catch (error) {
           return false;
         }
       }
 
       const hasDisallowedField = dataKeys.some(
-        (key) => !allowedFields.includes(key)
+        (key) => !effectiveAllowedFields.includes(key)
       );
 
       return !hasDisallowedField;

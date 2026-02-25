@@ -6,7 +6,7 @@ import { PayloadAuthOptions } from "../../../../types";
 import { getPayloadAuth } from "../../../get-payload-auth";
 
 const setAdminRoleSchema = z.object({
-  token: z.string().optional(),
+  token: z.string(),
   redirect: z.string().optional()
 });
 
@@ -37,23 +37,28 @@ export const getSetAdminRoleEndpoint = (
         );
       }
       const { token, redirect } = schema.data;
-      const invite = await req.payload.find({
-        collection:
-          pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
+      const invitationSlug =
+        pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations;
+
+      // Atomically consume the token by deleting first, then checking if anything was deleted.
+      // This prevents race conditions where two concurrent requests could both use the same token.
+      const deleted = await req.payload.delete({
+        collection: invitationSlug,
         where: {
           token: { equals: token }
-        },
-        limit: 1
+        }
       });
-      if (invite.docs.length === 0) {
+
+      if (!deleted.docs || deleted.docs.length === 0) {
         return Response.json(
           { message: "Invalid token" },
           { status: httpStatus.UNAUTHORIZED }
         );
       }
-      const role = invite.docs[0].role as string;
+
+      const role = deleted.docs[0].role as string;
       try {
-        const updatedUser = await req.payload.update({
+        await req.payload.update({
           collection: userSlug,
           id: session.user.id,
           data: {
@@ -61,19 +66,17 @@ export const getSetAdminRoleEndpoint = (
           },
           overrideAccess: true
         });
-        await req.payload.delete({
-          collection:
-            pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
-          where: {
-            token: {
-              equals: token
-            }
-          }
-        });
+
+        // Validate redirect is a relative path to prevent open redirect
+        const safeRedirect =
+          redirect && redirect.startsWith("/")
+            ? redirect
+            : config.routes.admin;
+
         const response = new Response(null, {
           status: 307,
           headers: {
-            Location: redirect ?? config.routes.admin
+            Location: safeRedirect
           }
         });
         return response;

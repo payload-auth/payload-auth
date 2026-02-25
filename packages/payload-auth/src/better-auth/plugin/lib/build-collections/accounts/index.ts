@@ -16,7 +16,7 @@ import {
   isAdminWithRoles
 } from "../utils/payload-access";
 import { getCollectionFields } from "../utils/transform-schema-fields-to-payload";
-import { getSyncPasswordToUserHook } from "./hooks/sync-password-to-user";
+
 
 export function buildAccountsCollection({
   incomingCollections,
@@ -155,10 +155,7 @@ export function buildAccountsCollection({
     },
     hooks: {
       afterChange: [
-        ...(existingAccountCollection?.hooks?.afterChange ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth
-          ? []
-          : [getSyncPasswordToUserHook(resolvedSchemas)])
+        ...(existingAccountCollection?.hooks?.afterChange ?? [])
       ]
     },
     fields: [

@@ -9,10 +9,11 @@ import { checkPluginExists } from "../helpers/check-plugin-exists";
 import type { BetterAuthSchemas, PayloadAuthOptions } from "../types";
 
 /**
- * Applies all admin-related overrides when `disableDefaultPayloadAuth` is `true`.
+ * Applies Better Auth admin UI overrides to the Payload config.
+ * Replaces default Payload login/signup/password views with Better Auth equivalents.
  * Mutates the provided Payload config in-place.
  */
-export function applyDisabledDefaultAuthConfig({
+export function applyBetterAuthAdminConfig({
   config,
   pluginOptions,
   collectionMap,

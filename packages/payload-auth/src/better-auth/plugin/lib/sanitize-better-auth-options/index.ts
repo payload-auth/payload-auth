@@ -27,8 +27,6 @@ import { configureTwoFactorPlugin } from "./two-factor-plugin";
 import { adminAfterRoleMiddleware } from "./utils/admin-after-role-middleware";
 import { adminBeforeRoleMiddleware } from "./utils/admin-before-role-middleware";
 import { applySaveToJwtReturned } from "./utils/apply-save-to-jwt-returned";
-import { ensurePasswordSetBeforeUserCreate } from "./utils/ensure-password-set-before-create";
-import { hashPassword, verifyPassword } from "./utils/password";
 import { requireAdminInviteForSignUpMiddleware } from "./utils/require-admin-invite-for-sign-up-middleware";
 import { useAdminInviteAfterEmailSignUpMiddleware } from "./utils/use-admin-invite-after-email-sign-up-middleware";
 
@@ -97,18 +95,6 @@ export function sanitizeBetterAuthOptions({
     betterAuthOptions.emailAndPassword?.enabled ?? true
   );
 
-  // Configure password handling
-  if (
-    betterAuthOptions.emailAndPassword?.enabled &&
-    !pluginOptions.disableDefaultPayloadAuth
-  ) {
-    betterAuthOptions.emailAndPassword.password = {
-      ...(betterAuthOptions.emailAndPassword.password || {}),
-      verify: ({ hash, password }) => verifyPassword({ hash, password }),
-      hash: (password) => hashPassword(password)
-    };
-  }
-
   // Handle admin invite for sign up
   if (pluginOptions.requireAdminInviteForSignUp) {
     betterAuthOptions.socialProviders = betterAuthOptions.socialProviders || {};
@@ -146,39 +132,6 @@ export function sanitizeBetterAuthOptions({
     resolvedSchemas,
     modelKey: baModelKey.session
   });
-
-  // Handle verification email blocking
-  if (
-    pluginOptions.users?.blockFirstBetterAuthVerificationEmail &&
-    !pluginOptions.disableDefaultPayloadAuth
-  ) {
-    const originalSendEmail =
-      betterAuthOptions?.emailVerification?.sendVerificationEmail;
-    if (typeof originalSendEmail === "function") {
-      betterAuthOptions.emailVerification =
-        betterAuthOptions.emailVerification || {};
-      betterAuthOptions.emailVerification.sendVerificationEmail = async (
-        data,
-        request
-      ) => {
-        try {
-          const timeSinceCreation =
-            new Date().getTime() - new Date(data.user.createdAt).getTime();
-          // Skip if user was created less than a minute ago (rely on Payload's email)
-          if (timeSinceCreation >= 60000) {
-            await originalSendEmail(data, request);
-          }
-        } catch (error) {
-          console.error("Error sending verification email:", error);
-        }
-      };
-    }
-  }
-
-  // Ensure password is set before user creation
-  if (!pluginOptions.disableDefaultPayloadAuth) {
-    ensurePasswordSetBeforeUserCreate(betterAuthOptions);
-  }
 
   // Process plugins
   if (betterAuthOptions.plugins?.length) {

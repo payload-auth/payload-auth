@@ -33,12 +33,8 @@ import {
   getSetAdminRoleEndpoint
 } from "./endpoints";
 import {
-  getAfterLoginHook,
   getAfterLogoutHook,
-  getBeforeDeleteHook,
-  getBeforeLoginHook,
-  getOnVerifiedChangeHook,
-  getSyncAccountHook
+  getBeforeDeleteHook
 } from "./hooks";
 
 export function buildUsersCollection({
@@ -291,29 +287,12 @@ export function buildUsersCollection({
     ],
     hooks: {
       beforeChange: [
-        ...(existingUserCollection?.hooks?.beforeChange ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth
-          ? []
-          : [getOnVerifiedChangeHook()])
+        ...(existingUserCollection?.hooks?.beforeChange ?? [])
       ],
       afterChange: [
-        ...(existingUserCollection?.hooks?.afterChange ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth
-          ? []
-          : [getSyncAccountHook()])
+        ...(existingUserCollection?.hooks?.afterChange ?? [])
       ],
-      beforeLogin: [
-        ...(existingUserCollection?.hooks?.beforeLogin ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth
-          ? []
-          : [getBeforeLoginHook(pluginOptions.betterAuthOptions ?? {})])
-      ],
-      afterLogin: [
-        ...(existingUserCollection?.hooks?.afterLogin ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth
-          ? []
-          : [getAfterLoginHook()])
-      ],
+      
       afterLogout: [
         ...(existingUserCollection?.hooks?.afterLogout ?? []),
         getAfterLogoutHook()
@@ -328,9 +307,7 @@ export function buildUsersCollection({
       typeof existingUserCollection.auth === "object"
         ? existingUserCollection.auth
         : {}),
-      disableLocalStrategy: pluginOptions.disableDefaultPayloadAuth
-        ? true
-        : undefined,
+      disableLocalStrategy: true,
       ...(hasUsernamePlugin && {
         loginWithUsername: {
           allowEmailLogin: true,

@@ -347,8 +347,8 @@ export const createTransform = (
 
     // Process each field in the input data
     Object.entries(data).forEach(([key, value]) => {
-      // Skip null/undefined values
-      if (value === null || value === undefined) {
+      // Skip undefined values (but allow null through to clear fields)
+      if (value === undefined) {
         return;
       }
 

@@ -1,8 +1,9 @@
 import { status as httpStatus } from "http-status";
 import { addDataAndFileToRequest, type Endpoint } from "payload";
-import { adminEndpoints, baseSlugs } from "@/better-auth/plugin/constants";
+import { adminEndpoints, baseSlugs, defaults } from "@/better-auth/plugin/constants";
 import { generateAdminInviteUrl } from "@/better-auth/plugin/payload/utils/generate-admin-invite-url";
 import { PayloadAuthOptions } from "@/better-auth/plugin/types";
+import { hasAdminRoles } from "../../utils/payload-access";
 
 interface InviteEndpointProps {
   roles: { label: string; value: string }[];
@@ -13,11 +14,27 @@ export const getGenerateInviteUrlEndpoint = ({
   roles,
   pluginOptions
 }: InviteEndpointProps): Endpoint => {
+  const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole];
+
   const endpoint: Endpoint = {
     path: adminEndpoints.generateInviteUrl,
     method: "post",
     handler: async (req) => {
       await addDataAndFileToRequest(req);
+
+      if (!req.user) {
+        return Response.json(
+          { message: "Unauthorized" },
+          { status: httpStatus.UNAUTHORIZED }
+        );
+      }
+      if (!hasAdminRoles(adminRoles)({ req })) {
+        return Response.json(
+          { message: "Forbidden" },
+          { status: httpStatus.FORBIDDEN }
+        );
+      }
+
       const body = req.data as { role: { label: string; value: string } };
       const generateAdminInviteUrlFn =
         pluginOptions?.adminInvitations?.generateInviteUrl ??

@@ -88,24 +88,7 @@ export interface PayloadAuthOptions {
    */
   disabled?: boolean;
   /**
-   * Disable the default payload auth
-   *
-   * This will ensure that better-auth handles both admin and frontend auth
-   *
-   * Admin will make use of custom admin routes for auth and give you more control
-   *
-   * Note: This will override the option passed in the users collection config
-   *
-   * Read about this more in the docs
-   * @see https://www.payloadauth.com/docs/better-auth#disable-default-payload-auth
-   *
-   * @default false
-   */
-  disableDefaultPayloadAuth?: boolean;
-  /**
-   * Custom admin components when disableDefaultPayloadAuth is true
-   *
-   * These components will be used to render the login, create first admin, and other auth-related views
+   * Custom admin components for Better Auth login, signup, and other auth-related views
    */
   admin?: {
     /**
@@ -262,13 +245,6 @@ export interface PayloadAuthOptions {
     collectionOverrides?: (options: {
       collection: CollectionConfig;
     }) => CollectionConfig;
-    /**
-     * This will block the first on sign up verification email from better-auth.
-     * If you are using Payload's userCollection.verify option, you will want to set this to true.
-     * Function that will be blocked: options.emailVerificationsendVerificationEmail
-     * @default false
-     */
-    blockFirstBetterAuthVerificationEmail?: boolean;
   };
   /**
    * Configure the Accounts collections:
