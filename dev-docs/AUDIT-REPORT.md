@@ -65,51 +65,34 @@ User Application
 
 These issues can cause security vulnerabilities, data corruption, or system-wide failures. Fix immediately.
 
-### P0-1: Shared `allowedFields` Array Mutation Bypasses Password Verification
+### P0-1: Shared `allowedFields` Array Mutation Bypasses Password Verification — FIXED
 
-**File:** `plugin/lib/build-collections/utils/payload-access.ts:95`
+**File:** `plugin/lib/build-collections/utils/payload-access.ts:96`
 **Type:** Security - Authentication Bypass
 
-The `isAdminOrCurrentUserUpdateWithAllowedFields` access control function captures the `allowedFields` array in a closure. When a user successfully verifies their current password during a password change, the code does:
+The `isAdminOrCurrentUserUpdateWithAllowedFields` access control function previously captured the `allowedFields` array in a closure and mutated it with `.push("password", "currentPassword")` after a successful password verification. Since the array was shared across all requests, after the first successful password change by any user, password and currentPassword were permanently in the allowed list for all subsequent requests — bypassing password verification entirely.
 
-```typescript
-allowedFields.push("password", "currentPassword");
-```
+**Impact:** Any authenticated user could change any other user's password without knowing the current password, after any single password change had occurred anywhere in the system.
 
-This `.push()` mutates the **original array** that was passed when the access function was created. Since this array is shared across all requests (it's captured once in the closure at startup), after the **first successful password change by any user**, `"password"` and `"currentPassword"` are permanently in the allowed list for **all subsequent requests**. This means:
-
-1. Any authenticated user can change their password without providing `currentPassword`
-2. The `req.payload.login()` verification (lines 85-91) is completely bypassed
-3. The vulnerability is cumulative - it triggers on the very first password change after server start
-
-**Impact:** Any authenticated user can change any other user's password (if they can guess the user ID) without knowing the current password, after any single password change has occurred anywhere in the system.
-
-**Fix:** Replace `allowedFields.push(...)` with a local copy:
-```typescript
-const extendedAllowedFields = [...allowedFields, "password", "currentPassword"];
-// Then use extendedAllowedFields for the hasDisallowedField check
-```
+**Resolution:**
+- Replaced `allowedFields.push(...)` with a local copy: `effectiveAllowedFields = [...allowedFields, "password", "currentPassword"]`
+- The `hasDisallowedField` check now uses the local `effectiveAllowedFields` variable instead of the shared closure array
+- **Tests:** 25 unit tests in `payload-access.test.ts`, including 2 P0-1-specific regression tests verifying the array is not mutated and that password verification is still required on subsequent invocations
 
 ---
 
-### P0-2: `team.organizationId` References Wrong Model (User Instead of Organization)
+### P0-2: `team.organizationId` References Wrong Model (User Instead of Organization) — FIXED
 
 **File:** `plugin/lib/sanitize-better-auth-options/organizations-plugin.ts:111`
 **Type:** Data Integrity - Schema Corruption
 
-```typescript
-set(
-  plugin,
-  `schema.${baModelKey.team}.fields.organizationId.references.model`,
-  getSchemaCollectionSlug(resolvedSchemas, baModelKey.user) // BUG: should be baModelKey.organization
-);
-```
+The team's `organizationId` foreign key was configured to reference the **users** collection instead of the **organizations** collection due to a copy-paste error.
 
-The team's `organizationId` foreign key is configured to reference the **users** collection instead of the **organizations** collection. This is a copy-paste error - compare with the correct references on nearby lines (e.g., line 41 for `member.organizationId` correctly references `baModelKey.organization`).
+**Impact:** Every team's `organizationId` relationship field pointed to the users collection. In relational databases (Postgres), this creates an incorrect foreign key constraint. In the Payload admin UI, the organization field on teams shows users instead of organizations. Queries joining teams to organizations will return wrong results or fail.
 
-**Impact:** Every team's `organizationId` relationship field points to the users collection. In relational databases (Postgres), this creates an incorrect foreign key constraint. In the Payload admin UI, the organization field on teams shows users instead of organizations. Queries joining teams to organizations will return wrong results or fail.
-
-**Fix:** Change `baModelKey.user` to `baModelKey.organization` on line 111.
+**Resolution:**
+- Changed `baModelKey.user` to `baModelKey.organization` on line 111.
+- **Tests:** 10 unit tests in `organizations-plugin.test.ts`, including a P0-2 regression test that explicitly asserts `team.organizationId.references.model` equals the organization collection slug (not users), and a custom slug test verifying it works with non-default collection names.
 
 ---
 
@@ -851,8 +834,8 @@ This inconsistency makes the override behavior unpredictable for users.
 ## Recommendations
 
 ### Immediate Actions (P0)
-1. Fix `allowedFields.push()` to use a local copy
-2. Fix `baModelKey.user` -> `baModelKey.organization` in organizations-plugin.ts
+1. ~~Fix `allowedFields.push()` to use a local copy~~ **DONE** — uses local `effectiveAllowedFields` variable
+2. ~~Fix `baModelKey.user` -> `baModelKey.organization` in organizations-plugin.ts~~ **DONE** — fixed with regression test
 3. ~~Add authentication checks to invite endpoints~~ **DONE** — endpoints hardened with auth + BA session checks; `set-admin-role` eliminated
 4. ~~Add atomic token consumption with expiration to set-admin-role~~ **DONE** — endpoint removed; token consumed atomically in after-signup middleware
 5. Stop dropping `null` values in transformInput
