@@ -155,30 +155,18 @@ Additionally:
 
 ---
 
-### P0-5: `transformInput` Silently Drops `null` Values
+### P0-5: `transformInput` Silently Drops `null` Values — FIXED
 
 **File:** `adapter/transform/index.ts:349-353`
 **Type:** Data Integrity - Silent Data Loss
 
-```typescript
-Object.entries(data).forEach(([key, value]) => {
-  if (value === null || value === undefined) {
-    return; // Skips both null AND undefined
-  }
-  // ...
-});
-```
+The `transformInput` function previously skipped both `null` and `undefined` values. When Better Auth sent an update like `{ image: null }` to clear a field, the adapter dropped it, resulting in an empty update payload.
 
-When Better Auth sends an update like `{ image: null }` to explicitly clear a user's profile image, or `{ banExpires: null }` to unban a user, the adapter silently drops the `null` value. The resulting update payload is `{}` - no fields are changed.
+**Impact:** Any operation that clears an optional field silently failed. Users could not be unbanned, profile images could not be removed, optional metadata could not be cleared.
 
-This affects every nullable field across all collections: `image`, `banExpires`, `banReason`, `logo`, `metadata`, OAuth tokens, and many more. Fields can be set but never cleared through the adapter.
-
-**Impact:** Any operation that clears an optional field silently fails. Users cannot be unbanned (banExpires stays set), profile images cannot be removed, optional metadata cannot be cleared.
-
-**Fix:** Only skip `undefined` values, not `null`:
-```typescript
-if (value === undefined) return;
-```
+**Resolution:**
+- Changed the guard from `if (value === null || value === undefined)` to `if (value === undefined)` — null values now pass through to Payload for field clearing.
+- **Tests:** Unit tests in `transform.test.ts` (29 tests, including "passes null values through for field clearing" and "skips undefined values") plus integration tests in `null-handling.test.ts` (3 tests verifying null clears fields, undefined preserves them, through the full adapter layer).
 
 ---
 
@@ -838,7 +826,7 @@ This inconsistency makes the override behavior unpredictable for users.
 2. ~~Fix `baModelKey.user` -> `baModelKey.organization` in organizations-plugin.ts~~ **DONE** — fixed with regression test
 3. ~~Add authentication checks to invite endpoints~~ **DONE** — endpoints hardened with auth + BA session checks; `set-admin-role` eliminated
 4. ~~Add atomic token consumption with expiration to set-admin-role~~ **DONE** — endpoint removed; token consumed atomically in after-signup middleware
-5. Stop dropping `null` values in transformInput
+5. ~~Stop dropping `null` values in transformInput~~ **DONE** — only `undefined` is skipped, `null` passes through
 
 ### Short-Term (P1)
 6. Rewrite `convertWhereClause` to correctly interpret sequential connectors
