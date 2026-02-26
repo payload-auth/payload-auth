@@ -129,8 +129,7 @@ function SocialButton({ provider, setLoading }: SocialButtonProps) {
     redirectUrl,
     isSignup,
     showIconOnly,
-    adminInviteToken,
-    newUserCallbackURL
+    adminInviteToken
   } = useLoginForm();
   const Icon = Icons[provider as keyof typeof Icons] ?? null;
   const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
@@ -142,12 +141,14 @@ function SocialButton({ provider, setLoading }: SocialButtonProps) {
         provider,
         fetchOptions: {
           query: {
-            ...(isSignup && { adminInviteToken })
+            ...(isSignup && adminInviteToken && { adminInviteToken })
           }
         },
+        ...(isSignup && adminInviteToken
+          ? { additionalData: { adminInviteToken } }
+          : {}),
         errorCallbackURL: window.location.href,
         callbackURL: redirectUrl,
-        newUserCallbackURL,
         ...(isSignup && { requestSignUp: true })
       });
       if (error) {

@@ -28,7 +28,7 @@ import { adminAfterRoleMiddleware } from "./utils/admin-after-role-middleware";
 import { adminBeforeRoleMiddleware } from "./utils/admin-before-role-middleware";
 import { applySaveToJwtReturned } from "./utils/apply-save-to-jwt-returned";
 import { requireAdminInviteForSignUpMiddleware } from "./utils/require-admin-invite-for-sign-up-middleware";
-import { useAdminInviteAfterEmailSignUpMiddleware } from "./utils/use-admin-invite-after-email-sign-up-middleware";
+import { useAdminInviteAfterSignUpMiddleware } from "./utils/admin-invite-after-signup-middleware";
 
 /**
  * Sanitizes the BetterAuth options
@@ -112,7 +112,7 @@ export function sanitizeBetterAuthOptions({
     });
   }
 
-  useAdminInviteAfterEmailSignUpMiddleware({
+  useAdminInviteAfterSignUpMiddleware({
     options: betterAuthOptions,
     adminInvitationCollectionSlug,
     userCollectionSlug

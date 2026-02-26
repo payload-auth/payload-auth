@@ -255,7 +255,6 @@ export const adminRoutes = {
 } as const;
 
 export const adminEndpoints = {
-  setAdminRole: "/set-admin-role",
   refreshToken: "/refresh-token",
   sendInvite: "/send-invite",
   generateInviteUrl: "/generate-invite-url",

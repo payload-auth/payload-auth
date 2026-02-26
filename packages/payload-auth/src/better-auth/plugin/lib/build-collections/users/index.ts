@@ -29,8 +29,7 @@ import { betterAuthStrategy } from "./better-auth-strategy";
 import {
   getGenerateInviteUrlEndpoint,
   getRefreshTokenEndpoint,
-  getSendInviteUrlEndpoint,
-  getSetAdminRoleEndpoint
+  getSendInviteUrlEndpoint
 } from "./endpoints";
 import {
   getAfterLogoutHook,
@@ -278,7 +277,6 @@ export function buildUsersCollection({
         ? existingUserCollection.endpoints
         : []),
       getRefreshTokenEndpoint(userSlug),
-      getSetAdminRoleEndpoint(pluginOptions, userSlug),
       getGenerateInviteUrlEndpoint({
         roles: allRoleOptions,
         pluginOptions

@@ -1,6 +1,7 @@
 import { status as httpStatus } from "http-status";
 import { addDataAndFileToRequest, type Endpoint } from "payload";
 import { adminEndpoints, baseSlugs, defaults } from "@/better-auth/plugin/constants";
+import { getPayloadAuth } from "../../../get-payload-auth";
 import { generateAdminInviteUrl } from "@/better-auth/plugin/payload/utils/generate-admin-invite-url";
 import { PayloadAuthOptions } from "@/better-auth/plugin/types";
 import { hasAdminRoles } from "../../utils/payload-access";
@@ -32,6 +33,19 @@ export const getGenerateInviteUrlEndpoint = ({
         return Response.json(
           { message: "Forbidden" },
           { status: httpStatus.FORBIDDEN }
+        );
+      }
+
+      // Belt-and-suspenders: also validate the Better Auth session
+      // to catch cases where a Payload JWT is stale but the BA session was revoked
+      const payloadAuth = await getPayloadAuth(req.payload.config);
+      const session = await payloadAuth.betterAuth.api.getSession({
+        headers: req.headers
+      });
+      if (!session) {
+        return Response.json(
+          { message: "Unauthorized" },
+          { status: httpStatus.UNAUTHORIZED }
         );
       }
 

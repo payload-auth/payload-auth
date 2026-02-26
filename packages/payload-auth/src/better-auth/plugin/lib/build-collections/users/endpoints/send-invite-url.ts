@@ -8,6 +8,7 @@ import {
 import { z } from "zod";
 import { adminEndpoints, defaults } from "@/better-auth/plugin/constants";
 import type { PayloadAuthOptions } from "@/better-auth/plugin/types";
+import { getPayloadAuth } from "../../../get-payload-auth";
 import { hasAdminRoles } from "../../utils/payload-access";
 
 const requestSchema = z.object({
@@ -36,6 +37,19 @@ export const getSendInviteUrlEndpoint = (
         return Response.json(
           { message: "Forbidden" },
           { status: httpStatus.FORBIDDEN }
+        );
+      }
+
+      // Belt-and-suspenders: also validate the Better Auth session
+      // to catch cases where a Payload JWT is stale but the BA session was revoked
+      const payloadAuth = await getPayloadAuth(req.payload.config);
+      const session = await payloadAuth.betterAuth.api.getSession({
+        headers: req.headers
+      });
+      if (!session) {
+        return Response.json(
+          { message: "Unauthorized" },
+          { status: httpStatus.UNAUTHORIZED }
         );
       }
 
