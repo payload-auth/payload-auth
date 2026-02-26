@@ -1,6 +1,7 @@
 import { DBAdapter } from "@better-auth/core/db/adapter";
 import type { BetterAuthOptions, Where } from "better-auth";
 import { BetterAuthError } from "better-auth";
+import type { BasePayload } from "payload";
 import { ModelKey } from "../generated-types";
 import { generateSchema } from "./generate-schema";
 import { createTransform } from "./transform";
@@ -91,7 +92,11 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
    * @returns The resolved Payload client
    * @throws {BetterAuthError} When Better Auth plugin is not configured
    */
+  let cachedPayload: BasePayload | null = null;
+
   async function resolvePayloadClient() {
+    if (cachedPayload) return cachedPayload;
+
     const payload =
       typeof payloadClient === "function"
         ? await payloadClient()
@@ -101,6 +106,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         `Payload is not configured with the better-auth plugin. Please add the plugin to your payload config.`
       );
     }
+    cachedPayload = payload;
     return payload;
   }
 

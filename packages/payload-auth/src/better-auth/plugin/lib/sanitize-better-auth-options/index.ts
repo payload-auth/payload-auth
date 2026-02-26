@@ -9,7 +9,7 @@ import type {
   PayloadAuthOptions,
   SanitizedBetterAuthOptions
 } from "@/better-auth/plugin/types";
-import type { CollectionConfig, Config, Payload } from "payload";
+import type { CollectionConfig } from "payload";
 import { checkPluginExists } from "../../helpers/check-plugin-exists";
 import { set } from "../../utils/set";
 import {
@@ -34,12 +34,10 @@ import { useAdminInviteAfterSignUpMiddleware } from "./utils/admin-invite-after-
  * Sanitizes the BetterAuth options
  */
 export function sanitizeBetterAuthOptions({
-  config,
   pluginOptions,
   resolvedSchemas,
   collections
 }: {
-  config: Payload["config"] | Config | Promise<Payload["config"] | Config>;
   pluginOptions: PayloadAuthOptions;
   resolvedSchemas: BetterAuthSchemas;
   collections: CollectionConfig[];

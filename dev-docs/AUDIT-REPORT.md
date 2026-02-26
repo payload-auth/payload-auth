@@ -611,77 +611,107 @@ These issues affect robustness, developer experience, or have limited security i
 
 These are performance issues, code quality concerns, or very unlikely edge cases.
 
-### P3-1: `resolvePayloadClient()` Called on Every Adapter Operation
+### P3-1: `resolvePayloadClient()` Called on Every Adapter Operation — FIXED
 
 **File:** `adapter/index.ts:94-105`
 
-If `payloadClient` is a function, it's re-invoked on every database operation. Should cache after first resolution.
+**Resolution:** Added a `cachedPayload` variable at the adapter scope. `resolvePayloadClient()` now returns the cached instance on subsequent calls, avoiding redundant function invocations and promise resolutions. The cache is per-adapter instance, so multiple adapters remain independent.
 
-### P3-2: `isPayloadRelationship` Calls `flattenAllFields` on Every Field
+---
+
+### P3-2: `isPayloadRelationship` Calls `flattenAllFields` on Every Field — FIXED
 
 **File:** `adapter/transform/index.ts:70-82`
 
-`flattenAllFields` recurses through all collection fields on every call. For a document with 20 fields, this means 20 recursive traversals per operation. Should cache per collection.
+**Resolution:** Added a `flattenedFieldsCache` Map keyed by collection slug within `createTransform`. The first call for each collection slug computes and caches the flattened fields; subsequent calls reuse the cached result. Since collection schemas don't change at runtime, the cache is always valid.
 
-### P3-3: `parseInt` vs `Number` Inconsistency for ID Parsing
+---
+
+### P3-3: `parseInt` vs `Number` Inconsistency for ID Parsing — FIXED
 
 **File:** `adapter/transform/index.ts:255` vs `adapter/transform/index.ts:685`
 
-`normalizeData` uses `parseInt("123abc", 10)` = `123` (silent truncation), while `convertWhereValue` uses `Number("123abc")` = `NaN`. Inconsistent behavior for malformed IDs.
+**Resolution:** Standardized all ID parsing in `normalizeData` from `parseInt(value, 10)` to `Number(value)`. This makes behavior consistent with `convertWhereValue` — both now use strict `Number()` parsing that rejects malformed inputs like `"123abc"` (returns `NaN`) rather than silently truncating to `123`. All three occurrences of `parseInt` in the transform layer were updated.
 
-### P3-4: `like` Operator May Not Work on MongoDB
+---
+
+### P3-4: `like` Operator May Not Work on MongoDB — NOT A BUG
 
 **File:** `adapter/transform/index.ts:645-648`
 
-`starts_with` and `ends_with` use `like` with SQL `%` wildcards. MongoDB adapter compatibility is uncertain.
+**Resolution:** Payload CMS abstracts the `like` operator across all database adapters. PostgreSQL translates to `ILIKE`, MongoDB translates to a `$regex` query, and SQLite uses `GLOB`. The `%` wildcard syntax is part of Payload's query interface, not raw SQL. No fix needed.
 
-### P3-5: All Date Fields Labeled as "updatedAt"
+---
 
-Multiple collection builders (accounts, sessions, verifications, teams, oauth-*, api-keys) apply `label: "general:updatedAt"` to ALL date fields, including `createdAt`. This is a minor UI issue in the admin panel.
+### P3-5: All Date Fields Labeled as "updatedAt" — FIXED
 
-### P3-6: `deviceCode` Collection Has Wrong Descriptions
+**Files:** `accounts/index.ts`, `sessions.ts`, `api-keys.ts`, `teams.ts`, `verifications.ts`, `oauth-applications.ts`, `oauth-access-tokens.ts`, `oauth-consents.ts`
+
+**Resolution:** Changed field rule conditions from `field.type === "date"` (which matched ALL date fields including `expiresAt`, `periodStart`, etc.) to `field.fieldName === "createdAt" || field.fieldName === "updatedAt"`. Labels now correctly differentiate between `createdAt` and `updatedAt` using `t("general:createdAt")` vs `t("general:updatedAt")`. The `users/index.ts` collection already had this correct pattern; all other builders now match it. Other date fields (like `expiresAt`) are no longer incorrectly relabeled.
+
+---
+
+### P3-6: `deviceCode` Collection Has Wrong Descriptions — FIXED
 
 **File:** `plugin/lib/build-collections/device-code.ts:33-38, 56-57`
 
-Descriptions copied from team-members collection: "The user that is a member of the team" and "Device codes of an organization team."
+**Resolution:** Fixed copy-paste errors from the team-members collection:
+- Field description: `"The user that is a member of the team."` → `"The user that initiated the device authorization flow."`
+- Collection description: `"Device codes of an organization team."` → `"Device authorization codes for the OAuth 2.0 device flow."`
 
-### P3-7: `deviceCode` Missing `collectionOverrides` Support
+---
 
-Unlike all other collection builders, deviceCode doesn't support `collectionOverrides`.
+### P3-7: `deviceCode` Missing `collectionOverrides` Support — FIXED
 
-### P3-8: `subscriptions` Collection Missing `admin.hidden`
+**File:** `plugin/lib/build-collections/device-code.ts`
+
+**Resolution:** Added `pluginOptions.pluginCollectionOverrides?.deviceCode` support, matching the pattern used by all other collection builders. The override callback is invoked before `assertAllSchemaFields`, consistent with the existing convention.
+
+---
+
+### P3-8: `subscriptions` Collection Missing `admin.hidden` — FIXED
 
 **File:** `plugin/lib/build-collections/subscriptions.ts:89-101`
 
-Always visible in admin panel even when `hidePluginCollections` is true.
+**Resolution:** Added `hidden: pluginOptions.hidePluginCollections ?? false` to the `admin` configuration, matching the pattern used by all other plugin collection builders (api-keys, device-code, oauth-*, teams, etc.). The subscriptions collection now correctly hides when `hidePluginCollections: true`.
 
-### P3-9: Auth Strategy Silently Returns `{ user: null }` for All Errors
+---
 
-**File:** `plugin/lib/build-collections/users/better-auth-strategy.ts:42-44`
+### P3-9: Auth Strategy Silently Returns `{ user: null }` for All Errors — FIXED
 
-Database outages, network failures, and malformed tokens all produce the same silent "not authenticated" response. No logging.
+**File:** `plugin/lib/build-collections/users/better-auth-strategy.ts:47-49`
 
-### P3-10: No `betterAuth` Property Validation in `getPayloadAuth`
+**Resolution:** Added `console.error("[BetterAuth Strategy] Authentication error:", error)` in the catch block. Database outages, network failures, and other unexpected errors are now logged to the server console for debugging, while still returning `{ user: null }` (the correct Payload strategy response for authentication failure). Test added in `better-auth-strategy.test.ts` verifying error logging.
+
+---
+
+### P3-10: No `betterAuth` Property Validation in `getPayloadAuth` — FIXED
 
 **File:** `plugin/lib/get-payload-auth.ts:8-11`
 
-The function casts the payload instance to include `betterAuth` without verifying it exists. Produces cryptic errors on misconfiguration.
+**Resolution:** Added a runtime check after the type cast: if `payload.betterAuth` is falsy, throws a descriptive error: `"BetterAuth plugin not initialized. Ensure betterAuthPlugin() is included in your Payload config."` This replaces cryptic `Cannot read property 'api' of undefined` errors with a clear diagnostic message.
 
-### P3-11: Role Format Inconsistency Between Admin and Non-Admin Routes
+---
 
-The admin role middleware converts roles between array and comma-separated string only for `/admin` routes. Non-admin routes may receive inconsistent formats.
+### P3-11: Role Format Inconsistency Between Admin and Non-Admin Routes — NOT A BUG
 
-### P3-12: User Options Object Mutated in Place
+**Resolution:** The role format conversion is intentional and correct by design. Better Auth stores roles as a single comma-separated string in its session. Payload stores roles as a `hasMany` select field (array). The admin middleware converts array → comma-separated string before BA processes the request (so BA sees the format it expects), then converts back to array after BA returns (so the Payload admin UI renders correctly). Non-admin routes receive the string format, which is how Better Auth expects roles. The two-layer conversion is a necessary bridge between the two systems' role models.
+
+---
+
+### P3-12: User Options Object Mutated in Place — FIXED
 
 **File:** `plugin/index.ts:54`
 
-`pluginOptions.betterAuthOptions = sanitizedBetterAuthOptions` mutates the user's original config. The shallow copy in sanitization shares nested object references, so nested mutations affect the original.
+**Resolution:** Removed the mutation `pluginOptions.betterAuthOptions = sanitizedBetterAuthOptions`. The `sanitizedBetterAuthOptions` is already returned separately from `buildBetterAuthData` and used directly by the `onInit` hook. The user's original `pluginOptions.betterAuthOptions` is no longer overwritten, preserving the original configuration object. Downstream code that reads `pluginOptions.betterAuthOptions` (for `baseURL`, `basePath`, social providers, etc.) now correctly sees the user's original values.
 
-### P3-13: `config` Parameter Accepts Promise But Is Never Used
+---
 
-**File:** `plugin/lib/sanitize-better-auth-options/index.ts:44`
+### P3-13: `config` Parameter Accepts Promise But Is Never Used — FIXED
 
-Dead parameter in the type signature.
+**File:** `plugin/lib/sanitize-better-auth-options/index.ts:42`
+
+**Resolution:** Removed the dead `config` parameter from the `sanitizeBetterAuthOptions` function signature. Also removed the unused `Config` and `Payload` type imports. The single call site in `plugin/index.ts` was updated to no longer pass `config`.
 
 ---
 

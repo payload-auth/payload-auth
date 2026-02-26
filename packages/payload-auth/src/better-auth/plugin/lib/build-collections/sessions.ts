@@ -115,7 +115,10 @@ export function buildSessionsCollection({
           hidden: true
         },
         index: true,
-        label: ({ t }: any) => t("general:updatedAt")
+        label: ({ t }: any) =>
+          field.fieldName === "createdAt"
+            ? t("general:createdAt")
+            : t("general:updatedAt")
       })
     }
   ];

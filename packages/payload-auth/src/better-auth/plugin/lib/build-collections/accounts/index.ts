@@ -36,7 +36,8 @@ export function buildAccountsCollection({
 
   const accountFieldRules: FieldRule[] = [
     {
-      condition: (field) => field.type === "date",
+      condition: (field) =>
+        field.fieldName === "createdAt" || field.fieldName === "updatedAt",
       transform: (field) => ({
         ...field,
         saveToJWT: false,
@@ -45,7 +46,10 @@ export function buildAccountsCollection({
           hidden: true
         },
         index: true,
-        label: "general:updatedAt"
+        label: ({ t }: any) =>
+          field.fieldName === "createdAt"
+            ? t("general:createdAt")
+            : t("general:updatedAt")
       })
     }
   ];

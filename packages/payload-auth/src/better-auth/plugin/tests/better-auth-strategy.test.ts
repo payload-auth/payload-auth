@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { betterAuthStrategy } from "../lib/build-collections/users/better-auth-strategy";
 
 /**
@@ -235,5 +235,31 @@ describe("betterAuthStrategy", () => {
       id: "user-1",
       depth: 0
     });
+  });
+
+  // P3-9: Strategy should log errors instead of silently swallowing them
+  it("logs error to console when authentication throws", async () => {
+    const consoleErrorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
+    const dbError = new Error("Database connection lost");
+    const mockPayloadAuth = createMockPayloadAuth({
+      getSessionError: dbError
+    });
+    mockGetPayloadAuth.mockResolvedValue(mockPayloadAuth);
+
+    const result = await strategy.authenticate!({
+      payload: { config: {} } as any,
+      headers: new Headers()
+    });
+
+    expect(result.user).toBeNull();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "[BetterAuth Strategy] Authentication error:",
+      dbError
+    );
+
+    consoleErrorSpy.mockRestore();
   });
 });

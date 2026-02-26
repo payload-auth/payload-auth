@@ -45,13 +45,10 @@ function buildBetterAuthData({
   });
 
   const sanitizedBetterAuthOptions = sanitizeBetterAuthOptions({
-    config: payloadConfig,
     pluginOptions,
     resolvedSchemas: resolvedBetterAuthSchemas,
     collections: Object.values(collectionMap)
   });
-
-  pluginOptions.betterAuthOptions = sanitizedBetterAuthOptions;
 
   return {
     pluginOptions,

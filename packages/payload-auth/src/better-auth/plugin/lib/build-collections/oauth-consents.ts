@@ -52,7 +52,8 @@ export function buildOauthConsentsCollection({
 
   const oauthConsentFieldRules: FieldRule[] = [
     {
-      condition: (field) => field.type === "date",
+      condition: (field) =>
+        field.fieldName === "createdAt" || field.fieldName === "updatedAt",
       transform: (field) => ({
         ...field,
         saveToJWT: false,
@@ -61,7 +62,10 @@ export function buildOauthConsentsCollection({
           hidden: true
         },
         index: true,
-        label: ({ t }: any) => t("general:updatedAt")
+        label: ({ t }: any) =>
+          field.fieldName === "createdAt"
+            ? t("general:createdAt")
+            : t("general:updatedAt")
       })
     }
   ];

@@ -8,5 +8,10 @@ export async function getPayloadAuth<O extends PayloadAuthOptions>(
   const payload = (await getPayload({ config })) as BasePayload & {
     betterAuth: BetterAuthReturn<O>;
   };
+  if (!payload.betterAuth) {
+    throw new Error(
+      "BetterAuth plugin not initialized. Ensure betterAuthPlugin() is included in your Payload config."
+    );
+  }
   return payload;
 }

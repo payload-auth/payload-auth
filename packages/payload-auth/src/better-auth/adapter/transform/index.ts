@@ -67,6 +67,8 @@ export const createTransform = (
    * @param fieldName - The name of the field to check
    * @returns True if the field is a relationship or upload field, false otherwise
    */
+  const flattenedFieldsCache = new Map<string, ReturnType<typeof flattenAllFields>>();
+
   function isPayloadRelationship(
     payload: BasePayload,
     collectionSlug: string,
@@ -75,7 +77,11 @@ export const createTransform = (
     const collection = payload.collections[collectionSlug];
     if (!collection) return false;
 
-    const fields = flattenAllFields({ fields: collection.config.fields });
+    let fields = flattenedFieldsCache.get(collectionSlug);
+    if (!fields) {
+      fields = flattenAllFields({ fields: collection.config.fields });
+      flattenedFieldsCache.set(collectionSlug, fields);
+    }
     const field = fields.find((f) => f.name === fieldName);
 
     return field?.type === "relationship" || field?.type === "upload";
@@ -252,7 +258,7 @@ export const createTransform = (
 
     if (["id", "_id"].includes(key)) {
       if (typeof value === "string" && idType === "number") {
-        const parsed = parseInt(value, 10);
+        const parsed = Number(value);
         if (!isNaN(parsed)) {
           debugLog([
             `ID conversion: ${key} converting string ID to number`,
@@ -275,7 +281,7 @@ export const createTransform = (
     if (isRelatedField) {
       // Handle single ID value conversion
       if (typeof value === "string" && idType === "number") {
-        const parsed = parseInt(value, 10);
+        const parsed = Number(value);
         if (!isNaN(parsed)) {
           debugLog([
             `ID conversion: ${key} converting string ID to number`,
@@ -299,7 +305,7 @@ export const createTransform = (
           if (id === null || id === undefined) return id;
 
           if (idType === "number" && typeof id === "string") {
-            const parsed = parseInt(id, 10);
+            const parsed = Number(id);
             return !isNaN(parsed) ? parsed : id;
           } else if (idType === "text" && typeof id === "number") {
             return String(id);

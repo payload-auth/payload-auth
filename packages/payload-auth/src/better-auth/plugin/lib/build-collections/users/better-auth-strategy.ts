@@ -45,6 +45,7 @@ export function betterAuthStrategy(userSlug?: string): AuthStrategy {
           }
         };
       } catch (error) {
+        console.error("[BetterAuth Strategy] Authentication error:", error);
         return { user: null };
       }
     }
