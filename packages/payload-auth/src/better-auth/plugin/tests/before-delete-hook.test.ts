@@ -235,8 +235,8 @@ describe("getBeforeDeleteHook", () => {
     });
   });
 
-  // P2-3: Verification query uses fragile like pattern
-  it("uses a reliable query for verifications (not fragile string matching)", async () => {
+  // P2-3: Verification query uses contains instead of fragile like pattern
+  it("uses contains operator for verification deletion (P2-3)", async () => {
     const hook = getBeforeDeleteHook();
     const { req, id, deleteMock } = createMockReq("user-1");
 
@@ -248,6 +248,8 @@ describe("getBeforeDeleteHook", () => {
 
     expect(verificationCalls.length).toBeGreaterThan(0);
     const whereClause = verificationCalls[0][0].where;
-    expect(whereClause.value.like).toContain("user-1");
+    // Should use contains with JSON-quoted userId, not like
+    expect(whereClause.value.contains).toBe('"user-1"');
+    expect(whereClause.value.like).toBeUndefined();
   });
 });

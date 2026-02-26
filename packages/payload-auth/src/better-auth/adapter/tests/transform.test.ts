@@ -150,6 +150,49 @@ describe("Transform Layer", () => {
       expect(result.image).toBeNull();
       expect(result.name).toBeNull();
     });
+
+    // P2-6: Role fields should handle both string and array input
+    it("converts string role value to array", () => {
+      const transform = createTransform(minimalOptions, false);
+      const payload = defaultMockPayload();
+
+      const result = transform.transformInput({
+        data: { role: "admin,user" },
+        model: "user" as any,
+        idType: "text",
+        payload
+      });
+
+      expect(result.role).toEqual(["admin", "user"]);
+    });
+
+    it("handles array role value without crashing (P2-6)", () => {
+      const transform = createTransform(minimalOptions, false);
+      const payload = defaultMockPayload();
+
+      const result = transform.transformInput({
+        data: { role: ["admin", "user"] },
+        model: "user" as any,
+        idType: "text",
+        payload
+      });
+
+      expect(result.role).toEqual(["admin", "user"]);
+    });
+
+    it("handles single string role value", () => {
+      const transform = createTransform(minimalOptions, false);
+      const payload = defaultMockPayload();
+
+      const result = transform.transformInput({
+        data: { role: "admin" },
+        model: "user" as any,
+        idType: "text",
+        payload
+      });
+
+      expect(result.role).toEqual(["admin"]);
+    });
   });
 
   describe("convertWhereClause", () => {

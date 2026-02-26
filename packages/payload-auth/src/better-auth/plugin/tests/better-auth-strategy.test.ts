@@ -166,19 +166,42 @@ describe("betterAuthStrategy", () => {
     expect(result.user).toBeNull();
   });
 
-  // P2-17: Expired bans should still allow authentication
-  it("allows authentication when ban has expired", async () => {
-    const expiredBanUser = {
+  // P2-17: Locked users should also be rejected
+  it("returns null user when user is locked", async () => {
+    const lockedUser = {
       id: "user-1",
-      email: "unbanned@test.com",
+      email: "locked@test.com",
       role: ["user"],
-      banned: true,
-      banExpires: new Date(Date.now() - 86400000).toISOString() // Expired yesterday
+      locked: true
     };
     const mockPayloadAuth = createMockPayloadAuth({
       session: { userId: "user-1" },
       user: { id: "user-1" },
-      findByIDResult: expiredBanUser
+      findByIDResult: lockedUser
+    });
+    mockGetPayloadAuth.mockResolvedValue(mockPayloadAuth);
+
+    const result = await strategy.authenticate!({
+      payload: { config: {} } as any,
+      headers: new Headers()
+    });
+
+    expect(result.user).toBeNull();
+  });
+
+  // P2-17: Non-banned, non-locked users should authenticate normally
+  it("allows authentication for non-banned non-locked users", async () => {
+    const normalUser = {
+      id: "user-1",
+      email: "normal@test.com",
+      role: ["user"],
+      banned: false,
+      locked: false
+    };
+    const mockPayloadAuth = createMockPayloadAuth({
+      session: { userId: "user-1" },
+      user: { id: "user-1" },
+      findByIDResult: normalUser
     });
     mockGetPayloadAuth.mockResolvedValue(mockPayloadAuth);
 
@@ -209,7 +232,8 @@ describe("betterAuthStrategy", () => {
     expect(result.user!.collection).toBe("users");
     expect(mockPayloadAuth.findByID).toHaveBeenCalledWith({
       collection: "users",
-      id: "user-1"
+      id: "user-1",
+      depth: 0
     });
   });
 });

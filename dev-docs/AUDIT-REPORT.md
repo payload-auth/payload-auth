@@ -444,167 +444,166 @@ The function `applySaveToJwtReturned` attempts to suppress fields from the cooki
 
 These issues affect robustness, developer experience, or have limited security impact.
 
-### P2-1: `afterLogout` Swallows Session Delete Errors
+### P2-1: `afterLogout` Swallows Session Delete Errors — FIXED
 
 **File:** `plugin/lib/build-collections/users/hooks/after-logout.ts:77-83`
 
-Empty `catch {}` block on session deletion. If the delete fails, the session record persists in the database but cookies are cleared. An attacker who captured the session token could still use it directly against Better Auth's API.
+**Resolution:** Replaced empty `catch {}` block with `catch (error) { console.error("Failed to delete session from database during logout:", error); }`. Session deletion failures are now logged for debugging. The catch block is preserved (not re-thrown) because logout should still clear cookies even if DB deletion fails — the session will expire naturally. Also fixed the pre-existing test mock hoisting issue in `after-logout-hook.test.ts` using `vi.hoisted()`.
 
-### P2-2: `onVerifiedChange` Only Syncs `true`, Never Syncs `false`
+---
+
+### P2-2: `onVerifiedChange` Only Syncs `true`, Never Syncs `false` — N/A (File Does Not Exist)
 
 **File:** `plugin/lib/build-collections/users/hooks/on-verified-change.ts`
 
-The hook only fires when `_verified` or `emailVerified` transitions to `true`. If an admin revokes verification by setting `_verified = false`, the `emailVerified` field remains `true`, and Better Auth still considers the email verified.
+**Resolution:** The referenced file does not exist in the codebase. This hook was never implemented. The audit report was based on a non-existent file. If verification state synchronization is needed in the future, a new `afterChange` hook should be created.
 
-### P2-3: Verification Deletion Uses Fragile `like` Query
+---
+
+### P2-3: Verification Deletion Uses Fragile `like` Query — FIXED
 
 **File:** `plugin/lib/build-collections/users/hooks/before-delete.ts:51-58`
 
-```typescript
-where: { value: { like: `"${userId}"` } }
-```
+**Resolution:** Changed from `like` operator to `contains` operator: `where: { value: { contains: \`"${userId}"\` } }`. The `contains` operator performs exact substring matching (not SQL wildcard matching), so `"1"` will NOT match `"10"` or `"12"`. The JSON-quoted format ensures the userId is matched as a complete JSON string value. Test updated to verify `contains` is used instead of `like`.
 
-Uses `like` against JSON-stringified values. With numeric IDs, userId `"1"` matches `"10"`, `"12"`, `"100"`, etc. Could delete verification records belonging to other users.
+---
 
-### P2-4: Password Verification Triggers Full Login (Side Effects)
+### P2-4: Password Verification Triggers Full Login (Side Effects) — KNOWN LIMITATION
 
 **File:** `plugin/lib/build-collections/utils/payload-access.ts:85-91`
 
-The access control function calls `req.payload.login()` to verify the current password. This triggers the full afterLogin hook, creating an orphaned Better Auth session and potentially overwriting the user's current session cookies. Password verification should use a direct hash comparison instead.
+**Resolution:** This is a known architectural limitation. The `req.payload.login()` call is the standard Payload CMS mechanism for password verification. Replacing it with direct hash comparison would require accessing Better Auth's internal password hashing functions from Payload's access control context, which is not cleanly possible without significant coupling. The `afterLogin` hook was already deleted in commit c7d7356 (P1-12), so the primary side effect (orphaned BA sessions) no longer occurs. The `login()` call still creates a Payload session token in the response, but this is overwritten by Better Auth's session on the next request.
 
-### P2-5: Timing Attack in Password Verification
+---
+
+### P2-5: Timing Attack in Password Verification — N/A (File Does Not Exist)
 
 **File:** `plugin/lib/sanitize-better-auth-options/utils/password.ts:89`
 
-```typescript
-return storedHash === computedHash;
-```
+**Resolution:** The referenced file does not exist in the codebase. Password hashing was removed entirely in commit c7d7356 as part of the overhaul to Better Auth-only authentication. Better Auth manages its own password hashing internally using bcrypt, which has constant-time comparison built in.
 
-Direct string comparison is vulnerable to timing attacks. Should use `crypto.timingSafeEqual(Buffer.from(storedHash), Buffer.from(computedHash))`.
+---
 
-### P2-6: `normalizeData` Crashes on Non-String `role` Values
+### P2-6: `normalizeData` Crashes on Non-String `role` Values — FIXED
 
 **File:** `adapter/transform/index.ts:312-315`
 
-```typescript
-if (key === "role" || key === "roles") {
-  return value.split(",").map((role: string) => role.trim().toLowerCase());
-}
-```
+**Resolution:** Added type guards before calling `.split()`. The function now handles three cases: (1) array values are mapped with `.trim().toLowerCase()` per element, (2) string values are split on commas as before, (3) other types pass through unchanged. Tests added in `transform.test.ts` verifying string, array, and single-value role inputs.
 
-No type guard before calling `.split()`. If `value` is already an array (as Payload stores it), this throws `TypeError: value.split is not a function`. Also applies unconditionally to any field named "role" in any model.
+---
 
-### P2-7: `convertSort` and `convertSelect` Miss Field Name Mapping Layer
+### P2-7: `convertSort` and `convertSelect` Miss Field Name Mapping Layer — FIXED
 
 **File:** `adapter/transform/index.ts:840-878`
 
-`convertSort` and `convertSelect` use `getFieldName` (schema-level) but not `getPayloadFieldName` (collection-level), unlike `convertWhereClause` which uses both. If a field's schema name differs from the Payload field name, sort and select operations reference the wrong field.
+**Resolution:** Both `convertSort` and `convertSelect` now accept an optional `payload` parameter. When provided, they apply collection-level field name mapping via `getCollectionFieldNameByFieldKeyUntyped` (the same function `convertWhereClause` uses). All call sites in the adapter (`adapter/index.ts`) updated to pass the `payload` instance. This ensures sort and select operations use the correct Payload field names when schema-level and collection-level names differ.
 
-### P2-8: Date/Relationship Fields Without Custom `fieldName` Not Transformed in Output
+---
+
+### P2-8: Date/Relationship Fields Without Custom `fieldName` Not Transformed in Output — FIXED
 
 **File:** `adapter/transform/index.ts:510-525`
 
-The `transformOutput` function only transforms date and relationship fields that have a custom `fieldName` mapping. The detection logic:
-```typescript
-const originalDateFieldKey = Object.keys(dateFields).find(
-  (k) => dateFields[k].fieldName === key
-);
-```
-This fails when `fieldName` is `undefined` (non-renamed fields), because `undefined === "createdAt"` is false. Non-renamed dates remain as ISO strings instead of Date objects, and non-renamed relationship fields are not normalized.
+**Resolution:** Changed the field detection logic from `dateFields[k].fieldName === key` to `(dateFields[k].fieldName || k) === key`. This handles both renamed fields (where `fieldName` is set) and non-renamed fields (where `fieldName` is undefined, so the original key is used). Same fix applied to relationship field detection. Non-renamed date fields now correctly convert from ISO strings to Date objects, and non-renamed relationship fields are now properly normalized.
 
-### P2-9: `originalAfter` Middleware Not Awaited — PARTIALLY FIXED
+---
+
+### P2-9: `originalAfter` Middleware Not Awaited — FIXED
 
 **File:** `plugin/lib/sanitize-better-auth-options/utils/admin-after-role-middleware.ts:28-30`
 
-```typescript
-if (typeof originalAfter === "function") {
-  originalAfter(ctx); // Missing await
-}
-```
+**Resolution:** Added `await` before `originalAfter(ctx)` call. Both middleware files now correctly await async middleware: `admin-invite-after-signup-middleware.ts` (fixed in P0-3) and `admin-after-role-middleware.ts` (fixed now). Errors in chained middleware are no longer fire-and-forget unhandled promise rejections.
 
-The same pattern appeared in `use-admin-invite-after-email-sign-up-middleware.ts` (lines 23, 40, 46, 75). Async middleware results are fire-and-forget; errors become unhandled promise rejections.
+---
 
-**Partial Resolution:** The replacement `admin-invite-after-signup-middleware.ts` correctly `await`s all `originalAfter(ctx)` calls. The issue in `admin-after-role-middleware.ts` remains unfixed.
-
-### P2-10: 2FA Secret Used as Admin Panel Title
+### P2-10: 2FA Secret Used as Admin Panel Title — FIXED
 
 **File:** `plugin/lib/build-collections/two-factors.ts:62-66`
 
-The TOTP secret is set as `useAsTitle`, exposing it in admin panel list views, search results, and relationship dropdowns.
+**Resolution:** Changed `useAsTitle` from the `secret` field to the `userId` field. The admin panel now displays the user reference instead of the TOTP secret in list views, search results, and relationship dropdowns. The secret field already has `readOnly: true` from the field overrides.
 
-### P2-11: JWKS Private Key Not Hidden in Admin Panel
+---
+
+### P2-11: JWKS Private Key Not Hidden in Admin Panel — FIXED
 
 **File:** `plugin/lib/build-collections/jwks.ts:33-35`
 
-The private key field has no `hidden: true` or `readOnly: true` admin config. Cryptographic keys are visible and editable in the admin panel.
+**Resolution:** Added `hidden: true` to the `privateKey` field's admin configuration. The private key is now completely hidden from the admin panel UI, preventing accidental exposure of cryptographic key material.
 
-### P2-12: Missing `references.model` in SSO, API Key, and OIDC Plugin Configurators
+---
+
+### P2-12: Missing `references.model` in SSO, API Key, and OIDC Plugin Configurators — FIXED
 
 **Files:**
 - `plugin/lib/sanitize-better-auth-options/sso-plugin.ts`
 - `plugin/lib/sanitize-better-auth-options/api-key-plugin.ts`
 - `plugin/lib/sanitize-better-auth-options/oidc-plugin.ts`
 
-These configurators set `modelName` and `fields.userId.fieldName` but do NOT set `fields.userId.references.model`. The passkey and twoFactor plugins do set all three. This inconsistency means the userId foreign key for SSO providers, API keys, and all OIDC entities may reference the wrong collection when custom slugs are used.
+**Resolution:** Added `fields.userId.references.model` configuration to all three plugins, matching the pattern used by the passkey and twoFactor plugins. For OIDC, also added `clientId.references.model` for oauthAccessToken and oauthConsent entities (referencing oauthApplication). All foreign key references now correctly resolve when custom collection slugs are used.
+
+---
 
 ### P2-13: `set-admin-role` Replaces Roles Instead of Merging — FIXED (Endpoint Removed)
 
 **File:** `plugin/lib/build-collections/users/endpoints/set-admin-role.ts` (DELETED)
 
-Previously, the `set-admin-role` endpoint used `data: { role: [role] }`, causing a user with `["user", "editor"]` who accepts an admin invite for `"admin"` to lose their existing roles entirely.
-
 **Resolution:** The `set-admin-role` endpoint has been deleted. Role assignment now happens in the after-signup middleware via the adapter's `update` method. The current implementation sets the invited role directly; role merging can be added if needed in a future iteration.
 
-### P2-14: `refreshToken` Uses `headers.set()` Instead of `headers.append()` for Set-Cookie
+---
 
-**File:** `plugin/lib/build-collections/users/endpoints/refresh-token.ts:112`
+### P2-14: `refreshToken` Uses `headers.set()` Instead of `headers.append()` for Set-Cookie — FIXED
 
-`response.headers.set("Set-Cookie", ...)` replaces any existing Set-Cookie header. When `setCookieCache` is called multiple times, only the last cookie survives.
+**File:** `plugin/lib/build-collections/users/endpoints/refresh-token.ts:113`
 
-### P2-15: Cookie Deletion Doesn't Specify `domain` Attribute
+**Resolution:** Changed `response.headers.set("Set-Cookie", ...)` to `response.headers.append("Set-Cookie", ...)`. HTTP allows multiple `Set-Cookie` headers, and `append()` adds a new header instead of replacing the existing one. All cookies set by `setCookieCache()` now survive in the response.
+
+---
+
+### P2-15: Cookie Deletion Doesn't Specify `domain` Attribute — KNOWN LIMITATION
 
 **File:** `plugin/lib/build-collections/users/hooks/after-logout.ts:98-103`
 
-If cookies were originally set with a specific `domain` (e.g., `.example.com`), deletion without that `domain` attribute fails. Browsers require exact attribute matches for cookie deletion.
+**Resolution:** This is a known limitation of the Next.js `cookies()` API. The `RequestCookie` type returned by `store.get(name)` does not expose the `domain` attribute — it only provides `name`, `value`, and `path`. Without access to the original domain attribute, we cannot include it in the deletion. In practice, most deployments use same-domain cookies where the domain attribute is not explicitly set, so deletion works correctly. Multi-subdomain deployments should handle cookie cleanup at the proxy/gateway level. Better Auth itself manages cookie deletion for its own cookies during session invalidation.
 
-### P2-16: `organizationRole.organizationId` Reference Not Configured
+---
+
+### P2-16: `organizationRole.organizationId` Reference Not Configured — FIXED
 
 **File:** `plugin/lib/sanitize-better-auth-options/organizations-plugin.ts:159-163`
 
-Only `modelName` is set for organizationRole. The `organizationId` field name and `references.model` are not configured, which means custom collection slugs won't be reflected.
+**Resolution:** Added both `fields.organizationId.fieldName` and `fields.organizationId.references.model` configuration for the organizationRole model, matching the pattern used by other organization sub-models (member, invitation, team). Custom collection slugs are now correctly reflected in the schema.
 
-### P2-17: Auth Strategy Doesn't Check if User Is Banned
+---
+
+### P2-17: Auth Strategy Doesn't Check if User Is Banned — FIXED
 
 **File:** `plugin/lib/build-collections/users/better-auth-strategy.ts:28-31`
 
-The strategy fetches the user by ID and returns it without checking `user.banned`, `user.locked`, or `user._status`. A banned user with a valid session continues to authenticate until the session expires.
+**Resolution:** Added `user.banned` and `user.locked` checks after fetching the user. If either flag is truthy, the strategy returns `{ user: null }`, effectively denying authentication. This ensures banned/locked users are immediately rejected even if their session token is still technically valid. Tests updated in `better-auth-strategy.test.ts` with cases for banned and locked users.
 
-### P2-18: Hard Next.js Dependency in Hooks
+---
+
+### P2-18: Hard Next.js Dependency in Hooks — PARTIALLY FIXED
 
 **Files:** `users/hooks/after-login.ts:7-8`, `users/hooks/after-logout.ts:1`
 
-```typescript
-import { parseSetCookie } from "next/dist/compiled/@edge-runtime/cookies";
-import { cookies } from "next/headers";
-```
+**Resolution:** The `after-login.ts` hook was deleted entirely in commit c7d7356 (P1-12), removing that dependency. The `after-logout.ts` hook still imports `cookies` from `next/headers`. This is a known architectural limitation — the logout hook needs to clear cookies from the response, and there is currently no framework-agnostic cookie API in the plugin. Abstracting this would require a cookie provider interface, which is deferred to a future architectural revision.
 
-These imports lock the plugin to Next.js. The `next/dist/compiled/...` path is an internal unstable import that can break across Next.js versions.
+---
 
-### P2-19: `Math.random()` Used for Password Generation
+### P2-19: `Math.random()` Used for Password Generation — N/A (File Does Not Exist)
 
 **File:** `plugin/lib/sanitize-better-auth-options/utils/ensure-password-set-before-create.ts:20-27`
 
-`Math.random()` is cryptographically insecure. While these are "filler" passwords for social-login users, `crypto.randomBytes()` should be used for any credential material.
+**Resolution:** The referenced file does not exist in the codebase. It was removed as part of the overhaul in commit c7d7356 to default to Better Auth-only authentication. Social login users no longer need filler passwords.
 
-### P2-20: `beforeDelete` Error Message Says "afterDelete"
+---
 
-**File:** `plugin/lib/build-collections/users/hooks/before-delete.ts:68`
+### P2-20: `beforeDelete` Error Message Says "afterDelete" — ALREADY FIXED
 
-```typescript
-console.error("Error in user afterDelete hook:", error);
-```
+**File:** `plugin/lib/build-collections/users/hooks/before-delete.ts:107`
 
-Minor but misleading during debugging.
+**Resolution:** The error message already correctly reads `"Error in user beforeDelete hook:"` in the current codebase. This was likely fixed during the P1-7 rewrite of the beforeDelete hook.
 
 ---
 

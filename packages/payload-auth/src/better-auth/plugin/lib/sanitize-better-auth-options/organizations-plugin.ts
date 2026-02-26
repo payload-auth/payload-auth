@@ -161,4 +161,18 @@ export function configureOrganizationPlugin(
     `schema.${baModelKey.organizationRole}.modelName`,
     getSchemaCollectionSlug(resolvedSchemas, baModelKey.organizationRole)
   );
+  set(
+    plugin,
+    `schema.${baModelKey.organizationRole}.fields.organizationId.fieldName`,
+    getSchemaFieldName(
+      resolvedSchemas,
+      baModelKey.organizationRole,
+      baModelFieldKeys.organizationRole.organizationId
+    )
+  );
+  set(
+    plugin,
+    `schema.${baModelKey.organizationRole}.fields.organizationId.references.model`,
+    getSchemaCollectionSlug(resolvedSchemas, baModelKey.organization)
+  );
 }

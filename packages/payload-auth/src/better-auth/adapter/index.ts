@@ -213,7 +213,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           const result = await payload.create({
             collection: collectionSlug,
             data: transformedInput,
-            select: convertSelect(model as ModelKey, select),
+            select: convertSelect(model as ModelKey, select, payload),
             context: createAdapterContext({ model, operation: "create" }),
             depth: CREATE_QUERY_DEPTH
           });
@@ -276,7 +276,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             result = await payload.findByID({
               collection: collectionSlug,
               id: singleId,
-              select: convertSelect(model as ModelKey, select),
+              select: convertSelect(model as ModelKey, select, payload),
               ...(payloadJoins &&
                 Object.keys(payloadJoins).length > 0 && {
                   joins: payloadJoins
@@ -292,7 +292,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             const docs = await payload.find({
               collection: collectionSlug,
               where: payloadWhere,
-              select: convertSelect(model as ModelKey, select),
+              select: convertSelect(model as ModelKey, select, payload),
               ...(payloadJoins &&
                 Object.keys(payloadJoins).length > 0 && {
                   joins: payloadJoins
@@ -405,7 +405,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               where: payloadWhere,
               limit: fetchLimit,
               page: 1,
-              sort: convertSort(model as ModelKey, sortBy),
+              sort: convertSort(model as ModelKey, sortBy, payload),
               ...(payloadJoins &&
                 Object.keys(payloadJoins).length > 0 && {
                   joins: payloadJoins

@@ -33,6 +33,11 @@ export function configureOidcPlugin(
       baModelFieldKeys.oauthApplication.userId
     )
   );
+  set(
+    plugin,
+    `schema.${baModelKey.oauthApplication}.fields.userId.references.model`,
+    getSchemaCollectionSlug(resolvedSchemas, baModelKey.user)
+  );
 
   set(
     plugin,
@@ -45,12 +50,22 @@ export function configureOidcPlugin(
   );
   set(
     plugin,
+    `schema.${baModelKey.oauthAccessToken}.fields.userId.references.model`,
+    getSchemaCollectionSlug(resolvedSchemas, baModelKey.user)
+  );
+  set(
+    plugin,
     `schema.${baModelKey.oauthAccessToken}.fields.clientId.fieldName`,
     getSchemaFieldName(
       resolvedSchemas,
       baModelKey.oauthAccessToken,
       baModelFieldKeys.oauthAccessToken.clientId
     )
+  );
+  set(
+    plugin,
+    `schema.${baModelKey.oauthAccessToken}.fields.clientId.references.model`,
+    getSchemaCollectionSlug(resolvedSchemas, baModelKey.oauthApplication)
   );
 
   set(
@@ -64,11 +79,21 @@ export function configureOidcPlugin(
   );
   set(
     plugin,
+    `schema.${baModelKey.oauthConsent}.fields.userId.references.model`,
+    getSchemaCollectionSlug(resolvedSchemas, baModelKey.user)
+  );
+  set(
+    plugin,
     `schema.${baModelKey.oauthConsent}.fields.clientId.fieldName`,
     getSchemaFieldName(
       resolvedSchemas,
       baModelKey.oauthConsent,
       baModelFieldKeys.oauthConsent.clientId
     )
+  );
+  set(
+    plugin,
+    `schema.${baModelKey.oauthConsent}.fields.clientId.references.model`,
+    getSchemaCollectionSlug(resolvedSchemas, baModelKey.oauthApplication)
   );
 }

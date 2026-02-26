@@ -309,9 +309,17 @@ export const createTransform = (
       }
     }
 
-    // Handle role fields (Coming from better auth, will be a single string seperated by commas if theres multiple roles)
+    // Handle role fields (Coming from better auth, will be a single string separated by commas if there are multiple roles)
     if (key === "role" || key === "roles") {
-      return value.split(",").map((role: string) => role.trim().toLowerCase());
+      if (Array.isArray(value)) {
+        return value.map((role: string) =>
+          typeof role === "string" ? role.trim().toLowerCase() : role
+        );
+      }
+      if (typeof value === "string") {
+        return value.split(",").map((role: string) => role.trim().toLowerCase());
+      }
+      return value;
     }
 
     // Return original value if no conversion was needed or applicable
@@ -506,18 +514,23 @@ export const createTransform = (
         return;
       }
 
-      // Handle relationship fields with renamed fieldNames
+      // Handle relationship fields (both renamed and non-renamed)
       const originalRelatedFieldKey = Object.keys(relationshipFields).find(
-        (k) => relationshipFields[k].fieldName === key
+        (k) => {
+          const mappedName = relationshipFields[k].fieldName || k;
+          return mappedName === key;
+        }
       );
       if (originalRelatedFieldKey) {
         normalizeDocumentIds(result, originalRelatedFieldKey, key, value);
         return;
       }
 
-      const originalDateFieldKey = Object.keys(dateFields).find(
-        (k) => dateFields[k].fieldName === key
-      );
+      // Handle date fields (both renamed and non-renamed)
+      const originalDateFieldKey = Object.keys(dateFields).find((k) => {
+        const mappedName = dateFields[k].fieldName || k;
+        return mappedName === key;
+      });
       if (originalDateFieldKey) {
         // Convert ISO date strings to Date objects for BetterAuth
         result[targetFieldKey] = new Date(value);
@@ -842,16 +855,26 @@ export const createTransform = (
    * // Input: ['email', 'name']
    * // Output: { email: true, name: true }
    */
-  function convertSelect(model: ModelKey, select?: string[]) {
+  function convertSelect(
+    model: ModelKey,
+    select?: string[],
+    payload?: BasePayload
+  ) {
     // Return undefined if select is empty or not provided
     if (!select || select.length === 0) return undefined;
 
     // Transform the array of field names into a Payload select object
-    // while also mapping any field names that might be different in Payload
-    return select.reduce(
-      (acc, field) => ({ ...acc, [getFieldName(model, field)]: true }),
-      {}
-    );
+    // applying both schema-level and collection-level field name mapping
+    return select.reduce((acc, field) => {
+      const schemaFieldName = getFieldName(model, field);
+      const fieldName = payload
+        ? getCollectionFieldNameByFieldKeyUntyped(
+            getCollectionByModelKey(payload.collections, model),
+            schemaFieldName
+          )
+        : schemaFieldName;
+      return { ...acc, [fieldName]: true };
+    }, {});
   }
 
   /**
@@ -874,10 +897,18 @@ export const createTransform = (
    */
   function convertSort(
     model: ModelKey,
-    sortBy?: { field: string; direction: "asc" | "desc" }
+    sortBy?: { field: string; direction: "asc" | "desc" },
+    payload?: BasePayload
   ): string | undefined {
     if (!sortBy) return undefined;
-    const fieldName = getFieldName(model, sortBy.field);
+    const schemaFieldName = getFieldName(model, sortBy.field);
+    // Apply collection-level field name mapping if payload is available
+    const fieldName = payload
+      ? getCollectionFieldNameByFieldKeyUntyped(
+          getCollectionByModelKey(payload.collections, model),
+          schemaFieldName
+        )
+      : schemaFieldName;
     const prefix = sortBy.direction === "desc" ? "-" : "";
     return `${prefix}${fieldName}`;
   }

@@ -21,4 +21,9 @@ export function configureApiKeyPlugin(
     `schema.${model}.fields.userId.fieldName`,
     getSchemaFieldName(resolvedSchemas, model, baModelFieldKeys.apikey.userId)
   );
+  set(
+    plugin,
+    `schema.${model}.fields.userId.references.model`,
+    getSchemaCollectionSlug(resolvedSchemas, baModelKey.user)
+  );
 }

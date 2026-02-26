@@ -46,12 +46,13 @@ export function getBeforeDeleteHook(): CollectionBeforeDeleteHook {
         }
       }
 
-      // Verifications use a different where clause (value contains userId)
+      // Verifications: use contains with JSON-quoted userId to avoid
+      // substring collisions (e.g. userId "1" matching "10", "12", etc.)
       const verificationsSlug = getSlugSafe(baModelKey.verification);
       if (verificationsSlug) {
         await payload.delete({
           collection: verificationsSlug,
-          where: { value: { like: `"${userId}"` } },
+          where: { value: { contains: `"${userId}"` } },
           req
         });
       }

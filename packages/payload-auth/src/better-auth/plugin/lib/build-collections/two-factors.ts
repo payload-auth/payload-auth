@@ -62,7 +62,7 @@ export function buildTwoFactorsCollection({
       useAsTitle: getSchemaFieldName(
         resolvedSchemas,
         baModelKey.twoFactor,
-        "secret"
+        "userId"
       ),
       description: "Two factor authentication secrets",
       group: pluginOptions?.collectionAdminGroup ?? "Auth",

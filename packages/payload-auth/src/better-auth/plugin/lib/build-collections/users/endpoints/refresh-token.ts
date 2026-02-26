@@ -110,7 +110,7 @@ export const getRefreshTokenEndpoint = (userSlug: string): Endpoint => {
             ? `; SameSite=${options.sameSite}`
             : "; SameSite=Lax";
 
-          response.headers.set(
+          response.headers.append(
             "Set-Cookie",
             `${name}=${value}; Path=${path}${maxAge}${httpOnly}${secure}${sameSite}`
           );

@@ -7,37 +7,37 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
  * Mocks next/headers since the hook depends on the Next.js cookie store.
  */
 
-// Mock next/headers
-const mockCookieStore = {
-  get: vi.fn(),
-  getAll: vi.fn().mockReturnValue([]),
-  set: vi.fn()
-};
+// Use vi.hoisted to declare mocks before vi.mock hoisting
+const { mockCookieStore, mockPayloadAuth } = vi.hoisted(() => {
+  const mockCookieStore = {
+    get: vi.fn(),
+    getAll: vi.fn().mockReturnValue([]),
+    set: vi.fn()
+  };
+  const mockPayloadAuth = {
+    betterAuth: {
+      $context: Promise.resolve({
+        authCookies: {
+          sessionToken: { name: "better-auth.session_token" },
+          sessionData: { name: "better-auth.session_data" },
+          dontRememberToken: { name: "better-auth.dont_remember" }
+        }
+      })
+    },
+    find: vi.fn().mockResolvedValue({ docs: [] }),
+    delete: vi.fn().mockResolvedValue({ docs: [] })
+  };
+  return { mockCookieStore, mockPayloadAuth };
+});
 
 vi.mock("next/headers", () => ({
   cookies: vi.fn().mockResolvedValue(mockCookieStore)
 }));
 
-// Mock getPayloadAuth
-const mockPayloadAuth = {
-  betterAuth: {
-    $context: Promise.resolve({
-      authCookies: {
-        sessionToken: { name: "better-auth.session_token" },
-        sessionData: { name: "better-auth.session_data" },
-        dontRememberToken: { name: "better-auth.dont_remember" }
-      }
-    })
-  },
-  find: vi.fn().mockResolvedValue({ docs: [] }),
-  delete: vi.fn().mockResolvedValue({ docs: [] })
-};
-
 vi.mock("@/better-auth/plugin/lib/get-payload-auth", () => ({
   getPayloadAuth: vi.fn().mockResolvedValue(mockPayloadAuth)
 }));
 
-// Mock getCollectionByModelKey
 vi.mock("@/better-auth/plugin/helpers/get-collection", () => ({
   getCollectionByModelKey: vi.fn().mockReturnValue({ slug: "sessions" })
 }));

@@ -80,7 +80,9 @@ async function deleteSessionFromDb(
       where: { id: { equals: session.id } },
       req
     });
-  } catch {}
+  } catch (error) {
+    console.error("Failed to delete session from database during logout:", error);
+  }
 }
 
 /**

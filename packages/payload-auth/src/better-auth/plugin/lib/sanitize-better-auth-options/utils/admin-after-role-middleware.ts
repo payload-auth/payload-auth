@@ -26,7 +26,7 @@ export function adminAfterRoleMiddleware({
       }
     }
     if (typeof originalAfter === "function") {
-      originalAfter(ctx);
+      await originalAfter(ctx);
     }
   });
 }

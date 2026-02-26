@@ -33,6 +33,10 @@ export function betterAuthStrategy(userSlug?: string): AuthStrategy {
         if (!user) {
           return { user: null };
         }
+        // Reject banned or locked users even if their session is still valid
+        if (user.banned || user.locked) {
+          return { user: null };
+        }
         return {
           user: {
             ...user,
