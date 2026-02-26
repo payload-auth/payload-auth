@@ -126,6 +126,7 @@ export function buildAccountsCollection({
   });
 
   let accountCollection: CollectionConfig = {
+    ...existingAccountCollection,
     slug: accountSlug,
     admin: {
       useAsTitle: "accountId",
@@ -146,8 +147,7 @@ export function buildAccountsCollection({
           "userId"
         )
       }),
-      update: isAdminWithRoles({ adminRoles }),
-      ...(existingAccountCollection?.access ?? {})
+      update: isAdminWithRoles({ adminRoles })
     },
     custom: {
       ...(existingAccountCollection?.custom ?? {}),
@@ -161,8 +161,7 @@ export function buildAccountsCollection({
     fields: [
       ...(existingAccountCollection?.fields ?? []),
       ...(collectionFields ?? [])
-    ],
-    ...existingAccountCollection
+    ]
   };
 
   if (typeof pluginOptions.accounts?.collectionOverrides === "function") {

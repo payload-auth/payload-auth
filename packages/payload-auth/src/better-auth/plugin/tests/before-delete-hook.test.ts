@@ -1,38 +1,53 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { getBeforeDeleteHook } from "../lib/build-collections/users/hooks/before-delete";
+
+// Mock Payload's transaction utilities so they don't try to access db.beginTransaction
+vi.mock("payload", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("payload")>();
+  return {
+    ...actual,
+    initTransaction: vi.fn().mockResolvedValue(false),
+    commitTransaction: vi.fn().mockResolvedValue(undefined),
+    killTransaction: vi.fn().mockResolvedValue(undefined)
+  };
+});
 
 /**
  * Unit tests for the before-delete hook (cascade deletion).
  * Tests that all Better Auth related data is cleaned up when a user is deleted.
  *
- * P1-7: The hook currently only deletes accounts, sessions, and verifications.
- * Missing: passkeys, twoFactors, apiKeys, org members, team members.
+ * P1-7: The hook now deletes accounts, sessions, verifications, AND optional
+ * plugin collections (passkeys, twoFactors, apiKeys, members, invitations, etc.)
  */
 
-// Mock the collection helper
-vi.mock("@/better-auth/plugin/helpers/get-collection", () => ({
-  getCollectionByModelKey: vi.fn((collections: any, modelKey: string) => {
-    const slugMap: Record<string, string> = {
-      account: "accounts",
-      session: "sessions",
-      verification: "verifications",
-      passkey: "passkeys",
-      twoFactor: "two-factors",
-      apikey: "api-keys",
-      member: "members",
-      teamMember: "team-members"
-    };
-    return { slug: slugMap[modelKey] || modelKey };
-  })
-}));
+function mockCollectionEntry(slug: string, modelKey: string) {
+  return {
+    config: {
+      slug,
+      custom: { betterAuthModelKey: modelKey },
+      fields: []
+    }
+  };
+}
 
-function createMockReq(userId: string) {
+function createMockReq(
+  userId: string,
+  extraCollections: Record<string, any> = {}
+) {
   const deleteMock = vi.fn().mockResolvedValue({ docs: [] });
+
+  // Core collections always present
+  const collections: Record<string, any> = {
+    accounts: mockCollectionEntry("accounts", "account"),
+    sessions: mockCollectionEntry("sessions", "session"),
+    verifications: mockCollectionEntry("verifications", "verification"),
+    ...extraCollections
+  };
 
   return {
     req: {
       payload: {
-        collections: {},
+        collections,
         delete: deleteMock
       },
       transactionID: undefined
@@ -85,30 +100,107 @@ describe("getBeforeDeleteHook", () => {
   });
 
   // P1-7: Cascade should also delete passkeys when passkey plugin is enabled
-  it("should delete passkeys for the user when passkey collection exists", async () => {
+  it("deletes passkeys when passkey collection exists", async () => {
     const hook = getBeforeDeleteHook();
-    const { req, id, deleteMock } = createMockReq("user-1");
+    const { req, id, deleteMock } = createMockReq("user-1", {
+      passkeys: mockCollectionEntry("passkeys", "passkey")
+    });
 
     await hook({ req, id } as any);
 
-    // This test will FAIL until P1-7 is fixed — the hook doesn't delete passkeys yet
-    const passkeyCalls = deleteMock.mock.calls.filter(
-      (call: any[]) => call[0]?.collection === "passkeys"
+    expect(deleteMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: "passkeys",
+        where: { user: { equals: "user-1" } }
+      })
     );
-    expect(passkeyCalls.length).toBeGreaterThan(0);
   });
 
   // P1-7: Cascade should also delete two-factor records
-  it("should delete two-factor records for the user when 2FA collection exists", async () => {
+  it("deletes two-factor records when 2FA collection exists", async () => {
     const hook = getBeforeDeleteHook();
+    const { req, id, deleteMock } = createMockReq("user-1", {
+      twoFactors: mockCollectionEntry("twoFactors", "twoFactor")
+    });
+
+    await hook({ req, id } as any);
+
+    expect(deleteMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: "twoFactors",
+        where: { user: { equals: "user-1" } }
+      })
+    );
+  });
+
+  // P1-7: Cascade should also delete API keys
+  it("deletes API keys when apikey collection exists", async () => {
+    const hook = getBeforeDeleteHook();
+    const { req, id, deleteMock } = createMockReq("user-1", {
+      apiKeys: mockCollectionEntry("apiKeys", "apikey")
+    });
+
+    await hook({ req, id } as any);
+
+    expect(deleteMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: "apiKeys",
+        where: { user: { equals: "user-1" } }
+      })
+    );
+  });
+
+  // P1-7: Cascade should delete organization members
+  it("deletes org members when member collection exists", async () => {
+    const hook = getBeforeDeleteHook();
+    const { req, id, deleteMock } = createMockReq("user-1", {
+      members: mockCollectionEntry("members", "member")
+    });
+
+    await hook({ req, id } as any);
+
+    expect(deleteMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: "members",
+        where: { user: { equals: "user-1" } }
+      })
+    );
+  });
+
+  // P1-7: Cascade should delete invitations created by user
+  it("deletes invitations by inviter when invitation collection exists", async () => {
+    const hook = getBeforeDeleteHook();
+    const { req, id, deleteMock } = createMockReq("user-1", {
+      invitations: mockCollectionEntry("invitations", "invitation")
+    });
+
+    await hook({ req, id } as any);
+
+    expect(deleteMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: "invitations",
+        where: { inviter: { equals: "user-1" } }
+      })
+    );
+  });
+
+  it("does not attempt to delete optional collections that do not exist", async () => {
+    const hook = getBeforeDeleteHook();
+    // Only core collections, no passkeys/twoFactor/etc
     const { req, id, deleteMock } = createMockReq("user-1");
 
     await hook({ req, id } as any);
 
-    const twoFactorCalls = deleteMock.mock.calls.filter(
-      (call: any[]) => call[0]?.collection === "two-factors"
+    // Should only delete accounts, sessions, verifications (3 calls)
+    expect(deleteMock).toHaveBeenCalledTimes(3);
+    const deletedCollections = deleteMock.mock.calls.map(
+      (call: any[]) => call[0]?.collection
     );
-    expect(twoFactorCalls.length).toBeGreaterThan(0);
+    expect(deletedCollections).toEqual(
+      expect.arrayContaining(["accounts", "sessions", "verifications"])
+    );
+    expect(deletedCollections).not.toContain("passkeys");
+    expect(deletedCollections).not.toContain("twoFactors");
   });
 
   it("does not throw when delete operations fail", async () => {
@@ -117,7 +209,11 @@ describe("getBeforeDeleteHook", () => {
 
     const req = {
       payload: {
-        collections: {},
+        collections: {
+          accounts: mockCollectionEntry("accounts", "account"),
+          sessions: mockCollectionEntry("sessions", "session"),
+          verifications: mockCollectionEntry("verifications", "verification")
+        },
         delete: deleteMock
       },
       transactionID: undefined
@@ -150,12 +246,8 @@ describe("getBeforeDeleteHook", () => {
       (call: any[]) => call[0]?.collection === "verifications"
     );
 
-    // The current implementation uses: value: { like: '"user-1"' }
-    // This is fragile — if the JSON structure changes, the query breaks
-    // A proper fix would use a dedicated userId field or a more robust query
     expect(verificationCalls.length).toBeGreaterThan(0);
     const whereClause = verificationCalls[0][0].where;
-    // Document current behavior - the like pattern includes JSON-escaped quotes
     expect(whereClause.value.like).toContain("user-1");
   });
 });

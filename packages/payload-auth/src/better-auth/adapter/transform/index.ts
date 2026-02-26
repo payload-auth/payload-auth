@@ -655,60 +655,62 @@ export const createTransform = (
   /**
    * Converts a where clause value to the appropriate type based on field name and ID type configuration
    *
-   * This function handles two main scenarios:
+   * This function handles three main scenarios:
    * 1. ID field conversion - ensures IDs match the database's expected type (number or string)
-   * 2. Object with embedded ID - extracts and converts the ID property from objects
+   * 2. Relationship field conversion - ensures foreign key values match the expected ID type
+   * 3. Object with embedded ID - extracts and converts the ID property from objects
    *
    * @param value - The value to convert (can be primitive, object with ID, or array)
    * @param fieldName - The name of the field being queried
+   * @param model - The model/collection name for schema lookups
    * @param idType - The expected ID type in the database
    * @returns The converted value appropriate for the database query
    */
   function convertWhereValue({
     value,
     fieldName,
+    model,
     idType
   }: {
     value: any;
     fieldName: string;
+    model: ModelKey;
     idType: "number" | "text";
   }) {
-    // Check if field is an ID field (supporting both MongoDB-style _id and standard id)
-    if (["id", "_id"].includes(fieldName)) {
-      // Case 1: Value is an object containing an ID property
-      if (typeof value === "object" && value !== null && "id" in value) {
-        // Extract ID from object
-        const id = value.id;
+    const schemaFields = schema?.[model]?.fields ?? {};
+    const needsIdConversion =
+      ["id", "_id"].includes(fieldName) ||
+      isRelationshipField(fieldName, schemaFields);
 
-        // Use type conversion based on database configuration
-        if (idType === "number" && typeof id === "string") {
-          const numId = Number(id);
-          return !isNaN(numId) ? numId : id;
-        }
-
-        if (idType === "text" && typeof id === "number") {
-          return String(id);
-        }
-
-        return id;
-      }
-      // Case 2: Value is a standalone ID that needs type conversion
-      // Convert string ID to number if database expects numeric IDs
-      if (
-        idType === "number" &&
-        typeof value === "string" &&
-        !isNaN(Number(value))
-      ) {
-        return Number(value);
-      }
-      // Convert numeric ID to string if database expects text IDs
-      else if (idType === "text" && typeof value === "number") {
-        return String(value);
-      }
+    if (!needsIdConversion) {
       return value;
     }
 
-    // For non-ID fields, return the value unchanged
+    // Case 1: Value is an object containing an ID property
+    if (typeof value === "object" && value !== null && "id" in value) {
+      const id = value.id;
+      if (idType === "number" && typeof id === "string") {
+        const numId = Number(id);
+        return !isNaN(numId) ? numId : id;
+      }
+      if (idType === "text" && typeof id === "number") {
+        return String(id);
+      }
+      return id;
+    }
+
+    // Case 2: Value is a standalone ID that needs type conversion
+    if (
+      idType === "number" &&
+      typeof value === "string" &&
+      !isNaN(Number(value))
+    ) {
+      return Number(value);
+    }
+    if (idType === "text" && typeof value === "number") {
+      return String(value);
+    }
+
     return value;
   }
 
@@ -761,6 +763,7 @@ export const createTransform = (
       const value = convertWhereValue({
         value: w.value,
         fieldName,
+        model,
         idType
       });
 
@@ -786,6 +789,7 @@ export const createTransform = (
       const value = convertWhereValue({
         value: w.value,
         fieldName,
+        model,
         idType
       });
       return {
@@ -802,6 +806,7 @@ export const createTransform = (
       const value = convertWhereValue({
         value: w.value,
         fieldName,
+        model,
         idType
       });
       return {

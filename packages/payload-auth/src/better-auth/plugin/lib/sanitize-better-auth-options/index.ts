@@ -133,30 +133,11 @@ export function sanitizeBetterAuthOptions({
     modelKey: baModelKey.session
   });
 
-  // Process plugins
+  // Process plugins — configure supported ones, pass through unsupported ones
   if (betterAuthOptions.plugins?.length) {
     try {
-      // Filter to only supported plugins
-      const supportedPlugins = betterAuthOptions.plugins.filter((plugin) =>
-        Object.values(supportedBAPluginIds).includes(plugin.id as any)
-      );
-
-      // Log warning for unsupported plugins
-      if (supportedPlugins.length !== betterAuthOptions.plugins.length) {
-        const unsupportedIds = betterAuthOptions.plugins
-          .filter(
-            (p) => !Object.values(supportedBAPluginIds).includes(p.id as any)
-          )
-          .map((p) => p.id)
-          .join(", ");
-
-        console.warn(
-          `Unsupported BetterAuth plugins: ${unsupportedIds}. Supported: ${Object.values(supportedBAPluginIds).join(", ")}`
-        );
-      }
-
       // Configure plugins by type
-      const pluginConfigurators = {
+      const pluginConfigurators: Record<string, (p: any) => void> = {
         [supportedBAPluginIds.admin]: (p: any) =>
           configureAdminPlugin(p, pluginOptions, resolvedSchemas),
         [supportedBAPluginIds.apiKey]: (p: any) =>
@@ -175,13 +156,12 @@ export function sanitizeBetterAuthOptions({
           configureDeviceAuthorizationPlugin(p, resolvedSchemas)
       };
 
-      supportedPlugins.forEach((plugin) => {
-        const configurator =
-          pluginConfigurators[plugin.id as keyof typeof pluginConfigurators];
+      betterAuthOptions.plugins.forEach((plugin) => {
+        const configurator = pluginConfigurators[plugin.id];
         if (configurator) configurator(plugin as any);
       });
 
-      betterAuthOptions.plugins = supportedPlugins;
+      // All plugins are kept — unsupported ones pass through unconfigured
     } catch (error) {
       throw new Error(`Error sanitizing BetterAuth plugins: ${error}`);
     }

@@ -333,6 +333,51 @@ describe("Transform Layer", () => {
       // Empty array → no conditions
       expect(result).toEqual({});
     });
+
+    // P1-2: Relationship field ID conversion in WHERE clauses
+    it("converts string userId to number in WHERE when idType is number (P1-2)", () => {
+      const transform = createTransform(minimalOptions, false);
+      const payload = defaultMockPayload();
+
+      const result = transform.convertWhereClause({
+        idType: "number",
+        model: "session" as any,
+        where: [{ field: "userId", value: "42" }],
+        payload
+      });
+
+      // userId is a relationship field — its value should be converted to number
+      expect(result.userId).toEqual({ equals: 42 });
+    });
+
+    it("converts string userId to number in account WHERE (P1-2)", () => {
+      const transform = createTransform(minimalOptions, false);
+      const payload = defaultMockPayload();
+
+      const result = transform.convertWhereClause({
+        idType: "number",
+        model: "account" as any,
+        where: [{ field: "userId", value: "99" }],
+        payload
+      });
+
+      expect(result.userId).toEqual({ equals: 99 });
+    });
+
+    it("does not convert non-relationship field values (P1-2)", () => {
+      const transform = createTransform(minimalOptions, false);
+      const payload = defaultMockPayload();
+
+      const result = transform.convertWhereClause({
+        idType: "number",
+        model: "user" as any,
+        where: [{ field: "email", value: "test@test.com" }],
+        payload
+      });
+
+      // email is not a relationship field — should remain a string
+      expect(result.email).toEqual({ equals: "test@test.com" });
+    });
   });
 
   describe("singleIdQuery", () => {

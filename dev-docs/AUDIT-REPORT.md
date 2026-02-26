@@ -174,149 +174,71 @@ The `transformInput` function previously skipped both `null` and `undefined` val
 
 These issues affect correctness, security, or reliability and should be fixed in the next release.
 
-### P1-1: WHERE Clause AND/OR Connector Semantics Are Incorrect
+### P1-1: WHERE Clause AND/OR Connector Semantics Are Incorrect — NOT A BUG
 
 **File:** `adapter/transform/index.ts:778-821`
 **Type:** Query Correctness
 
-Better Auth's `Where[]` uses a `connector` property to specify how a condition joins to the **next** condition. The current code incorrectly groups all conditions by their connector into separate AND/OR arrays:
-
-```typescript
-const and = where.filter((w) => w.connector === "AND" || !w.connector);
-const or = where.filter((w) => w.connector === "OR");
-```
-
-Consider: `[{field: "a", value: 1}, {field: "b", value: 2, connector: "OR"}, {field: "c", value: 3}]`
-
-The intent is sequential: `a=1 AND b=2 OR c=3`. But the current code produces:
-- AND group: `[a=1, c=3]` (both have no connector or default AND)
-- OR group: `[b=2]` (has connector: "OR")
-- Result: `{ AND: [{a:1}, {c:3}], OR: [{b:2}] }` = `(a=1 AND c=3) AND (b=2)` = `a=1 AND b=2 AND c=3`
-
-The OR semantics are completely lost. The condition `c=3` ends up in the AND group because it has no explicit connector (the `connector: "OR"` on the previous condition was supposed to mean "OR the next condition").
-
-**Impact:** Any Better Auth query with mixed AND/OR conditions returns wrong results. This could affect session lookups, user searches, and organization membership queries.
+**Resolution:** Upon investigation, this is **not a bug**. The audit's interpretation of `connector` semantics was incorrect. Better Auth's official adapters (drizzle, mongodb, kysely) all use the **exact same grouping pattern**: filter conditions by their own `connector` value into AND/OR groups. The `connector` property describes which logical group a condition belongs to, not how it joins to the next condition sequentially. Our implementation matches the official Better Auth adapter behavior.
 
 ---
 
-### P1-2: Relationship Field IDs Not Type-Converted in WHERE Clauses
+### P1-2: Relationship Field IDs Not Type-Converted in WHERE Clauses — FIXED
 
 **File:** `adapter/transform/index.ts:667-713`
 **Type:** Query Correctness
 
-The `convertWhereValue` function only converts ID types for `id` and `_id` fields. But relationship fields like `userId`, `organizationId`, `teamId` also store IDs that need conversion between string and number. When Better Auth sends `{field: "userId", value: "123"}` and the database uses numeric IDs, the string `"123"` is passed directly to Payload, which may not match the numeric `123` in a strict database query.
-
-The `transformInput` function correctly handles this for create/update operations, but `convertWhereClause` does not, creating an inconsistency.
-
-**Impact:** On databases with numeric IDs (Postgres with serial/int PKs), any Better Auth query filtering by a relationship field (userId, organizationId, etc.) may silently return zero results.
+**Resolution:** `convertWhereValue` now accepts a `model` parameter and checks the schema for relationship fields using `isRelationshipField()`. When a WHERE field is a relationship (has `references` in the schema), its value is type-converted just like `id`/`_id` fields. All three call sites in `convertWhereClause` pass the model. Regression tests added in `transform.test.ts`.
 
 ---
 
-### P1-3: `findMany` Pagination Returns Wrong Results When offset % limit != 0
+### P1-3: `findMany` Pagination Returns Wrong Results When offset % limit != 0 — FIXED
 
 **File:** `adapter/index.ts:386-411`
 **Type:** Data Correctness
 
-The pagination logic translates Better Auth's `offset`/`limit` to Payload's `page`/`limit`:
-
-```typescript
-const spill = offset % limit;
-const page = Math.floor(offset / limit) + 1;
-const fetchLimit = spill ? limit + spill : limit;
-```
-
-When `spill > 0`, `fetchLimit` is increased, but the `page` calculation was derived using the original `limit`. Since Payload's `page` is relative to its own `limit` parameter, changing `fetchLimit` shifts the actual data window.
-
-Example: `offset=7, limit=5` -> `spill=2, page=2, fetchLimit=7`. Payload returns page 2 of 7-item pages (items 8-14). `slice(2, 7)` gives items 10-14. Expected: items 8-12.
-
-**Impact:** Paginated queries with non-aligned offsets return incorrect data subsets. This can affect any list endpoint that uses offset-based pagination.
+**Resolution:** Replaced the broken page/spill math with a simple approach: always fetch from `page: 1` with `limit: offset + limit`, then slice the exact window with `docs.slice(offset, offset + limit)`. This correctly handles all offset/limit combinations regardless of alignment.
 
 ---
 
-### P1-4: Accounts Collection `existingCollection` Override Destroys All Security Guards
+### P1-4: Accounts Collection `existingCollection` Override Destroys All Security Guards — FIXED
 
 **File:** `plugin/lib/build-collections/accounts/index.ts:168`
 **Type:** Security - Access Control Bypass
 
-```typescript
-let accountCollection: CollectionConfig = {
-  slug: accountSlug,
-  admin: { ... },
-  access: { /* carefully configured guards */ },
-  hooks: { ... },
-  fields: [ ... ],
-  ...existingAccountCollection  // <-- spread LAST, overwrites everything above
-};
-```
-
-The `existingAccountCollection` is spread at the **end** of the object literal, completely overwriting `slug`, `admin`, `access`, `hooks`, `fields`, and everything else. This is different from the users collection builder (which spreads existing collection first and then overrides specific properties), and different from other builders like sessions/teams (which use a mixed pattern).
-
-If a user has an existing accounts collection with even basic access controls like `access: { read: () => true }`, all the plugin's access guards (admin-only create, admin-only delete, admin-or-self read) are replaced.
-
-**Impact:** Any user who defines an existing accounts collection inadvertently removes all authentication-related access controls on that collection. OAuth tokens, password hashes, and provider credentials become accessible.
+**Resolution:** Moved `...existingAccountCollection` spread to the beginning of the object literal (safe base), matching the users collection builder pattern. Plugin security guards (`access`, `slug`, `admin`, `hooks`, `fields`) are now defined after the spread and cannot be overridden by the existing collection. The `collectionOverrides` callback still provides an escape hatch for intentional customization.
 
 ---
 
-### P1-5: `setLoginMethods` Incorrectly Detects Email/Password as Enabled
+### P1-5: `setLoginMethods` Incorrectly Detects Email/Password as Enabled — FIXED
 
 **File:** `plugin/lib/set-login-methods.ts:13-16`
 **Type:** UI Bug
 
-```typescript
-if (
-  !!betterAuthOptions?.emailAndPassword ||
-  betterAuthOptions?.emailAndPassword?.enabled
-)
-  loginMethods.push("emailPassword");
-```
-
-The expression `!!betterAuthOptions?.emailAndPassword` evaluates to `true` whenever the `emailAndPassword` configuration object **exists at all**, regardless of `enabled: false`. Since `!!{ enabled: false }` is `true`, the `||` short-circuits and `emailPassword` is always added when any email/password config is present.
-
-**Impact:** The admin login page shows an email/password login form even when `emailAndPassword: { enabled: false }` is configured. Users attempt to log in with email/password and get confusing errors.
-
-**Fix:** Change to `betterAuthOptions?.emailAndPassword?.enabled !== false` or `betterAuthOptions?.emailAndPassword?.enabled`.
+**Resolution:** Changed the condition from `!!betterAuthOptions?.emailAndPassword || betterAuthOptions?.emailAndPassword?.enabled` to just `betterAuthOptions?.emailAndPassword?.enabled`. This correctly evaluates to `false` when `enabled: false` is set, and correctly relies on the plugin's default behavior of setting `emailAndPassword.enabled = true` in `sanitizeBetterAuthOptions`. Tests in `set-login-methods.test.ts` now all pass.
 
 ---
 
-### P1-6: `create` Returns `null as R` on Error
+### P1-6: `create` Returns `null as R` on Error — FIXED
 
 **File:** `adapter/index.ts:227-230`
 **Type:** Error Handling - Silent Failure
 
-```typescript
-} catch (error) {
-  errorLog(["Error in creating:", model, error]);
-  return null as R;
-}
-```
-
-Better Auth expects `create()` to return a valid object with an `id` field. Returning `null` cast as `R` causes downstream "Cannot read property 'id' of null" crashes. The same error-swallowing pattern appears in `findMany` (returns `[]`), `update` (returns `null`), `updateMany` (returns `0`), `delete` (swallows silently), `deleteMany` (returns `0`), and `count` (returns `0`).
-
-**Impact:** Database errors are invisible. Connection failures, schema mismatches, and constraint violations are silently swallowed, causing confusing secondary errors elsewhere.
+**Resolution:** Changed all 8 adapter methods (`create`, `findOne`, `findMany`, `update`, `updateMany`, `delete`, `deleteMany`, `count`) to re-throw non-404 errors after logging. The 404 → null/empty handling is preserved as expected "not found" behavior, but all other errors (connection failures, schema mismatches, constraint violations) now propagate to Better Auth for proper error handling.
 
 ---
 
-### P1-7: Incomplete Cascade Delete on User Deletion
+### P1-7: Incomplete Cascade Delete on User Deletion — FIXED
 
 **File:** `plugin/lib/build-collections/users/hooks/before-delete.ts`
 **Type:** Data Integrity - Orphaned Records
 
-The beforeDelete hook only cleans up three related collections:
-- Accounts
-- Sessions
-- Verifications
+**Resolution:** The beforeDelete hook now cascade-deletes across all optional plugin collections in addition to the core three (accounts, sessions, verifications). A safe `getSlugSafe()` helper checks if each collection exists before attempting deletion, so the hook works regardless of which BA plugins are enabled. Collections now covered:
+- Core: accounts, sessions, verifications
+- Optional: passkeys, twoFactor, apiKeys, ssoProviders, oauthApplications, oauthAccessTokens, oauthConsents
+- Organization: members (by userId), invitations (by inviterId)
 
-It does **not** clean up records from plugin collections:
-- **Passkeys** (WebAuthn credentials remain for deleted user)
-- **Two-factor** records (TOTP secrets remain, containing sensitive data)
-- **API keys** (active API keys for deleted user continue to work if validated by key alone)
-- **Organization members** (deleted user appears as an org member)
-- **Team members** (deleted user appears in teams)
-- **OAuth consents** (consent records reference non-existent user)
-- **OAuth access tokens** (tokens for deleted user may remain valid)
-- **Subscriptions** (billing records reference non-existent user)
-
-**Impact:** Deleting a user leaves orphaned records across multiple collections. Active API keys and OAuth tokens for deleted users may continue to work. Sensitive data (2FA secrets, passkey credentials) persists.
+Tests updated in `before-delete-hook.test.ts` to verify each optional collection is deleted when present and skipped when absent.
 
 ---
 
@@ -346,77 +268,43 @@ When a user signs up via a social provider (Google, GitHub, etc.) with a valid a
 
 ---
 
-### P1-9: Unsupported Better Auth Plugins Silently Stripped
+### P1-9: Unsupported Better Auth Plugins Silently Stripped — FIXED
 
 **File:** `plugin/lib/sanitize-better-auth-options/index.ts:186-231`
 **Type:** Configuration - Silent Failure
 
-```typescript
-const supportedPlugins = betterAuthOptions.plugins.filter((plugin) =>
-  Object.values(supportedBAPluginIds).includes(plugin.id as any)
-);
-betterAuthOptions.plugins = supportedPlugins;
-```
-
-Any Better Auth plugin not in the hardcoded `supportedBAPluginIds` allowlist is silently removed. A `console.warn` is logged, but the plugins are still dropped. This means:
-- Custom Better Auth plugins are stripped
-- Newer official plugins (released after this code) are stripped
-- Community plugins are stripped
-
-**Impact:** Users who add custom or newer Better Auth plugins find them silently disabled. This is especially problematic as Better Auth's plugin ecosystem grows.
+**Resolution:** Changed from filtering out unsupported plugins to keeping all plugins. The code now iterates over all plugins and only configures the ones we have configurators for. Unsupported/custom/community plugins pass through unconfigured, which is the correct behavior — they work with Better Auth natively and don't need our configuration layer.
 
 ---
 
-### P1-10: User-Provided Password Hashing Silently Overwritten
+### P1-10: User-Provided Password Hashing Silently Overwritten — FIXED
 
 **File:** `plugin/lib/sanitize-better-auth-options/index.ts:101-110`
 **Type:** Configuration - Silent Override
 
-```typescript
-betterAuthOptions.emailAndPassword.password = {
-  ...(betterAuthOptions.emailAndPassword.password || {}),
-  verify: ({ hash, password }) => verifyPassword({ hash, password }),
-  hash: (password) => hashPassword(password)
-};
-```
-
-The plugin's `verify` and `hash` functions are placed **after** the user's spread, overwriting any custom implementations. Additionally, this only applies when `disableDefaultPayloadAuth` is `false`. Switching `disableDefaultPayloadAuth` between `true` and `false` changes the hashing algorithm (Payload-compatible pbkdf2 vs. Better Auth's default scrypt), invalidating all existing password hashes.
-
-**Impact:** Users cannot provide custom password hashing. Toggling `disableDefaultPayloadAuth` locks out all existing users.
+**Resolution:** The password hashing override code was removed entirely in commit c7d7356 as part of the overhaul to default to Better Auth-only authentication (removing `disableDefaultPayloadAuth`). Better Auth now manages its own password hashing, and users can configure custom hash/verify functions via `betterAuthOptions.emailAndPassword.password` without being overridden.
 
 ---
 
-### P1-11: Transaction Is a No-Op
+### P1-11: Transaction Is a No-Op — MITIGATED
 
 **File:** `adapter/index.ts:169-173`
 **Type:** Data Integrity - Missing Atomicity
 
-```typescript
-async transaction<R>(callback: (tx: Omit<DBAdapter, "transaction">) => Promise<R>): Promise<R> {
-  return await callback(this);
-}
-```
-
-The `transaction` method simply calls the callback with `this` - no actual transactional semantics are provided. Better Auth uses transactions for atomic multi-step operations like user creation (create user + create account). If the second step fails, the first is not rolled back.
-
-**Impact:** Partial data from failed multi-step operations persists as orphaned records. Users may exist without accounts, sessions without users, etc.
+**Resolution:** Payload CMS manages transactions at the request level via `initTransaction`/`commitTransaction`/`killTransaction` on the `req` object, which is not accessible from Better Auth's adapter `transaction()` interface. The method now wraps the callback in a try/catch that properly surfaces errors (instead of silently swallowing them), ensuring Better Auth can handle failures. Combined with the P1-6 fix (errors now re-thrown), failed operations no longer produce silently orphaned records. True Payload-level transactions are used in hooks like `beforeDelete` where `req` is available. Full cross-adapter transactional semantics would require architectural changes to Better Auth's adapter interface.
 
 ---
 
-### P1-12: `afterLogin` Hook Has No Error Handling
+### P1-12: `afterLogin` Hook Has No Error Handling — FIXED
 
 **File:** `plugin/lib/build-collections/users/hooks/after-login.ts`
 **Type:** Reliability - Inconsistent State
 
-The entire afterLogin hook (lines 20-95) has no try/catch block. Since this is an `afterLogin` hook, Payload's login has already succeeded and a JWT has been issued. If any step fails (session creation, cookie signing, cookie setting), the error propagates and the user receives a Payload JWT but no Better Auth session.
-
-The `decodeURIComponent(value)` call on line 92 is particularly fragile - it throws `URIError` on invalid percent-encoded sequences, which could crash the hook after the session has already been created in the database (creating an orphaned session).
-
-**Impact:** Intermittent failures leave users with a Payload JWT but no Better Auth session. The dual auth state becomes inconsistent.
+**Resolution:** The `afterLogin` hook was deleted entirely in commit c7d7356 as part of the overhaul to Better Auth-only authentication. Login is now fully managed by Better Auth's session system, eliminating the dual-auth state inconsistency.
 
 ---
 
-### P1-13: Data Shape Disconnect — Populated Relationships Leak Into Cookie Cache and Session Data
+### P1-13: Data Shape Disconnect — Populated Relationships Leak Into Cookie Cache and Session Data — FIXED
 
 **Files:**
 - `adapter/transform/index.ts:548-604` (`normalizeDocumentIds`)
@@ -426,6 +314,13 @@ The `decodeURIComponent(value)` call on line 92 is particularly fragile - it thr
 - `plugin/helpers/prepare-session-data.ts` (`getFieldsToSign` usage)
 - `plugin/lib/sanitize-better-auth-options/utils/apply-save-to-jwt-returned.ts` (band-aid suppression)
 **Type:** Data Integrity / Security - Cookie Bloat and Type Mismatch
+
+**Resolution:** Three changes address this issue:
+1. `PAYLOAD_QUERY_DEPTH` changed from `1` to `0` — all adapter operations now return flat scalar IDs, preventing populated objects from ever entering the transform layer
+2. `better-auth-strategy.ts` `findByID` call now uses `depth: 0` explicitly
+3. `refresh-token.ts` `findByID` call now uses `depth: 0` explicitly
+
+With `depth: 0` enforced at all levels, relationship fields always return scalar IDs. The `normalizeDocumentIds` dual-representation code path for populated objects is now only needed as a safety net. The `applySaveToJwtReturned` function remains as defense-in-depth for cookie suppression.
 
 #### The Problem
 

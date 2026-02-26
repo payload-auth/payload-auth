@@ -72,7 +72,8 @@ export const getRefreshTokenEndpoint = (userSlug: string): Endpoint => {
 
       const user = await payload.findByID({
         collection: userSlug as string,
-        id: res.session.userId
+        id: res.session.userId,
+        depth: 0
       });
 
       if (!user) {
