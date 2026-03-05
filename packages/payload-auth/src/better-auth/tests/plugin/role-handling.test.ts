@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { getPayload, betterAuthPluginOptions } from "../../adapter/tests/dev";
+import { getPayload } from "../dev";
 
 /**
  * Integration tests for role field handling.
@@ -127,9 +127,9 @@ describe("Role Handling (Issues #112, #128 Integration)", async () => {
         password: testUser.password
       },
       asResponse: true
-    } as any) as unknown as Response;
+    });
 
-    const setCookie = signInResult.headers.get("set-cookie");
+    const setCookie = signInResult?.headers?.get("set-cookie");
     expect(setCookie).toBeDefined();
 
     // Extract session token
@@ -145,7 +145,7 @@ describe("Role Handling (Issues #112, #128 Integration)", async () => {
     expect(session!.user).toBeDefined();
 
     // The role should be accessible without throwing TypeError
-    const role = session!.user.role;
+    const role = session!.user?.role;
     expect(role).toBeDefined();
   });
 });

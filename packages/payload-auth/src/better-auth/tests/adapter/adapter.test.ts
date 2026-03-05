@@ -1,12 +1,13 @@
 import { betterAuth } from "better-auth";
-import { BasePayload } from "payload";
-import { afterAll, beforeAll, describe, expect, it, test } from "vitest";
-import { payloadAdapter } from "../index";
+import type { TestHelpers } from "better-auth/plugins";
+import type { BasePayload } from "payload";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { payloadAdapter } from "../../adapter/index";
 import {
   runBaseCollectionsNumberIdTests,
   runBaseCollectionsTests
-} from "./base-collections-tests";
-import { getPayload } from "./dev";
+} from "../adapter/base-collections-tests";
+import { getPayload } from "../dev";
 
 describe("Handle Payload Adapter", async () => {
   it("should successfully add the Payload Adapter", async () => {
@@ -148,7 +149,7 @@ describe("Run BetterAuth Base Collections Adapter tests with number id", async (
           ...payload.betterAuth.options,
           advanced: {
             database: {
-              useNumberId: true
+              generateId: "serial"
             }
           }
         }
@@ -164,7 +165,7 @@ describe("Run BetterAuth Base Collections Adapter tests with number id", async (
         ...payload.betterAuth.options,
         advanced: {
           database: {
-            useNumberId: true
+            generateId: "serial"
           }
         }
       }
@@ -173,35 +174,77 @@ describe("Run BetterAuth Base Collections Adapter tests with number id", async (
 });
 
 describe("Authentication Flow Tests", async () => {
-  const testUser = {
-    email: "test-email@email.com",
-    password: "password12345",
-    name: "Test Name"
-  };
   const payload = await getPayload();
+  let test: TestHelpers;
+
+  beforeAll(async () => {
+    const ctx = (await payload.betterAuth.$context) as unknown as {
+      test: TestHelpers;
+    };
+    test = ctx.test;
+  });
 
   deleteAll(payload);
 
-  it("should successfully sign up a new user", async () => {
+  it("should successfully sign up a new user via API", async () => {
     const user = await payload.betterAuth.api.signUpEmail({
       body: {
-        email: testUser.email,
-        password: testUser.password,
-        name: testUser.name
+        email: "test-email@email.com",
+        password: "password12345",
+        name: "Test Name"
       }
     });
     expect(user).toBeDefined();
   });
 
-  it("should successfully sign in an existing user", async () => {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    const user = await payload.betterAuth.api.signInEmail({
-      body: {
-        email: testUser.email,
-        password: testUser.password
-      }
+  it("should create a user via test helpers and get an authenticated session", async () => {
+    const user = test.createUser({
+      email: "helper-user@email.com",
+      name: "Helper User",
+      emailVerified: true
     });
+    const savedUser = await test.saveUser(user);
+    expect(savedUser.id).toBeDefined();
+    expect(savedUser.email).toBe("helper-user@email.com");
 
-    expect(user.user).toBeDefined();
+    const { session, user: sessionUser, headers, token } = await test.login({
+      userId: savedUser.id
+    });
+    expect(session).toBeDefined();
+    expect(session.userId).toBe(savedUser.id);
+    expect(token).toBe(session.token);
+    expect(sessionUser.email).toBe("helper-user@email.com");
+    expect(headers.get("cookie")).toContain("better-auth.session_token=");
+
+    // Verify session persisted in Payload DB
+    const dbSessions = await payload.find({
+      collection: "sessions",
+      where: { token: { equals: session.token } }
+    });
+    expect(dbSessions.docs).toHaveLength(1);
+
+    await test.deleteUser(savedUser.id);
+  });
+
+  it("should get auth headers for a user", async () => {
+    const user = test.createUser({
+      email: "headers-user@email.com",
+      name: "Headers User",
+      emailVerified: true
+    });
+    const savedUser = await test.saveUser(user);
+
+    const headers = await test.getAuthHeaders({ userId: savedUser.id });
+    expect(headers).toBeInstanceOf(Headers);
+    expect(headers.get("cookie")).toContain("better-auth.session_token=");
+
+    // Verify user persisted in Payload DB
+    const dbUser = await payload.findByID({
+      collection: "users",
+      id: savedUser.id
+    });
+    expect(dbUser.email).toBe("headers-user@email.com");
+
+    await test.deleteUser(savedUser.id);
   });
 });

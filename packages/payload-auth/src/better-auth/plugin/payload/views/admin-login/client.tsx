@@ -1,6 +1,7 @@
 "use client";
 
 import { useConfig } from "@payloadcms/ui";
+import { BaseURLConfig } from "better-auth";
 import {
   AlternativeMethods,
   CredentialsForm,

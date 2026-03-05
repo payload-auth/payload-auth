@@ -36,7 +36,9 @@ export const useAdminInviteAfterSignUpMiddleware = async ({
     let adminInviteToken: string | undefined;
     if (isEmailSignUp) {
       adminInviteToken =
-        ctx?.query?.adminInviteToken ?? ctx.body?.adminInviteToken;
+        ctx?.query?.adminInviteToken ??
+        ctx.body?.adminInviteToken ??
+        ctx.body?.additionalData?.adminInviteToken;
     } else if (isOAuthCallback) {
       const oauthState = await getOAuthState();
       adminInviteToken = oauthState?.adminInviteToken;

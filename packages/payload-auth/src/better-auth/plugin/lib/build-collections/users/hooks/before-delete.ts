@@ -61,7 +61,6 @@ export function getBeforeDeleteHook(): CollectionBeforeDeleteHook {
       const optionalUserModels = [
         baModelKey.passkey,
         baModelKey.twoFactor,
-        baModelKey.apikey,
         baModelKey.ssoProvider,
         baModelKey.oauthApplication,
         baModelKey.oauthAccessToken,
@@ -77,6 +76,16 @@ export function getBeforeDeleteHook(): CollectionBeforeDeleteHook {
             req
           });
         }
+      }
+
+      // API keys use referenceId instead of userId (can reference user or org)
+      const apikeySlug = getSlugSafe(baModelKey.apikey);
+      if (apikeySlug) {
+        await payload.delete({
+          collection: apikeySlug,
+          where: { referenceId: { equals: String(userId) } },
+          req
+        });
       }
 
       // Organization plugin: members and invitations reference user

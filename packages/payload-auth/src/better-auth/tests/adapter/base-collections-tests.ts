@@ -1,6 +1,6 @@
 import type { DBAdapter } from "@better-auth/core/db/adapter";
 import type { BetterAuthOptions } from "better-auth";
-import { generateId, User } from "better-auth";
+import { generateId, type User } from "better-auth";
 import { beforeAll, describe, expect, test } from "vitest";
 
 const models = {
@@ -118,7 +118,7 @@ export async function runBaseCollectionsTests(
         }
       });
       expect(res).toHaveProperty("id");
-      //@ts-ignore
+
       expect(typeof res?.id).toEqual("string");
     }
   );
@@ -668,8 +668,8 @@ export async function runBaseCollectionsNumberIdTests(
         });
         cleanup.push({ modelName: models.user, id: res.id });
         expect(typeof res.id).toBe("string"); // we forcefully return all `id`s as strings. this is intentional.
-        expect(parseInt(res.id)).toBeGreaterThan(0);
-        idNumber = parseInt(res.id);
+        expect(Number.parseInt(res.id)).toBeGreaterThan(0);
+        idNumber = Number.parseInt(res.id);
       }
     );
     test.skipIf(opts.disableTests?.SHOULD_INCREMENT_THE_ID_BY_1)(
@@ -686,7 +686,7 @@ export async function runBaseCollectionsNumberIdTests(
           }
         });
         cleanup.push({ modelName: models.user, id: res.id });
-        expect(parseInt(res.id)).toBe(idNumber + 1);
+        expect(Number.parseInt(res.id)).toBe(idNumber + 1);
       }
     );
   });

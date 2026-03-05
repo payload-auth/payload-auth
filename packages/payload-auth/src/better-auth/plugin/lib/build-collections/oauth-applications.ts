@@ -45,7 +45,7 @@ export function buildOauthApplicationsCollection({
       index: true,
       admin: { description: "Name of the OAuth application" }
     }),
-    redirectURLs: () => ({
+    redirectUrls: () => ({
       admin: { description: "Comma-separated list of redirect URLs" }
     }),
     metadata: () => ({

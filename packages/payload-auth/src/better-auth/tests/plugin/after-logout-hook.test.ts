@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
  * Unit tests for the after-logout hook.
@@ -42,7 +42,7 @@ vi.mock("@/better-auth/plugin/helpers/get-collection", () => ({
   getCollectionByModelKey: vi.fn().mockReturnValue({ slug: "sessions" })
 }));
 
-import { getAfterLogoutHook } from "../lib/build-collections/users/hooks/after-logout";
+import { getAfterLogoutHook } from "../../plugin/lib/build-collections/users/hooks/after-logout";
 
 describe("getAfterLogoutHook", () => {
   beforeEach(() => {
@@ -59,10 +59,19 @@ describe("getAfterLogoutHook", () => {
     // Simulate cookies existing
     mockCookieStore.get.mockImplementation((name: string) => {
       const cookies: Record<string, any> = {
-        "better-auth.session_token": { name: "better-auth.session_token", value: "token.sig" },
-        "better-auth.session_data": { name: "better-auth.session_data", value: "data" },
-        "better-auth.dont_remember": { name: "better-auth.dont_remember", value: "1" },
-        "admin_session": { name: "admin_session", value: "admin" }
+        "better-auth.session_token": {
+          name: "better-auth.session_token",
+          value: "token.sig"
+        },
+        "better-auth.session_data": {
+          name: "better-auth.session_data",
+          value: "data"
+        },
+        "better-auth.dont_remember": {
+          name: "better-auth.dont_remember",
+          value: "1"
+        },
+        admin_session: { name: "admin_session", value: "admin" }
       };
       return cookies[name];
     });
@@ -94,8 +103,12 @@ describe("getAfterLogoutHook", () => {
 
     mockCookieStore.get.mockImplementation((name: string) => {
       const allCookies = mockCookieStore.getAll();
-      return allCookies.find((c: any) => c.name === name) ||
-        (name === "better-auth.session_token" ? { name, value: "token.sig" } : undefined);
+      return (
+        allCookies.find((c: any) => c.name === name) ||
+        (name === "better-auth.session_token"
+          ? { name, value: "token.sig" }
+          : undefined)
+      );
     });
 
     await hook({
@@ -109,7 +122,9 @@ describe("getAfterLogoutHook", () => {
 
     expect(clearedNames).toContain("better-auth.session_token_multi.0");
     expect(clearedNames).toContain("better-auth.session_token_multi.1");
-    expect(clearedNames).toContain("__Secure-better-auth.session_token_multi.0");
+    expect(clearedNames).toContain(
+      "__Secure-better-auth.session_token_multi.0"
+    );
   });
 
   it("deletes session from database when token cookie exists", async () => {
@@ -154,13 +169,12 @@ describe("getAfterLogoutHook", () => {
 
     mockCookieStore.get.mockReturnValue(undefined);
 
-    await expect(
-      hook({
-        req: {
-          payload: { config: {}, collections: {} }
-        }
-      } as any)
-    ).resolves.not.toThrow();
+    // Should resolve without throwing
+    await hook({
+      req: {
+        payload: { config: {}, collections: {} }
+      }
+    } as any);
   });
 
   // P2-1: Empty catch block should at least log the error
@@ -180,13 +194,11 @@ describe("getAfterLogoutHook", () => {
     mockPayloadAuth.delete.mockRejectedValue(new Error("Delete failed"));
 
     // Should not crash even if delete throws (empty catch block)
-    await expect(
-      hook({
-        req: {
-          payload: { config: {}, collections: {} }
-        }
-      } as any)
-    ).resolves.not.toThrow();
+    await hook({
+      req: {
+        payload: { config: {}, collections: {} }
+      }
+    } as any);
   });
 
   it("sets secure flag when deleting __Secure- prefixed cookies", async () => {
@@ -209,7 +221,8 @@ describe("getAfterLogoutHook", () => {
     } as any);
 
     const secureCalls = mockCookieStore.set.mock.calls.filter(
-      (call: any[]) => typeof call[0] === "string" && call[0].startsWith("__Secure-")
+      (call: any[]) =>
+        typeof call[0] === "string" && call[0].startsWith("__Secure-")
     );
 
     secureCalls.forEach((call: any[]) => {

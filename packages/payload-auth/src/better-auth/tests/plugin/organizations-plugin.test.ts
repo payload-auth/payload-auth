@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { configureOrganizationPlugin } from "../lib/sanitize-better-auth-options/organizations-plugin";
-import { baModelKey } from "../constants";
-import type { BetterAuthSchemas } from "@/better-auth/plugin/types";
+import { baModelKey } from "../../plugin/constants";
+import { configureOrganizationPlugin } from "../../plugin/lib/sanitize-better-auth-options/organizations-plugin";
+import { BetterAuthSchemas } from "../../plugin/types";
 
 // Helper to create a minimal resolved schemas object
 function createMockResolvedSchemas(
-  overrides: Partial<Record<string, { modelName: string; fields: Record<string, any>; order: number }>> = {}
+  overrides: Partial<
+    Record<
+      string,
+      { modelName: string; fields: Record<string, any>; order: number }
+    >
+  > = {}
 ): BetterAuthSchemas {
   const defaultSchemas: Record<string, any> = {
     [baModelKey.organization]: {

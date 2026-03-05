@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { betterAuthStrategy } from "../lib/build-collections/users/better-auth-strategy";
+import { describe, expect, it, vi } from "vitest";
+import { betterAuthStrategy } from "../../plugin/lib/build-collections/users/better-auth-strategy";
 
 /**
  * Unit tests for the Better Auth strategy.
@@ -9,14 +9,14 @@ import { betterAuthStrategy } from "../lib/build-collections/users/better-auth-s
  * a full Payload config. We test the logic, not the wiring.
  */
 
-// Mock getPayloadAuth to avoid needing a full Payload instance
-vi.mock("@/better-auth/plugin/lib/get-payload-auth", () => ({
-  getPayloadAuth: vi.fn()
+// Use vi.hoisted to declare the mock before vi.mock hoisting
+const { mockGetPayloadAuth } = vi.hoisted(() => ({
+  mockGetPayloadAuth: vi.fn()
 }));
 
-import { getPayloadAuth } from "@/better-auth/plugin/lib/get-payload-auth";
-
-const mockGetPayloadAuth = getPayloadAuth as ReturnType<typeof vi.fn>;
+vi.mock("@/better-auth/plugin/lib/get-payload-auth", () => ({
+  getPayloadAuth: mockGetPayloadAuth
+}));
 
 function createMockPayloadAuth(overrides: {
   session?: any;
@@ -30,11 +30,13 @@ function createMockPayloadAuth(overrides: {
       api: {
         getSession: overrides.getSessionError
           ? vi.fn().mockRejectedValue(overrides.getSessionError)
-          : vi.fn().mockResolvedValue(
-              overrides.session !== undefined
-                ? { session: overrides.session, user: overrides.user ?? {} }
-                : null
-            )
+          : vi
+              .fn()
+              .mockResolvedValue(
+                overrides.session !== undefined
+                  ? { session: overrides.session, user: overrides.user ?? {} }
+                  : null
+              )
       }
     },
     findByID: overrides.findByIDError

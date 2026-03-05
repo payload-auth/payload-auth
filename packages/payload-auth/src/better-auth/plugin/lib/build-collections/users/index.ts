@@ -31,10 +31,7 @@ import {
   getRefreshTokenEndpoint,
   getSendInviteUrlEndpoint
 } from "./endpoints";
-import {
-  getAfterLogoutHook,
-  getBeforeDeleteHook
-} from "./hooks";
+import { getAfterLogoutHook, getBeforeDeleteHook } from "./hooks";
 
 export function buildUsersCollection({
   incomingCollections,
@@ -284,13 +281,9 @@ export function buildUsersCollection({
       getSendInviteUrlEndpoint(pluginOptions)
     ],
     hooks: {
-      beforeChange: [
-        ...(existingUserCollection?.hooks?.beforeChange ?? [])
-      ],
-      afterChange: [
-        ...(existingUserCollection?.hooks?.afterChange ?? [])
-      ],
-      
+      beforeChange: [...(existingUserCollection?.hooks?.beforeChange ?? [])],
+      afterChange: [...(existingUserCollection?.hooks?.afterChange ?? [])],
+
       afterLogout: [
         ...(existingUserCollection?.hooks?.afterLogout ?? []),
         getAfterLogoutHook()

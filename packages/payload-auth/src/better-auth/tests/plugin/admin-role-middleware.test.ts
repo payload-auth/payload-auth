@@ -1,22 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
-import { adminBeforeRoleMiddleware } from "../lib/sanitize-better-auth-options/utils/admin-before-role-middleware";
-import { adminAfterRoleMiddleware } from "../lib/sanitize-better-auth-options/utils/admin-after-role-middleware";
-import type { SanitizedBetterAuthOptions } from "../types";
+import { adminAfterRoleMiddleware } from "../../plugin/lib/sanitize-better-auth-options/utils/admin-after-role-middleware";
+import { adminBeforeRoleMiddleware } from "../../plugin/lib/sanitize-better-auth-options/utils/admin-before-role-middleware";
+import type { SanitizedBetterAuthOptions } from "../../plugin/types";
 
 /**
  * Creates a minimal mock auth middleware context for testing role transformation.
  * Simulates what Better Auth passes to before/after hooks.
  */
-function createMockCtx(
-  path: string,
-  role: string | string[] | undefined
-): any {
+function createMockCtx(path: string, role: string | string[] | undefined): any {
   return {
     path,
     context: {
-      session: role !== undefined
-        ? { user: { id: "user-1", role } }
-        : null
+      session: role !== undefined ? { user: { id: "user-1", role } } : null
     }
   };
 }
@@ -88,7 +83,9 @@ describe("adminBeforeRoleMiddleware", () => {
 
     // Should not throw
     await expect(
-      Promise.resolve(typeof middleware === "function" ? middleware(ctx) : undefined)
+      Promise.resolve(
+        typeof middleware === "function" ? middleware(ctx) : undefined
+      )
     ).resolves.not.toThrow();
   });
 
@@ -105,7 +102,14 @@ describe("adminBeforeRoleMiddleware", () => {
       await middleware(ctx);
     }
 
-    expect(originalBefore).toHaveBeenCalledWith(ctx);
+    // createAuthMiddleware wraps ctx with extra helper properties,
+    // so we verify the original properties are present (not exact match)
+    expect(originalBefore).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: ctx.path,
+        context: ctx.context
+      })
+    );
   });
 });
 
@@ -211,7 +215,13 @@ describe("adminAfterRoleMiddleware", () => {
       await middleware(ctx);
     }
 
-    expect(originalAfter).toHaveBeenCalledWith(ctx);
+    // createAuthMiddleware wraps ctx with extra helper properties
+    expect(originalAfter).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: ctx.path,
+        context: ctx.context
+      })
+    );
     // P2-9: originalAfter should be awaited, not fire-and-forget
     expect(hookCalled).toBe(true);
   });

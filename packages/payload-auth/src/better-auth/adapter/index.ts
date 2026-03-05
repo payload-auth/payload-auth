@@ -763,7 +763,6 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           const result = await payload.count({
             collection: collectionSlug,
             where: payloadWhere,
-            depth: PAYLOAD_QUERY_DEPTH,
             context: createAdapterContext({ model, operation: "count" })
           });
 

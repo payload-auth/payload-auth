@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { getPayload, betterAuthPluginOptions } from "../../adapter/tests/dev";
+import { getPayload } from "../dev";
 
 /**
  * Integration tests for admin invite role assignment.

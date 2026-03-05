@@ -1,11 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
 import type { PayloadRequest } from "payload";
+import { describe, expect, it, vi } from "vitest";
 import {
   hasAdminRoles,
-  isAdminWithRoles,
+  isAdminOrCurrentUserUpdateWithAllowedFields,
   isAdminOrCurrentUserWithRoles,
-  isAdminOrCurrentUserUpdateWithAllowedFields
-} from "../lib/build-collections/utils/payload-access";
+  isAdminWithRoles
+} from "../../plugin/lib/build-collections/utils/payload-access";
 
 // Helper to create mock PayloadRequest objects
 function mockReq(user: Record<string, any> | null = null): PayloadRequest {
@@ -119,7 +119,11 @@ describe("isAdminOrCurrentUserUpdateWithAllowedFields", () => {
       userSlug: "users",
       adminRoles: ["admin"]
     });
-    const result = await accessFn({ req, id: "999", data: { role: ["superadmin"] } } as any);
+    const result = await accessFn({
+      req,
+      id: "999",
+      data: { role: ["superadmin"] }
+    } as any);
     expect(result).toBe(true);
   });
 
@@ -130,7 +134,11 @@ describe("isAdminOrCurrentUserUpdateWithAllowedFields", () => {
       userSlug: "users",
       adminRoles: ["admin"]
     });
-    const result = await accessFn({ req, id: "1", data: { name: "new" } } as any);
+    const result = await accessFn({
+      req,
+      id: "1",
+      data: { name: "new" }
+    } as any);
     expect(result).toBe(false);
   });
 
@@ -184,7 +192,11 @@ describe("isAdminOrCurrentUserUpdateWithAllowedFields", () => {
     const originalAllowedFields = ["name", "image"];
     const allowedFieldsCopy = [...originalAllowedFields];
 
-    const req = mockReq({ id: "user-1", email: "test@test.com", role: ["user"] });
+    const req = mockReq({
+      id: "user-1",
+      email: "test@test.com",
+      role: ["user"]
+    });
     (req.payload.login as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" }
     });
@@ -248,7 +260,11 @@ describe("isAdminOrCurrentUserUpdateWithAllowedFields", () => {
   });
 
   it("requires both password and currentPassword for password changes", async () => {
-    const req = mockReq({ id: "user-1", email: "test@test.com", role: ["user"] });
+    const req = mockReq({
+      id: "user-1",
+      email: "test@test.com",
+      role: ["user"]
+    });
     const accessFn = isAdminOrCurrentUserUpdateWithAllowedFields({
       allowedFields: ["name"],
       userSlug: "users",
@@ -273,7 +289,11 @@ describe("isAdminOrCurrentUserUpdateWithAllowedFields", () => {
   });
 
   it("returns false when login verification fails (wrong current password)", async () => {
-    const req = mockReq({ id: "user-1", email: "test@test.com", role: ["user"] });
+    const req = mockReq({
+      id: "user-1",
+      email: "test@test.com",
+      role: ["user"]
+    });
     (req.payload.login as ReturnType<typeof vi.fn>).mockRejectedValue(
       new Error("Invalid credentials")
     );

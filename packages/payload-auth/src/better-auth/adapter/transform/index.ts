@@ -544,6 +544,16 @@ export const createTransform = (
       }
     });
 
+    // Strip Payload-internal fields that aren't part of the Better Auth schema.
+    // Payload injects fields like `collection` (on select queries) and internal
+    // metadata that Better Auth doesn't expect.
+    const allowedKeys = new Set(["id", "_id", ...Object.keys(schemaFields)]);
+    for (const key of Object.keys(result)) {
+      if (!allowedKeys.has(key)) {
+        delete result[key];
+      }
+    }
+
     return result as T;
   }
 

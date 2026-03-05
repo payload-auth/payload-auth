@@ -43,12 +43,13 @@ export function buildMembersCollection({
         description: "The user that is a member of the organization."
       }
     }),
-    teamId: () => ({
-      admin: { description: "The team that the member belongs to." }
-    }),
     role: () => ({
       defaultValue: "member",
-      admin: { description: "The role of the member in the organization." }
+      admin: {
+        description: "The role of the member in the organization.",
+        // TODO: Add a component to select the role
+        components: {}
+      }
     })
   };
 

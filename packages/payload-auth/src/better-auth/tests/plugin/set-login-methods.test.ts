@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { setLoginMethods } from "../lib/set-login-methods";
-import type { PayloadAuthOptions } from "../types";
+import { setLoginMethods } from "../../plugin/lib/set-login-methods";
+import type { PayloadAuthOptions } from "../../plugin/types";
 
 describe("setLoginMethods", () => {
   it("detects emailPassword when enabled", () => {

@@ -93,7 +93,8 @@ export const baPluginSlugs = {
   teams: "teams",
   teamMembers: "teamMembers",
   scim: "scimProvider",
-  rateLimit: "rateLimit"
+  rateLimit: "rateLimit",
+  deviceCode: "deviceCode"
 } as const;
 
 export const baModelKey = {
@@ -144,9 +145,7 @@ export const baModelFieldKeysToFieldNames = {
   team: {
     organizationId: "organization"
   },
-  apikey: {
-    userId: "user"
-  },
+  apikey: {},
   twoFactor: {
     userId: "user"
   },
@@ -199,9 +198,7 @@ export const baModelFieldKeys = {
   team: {
     organizationId: "organizationId"
   },
-  apikey: {
-    userId: "userId"
-  },
+  apikey: {},
   twoFactor: {
     userId: "userId"
   },

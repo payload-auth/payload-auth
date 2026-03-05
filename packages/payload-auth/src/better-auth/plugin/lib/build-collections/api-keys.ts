@@ -47,10 +47,10 @@ export function buildApiKeysCollection({
     key: () => ({
       admin: { readOnly: true, description: "The hashed API key itself." }
     }),
-    userId: () => ({
+    referenceId: () => ({
       admin: {
         readOnly: true,
-        description: "The user associated with the API key."
+        description: "The user or organization associated with the API key."
       }
     }),
     refillInterval: () => ({

@@ -13,6 +13,7 @@ import { getSafeRedirect } from "@/better-auth/plugin/payload/utils/get-safe-red
 import type { PayloadAuthOptions } from "@/better-auth/plugin/types";
 import { Logo } from "@/shared/components/logo";
 import { AdminLoginClient } from "./client";
+import { resolveBaseURL } from "../../utils/resolve-base-url";
 
 export const loginBaseClass = "login";
 
@@ -175,7 +176,10 @@ async function AdminLogin({
           username: prefillUsername
         }}
         searchParams={searchParams ?? {}}
-        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        baseURL={resolveBaseURL(
+          pluginOptions.betterAuthOptions?.baseURL,
+          req.headers
+        )}
         basePath={pluginOptions.betterAuthOptions?.basePath}
       />
       {RenderServerComponent({

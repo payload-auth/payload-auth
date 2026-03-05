@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { BasePayload } from "payload";
-import { getPayload } from "./dev";
-import { payloadAdapter } from "../index";
+import { payloadAdapter } from "../../adapter/index";
+import { getPayload } from "../dev";
 
 /**
  * Integration tests for null value handling through the adapter layer.

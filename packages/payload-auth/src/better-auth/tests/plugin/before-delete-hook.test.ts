@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { getBeforeDeleteHook } from "../lib/build-collections/users/hooks/before-delete";
+import { getBeforeDeleteHook } from "../../plugin/lib/build-collections/users/hooks/before-delete";
 
 // Mock Payload's transaction utilities so they don't try to access db.beginTransaction
 vi.mock("payload", async (importOriginal) => {
@@ -133,7 +133,7 @@ describe("getBeforeDeleteHook", () => {
     );
   });
 
-  // P1-7: Cascade should also delete API keys
+  // P1-7: Cascade should also delete API keys (uses referenceId, not userId)
   it("deletes API keys when apikey collection exists", async () => {
     const hook = getBeforeDeleteHook();
     const { req, id, deleteMock } = createMockReq("user-1", {
@@ -145,7 +145,7 @@ describe("getBeforeDeleteHook", () => {
     expect(deleteMock).toHaveBeenCalledWith(
       expect.objectContaining({
         collection: "apiKeys",
-        where: { user: { equals: "user-1" } }
+        where: { referenceId: { equals: "user-1" } }
       })
     );
   });

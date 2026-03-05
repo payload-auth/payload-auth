@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
 import type { BetterAuthOptions } from "better-auth";
 import type { BasePayload } from "payload";
-import { createTransform } from "../transform/index";
+import { describe, expect, it } from "vitest";
+import { createTransform } from "../../adapter/transform/index";
 
 // Minimal BetterAuth options to initialize the transform layer.
 // getAuthTables() needs at least the base schema for user, session, account, verification.
@@ -311,9 +311,7 @@ describe("Transform Layer", () => {
       const result = transform.convertWhereClause({
         idType: "text",
         model: "user" as any,
-        where: [
-          { field: "id", operator: "in", value: ["1", "2", "3"] }
-        ],
+        where: [{ field: "id", operator: "in", value: ["1", "2", "3"] }],
         payload
       });
 
@@ -495,10 +493,7 @@ describe("Transform Layer", () => {
     it("converts field array to object with true values", () => {
       const transform = createTransform(minimalOptions, false);
 
-      const result = transform.convertSelect("user" as any, [
-        "email",
-        "name"
-      ]);
+      const result = transform.convertSelect("user" as any, ["email", "name"]);
       expect(result).toEqual({ email: true, name: true });
     });
 

@@ -1,18 +1,20 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { getPayload, betterAuthPluginOptions } from "../../adapter/tests/dev";
-import { getGenerateInviteUrlEndpoint } from "../lib/build-collections/users/endpoints/generate-invite-url";
-import { getSendInviteUrlEndpoint } from "../lib/build-collections/users/endpoints/send-invite-url";
+import type { TestHelpers } from "better-auth/plugins";
+import { getGenerateInviteUrlEndpoint } from "../../plugin/lib/build-collections/users/endpoints/generate-invite-url";
+import { getSendInviteUrlEndpoint } from "../../plugin/lib/build-collections/users/endpoints/send-invite-url";
+import { betterAuthPluginOptions } from "../dev";
+import { getTestContext } from "../helpers";
 
 /**
  * Integration tests for endpoint authentication (P0-3 regression).
  * Verifies that admin invite endpoints require authentication and admin role.
  *
- * Calls endpoint handlers directly to test auth guards.
+ * Uses testUtils for fast user creation (no signup/signin round-trip).
  *
  * Requires a running Postgres database.
  */
 describe("Endpoint Authentication (P0-3 Integration)", async () => {
-  const payload = await getPayload();
+  const { payload, test } = await getTestContext();
 
   const roles = [
     { label: "Admin", value: "admin" },
@@ -26,24 +28,13 @@ describe("Endpoint Authentication (P0-3 Integration)", async () => {
 
   const sendInviteEndpoint = getSendInviteUrlEndpoint(betterAuthPluginOptions);
 
-  const testUser = {
-    email: "endpoint-auth-test@test.com",
-    password: "authtest123",
-    name: "Auth Test User"
-  };
-
-  let regularSessionHeaders: Headers;
+  let regularUser: any;
 
   /**
    * Helper to create a mock PayloadRequest that extends a real Request object.
-   * addDataAndFileToRequest needs a real Request for body parsing.
    */
   function createMockReq(
-    options: {
-      body?: any;
-      user?: any;
-      headers?: Headers;
-    } = {}
+    options: { body?: any; user?: any; headers?: Headers } = {}
   ) {
     const baseRequest = new Request("http://localhost:3000/test", {
       method: "POST",
@@ -68,61 +59,22 @@ describe("Endpoint Authentication (P0-3 Integration)", async () => {
   }
 
   beforeAll(async () => {
-    // Clean up any existing test data
-    await payload.delete({
+    // Create a regular (non-admin) user directly via testUtils
+    const user = await test.saveUser(
+      test.createUser({
+        email: "endpoint-auth-test@test.com",
+        name: "Auth Test User"
+      })
+    );
+    // Fetch full user from Payload so it has the right shape
+    regularUser = await payload.findByID({
       collection: "users",
-      where: { email: { equals: testUser.email } }
+      id: user.id
     });
-    await payload.delete({
-      collection: "sessions",
-      where: { id: { exists: true } }
-    });
-    await payload.delete({
-      collection: "accounts",
-      where: { id: { exists: true } }
-    });
-
-    // Create a regular (non-admin) user
-    const signUpResult = await payload.betterAuth.api.signUpEmail({
-      body: {
-        email: testUser.email,
-        password: testUser.password,
-        name: testUser.name
-      }
-    });
-    expect(signUpResult).toBeDefined();
-
-    // Sign in to get session cookies
-    const signInResult = await payload.betterAuth.api.signInEmail({
-      body: {
-        email: testUser.email,
-        password: testUser.password
-      }
-    });
-    expect(signInResult).toBeDefined();
-
-    regularSessionHeaders = new Headers();
-    if (signInResult.headers) {
-      const setCookies = signInResult.headers.get("set-cookie");
-      if (setCookies) {
-        regularSessionHeaders.set("cookie", setCookies);
-      }
-    }
   });
 
   afterAll(async () => {
-    await payload.delete({
-      collection: "users",
-      where: { email: { equals: testUser.email } }
-    });
-    await payload.delete({
-      collection: "sessions",
-      where: { id: { exists: true } }
-    });
-    await payload.delete({
-      collection: "accounts",
-      where: { id: { exists: true } }
-    });
+    await test.deleteUser(regularUser.id);
   });
 
   describe("generate-invite-url endpoint", () => {
@@ -136,14 +88,9 @@ describe("Endpoint Authentication (P0-3 Integration)", async () => {
     });
 
     it("rejects non-admin users with 403", async () => {
-      const user = await payload.find({
-        collection: "users",
-        where: { email: { equals: testUser.email } }
-      });
-
       const req = createMockReq({
         body: { role: { label: "Admin", value: "admin" } },
-        user: user.docs[0]
+        user: regularUser
       });
 
       const response = await generateInviteEndpoint.handler(req);
@@ -165,17 +112,12 @@ describe("Endpoint Authentication (P0-3 Integration)", async () => {
     });
 
     it("rejects non-admin users with 403", async () => {
-      const user = await payload.find({
-        collection: "users",
-        where: { email: { equals: testUser.email } }
-      });
-
       const req = createMockReq({
         body: {
           email: "target@test.com",
           link: "http://localhost:3000/invite?token=test"
         },
-        user: user.docs[0]
+        user: regularUser
       });
 
       const response = await sendInviteEndpoint.handler(req);
