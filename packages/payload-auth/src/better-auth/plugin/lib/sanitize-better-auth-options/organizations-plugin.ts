@@ -12,6 +12,7 @@ export function configureOrganizationPlugin(
 ): void {
   const models = [
     baModelKey.organization,
+    baModelKey.organizationRole,
     baModelKey.member,
     baModelKey.invitation,
     baModelKey.team,
