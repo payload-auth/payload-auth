@@ -510,9 +510,9 @@ export const createTransform = (
         return;
       }
 	    
-      // Convert role array to comma seprated string
-      if ((targetFieldKey === "role" || targetFieldKey === "roles") && Array.isArray(result[targetFieldKey])) {
-				result[targetFieldKey] = result[targetFieldKey].join(",")
+      // Convert role array to comma separated string
+      if ((targetFieldKey === "role" || targetFieldKey === "roles") && Array.isArray(value)) {
+				result[targetFieldKey] = value.join(",")
 			}
       
       // Flatten join results from { docs: [...] } to plain arrays

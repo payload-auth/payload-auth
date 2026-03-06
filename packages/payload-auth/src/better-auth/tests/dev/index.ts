@@ -273,6 +273,8 @@ export async function getPayload() {
   return await getPayloadAuth<PayloadAuthOptionsType>(payloadConfig);
 }
 
+export type Errors = BetterAuthReturn<PayloadAuthOptionsType>["$ERROR_CODES"]
+
 export type Session =
   BetterAuthReturn<PayloadAuthOptionsType>["$Infer"]["Session"]["user"];
 

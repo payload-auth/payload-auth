@@ -1,7 +1,7 @@
 import type { Config, SanitizedConfig } from "payload";
 import { getDefaultBetterAuthSchema } from "./helpers/get-better-auth-schema";
 import { syncResolvedSchemaWithCollectionMap } from "./helpers/sync-resolved-schema-with-collection-map";
-import { applyBetterAuthAdminConfig } from "./lib/apply-disabled-default-auth-config";
+import { applyBetterAuthAdminConfig } from "./lib/apply-ba-admin-config";
 import { buildCollections } from "./lib/build-collections/index";
 import { initBetterAuth } from "./lib/init-better-auth";
 import { sanitizeBetterAuthOptions } from "./lib/sanitize-better-auth-options/index";

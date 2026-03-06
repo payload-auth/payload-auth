@@ -6,8 +6,8 @@ import type {
   BetterAuthOptions as BetterAuthOptionsType,
   BetterAuthPlugin as BetterAuthPluginType,
   InferAPI,
-  InferPluginTypes,
   InferPluginContext,
+  InferPluginTypes,
   Session,
   User
 } from "better-auth/types";
@@ -31,45 +31,11 @@ import type {
 /**
  * BetterAuth options with the following caveats:
  * - The `database` option is removed as it is configured internally
- * - The `user` `modelName` and `fields` is removed as it is configured internally
- * - The `account` `modelName` and `fields` is removed as it is configured internally
- * - The `session` `modelName` and `fields` is removed as it is configured internally
- * - The `verification` `modelName` and `fields` is removed as it is configured internally
  *
  * @see https://www.better-auth.com/docs/reference/options
  */
 export interface BetterAuthOptions
-  extends Omit<BetterAuthOptionsType, "database" | "advanced"> {}
-// export interface BetterAuthOptions
-//   extends Omit<
-//     BetterAuthOptionsType,
-//     "database" | "user" | "account" | "verification" | "session" | "advanced"
-//   > {
-//   user?:
-//     | Omit<NonNullable<BetterAuthOptionsType["user"]>, "modelName" | "fields">
-//     | undefined;
-//   account?:
-//     | Omit<
-//         NonNullable<BetterAuthOptionsType["account"]>,
-//         "modelName" | "fields"
-//       >
-//     | undefined;
-//   session?:
-//     | Omit<
-//         NonNullable<BetterAuthOptionsType["session"]>,
-//         "modelName" | "fields"
-//       >
-//     | undefined;
-//   verification?:
-//     | Omit<
-//         NonNullable<BetterAuthOptionsType["verification"]>,
-//         "modelName" | "fields"
-//       >
-//     | undefined;
-//   advanced?:
-//     | Omit<NonNullable<BetterAuthOptionsType["advanced"]>, "generateId">
-//     | undefined;
-// }
+  extends Omit<BetterAuthOptionsType, "database"> {}
 
 export interface SanitizedBetterAuthOptions
   extends Omit<BetterAuthOptionsType, "database"> {}
@@ -117,7 +83,7 @@ export interface PayloadAuthOptions {
     logTables?: boolean;
   };
   /**
-   * Hide the better-authplugin collections from the payload admin UI
+   * Hide the better-auth plugin collections from the payload admin UI
    * @default false
    */
   hidePluginCollections?: boolean;
@@ -145,10 +111,6 @@ export interface PayloadAuthOptions {
   /**
    * BetterAuth options with the following caveats:
    * - The `database` option is removed as it is configured internally
-   * - The `user` `modelName` and `fields` is removed as it is configured internally
-   * - The `account` `modelName` and `fields` is removed as it is configured internally
-   * - The `session` `modelName` and `fields` is removed as it is configured internally
-   * - The `verification` `modelName` and `fields` is removed as it is configured internally
    *
    * @see https://www.better-auth.com/docs/reference/options
    */
@@ -423,24 +385,11 @@ export type EndpointWithBetterAuth<O extends PayloadAuthOptions> = Omit<
     req: PayloadRequestWithBetterAuth<O>
   ) => Promise<Response> | Response;
 };
-
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
   k: infer I
 ) => void
   ? I
   : never;
-
-type PrettifyDeep<T> = {
-  [K in keyof T]: T[K] extends (...args: any[]) => any
-    ? T[K]
-    : T[K] extends object
-      ? T[K] extends Array<any>
-        ? T[K]
-        : T[K] extends Date
-          ? T[K]
-          : PrettifyDeep<T[K]>
-      : T[K];
-} & {};
 
 type InferPluginErrorCodes<O extends BetterAuthOptions> =
   O["plugins"] extends Array<infer P>
@@ -448,13 +397,9 @@ type InferPluginErrorCodes<O extends BetterAuthOptions> =
         P extends BetterAuthPluginType
           ? P["$ERROR_CODES"] extends Record<string, any>
             ? P["$ERROR_CODES"]
-            : never
-          : never
-      > extends infer R
-      ? [R] extends [never]
-        ? {}
-        : R
-      : {}
+            : {}
+          : {}
+      >
     : {};
 
 export type RoleArray<
@@ -492,10 +437,6 @@ export type BetterAuthReturn<
             User<ExtractBA<O>["user"], ExtractBA<O>["plugins"]>,
             ExtractRoles<O>
           >;
-          // user: OverrideRole<
-          //   PrettifyDeep<InferUser<ExtractBA<O>>>,
-          //   ExtractRoles<O>
-          // >;
         };
       } & InferPluginTypes<ExtractBA<O>>;
 };
