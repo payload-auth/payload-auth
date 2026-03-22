@@ -8,7 +8,7 @@ import { getPayload } from "../dev";
  *
  * Requires a running Postgres database.
  */
-describe("Null Value Handling (P0-5 Integration)", async () => {
+describe("Null Value Handling", async () => {
   const payload = await getPayload();
   let testUserId: string | number;
 

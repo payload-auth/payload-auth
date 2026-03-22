@@ -1,11 +1,16 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { cleanupAll, createAuthenticatedUser, getSession, getTestPayload, signIn, signUp } from "../helpers";
+import type { TestHelpers } from "better-auth/plugins";
+import { getTestContext } from "../helpers";
 
 describe("Email/Password Auth Flow", () => {
   let payload: Awaited<ReturnType<typeof getTestPayload>>;
+  let test: TestHelpers;
 
   beforeAll(async () => {
-    payload = await getTestPayload();
+    const ctx = await getTestContext();
+    payload = ctx.payload;
+    test = ctx.test;
   });
 
   afterEach(async () => {
@@ -94,19 +99,19 @@ describe("Email/Password Auth Flow", () => {
 
   describe("Sign In", () => {
     it("should sign in an existing user and return session cookies", async () => {
-      await signUp(payload, {
+
+
+      const { user, cookies } = await createAuthenticatedUser(payload, {
         email: "signin@test.com",
         password: "Password123!",
-        name: "Sign In User"
+        name: "Sign in user",
       });
+      
+      console.log("[email-password-test] body:", user);
+      console.log("[email-password-test] cookies:", cookies);
 
-      const { body, cookies } = await signIn(payload, {
-        email: "signin@test.com",
-        password: "Password123!"
-      });
-
-      expect(body.user).toBeDefined();
-      expect(body.user.email).toBe("signin@test.com");
+      expect(user).toBeDefined();
+      expect(user.email).toBe("signin@test.com");
       expect(cookies.length).toBeGreaterThan(0);
     });
 

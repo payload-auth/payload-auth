@@ -14,6 +14,7 @@ describe("Handle Payload Adapter", async () => {
     const payload = await getPayload();
 
     const auth = betterAuth({
+      baseURL: "http://localhost:3000",
       database: payloadAdapter({
         payloadClient: payload,
         adapterConfig: {
@@ -207,7 +208,12 @@ describe("Authentication Flow Tests", async () => {
     expect(savedUser.id).toBeDefined();
     expect(savedUser.email).toBe("helper-user@email.com");
 
-    const { session, user: sessionUser, headers, token } = await test.login({
+    const {
+      session,
+      user: sessionUser,
+      headers,
+      token
+    } = await test.login({
       userId: savedUser.id
     });
     expect(session).toBeDefined();

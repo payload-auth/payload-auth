@@ -62,7 +62,7 @@ const superAdmin = ac.newRole({
 
 export const betterAuthOptions = {
   appName: "payload-better-auth",
-  baseURL: "http://localhost:3000",
+  baseURL: "http://localhost:3000" as const,
   trustedOrigins: ["http://localhost:3000"],
   plugins: [
     admin({

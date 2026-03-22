@@ -190,7 +190,7 @@ export interface User {
   /**
    * The role/ roles of the user
    */
-  role?: ('admin' | 'user')[] | null;
+  role?: ('admin' | 'user' | 'adminSuperAdmin')[] | null;
   /**
    * Whether the user is banned from the platform
    */
@@ -679,7 +679,7 @@ export interface ApiKey {
  */
 export interface AdminInvitation {
   id: number;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | 'adminSuperAdmin';
   token: string;
   url?: string | null;
   updatedAt: string;

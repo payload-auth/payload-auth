@@ -6,7 +6,8 @@ import type { SanitizedBetterAuthOptions } from "@/better-auth/plugin/types";
  * invited admin role to newly created users — for both email sign-ups and
  * social/OAuth sign-ups.
  *
- * Email sign-up: token is read from ctx.query / ctx.body.
+ * Email sign-up: token is read from the `x-admin-invite-token` request header
+ * (preferred), or falls back to ctx.query / ctx.body / ctx.body.additionalData.
  * OAuth callback: token is read from the OAuth state (passed via additionalData).
  */
 export const useAdminInviteAfterSignUpMiddleware = async ({
@@ -32,10 +33,14 @@ export const useAdminInviteAfterSignUpMiddleware = async ({
       return;
     }
 
-    // Extract the invite token from the appropriate source
+    // Extract the invite token from the appropriate source.
+    // Headers are the most reliable transport for server-side API calls because
+    // BA's endpoint body schemas strip unknown fields and query params require
+    // the endpoint to declare a query schema.
     let adminInviteToken: string | undefined;
     if (isEmailSignUp) {
       adminInviteToken =
+        ctx.headers?.get("x-admin-invite-token") ??
         ctx?.query?.adminInviteToken ??
         ctx.body?.adminInviteToken ??
         ctx.body?.additionalData?.adminInviteToken;
@@ -67,8 +72,6 @@ export const useAdminInviteAfterSignUpMiddleware = async ({
     }
 
     // Immediately consume (delete) the token to prevent reuse.
-    // Delete by ID for precision — if a concurrent request already deleted it,
-    // this is a no-op.
     await adapter.delete({
       model: adminInvitationCollectionSlug,
       where: [
@@ -90,8 +93,6 @@ export const useAdminInviteAfterSignUpMiddleware = async ({
         userId = newlyCreatedUser?.user?.id;
       }
     } else if (isOAuthCallback) {
-      // During the OAuth callback, the session has already been created
-      // and is available on the context
       const session = (ctx.context as any).newSession ?? (ctx.context as any).session;
       userId = session?.user?.id;
     }
@@ -114,7 +115,6 @@ export const useAdminInviteAfterSignUpMiddleware = async ({
         role: adminInvitation.role
       }
     });
-
     if (typeof originalAfter === "function") await originalAfter(ctx);
   });
 };

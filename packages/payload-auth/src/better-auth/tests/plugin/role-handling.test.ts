@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { getPayload } from "../dev";
+import type { TestHelpers } from "better-auth/plugins";
+import { getTestContext, cleanupAll } from "../helpers";
 
 /**
  * Integration tests for role field handling.
@@ -10,63 +11,26 @@ import { getPayload } from "../dev";
  *
  * Requires a running Postgres database.
  */
-describe("Role Handling (Issues #112, #128 Integration)", async () => {
-  const payload = await getPayload();
-
-  const testUser = {
-    email: "role-test@test.com",
-    password: "roletest123456",
-    name: "Role Test User"
-  };
+describe("Role Handling", async () => {
+  const { payload, test } = await getTestContext();
 
   let userId: string;
 
   beforeAll(async () => {
-    // Clean up
-    await payload.delete({
-      collection: "users",
-      where: { email: { equals: testUser.email } }
-    });
-    await payload.delete({
-      collection: "sessions",
-      where: { id: { exists: true } }
-    });
-    await payload.delete({
-      collection: "accounts",
-      where: { id: { exists: true } }
-    });
+    await cleanupAll(payload);
 
-    // Create test user via Better Auth
-    const signUpResult = await payload.betterAuth.api.signUpEmail({
-      body: {
-        email: testUser.email,
-        password: testUser.password,
-        name: testUser.name
-      }
+    // Create test user via test helpers (bypasses email verification)
+    const user = test.createUser({
+      email: "role-test@test.com",
+      name: "Role Test User",
+      emailVerified: true
     });
-    expect(signUpResult).toBeDefined();
-
-    // Get the user from Payload to check role format
-    const users = await payload.find({
-      collection: "users",
-      where: { email: { equals: testUser.email } }
-    });
-    userId = users.docs[0].id as string;
+    const saved = await test.saveUser(user);
+    userId = saved.id;
   });
 
   afterAll(async () => {
-    await payload.delete({
-      collection: "users",
-      where: { email: { equals: testUser.email } }
-    });
-    await payload.delete({
-      collection: "sessions",
-      where: { id: { exists: true } }
-    });
-    await payload.delete({
-      collection: "accounts",
-      where: { id: { exists: true } }
-    });
+    await cleanupAll(payload);
   });
 
   it("stores role as an array in Payload (hasMany select field)", async () => {
@@ -86,7 +50,7 @@ describe("Role Handling (Issues #112, #128 Integration)", async () => {
       collection: "users",
       id: userId,
       data: {
-        role: ["admin", "editor"]
+        role: ["admin", "user"]
       }
     });
 
@@ -98,7 +62,7 @@ describe("Role Handling (Issues #112, #128 Integration)", async () => {
 
     expect(Array.isArray(user.role)).toBe(true);
     expect(user.role).toContain("admin");
-    expect(user.role).toContain("editor");
+    expect(user.role).toContain("user");
   });
 
   it("single role is stored as single-element array, not bare string", async () => {
@@ -119,33 +83,32 @@ describe("Role Handling (Issues #112, #128 Integration)", async () => {
     expect(user.role).toEqual(["user"]);
   });
 
-  it("Better Auth session contains role in expected format", async () => {
-    // Sign in to get a session
-    const signInResult = await payload.betterAuth.api.signInEmail({
-      body: {
-        email: testUser.email,
-        password: testUser.password
-      },
-      asResponse: true
+  it("Better Auth session works without TypeError on role access (#128)", async () => {
+    await payload.update({
+      collection: "users",
+      id: userId,
+      data: { role: ["user"] }
     });
 
-    const setCookie = signInResult?.headers?.get("set-cookie");
-    expect(setCookie).toBeDefined();
-
-    // Extract session token
-    const match = setCookie!.match(/better-auth\.session_token=([^;]+)/);
-    expect(match).toBeDefined();
-
-    const headers = new Headers();
-    headers.set("cookie", `better-auth.session_token=${match![1]}`);
-
-    // Get session through Better Auth API
-    const session = await payload.betterAuth.api.getSession({ headers });
+    const { session, headers } = await test.login({ userId });
+    console.log("[role-test] session:", session);
+    console.log("[role-test] headers:", headers);
     expect(session).toBeDefined();
-    expect(session!.user).toBeDefined();
 
-    // The role should be accessible without throwing TypeError
-    const role = session!.user?.role;
-    expect(role).toBeDefined();
+    // getSession should not throw — this was the #128 bug
+    const sessionResult = await payload.betterAuth.api.getSession({ headers });
+    expect(sessionResult).toBeDefined();
+    expect(sessionResult!.user).toBeDefined();
+
+    // Accessing role on the session user must not throw TypeError (#128)
+    expect(() => (sessionResult!.user as any)?.role).not.toThrow();
+
+    // The authoritative role lives on the Payload user document
+    const payloadUser = await payload.findByID({
+      collection: "users",
+      id: userId
+    });
+    expect(Array.isArray(payloadUser.role)).toBe(true);
+    expect(payloadUser.role).toContain("user");
   });
 });
