@@ -5,7 +5,6 @@ import { usernameClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import type { LoginWithUsernameOptions } from "payload";
 import React, { useState } from "react";
-import { adminEndpoints } from "@/better-auth/plugin/constants";
 import {
   AlternativeMethods,
   LoginFormProvider
@@ -232,8 +231,7 @@ export function AdminSignupClient({
 }: AdminSignupClientProps) {
   const {
     config: {
-      routes: { admin: adminRoute, api: apiRoute },
-      serverURL
+      routes: { admin: adminRoute }
     }
   } = useConfig();
   const [requireEmailVerification, setRequireEmailVerification] =
@@ -242,7 +240,6 @@ export function AdminSignupClient({
     searchParams?.redirect as string,
     adminRoute
   );
-  const setAdminRoleCallbackURL = `${serverURL}${apiRoute}/${userSlug}${adminEndpoints.setAdminRole}?token=${adminInviteToken}&redirect=${redirectUrl}`;
 
   return (
     <>
@@ -267,7 +264,6 @@ export function AdminSignupClient({
           loginIdentifiers={loginIdentifiers}
           plugins={plugins}
           adminInviteToken={adminInviteToken}
-          newUserCallbackURL={setAdminRoleCallbackURL}
         >
           <AlternativeMethods />
         </LoginFormProvider>

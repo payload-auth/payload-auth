@@ -25,4 +25,9 @@ export function configureSsoPlugin(
       baModelFieldKeys.ssoProvider.userId
     )
   );
+  set(
+    plugin,
+    `schema.${model}.fields.userId.references.model`,
+    getSchemaCollectionSlug(resolvedSchemas, baModelKey.user)
+  );
 }

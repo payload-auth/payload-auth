@@ -33,7 +33,7 @@ export function buildDeviceCodeCollection({
       index: true,
       admin: {
         readOnly: true,
-        description: "The user that is a member of the team."
+        description: "The user that initiated the device authorization flow."
       }
     })
   };
@@ -53,7 +53,7 @@ export function buildDeviceCodeCollection({
         baModelKey.deviceCode,
         "deviceCode"
       ),
-      description: "Device codes of an organization team.",
+      description: "Device authorization codes for the OAuth 2.0 device flow.",
       group: pluginOptions?.collectionAdminGroup ?? "Auth",
       ...existingDeviceCodeCollection?.admin
     },
@@ -70,6 +70,15 @@ export function buildDeviceCodeCollection({
       ...(collectionFields ?? [])
     ]
   };
+
+  if (
+    typeof pluginOptions.pluginCollectionOverrides?.deviceCode === "function"
+  ) {
+    deviceCodeCollection =
+      pluginOptions.pluginCollectionOverrides.deviceCode({
+        collection: deviceCodeCollection
+      });
+  }
 
   assertAllSchemaFields(deviceCodeCollection, deviceCodeSchema);
 

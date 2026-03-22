@@ -90,6 +90,7 @@ export function buildSubscriptionsCollection({
     ...existingSubscriptionCollection,
     slug: subscriptionsSlug,
     admin: {
+      hidden: pluginOptions.hidePluginCollections ?? false,
       useAsTitle: getSchemaFieldName(
         resolvedSchemas,
         baModelKey.subscription,

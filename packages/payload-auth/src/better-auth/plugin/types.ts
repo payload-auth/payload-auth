@@ -1,14 +1,15 @@
-import { BASE_ERROR_CODES } from "@better-auth/core/error";
+import type { BASE_ERROR_CODES } from "@better-auth/core/error";
 import type { AuthContext } from "better-auth";
-import { router } from "better-auth/api";
+import type { router } from "better-auth/api";
 import type { DBFieldAttribute } from "better-auth/db";
 import type {
   BetterAuthOptions as BetterAuthOptionsType,
   BetterAuthPlugin as BetterAuthPluginType,
   InferAPI,
+  InferPluginContext,
   InferPluginTypes,
-  InferSession,
-  InferUser
+  Session,
+  User
 } from "better-auth/types";
 import type {
   BasePayload,
@@ -19,8 +20,8 @@ import type {
   Payload,
   PayloadRequest
 } from "payload";
-import { ModelKey } from "../generated-types";
-import {
+import type { ModelKey } from "../generated-types";
+import type {
   adminRoutes,
   baPluginSlugs,
   defaults,
@@ -30,43 +31,11 @@ import {
 /**
  * BetterAuth options with the following caveats:
  * - The `database` option is removed as it is configured internally
- * - The `user` `modelName` and `fields` is removed as it is configured internally
- * - The `account` `modelName` and `fields` is removed as it is configured internally
- * - The `session` `modelName` and `fields` is removed as it is configured internally
- * - The `verification` `modelName` and `fields` is removed as it is configured internally
  *
  * @see https://www.better-auth.com/docs/reference/options
  */
 export interface BetterAuthOptions
-  extends Omit<
-    BetterAuthOptionsType,
-    "database" | "user" | "account" | "verification" | "session" | "advanced"
-  > {
-  user?:
-    | Omit<NonNullable<BetterAuthOptionsType["user"]>, "modelName" | "fields">
-    | undefined;
-  account?:
-    | Omit<
-        NonNullable<BetterAuthOptionsType["account"]>,
-        "modelName" | "fields"
-      >
-    | undefined;
-  session?:
-    | Omit<
-        NonNullable<BetterAuthOptionsType["session"]>,
-        "modelName" | "fields"
-      >
-    | undefined;
-  verification?:
-    | Omit<
-        NonNullable<BetterAuthOptionsType["verification"]>,
-        "modelName" | "fields"
-      >
-    | undefined;
-  advanced?:
-    | Omit<NonNullable<BetterAuthOptionsType["advanced"]>, "generateId">
-    | undefined;
-}
+  extends Omit<BetterAuthOptionsType, "database"> {}
 
 export interface SanitizedBetterAuthOptions
   extends Omit<BetterAuthOptionsType, "database"> {}
@@ -88,24 +57,7 @@ export interface PayloadAuthOptions {
    */
   disabled?: boolean;
   /**
-   * Disable the default payload auth
-   *
-   * This will ensure that better-auth handles both admin and frontend auth
-   *
-   * Admin will make use of custom admin routes for auth and give you more control
-   *
-   * Note: This will override the option passed in the users collection config
-   *
-   * Read about this more in the docs
-   * @see https://www.payloadauth.com/docs/better-auth#disable-default-payload-auth
-   *
-   * @default false
-   */
-  disableDefaultPayloadAuth?: boolean;
-  /**
-   * Custom admin components when disableDefaultPayloadAuth is true
-   *
-   * These components will be used to render the login, create first admin, and other auth-related views
+   * Custom admin components for Better Auth login, signup, and other auth-related views
    */
   admin?: {
     /**
@@ -131,7 +83,7 @@ export interface PayloadAuthOptions {
     logTables?: boolean;
   };
   /**
-   * Hide the better-authplugin collections from the payload admin UI
+   * Hide the better-auth plugin collections from the payload admin UI
    * @default false
    */
   hidePluginCollections?: boolean;
@@ -159,10 +111,6 @@ export interface PayloadAuthOptions {
   /**
    * BetterAuth options with the following caveats:
    * - The `database` option is removed as it is configured internally
-   * - The `user` `modelName` and `fields` is removed as it is configured internally
-   * - The `account` `modelName` and `fields` is removed as it is configured internally
-   * - The `session` `modelName` and `fields` is removed as it is configured internally
-   * - The `verification` `modelName` and `fields` is removed as it is configured internally
    *
    * @see https://www.better-auth.com/docs/reference/options
    */
@@ -262,13 +210,6 @@ export interface PayloadAuthOptions {
     collectionOverrides?: (options: {
       collection: CollectionConfig;
     }) => CollectionConfig;
-    /**
-     * This will block the first on sign up verification email from better-auth.
-     * If you are using Payload's userCollection.verify option, you will want to set this to true.
-     * Function that will be blocked: options.emailVerificationsendVerificationEmail
-     * @default false
-     */
-    blockFirstBetterAuthVerificationEmail?: boolean;
   };
   /**
    * Configure the Accounts collections:
@@ -444,23 +385,11 @@ export type EndpointWithBetterAuth<O extends PayloadAuthOptions> = Omit<
     req: PayloadRequestWithBetterAuth<O>
   ) => Promise<Response> | Response;
 };
-
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
   k: infer I
 ) => void
   ? I
   : never;
-type PrettifyDeep<T> = {
-  [K in keyof T]: T[K] extends (...args: any[]) => any
-    ? T[K]
-    : T[K] extends object
-      ? T[K] extends Array<any>
-        ? T[K]
-        : T[K] extends Date
-          ? T[K]
-          : PrettifyDeep<T[K]>
-      : T[K];
-} & {};
 
 type InferPluginErrorCodes<O extends BetterAuthOptions> =
   O["plugins"] extends Array<infer P>
@@ -468,13 +397,9 @@ type InferPluginErrorCodes<O extends BetterAuthOptions> =
         P extends BetterAuthPluginType
           ? P["$ERROR_CODES"] extends Record<string, any>
             ? P["$ERROR_CODES"]
-            : never
-          : never
-      > extends infer R
-      ? [R] extends [never]
-        ? {}
-        : R
-      : {}
+            : {}
+          : {}
+      >
     : {};
 
 export type RoleArray<
@@ -491,7 +416,6 @@ type ExtractRoles<O> = O extends { users?: { roles?: infer R } }
     ? R
     : readonly []
   : readonly [typeof defaults.userRole];
-type BaseErrorCodes = typeof BASE_ERROR_CODES;
 
 export type BetterAuthReturn<
   O extends PayloadAuthOptions = PayloadAuthOptions
@@ -499,17 +423,18 @@ export type BetterAuthReturn<
   handler: (request: Request) => Promise<Response>;
   api: InferAPI<ReturnType<typeof router<ExtractBA<O>>>>["endpoints"];
   options: ExtractBA<O>;
-  $ERROR_CODES: InferPluginErrorCodes<ExtractBA<O>> & BaseErrorCodes;
-  $context: Promise<AuthContext>;
+  $ERROR_CODES: InferPluginErrorCodes<ExtractBA<O>> & typeof BASE_ERROR_CODES;
+  $context: Promise<AuthContext<ExtractBA<O>>> &
+    InferPluginContext<ExtractBA<O>>;
   $Infer: InferPluginTypes<ExtractBA<O>> extends {
     Session: any;
   }
     ? InferPluginTypes<ExtractBA<O>>
     : {
         Session: {
-          session: PrettifyDeep<InferSession<ExtractBA<O>>>;
+          session: Session<ExtractBA<O>["session"], ExtractBA<O>["plugins"]>;
           user: OverrideRole<
-            PrettifyDeep<InferUser<ExtractBA<O>>>,
+            User<ExtractBA<O>["user"], ExtractBA<O>["plugins"]>,
             ExtractRoles<O>
           >;
         };
@@ -540,8 +465,6 @@ export interface BuildCollectionProps {
 
 export type FieldOverrides<K extends string = string> = {
   [Key in K]?: (field: DBFieldAttribute) => Partial<Field>;
-} & {
-  [key: string]: (field: DBFieldAttribute) => Partial<Field>;
 };
 
 export type FieldWithIds = {

@@ -8,6 +8,7 @@ import { adminRoutes } from "@/better-auth/plugin/constants";
 import type { PayloadAuthOptions } from "@/better-auth/plugin/types";
 import { FormHeader } from "@/shared/form/ui/header";
 import { PasswordResetForm } from "./client";
+import { resolveBaseURL } from "../../utils/resolve-base-url";
 
 const resetPasswordParamsSchema = z.object({
   token: z.string()
@@ -26,6 +27,7 @@ function ResetPassword({
 }: ResetPasswordProps) {
   const {
     req: {
+      headers,
       user,
       t,
       payload: {
@@ -82,7 +84,10 @@ function ResetPassword({
       <FormHeader heading={t("authentication:resetPassword")} />
       <PasswordResetForm
         token={token}
-        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        baseURL={resolveBaseURL(
+          pluginOptions.betterAuthOptions?.baseURL,
+          headers
+        )}
         basePath={pluginOptions.betterAuthOptions?.basePath}
       />
       <Link

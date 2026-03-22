@@ -31,7 +31,10 @@ export function buildJwksCollection({
       admin: { description: "The public part of the web key" }
     }),
     privateKey: () => ({
-      admin: { description: "The private part of the web key" }
+      admin: {
+        hidden: true,
+        description: "The private part of the web key"
+      }
     })
   };
 

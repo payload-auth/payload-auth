@@ -47,10 +47,10 @@ export function buildApiKeysCollection({
     key: () => ({
       admin: { readOnly: true, description: "The hashed API key itself." }
     }),
-    userId: () => ({
+    referenceId: () => ({
       admin: {
         readOnly: true,
-        description: "The user associated with the API key."
+        description: "The user or organization associated with the API key."
       }
     }),
     refillInterval: () => ({
@@ -134,7 +134,8 @@ export function buildApiKeysCollection({
 
   const apiKeyFieldRules: FieldRule[] = [
     {
-      condition: (field) => field.type === "date",
+      condition: (field) =>
+        field.fieldName === "createdAt" || field.fieldName === "updatedAt",
       transform: (field) => ({
         ...field,
         saveToJWT: false,
@@ -143,7 +144,10 @@ export function buildApiKeysCollection({
           hidden: true
         },
         index: true,
-        label: ({ t }: any) => t("general:updatedAt")
+        label: ({ t }: any) =>
+          field.fieldName === "createdAt"
+            ? t("general:createdAt")
+            : t("general:updatedAt")
       })
     }
   ];

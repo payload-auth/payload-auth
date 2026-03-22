@@ -8,6 +8,7 @@ import { adminRoutes } from "@/better-auth/plugin/constants";
 import type { PayloadAuthOptions } from "@/better-auth/plugin/types";
 import { FormHeader } from "@/shared/form/ui/header";
 import { ForgotPasswordForm } from "./client";
+import { resolveBaseURL } from "../../utils/resolve-base-url";
 
 interface ForgotPasswordProps extends AdminViewServerProps {
   pluginOptions: PayloadAuthOptions;
@@ -19,6 +20,7 @@ function ForgotPassword({
 }: ForgotPasswordProps) {
   const {
     req: {
+      headers,
       payload: {
         config: {
           admin: {
@@ -67,7 +69,10 @@ function ForgotPassword({
   return (
     <MinimalTemplate>
       <ForgotPasswordForm
-        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        baseURL={resolveBaseURL(
+          pluginOptions.betterAuthOptions?.baseURL,
+          headers
+        )}
         basePath={pluginOptions.betterAuthOptions?.basePath}
       />
       <Link

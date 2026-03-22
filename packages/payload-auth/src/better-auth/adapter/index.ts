@@ -1,13 +1,14 @@
 import { DBAdapter } from "@better-auth/core/db/adapter";
 import type { BetterAuthOptions, Where } from "better-auth";
 import { BetterAuthError } from "better-auth";
+import type { BasePayload } from "payload";
 import { ModelKey } from "../generated-types";
 import { generateSchema } from "./generate-schema";
 import { createTransform } from "./transform";
 import type { PayloadAdapter } from "./types";
 
 export const BETTER_AUTH_CONTEXT_KEY = "payload-db-adapter";
-const PAYLOAD_QUERY_DEPTH = 1;
+const PAYLOAD_QUERY_DEPTH = 0;
 const CREATE_QUERY_DEPTH = 0;
 
 /** Better Auth join option type (not exported from better-auth yet) */
@@ -91,7 +92,11 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
    * @returns The resolved Payload client
    * @throws {BetterAuthError} When Better Auth plugin is not configured
    */
+  let cachedPayload: BasePayload | null = null;
+
   async function resolvePayloadClient() {
+    if (cachedPayload) return cachedPayload;
+
     const payload =
       typeof payloadClient === "function"
         ? await payloadClient()
@@ -101,6 +106,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         `Payload is not configured with the better-auth plugin. Please add the plugin to your payload config.`
       );
     }
+    cachedPayload = payload;
     return payload;
   }
 
@@ -169,7 +175,17 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
       async transaction<R>(
         callback: (tx: Omit<DBAdapter, "transaction">) => Promise<R>
       ): Promise<R> {
-        return await callback(this);
+        // Payload CMS manages transactions at the request level via
+        // initTransaction/commitTransaction/killTransaction on the req object.
+        // The adapter doesn't have access to a req object here, so we delegate
+        // to Payload's per-operation transaction handling and ensure errors
+        // propagate correctly so Better Auth can handle rollback semantics.
+        try {
+          return await callback(this);
+        } catch (error) {
+          errorLog(["Transaction callback failed:", error]);
+          throw error;
+        }
       },
       async create<T extends Record<string, any>, R = T>({
         model,
@@ -203,7 +219,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           const result = await payload.create({
             collection: collectionSlug,
             data: transformedInput,
-            select: convertSelect(model as ModelKey, select),
+            select: convertSelect(model as ModelKey, select, payload),
             context: createAdapterContext({ model, operation: "create" }),
             depth: CREATE_QUERY_DEPTH
           });
@@ -226,7 +242,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           return transformedResult as R;
         } catch (error) {
           errorLog(["Error in creating:", model, error]);
-          return null as R;
+          throw error;
         }
       },
       async findOne<R>({
@@ -266,7 +282,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             result = await payload.findByID({
               collection: collectionSlug,
               id: singleId,
-              select: convertSelect(model as ModelKey, select),
+              select: convertSelect(model as ModelKey, select, payload),
               ...(payloadJoins &&
                 Object.keys(payloadJoins).length > 0 && {
                   joins: payloadJoins
@@ -282,7 +298,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             const docs = await payload.find({
               collection: collectionSlug,
               where: payloadWhere,
-              select: convertSelect(model as ModelKey, select),
+              select: convertSelect(model as ModelKey, select, payload),
               ...(payloadJoins &&
                 Object.keys(payloadJoins).length > 0 && {
                   joins: payloadJoins
@@ -322,7 +338,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             return null;
           }
           errorLog(["Error in findOne: ", error]);
-          return null;
+          throw error;
         }
       },
       async findMany<R>({
@@ -385,16 +401,17 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             result = { docs: doc ? [doc] : [], totalDocs: doc ? 1 : 0 };
           } else {
             debugLog(["findManyByWhere", { collectionSlug, payloadWhere }]);
-            const spill = offset % limit;
-            const page = Math.floor(offset / limit) + 1;
-            const fetchLimit = spill ? limit + spill : limit;
+            // Fetch from page 1 with enough items to cover offset + limit,
+            // then slice the exact window. This avoids the misaligned
+            // page/limit math that broke when offset % limit != 0 (P1-3).
+            const fetchLimit = offset + limit;
 
             const res = await payload.find({
               collection: collectionSlug,
               where: payloadWhere,
               limit: fetchLimit,
-              page: page,
-              sort: convertSort(model as ModelKey, sortBy),
+              page: 1,
+              sort: convertSort(model as ModelKey, sortBy, payload),
               ...(payloadJoins &&
                 Object.keys(payloadJoins).length > 0 && {
                   joins: payloadJoins
@@ -406,7 +423,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               })
             });
             result = {
-              docs: res.docs.slice(spill, spill + limit),
+              docs: res.docs.slice(offset, offset + limit),
               totalDocs: res.totalDocs
             };
           }
@@ -439,7 +456,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             return [] as R[];
           }
           errorLog(["Error in findMany: ", error]);
-          return [] as R[];
+          throw error;
         }
       },
       async update<R>({
@@ -527,7 +544,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             return null;
           }
           errorLog(["Error in update: ", error]);
-          return null;
+          throw error;
         }
       },
       async updateMany({
@@ -590,7 +607,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             return 0;
           }
           errorLog(["Error in updateMany: ", error]);
-          return 0;
+          throw error;
         }
       },
       async delete({
@@ -663,6 +680,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             return;
           }
           errorLog(["Error in delete: ", error]);
+          throw error;
         }
       },
       async deleteMany({
@@ -715,7 +733,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             return 0;
           }
           errorLog(["Error in deleteMany: ", error]);
-          return 0;
+          throw error;
         }
       },
       async count({
@@ -745,7 +763,6 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           const result = await payload.count({
             collection: collectionSlug,
             where: payloadWhere,
-            depth: PAYLOAD_QUERY_DEPTH,
             context: createAdapterContext({ model, operation: "count" })
           });
 
@@ -768,7 +785,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             return 0;
           }
           errorLog(["Error in count: ", error]);
-          return 0;
+          throw error;
         }
       },
       createSchema: async (options, file) => {

@@ -8,6 +8,7 @@ import { Logo } from "@/shared/components/logo";
 import { FormHeader } from "@/shared/form/ui/header";
 import type { PayloadAuthOptions } from "../../../types";
 import { AdminSignupClient } from "./client";
+import { resolveBaseURL } from "../../utils/resolve-base-url";
 
 //  Avoid the need for custom styles
 const baseClass = "login";
@@ -120,7 +121,10 @@ async function AdminSignup({
               passkey: hasPasskeyPlugin,
               magicLink: hasMagicLinkPlugin
             }}
-            baseURL={pluginOptions.betterAuthOptions?.baseURL}
+            baseURL={resolveBaseURL(
+              pluginOptions.betterAuthOptions?.baseURL,
+              req.headers
+            )}
             basePath={pluginOptions.betterAuthOptions?.basePath}
           />
         )

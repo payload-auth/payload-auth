@@ -27,9 +27,14 @@ export function betterAuthStrategy(userSlug?: string): AuthStrategy {
         }
         const user = await payloadAuth.findByID({
           collection: userSlug ?? baseSlugs.users,
-          id: userId
+          id: userId,
+          depth: 0
         });
         if (!user) {
+          return { user: null };
+        }
+        // Reject banned or locked users even if their session is still valid
+        if (user.banned || user.locked) {
           return { user: null };
         }
         return {
@@ -40,6 +45,7 @@ export function betterAuthStrategy(userSlug?: string): AuthStrategy {
           }
         };
       } catch (error) {
+        console.error("[BetterAuth Strategy] Authentication error:", error);
         return { user: null };
       }
     }

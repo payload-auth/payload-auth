@@ -9,7 +9,7 @@ import type {
   PayloadAuthOptions,
   SanitizedBetterAuthOptions
 } from "@/better-auth/plugin/types";
-import type { CollectionConfig, Config, Payload } from "payload";
+import type { CollectionConfig } from "payload";
 import { checkPluginExists } from "../../helpers/check-plugin-exists";
 import { set } from "../../utils/set";
 import {
@@ -27,21 +27,17 @@ import { configureTwoFactorPlugin } from "./two-factor-plugin";
 import { adminAfterRoleMiddleware } from "./utils/admin-after-role-middleware";
 import { adminBeforeRoleMiddleware } from "./utils/admin-before-role-middleware";
 import { applySaveToJwtReturned } from "./utils/apply-save-to-jwt-returned";
-import { ensurePasswordSetBeforeUserCreate } from "./utils/ensure-password-set-before-create";
-import { hashPassword, verifyPassword } from "./utils/password";
 import { requireAdminInviteForSignUpMiddleware } from "./utils/require-admin-invite-for-sign-up-middleware";
-import { useAdminInviteAfterEmailSignUpMiddleware } from "./utils/use-admin-invite-after-email-sign-up-middleware";
+import { useAdminInviteAfterSignUpMiddleware } from "./utils/admin-invite-after-signup-middleware";
 
 /**
  * Sanitizes the BetterAuth options
  */
 export function sanitizeBetterAuthOptions({
-  config,
   pluginOptions,
   resolvedSchemas,
   collections
 }: {
-  config: Payload["config"] | Config | Promise<Payload["config"] | Config>;
   pluginOptions: PayloadAuthOptions;
   resolvedSchemas: BetterAuthSchemas;
   collections: CollectionConfig[];
@@ -97,18 +93,6 @@ export function sanitizeBetterAuthOptions({
     betterAuthOptions.emailAndPassword?.enabled ?? true
   );
 
-  // Configure password handling
-  if (
-    betterAuthOptions.emailAndPassword?.enabled &&
-    !pluginOptions.disableDefaultPayloadAuth
-  ) {
-    betterAuthOptions.emailAndPassword.password = {
-      ...(betterAuthOptions.emailAndPassword.password || {}),
-      verify: ({ hash, password }) => verifyPassword({ hash, password }),
-      hash: (password) => hashPassword(password)
-    };
-  }
-
   // Handle admin invite for sign up
   if (pluginOptions.requireAdminInviteForSignUp) {
     betterAuthOptions.socialProviders = betterAuthOptions.socialProviders || {};
@@ -126,7 +110,7 @@ export function sanitizeBetterAuthOptions({
     });
   }
 
-  useAdminInviteAfterEmailSignUpMiddleware({
+  useAdminInviteAfterSignUpMiddleware({
     options: betterAuthOptions,
     adminInvitationCollectionSlug,
     userCollectionSlug
@@ -147,63 +131,11 @@ export function sanitizeBetterAuthOptions({
     modelKey: baModelKey.session
   });
 
-  // Handle verification email blocking
-  if (
-    pluginOptions.users?.blockFirstBetterAuthVerificationEmail &&
-    !pluginOptions.disableDefaultPayloadAuth
-  ) {
-    const originalSendEmail =
-      betterAuthOptions?.emailVerification?.sendVerificationEmail;
-    if (typeof originalSendEmail === "function") {
-      betterAuthOptions.emailVerification =
-        betterAuthOptions.emailVerification || {};
-      betterAuthOptions.emailVerification.sendVerificationEmail = async (
-        data,
-        request
-      ) => {
-        try {
-          const timeSinceCreation =
-            new Date().getTime() - new Date(data.user.createdAt).getTime();
-          // Skip if user was created less than a minute ago (rely on Payload's email)
-          if (timeSinceCreation >= 60000) {
-            await originalSendEmail(data, request);
-          }
-        } catch (error) {
-          console.error("Error sending verification email:", error);
-        }
-      };
-    }
-  }
-
-  // Ensure password is set before user creation
-  if (!pluginOptions.disableDefaultPayloadAuth) {
-    ensurePasswordSetBeforeUserCreate(betterAuthOptions);
-  }
-
-  // Process plugins
+  // Process plugins — configure supported ones, pass through unsupported ones
   if (betterAuthOptions.plugins?.length) {
     try {
-      // Filter to only supported plugins
-      const supportedPlugins = betterAuthOptions.plugins.filter((plugin) =>
-        Object.values(supportedBAPluginIds).includes(plugin.id as any)
-      );
-
-      // Log warning for unsupported plugins
-      if (supportedPlugins.length !== betterAuthOptions.plugins.length) {
-        const unsupportedIds = betterAuthOptions.plugins
-          .filter(
-            (p) => !Object.values(supportedBAPluginIds).includes(p.id as any)
-          )
-          .map((p) => p.id)
-          .join(", ");
-
-        console.warn(
-          `Unsupported BetterAuth plugins: ${unsupportedIds}. Supported: ${Object.values(supportedBAPluginIds).join(", ")}`
-        );
-      }
-
       // Configure plugins by type
-      const pluginConfigurators = {
+      const pluginConfigurators: Record<string, (p: any) => void> = {
         [supportedBAPluginIds.admin]: (p: any) =>
           configureAdminPlugin(p, pluginOptions, resolvedSchemas),
         [supportedBAPluginIds.apiKey]: (p: any) =>
@@ -222,13 +154,12 @@ export function sanitizeBetterAuthOptions({
           configureDeviceAuthorizationPlugin(p, resolvedSchemas)
       };
 
-      supportedPlugins.forEach((plugin) => {
-        const configurator =
-          pluginConfigurators[plugin.id as keyof typeof pluginConfigurators];
+      betterAuthOptions.plugins.forEach((plugin) => {
+        const configurator = pluginConfigurators[plugin.id];
         if (configurator) configurator(plugin as any);
       });
 
-      betterAuthOptions.plugins = supportedPlugins;
+      // All plugins are kept — unsupported ones pass through unconfigured
     } catch (error) {
       throw new Error(`Error sanitizing BetterAuth plugins: ${error}`);
     }

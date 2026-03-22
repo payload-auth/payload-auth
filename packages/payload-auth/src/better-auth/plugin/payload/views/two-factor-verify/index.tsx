@@ -11,6 +11,7 @@ import { PayloadAuthOptions } from "@/better-auth/plugin/types";
 import { valueOrDefaultString } from "@/shared/utils/value-or-default";
 import { getSafeRedirect } from "../../utils/get-safe-redirect";
 import { TwoFactorVerifyForm } from "./client";
+import { resolveBaseURL } from "../../utils/resolve-base-url";
 
 interface TwoFactorVerifyProps extends AdminViewServerProps {
   pluginOptions: PayloadAuthOptions;
@@ -74,7 +75,10 @@ async function TwoFactorVerify({
       <TwoFactorVerifyForm
         redirect={redirectUrl}
         twoFactorDigits={twoFactorOptions?.totpOptions?.digits}
-        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        baseURL={resolveBaseURL(
+          pluginOptions.betterAuthOptions?.baseURL,
+          req.headers
+        )}
         basePath={pluginOptions.betterAuthOptions?.basePath}
       />
     </MinimalTemplate>

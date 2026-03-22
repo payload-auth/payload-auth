@@ -30,7 +30,10 @@ export const requireAdminInviteForSignUpMiddleware = async ({
     )
       return;
     const adminInviteToken =
-      ctx?.query?.adminInviteToken ?? ctx.body.adminInviteToken;
+      ctx.headers?.get("x-admin-invite-token") ??
+      ctx?.query?.adminInviteToken ??
+      ctx.body?.adminInviteToken ??
+      ctx.body?.additionalData?.adminInviteToken;
     if (
       !!pluginOptions.requireAdminInviteForSignUp &&
       !z.string().uuid().safeParse(adminInviteToken).success

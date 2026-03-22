@@ -29,17 +29,9 @@ import { betterAuthStrategy } from "./better-auth-strategy";
 import {
   getGenerateInviteUrlEndpoint,
   getRefreshTokenEndpoint,
-  getSendInviteUrlEndpoint,
-  getSetAdminRoleEndpoint
+  getSendInviteUrlEndpoint
 } from "./endpoints";
-import {
-  getAfterLoginHook,
-  getAfterLogoutHook,
-  getBeforeDeleteHook,
-  getBeforeLoginHook,
-  getOnVerifiedChangeHook,
-  getSyncAccountHook
-} from "./hooks";
+import { getAfterLogoutHook, getBeforeDeleteHook } from "./hooks";
 
 export function buildUsersCollection({
   incomingCollections,
@@ -282,7 +274,6 @@ export function buildUsersCollection({
         ? existingUserCollection.endpoints
         : []),
       getRefreshTokenEndpoint(userSlug),
-      getSetAdminRoleEndpoint(pluginOptions, userSlug),
       getGenerateInviteUrlEndpoint({
         roles: allRoleOptions,
         pluginOptions
@@ -290,30 +281,9 @@ export function buildUsersCollection({
       getSendInviteUrlEndpoint(pluginOptions)
     ],
     hooks: {
-      beforeChange: [
-        ...(existingUserCollection?.hooks?.beforeChange ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth
-          ? []
-          : [getOnVerifiedChangeHook()])
-      ],
-      afterChange: [
-        ...(existingUserCollection?.hooks?.afterChange ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth
-          ? []
-          : [getSyncAccountHook()])
-      ],
-      beforeLogin: [
-        ...(existingUserCollection?.hooks?.beforeLogin ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth
-          ? []
-          : [getBeforeLoginHook(pluginOptions.betterAuthOptions ?? {})])
-      ],
-      afterLogin: [
-        ...(existingUserCollection?.hooks?.afterLogin ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth
-          ? []
-          : [getAfterLoginHook()])
-      ],
+      beforeChange: [...(existingUserCollection?.hooks?.beforeChange ?? [])],
+      afterChange: [...(existingUserCollection?.hooks?.afterChange ?? [])],
+
       afterLogout: [
         ...(existingUserCollection?.hooks?.afterLogout ?? []),
         getAfterLogoutHook()
@@ -328,9 +298,7 @@ export function buildUsersCollection({
       typeof existingUserCollection.auth === "object"
         ? existingUserCollection.auth
         : {}),
-      disableLocalStrategy: pluginOptions.disableDefaultPayloadAuth
-        ? true
-        : undefined,
+      disableLocalStrategy: true,
       ...(hasUsernamePlugin && {
         loginWithUsername: {
           allowEmailLogin: true,

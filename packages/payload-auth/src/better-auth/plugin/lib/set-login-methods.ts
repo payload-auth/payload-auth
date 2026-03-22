@@ -10,10 +10,7 @@ export function setLoginMethods({
   const betterAuthOptions = pluginOptions.betterAuthOptions ?? {};
   if (pluginOptions?.admin?.loginMethods) return pluginOptions; // If user defined, exit early
   const loginMethods = Object.keys(betterAuthOptions?.socialProviders ?? {});
-  if (
-    !!betterAuthOptions?.emailAndPassword ||
-    betterAuthOptions?.emailAndPassword?.enabled
-  )
+  if (betterAuthOptions?.emailAndPassword?.enabled)
     loginMethods.push("emailPassword");
   if (checkPluginExists(betterAuthOptions, supportedBAPluginIds.passkey))
     loginMethods.push("passkey");

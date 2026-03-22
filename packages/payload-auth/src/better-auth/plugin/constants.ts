@@ -93,7 +93,8 @@ export const baPluginSlugs = {
   teams: "teams",
   teamMembers: "teamMembers",
   scim: "scimProvider",
-  rateLimit: "rateLimit"
+  rateLimit: "rateLimit",
+  deviceCode: "deviceCode"
 } as const;
 
 export const baModelKey = {
@@ -144,9 +145,7 @@ export const baModelFieldKeysToFieldNames = {
   team: {
     organizationId: "organization"
   },
-  apikey: {
-    userId: "user"
-  },
+  apikey: {},
   twoFactor: {
     userId: "user"
   },
@@ -199,9 +198,7 @@ export const baModelFieldKeys = {
   team: {
     organizationId: "organizationId"
   },
-  apikey: {
-    userId: "userId"
-  },
+  apikey: {},
   twoFactor: {
     userId: "userId"
   },
@@ -255,7 +252,6 @@ export const adminRoutes = {
 } as const;
 
 export const adminEndpoints = {
-  setAdminRole: "/set-admin-role",
   refreshToken: "/refresh-token",
   sendInvite: "/send-invite",
   generateInviteUrl: "/generate-invite-url",

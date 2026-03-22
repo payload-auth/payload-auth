@@ -93,19 +93,20 @@ export type BaseVerificationFields = {
 export type Verification = BaseVerificationFields
 
 export type BaseRateLimitFields = {
-  key?: string
-  count?: number
-  lastRequest?: number
+  key: string
+  count: number
+  lastRequest: number
 }
 
 export type RateLimit = BaseRateLimitFields
 
 export type ApikeyFields = {
+  configId: string
   name?: string
   start?: string
+  referenceId: string
   prefix?: string
   key: string
-  userId: string
   refillInterval?: number
   refillAmount?: number
   lastRefillAt?: Date
@@ -141,7 +142,7 @@ export type PasskeyFields = {
 export type Passkey = PasskeyFields
 
 export type OauthApplicationPluginFields = {
-  "oidc": {
+  "oidc-provider": {
     name?: string
     icon?: string
     metadata?: string
@@ -169,10 +170,10 @@ export type OauthApplicationPluginFields = {
   }
 }
 
-export type OauthApplication = OauthApplicationPluginFields["oidc"] & OauthApplicationPluginFields["mcp"]
+export type OauthApplication = OauthApplicationPluginFields["oidc-provider"] & OauthApplicationPluginFields["mcp"]
 
 export type OauthAccessTokenPluginFields = {
-  "oidc": {
+  "oidc-provider": {
     accessToken?: string
     refreshToken?: string
     accessTokenExpiresAt?: Date
@@ -196,10 +197,10 @@ export type OauthAccessTokenPluginFields = {
   }
 }
 
-export type OauthAccessToken = OauthAccessTokenPluginFields["oidc"] & OauthAccessTokenPluginFields["mcp"]
+export type OauthAccessToken = OauthAccessTokenPluginFields["oidc-provider"] & OauthAccessTokenPluginFields["mcp"]
 
 export type OauthConsentPluginFields = {
-  "oidc": {
+  "oidc-provider": {
     clientId?: string
     userId?: string
     scopes?: string
@@ -217,7 +218,7 @@ export type OauthConsentPluginFields = {
   }
 }
 
-export type OauthConsent = OauthConsentPluginFields["oidc"] & OauthConsentPluginFields["mcp"]
+export type OauthConsent = OauthConsentPluginFields["oidc-provider"] & OauthConsentPluginFields["mcp"]
 
 export type SsoProviderFields = {
   issuer: string
@@ -344,11 +345,13 @@ export type SubscriptionFields = {
   canceledAt?: Date
   endedAt?: Date
   seats?: number
+  billingInterval?: string
+  stripeScheduleId?: string
 }
 
 export type Subscription = SubscriptionFields
 
-export type PluginId = "username" | "admin" | "api-key" | "passkey" | "harmony-email" | "harmony-phone-number" | "bearer" | "email-otp" | "magic-link" | "phone-number" | "one-tap" | "anonymous" | "multi-session" | "one-time-token" | "oidc" | "sso" | "generic-oauth" | "open-api" | "organization" | "jwt" | "two-factor" | "next-cookies" | "custom-session" | "scim" | "mcp" | "device-authorization" | "last-login-method" | "stripe"
+export type PluginId = "username" | "admin" | "api-key" | "passkey" | "harmony-email" | "harmony-phone-number" | "bearer" | "email-otp" | "magic-link" | "phone-number" | "one-tap" | "anonymous" | "multi-session" | "one-time-token" | "oidc-provider" | "sso" | "generic-oauth" | "open-api" | "organization" | "jwt" | "two-factor" | "next-cookies" | "custom-session" | "scim" | "mcp" | "device-authorization" | "last-login-method" | "stripe"
 
 export type BetterAuthFullSchema = {
   "user": User

@@ -60,6 +60,39 @@ export const createTransform = (
   }
 
   /**
+   * Resolves a model identifier to its BA schema model key.
+   *
+   * Accepts either a BA model key ("user") or a Payload collection slug ("users"/"members")
+   * and returns the canonical BA model key used to index the schema.
+   *
+   * This enables adapter functions (transformInput, transformOutput, convertWhereClause)
+   * to work correctly regardless of whether callers pass a BA model key or a Payload slug.
+   */
+  const modelKeyCache = new Map<string, ModelKey>();
+
+  function resolveModelKey(model: string): ModelKey {
+    const cached = modelKeyCache.get(model);
+    if (cached) return cached;
+
+    // Direct match — already a BA model key
+    if (schema?.[model]) {
+      modelKeyCache.set(model, model as ModelKey);
+      return model as ModelKey;
+    }
+
+    // Reverse lookup — find the BA model key whose modelName matches this Payload slug
+    for (const [key, value] of Object.entries(schema)) {
+      if (value.modelName === model) {
+        modelKeyCache.set(model, key as ModelKey);
+        return key as ModelKey;
+      }
+    }
+
+    // No match found — return as-is (custom collections not in the BA schema)
+    return model as ModelKey;
+  }
+
+  /**
    * Checks if a field in the Payload collection is a relationship or upload field.
    *
    * @param payload - The Payload client instance
@@ -67,6 +100,8 @@ export const createTransform = (
    * @param fieldName - The name of the field to check
    * @returns True if the field is a relationship or upload field, false otherwise
    */
+  const flattenedFieldsCache = new Map<string, ReturnType<typeof flattenAllFields>>();
+
   function isPayloadRelationship(
     payload: BasePayload,
     collectionSlug: string,
@@ -75,7 +110,11 @@ export const createTransform = (
     const collection = payload.collections[collectionSlug];
     if (!collection) return false;
 
-    const fields = flattenAllFields({ fields: collection.config.fields });
+    let fields = flattenedFieldsCache.get(collectionSlug);
+    if (!fields) {
+      fields = flattenAllFields({ fields: collection.config.fields });
+      flattenedFieldsCache.set(collectionSlug, fields);
+    }
     const field = fields.find((f) => f.name === fieldName);
 
     return field?.type === "relationship" || field?.type === "upload";
@@ -252,7 +291,7 @@ export const createTransform = (
 
     if (["id", "_id"].includes(key)) {
       if (typeof value === "string" && idType === "number") {
-        const parsed = parseInt(value, 10);
+        const parsed = Number(value);
         if (!isNaN(parsed)) {
           debugLog([
             `ID conversion: ${key} converting string ID to number`,
@@ -275,7 +314,7 @@ export const createTransform = (
     if (isRelatedField) {
       // Handle single ID value conversion
       if (typeof value === "string" && idType === "number") {
-        const parsed = parseInt(value, 10);
+        const parsed = Number(value);
         if (!isNaN(parsed)) {
           debugLog([
             `ID conversion: ${key} converting string ID to number`,
@@ -299,7 +338,7 @@ export const createTransform = (
           if (id === null || id === undefined) return id;
 
           if (idType === "number" && typeof id === "string") {
-            const parsed = parseInt(id, 10);
+            const parsed = Number(id);
             return !isNaN(parsed) ? parsed : id;
           } else if (idType === "text" && typeof id === "number") {
             return String(id);
@@ -309,9 +348,17 @@ export const createTransform = (
       }
     }
 
-    // Handle role fields (Coming from better auth, will be a single string seperated by commas if theres multiple roles)
+    // Handle role fields (Coming from better auth, will be a single string separated by commas if there are multiple roles)
     if (key === "role" || key === "roles") {
-      return value.split(",").map((role: string) => role.trim().toLowerCase());
+      if (Array.isArray(value)) {
+        return value.map((role: string) =>
+          typeof role === "string" ? role.trim().toLowerCase() : role
+        );
+      }
+      if (typeof value === "string") {
+        return value.split(",").map((role: string) => role.trim().toLowerCase());
+      }
+      return value;
     }
 
     // Return original value if no conversion was needed or applicable
@@ -333,7 +380,7 @@ export const createTransform = (
    */
   function transformInput({
     data,
-    model,
+    model: rawModel,
     idType,
     payload
   }: {
@@ -342,13 +389,14 @@ export const createTransform = (
     idType: "number" | "text";
     payload: BasePayload;
   }): Record<string, any> {
+    const model = resolveModelKey(rawModel);
     const transformedData: Record<string, any> = {};
     const schemaFields = schema?.[model]?.fields ?? {};
 
     // Process each field in the input data
     Object.entries(data).forEach(([key, value]) => {
-      // Skip null/undefined values
-      if (value === null || value === undefined) {
+      // Skip undefined values (but allow null through to clear fields)
+      if (value === undefined) {
         return;
       }
 
@@ -443,7 +491,7 @@ export const createTransform = (
    */
   function transformOutput<T extends Record<string, any> | null>({
     doc,
-    model,
+    model: rawModel,
     payload
   }: {
     doc: T;
@@ -452,6 +500,7 @@ export const createTransform = (
   }): T {
     if (!doc || typeof doc !== "object") return doc;
 
+    const model = resolveModelKey(rawModel);
     const result = { ...doc };
     const schemaFields = schema?.[model]?.fields ?? {};
 
@@ -495,7 +544,12 @@ export const createTransform = (
         result[targetFieldKey] = String(value);
         return;
       }
-
+	    
+      // Convert role array to comma separated string
+      if ((targetFieldKey === "role" || targetFieldKey === "roles") && Array.isArray(value)) {
+				result[targetFieldKey] = value.join(",")
+			}
+      
       // Flatten join results from { docs: [...] } to plain arrays
       if (isJoinResult(value)) {
         debugLog([
@@ -506,24 +560,54 @@ export const createTransform = (
         return;
       }
 
-      // Handle relationship fields with renamed fieldNames
+      // Handle relationship fields (both renamed and non-renamed)
       const originalRelatedFieldKey = Object.keys(relationshipFields).find(
-        (k) => relationshipFields[k].fieldName === key
+        (k) => {
+          const mappedName = relationshipFields[k].fieldName || k;
+          return mappedName === key;
+        }
       );
       if (originalRelatedFieldKey) {
         normalizeDocumentIds(result, originalRelatedFieldKey, key, value);
         return;
       }
 
-      const originalDateFieldKey = Object.keys(dateFields).find(
-        (k) => dateFields[k].fieldName === key
-      );
+      // Handle date fields (both renamed and non-renamed)
+      const originalDateFieldKey = Object.keys(dateFields).find((k) => {
+        const mappedName = dateFields[k].fieldName || k;
+        return mappedName === key;
+      });
       if (originalDateFieldKey) {
         // Convert ISO date strings to Date objects for BetterAuth
         result[targetFieldKey] = new Date(value);
         return;
       }
     });
+
+    // Strip Payload-internal fields that aren't part of the schema.
+    // Payload injects fields like `collection` and internal metadata
+    // that callers don't expect. We allow both BA schema fields AND
+    // Payload collection fields — this ensures plugin-added fields
+    // (e.g. role/token/url on admin-invitations) survive even when
+    // the BA schema doesn't declare them.
+    if (Object.keys(schemaFields).length > 0) {
+      const collectionSlug = getCollectionSlug(model);
+      let payloadFieldNames = flattenedFieldsCache.get(collectionSlug);
+      if (!payloadFieldNames) {
+        const collection = payload.collections[collectionSlug];
+        if (collection) {
+          payloadFieldNames = flattenAllFields({ fields: collection.config.fields });
+          flattenedFieldsCache.set(collectionSlug, payloadFieldNames);
+        }
+      }
+      const payloadNames = new Set(payloadFieldNames?.map((f) => f.name) ?? []);
+      const allowedKeys = new Set(["id", "_id", ...Object.keys(schemaFields), ...payloadNames]);
+      for (const key of Object.keys(result)) {
+        if (!allowedKeys.has(key)) {
+          delete result[key];
+        }
+      }
+    }
 
     return result as T;
   }
@@ -655,60 +739,78 @@ export const createTransform = (
   /**
    * Converts a where clause value to the appropriate type based on field name and ID type configuration
    *
-   * This function handles two main scenarios:
+   * This function handles three main scenarios:
    * 1. ID field conversion - ensures IDs match the database's expected type (number or string)
-   * 2. Object with embedded ID - extracts and converts the ID property from objects
+   * 2. Relationship field conversion - ensures foreign key values match the expected ID type
+   * 3. Object with embedded ID - extracts and converts the ID property from objects
    *
    * @param value - The value to convert (can be primitive, object with ID, or array)
    * @param fieldName - The name of the field being queried
+   * @param model - The model/collection name for schema lookups
    * @param idType - The expected ID type in the database
    * @returns The converted value appropriate for the database query
    */
   function convertWhereValue({
     value,
     fieldName,
+    originalFieldKey,
+    model,
     idType
   }: {
     value: any;
     fieldName: string;
+    originalFieldKey?: string;
+    model: ModelKey;
     idType: "number" | "text";
-  }) {
-    // Check if field is an ID field (supporting both MongoDB-style _id and standard id)
-    if (["id", "_id"].includes(fieldName)) {
-      // Case 1: Value is an object containing an ID property
-      if (typeof value === "object" && value !== null && "id" in value) {
-        // Extract ID from object
-        const id = value.id;
+  }): any {
+    const schemaFields = schema?.[model]?.fields ?? {};
+    const lookupKey = originalFieldKey ?? fieldName;
+    const needsIdConversion =
+      ["id", "_id"].includes(fieldName) ||
+      isRelationshipField(lookupKey, schemaFields);
 
-        // Use type conversion based on database configuration
-        if (idType === "number" && typeof id === "string") {
-          const numId = Number(id);
-          return !isNaN(numId) ? numId : id;
-        }
-
-        if (idType === "text" && typeof id === "number") {
-          return String(id);
-        }
-
-        return id;
-      }
-      // Case 2: Value is a standalone ID that needs type conversion
-      // Convert string ID to number if database expects numeric IDs
-      if (
-        idType === "number" &&
-        typeof value === "string" &&
-        !isNaN(Number(value))
-      ) {
-        return Number(value);
-      }
-      // Convert numeric ID to string if database expects text IDs
-      else if (idType === "text" && typeof value === "number") {
-        return String(value);
-      }
+    if (!needsIdConversion) {
       return value;
     }
 
-    // For non-ID fields, return the value unchanged
+    // Case 0: Value is an array (e.g. for the `in` operator) — convert each element
+    if (Array.isArray(value)) {
+      return value.map((v) =>
+        convertWhereValue({
+          value: v,
+          fieldName,
+          originalFieldKey,
+          model,
+          idType
+        })
+      );
+    }
+
+    // Case 1: Value is an object containing an ID property
+    if (typeof value === "object" && value !== null && "id" in value) {
+      const id = value.id;
+      if (idType === "number" && typeof id === "string") {
+        const numId = Number(id);
+        return !isNaN(numId) ? numId : id;
+      }
+      if (idType === "text" && typeof id === "number") {
+        return String(id);
+      }
+      return id;
+    }
+
+    // Case 2: Value is a standalone ID that needs type conversion
+    if (
+      idType === "number" &&
+      typeof value === "string" &&
+      !isNaN(Number(value))
+    ) {
+      return Number(value);
+    }
+    if (idType === "text" && typeof value === "number") {
+      return String(value);
+    }
+
     return value;
   }
 
@@ -730,7 +832,7 @@ export const createTransform = (
    */
   function convertWhereClause({
     idType,
-    model,
+    model: rawModel,
     where,
     payload
   }: {
@@ -739,6 +841,7 @@ export const createTransform = (
     where?: Where[];
     payload: BasePayload;
   }): PayloadWhere {
+    const model = resolveModelKey(rawModel);
     // Handle empty where clause
     if (!where) return {};
 
@@ -761,6 +864,8 @@ export const createTransform = (
       const value = convertWhereValue({
         value: w.value,
         fieldName,
+        originalFieldKey: w.field,
+        model,
         idType
       });
 
@@ -786,6 +891,8 @@ export const createTransform = (
       const value = convertWhereValue({
         value: w.value,
         fieldName,
+        originalFieldKey: w.field,
+        model,
         idType
       });
       return {
@@ -802,6 +909,8 @@ export const createTransform = (
       const value = convertWhereValue({
         value: w.value,
         fieldName,
+        originalFieldKey: w.field,
+        model,
         idType
       });
       return {
@@ -837,16 +946,27 @@ export const createTransform = (
    * // Input: ['email', 'name']
    * // Output: { email: true, name: true }
    */
-  function convertSelect(model: ModelKey, select?: string[]) {
+  function convertSelect(
+    rawModel: ModelKey,
+    select?: string[],
+    payload?: BasePayload
+  ) {
+    const model = resolveModelKey(rawModel);
     // Return undefined if select is empty or not provided
     if (!select || select.length === 0) return undefined;
 
     // Transform the array of field names into a Payload select object
-    // while also mapping any field names that might be different in Payload
-    return select.reduce(
-      (acc, field) => ({ ...acc, [getFieldName(model, field)]: true }),
-      {}
-    );
+    // applying both schema-level and collection-level field name mapping
+    return select.reduce((acc, field) => {
+      const schemaFieldName = getFieldName(model, field);
+      const fieldName = payload
+        ? getCollectionFieldNameByFieldKeyUntyped(
+            getCollectionByModelKey(payload.collections, model),
+            schemaFieldName
+          )
+        : schemaFieldName;
+      return { ...acc, [fieldName]: true };
+    }, {});
   }
 
   /**
@@ -868,11 +988,20 @@ export const createTransform = (
    * // Output: 'createdAt'
    */
   function convertSort(
-    model: ModelKey,
-    sortBy?: { field: string; direction: "asc" | "desc" }
+    rawModel: ModelKey,
+    sortBy?: { field: string; direction: "asc" | "desc" },
+    payload?: BasePayload
   ): string | undefined {
+    const model = resolveModelKey(rawModel);
     if (!sortBy) return undefined;
-    const fieldName = getFieldName(model, sortBy.field);
+    const schemaFieldName = getFieldName(model, sortBy.field);
+    // Apply collection-level field name mapping if payload is available
+    const fieldName = payload
+      ? getCollectionFieldNameByFieldKeyUntyped(
+          getCollectionByModelKey(payload.collections, model),
+          schemaFieldName
+        )
+      : schemaFieldName;
     const prefix = sortBy.direction === "desc" ? "-" : "";
     return `${prefix}${fieldName}`;
   }

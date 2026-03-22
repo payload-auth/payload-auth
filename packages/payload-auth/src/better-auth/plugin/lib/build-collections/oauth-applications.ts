@@ -45,7 +45,7 @@ export function buildOauthApplicationsCollection({
       index: true,
       admin: { description: "Name of the OAuth application" }
     }),
-    redirectURLs: () => ({
+    redirectUrls: () => ({
       admin: { description: "Comma-separated list of redirect URLs" }
     }),
     metadata: () => ({
@@ -77,7 +77,8 @@ export function buildOauthApplicationsCollection({
 
   const oauthApplicationFieldRules: FieldRule[] = [
     {
-      condition: (field) => field.type === "date",
+      condition: (field) =>
+        field.fieldName === "createdAt" || field.fieldName === "updatedAt",
       transform: (field) => ({
         ...field,
         saveToJWT: false,
@@ -86,7 +87,10 @@ export function buildOauthApplicationsCollection({
           hidden: true
         },
         index: true,
-        label: ({ t }: any) => t("general:updatedAt")
+        label: ({ t }: any) =>
+          field.fieldName === "createdAt"
+            ? t("general:createdAt")
+            : t("general:updatedAt")
       })
     }
   ];

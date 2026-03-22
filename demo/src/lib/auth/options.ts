@@ -1,9 +1,11 @@
-import type { BetterAuthOptions, PayloadAuthOptions } from 'payload-auth/better-auth'
-import { emailHarmony, phoneHarmony } from 'better-auth-harmony'
+import type {
+  BetterAuthOptions,
+  PayloadAuthOptions
+} from "payload-auth/better-auth";
+import { emailHarmony, phoneHarmony } from "better-auth-harmony";
 import {
   admin,
   anonymous,
-  apiKey,
   emailOTP,
   magicLink,
   multiSession,
@@ -12,52 +14,52 @@ import {
   phoneNumber,
   twoFactor,
   username
-} from 'better-auth/plugins'
-import { passkey } from '@better-auth/passkey'
-import { createAuthMiddleware } from 'better-auth/api'
-import { nextCookies } from 'better-auth/next-js'
-import type { BetterAuthPlugin as BetterAuthPluginType } from 'better-auth/types'
+} from "better-auth/plugins";
+import { passkey } from "@better-auth/passkey";
+import { createAuthMiddleware } from "better-auth/api";
+import { nextCookies } from "better-auth/next-js";
+import type { BetterAuthPlugin as BetterAuthPluginType } from "better-auth/types";
 
 export const betterAuthPlugins = [
   username(),
   emailHarmony(),
   phoneHarmony({
-    defaultCountry: 'CA'
+    defaultCountry: "CA"
   }),
   twoFactor({
-    issuer: 'payload-better-auth',
+    issuer: "payload-better-auth",
     otpOptions: {
       async sendOTP({ user, otp }) {
-        console.log('Send OTP for user: ', user, otp)
+        console.log("Send OTP for user: ", user, otp);
       }
     }
   }),
   anonymous({
-    emailDomainName: 'payload-better-auth.com',
+    emailDomainName: "payload-better-auth.com",
     onLinkAccount: async ({ anonymousUser, newUser }) => {
-      console.log('Link account for anonymous user: ', anonymousUser, newUser)
+      console.log("Link account for anonymous user: ", anonymousUser, newUser);
     },
     disableDeleteAnonymousUser: false
   }),
   phoneNumber({
     sendOTP: async ({ phoneNumber, code }, req) => {
-      console.log('Send OTP for user: ', phoneNumber, code)
+      console.log("Send OTP for user: ", phoneNumber, code);
     }
   }),
   magicLink({
     sendMagicLink: async ({ email, token, url }, request) => {
-      console.log('Send magic link for user: ', email, token, url)
+      console.log("Send magic link for user: ", email, token, url);
     }
   }),
   emailOTP({
     async sendVerificationOTP({ email, otp, type }) {
-      console.log('Send verification OTP for user: ', email, otp, type)
+      console.log("Send verification OTP for user: ", email, otp, type);
     }
   }),
   passkey({
-    rpID: 'localhost',
-    rpName: 'Localhost',
-    origin: 'http://localhost:3000'
+    rpID: "localhost",
+    rpName: "Localhost",
+    origin: "http://localhost:3000"
   }),
   admin(),
   apiKey(),
@@ -66,19 +68,19 @@ export const betterAuthPlugins = [
       enabled: true
     },
     async sendInvitationEmail(data) {
-      const inviteLink = `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/accept-invitation/${data.id}`
-      console.log('Send invite for org: ', data, inviteLink)
+      const inviteLink = `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/accept-invitation/${data.id}`;
+      console.log("Send invite for org: ", data, inviteLink);
     }
   }),
   multiSession(),
   openAPI(),
   nextCookies()
-] satisfies BetterAuthPluginType[]
+] satisfies BetterAuthPluginType[];
 
-export type BetterAuthPlugins = typeof betterAuthPlugins
+export type BetterAuthPlugins = typeof betterAuthPlugins;
 
 export const betterAuthOptions = {
-  appName: 'payload-better-auth',
+  appName: "payload-better-auth",
   baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
   trustedOrigins: [process.env.NEXT_PUBLIC_BETTER_AUTH_URL],
   emailAndPassword: {
@@ -86,7 +88,7 @@ export const betterAuthOptions = {
     requireEmailVerification: true,
     // autoSignIn: true,
     async sendResetPassword({ user, url }) {
-      console.log('Send reset password for user: ', user.id, 'at url', url)
+      console.log("Send reset password for user: ", user.id, "at url", url);
     }
   },
   socialProviders: {
@@ -99,7 +101,7 @@ export const betterAuthOptions = {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     async sendVerificationEmail({ user, url }) {
-      console.log('Send verification email for user: ', url)
+      console.log("Send verification email for user: ", url);
     }
   },
   plugins: betterAuthPlugins,
@@ -107,7 +109,13 @@ export const betterAuthOptions = {
     changeEmail: {
       enabled: true,
       sendChangeEmailVerification: async ({ user, newEmail, url, token }) => {
-        console.log('Send change email verification for user: ', user, newEmail, url, token)
+        console.log(
+          "Send change email verification for user: ",
+          user,
+          newEmail,
+          url,
+          token
+        );
       }
     },
     deleteUser: {
@@ -132,12 +140,12 @@ export const betterAuthOptions = {
   account: {
     accountLinking: {
       enabled: true,
-      trustedProviders: ['google', 'email-password']
+      trustedProviders: ["google", "email-password"]
     }
   }
-} satisfies BetterAuthOptions
+} satisfies BetterAuthOptions;
 
-export type ConstructedBetterAuthOptions = typeof betterAuthOptions
+export type ConstructedBetterAuthOptions = typeof betterAuthOptions;
 
 export const betterAuthPluginOptions = {
   disabled: false,
@@ -148,35 +156,34 @@ export const betterAuthPluginOptions = {
   // admin: {
   //   loginMethods: ['passkey']
   // },
-  disableDefaultPayloadAuth: true,
   hidePluginCollections: true,
   users: {
-    slug: 'users', // not required, this is the default anyways
+    slug: "users", // not required, this is the default anyways
     hidden: false,
-    adminRoles: ['admin'],
-    defaultRole: 'user',
-    defaultAdminRole: 'admin',
-    roles: ['user', 'admin', 'publisher'] as const,
-    allowedFields: ['name']
+    adminRoles: ["admin"],
+    defaultRole: "user",
+    defaultAdminRole: "admin",
+    roles: ["user", "admin", "publisher"] as const,
+    allowedFields: ["name"]
   },
   accounts: {
-    slug: 'accounts'
+    slug: "accounts"
   },
   sessions: {
-    slug: 'sessions'
+    slug: "sessions"
   },
   verifications: {
-    slug: 'verifications'
+    slug: "verifications"
   },
   adminInvitations: {
     sendInviteEmail: async ({ payload, email, url }) => {
-      console.log('Send admin invite: ', email, url)
+      console.log("Send admin invite: ", email, url);
       return {
         success: true
-      }
+      };
     }
   },
   betterAuthOptions: betterAuthOptions
-} satisfies PayloadAuthOptions
+} satisfies PayloadAuthOptions;
 
-export type ConstructedBetterAuthPluginOptions = typeof betterAuthPluginOptions
+export type ConstructedBetterAuthPluginOptions = typeof betterAuthPluginOptions;

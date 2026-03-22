@@ -1,7 +1,7 @@
 import type { Config, SanitizedConfig } from "payload";
 import { getDefaultBetterAuthSchema } from "./helpers/get-better-auth-schema";
 import { syncResolvedSchemaWithCollectionMap } from "./helpers/sync-resolved-schema-with-collection-map";
-import { applyDisabledDefaultAuthConfig } from "./lib/apply-disabled-default-auth-config";
+import { applyBetterAuthAdminConfig } from "./lib/apply-ba-admin-config";
 import { buildCollections } from "./lib/build-collections/index";
 import { initBetterAuth } from "./lib/init-better-auth";
 import { sanitizeBetterAuthOptions } from "./lib/sanitize-better-auth-options/index";
@@ -45,13 +45,10 @@ function buildBetterAuthData({
   });
 
   const sanitizedBetterAuthOptions = sanitizeBetterAuthOptions({
-    config: payloadConfig,
     pluginOptions,
     resolvedSchemas: resolvedBetterAuthSchemas,
     collections: Object.values(collectionMap)
   });
-
-  pluginOptions.betterAuthOptions = sanitizedBetterAuthOptions;
 
   return {
     pluginOptions,
@@ -82,14 +79,12 @@ export function betterAuthPlugin(pluginOptions: PayloadAuthOptions) {
     });
 
     // ---------------------- Finalize config -----------------
-    if (pluginOptions.disableDefaultPayloadAuth) {
-      applyDisabledDefaultAuthConfig({
-        config,
-        pluginOptions,
-        collectionMap,
-        resolvedBetterAuthSchemas
-      });
-    }
+    applyBetterAuthAdminConfig({
+      config,
+      pluginOptions,
+      collectionMap,
+      resolvedBetterAuthSchemas
+    });
 
     config.collections = config.collections ?? [];
     config.collections = Object.values(collectionMap);

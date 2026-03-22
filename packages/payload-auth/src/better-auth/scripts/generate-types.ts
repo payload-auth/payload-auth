@@ -1,15 +1,18 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { apiKey } from "@better-auth/api-key";
 import { passkey } from "@better-auth/passkey";
 import { scim } from "@better-auth/scim";
 import { sso } from "@better-auth/sso";
 import { stripe } from "@better-auth/stripe";
-import { emailHarmony, phoneHarmony } from "better-auth-harmony";
+import { betterAuth } from "better-auth";
 import type { DBFieldAttribute } from "better-auth/db";
 import { getSchema } from "better-auth/db";
 import { nextCookies } from "better-auth/next-js";
 import {
   admin,
   anonymous,
-  apiKey,
   bearer,
   customSession,
   deviceAuthorization,
@@ -32,14 +35,12 @@ import {
 import { createAccessControl } from "better-auth/plugins/access";
 import { defaultStatements as defaultAdminStatements } from "better-auth/plugins/admin/access";
 import { defaultStatements as defaultOrganizationStatements } from "better-auth/plugins/organization/access";
-import fs from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
+import { emailHarmony, phoneHarmony } from "better-auth-harmony";
 import Stripe from "stripe";
 import type { SanitizedBetterAuthOptions } from "../types";
 
 const ac = createAccessControl({
+  // fooKing: ["create", "update", "delete"]
   ...defaultOrganizationStatements,
   ...defaultAdminStatements
 });
@@ -111,7 +112,7 @@ const plugins = [
   // As of writing this, Polar don't create schema fields, but just in case in the future we leave this here.
 ];
 
-const betterAuthConfig: SanitizedBetterAuthOptions = {
+const betterAuthConfig = {
   emailAndPassword: { enabled: true },
   rateLimit: { enabled: true, storage: "database", max: 5, window: 10 },
   user: {
@@ -120,7 +121,7 @@ const betterAuthConfig: SanitizedBetterAuthOptions = {
     }
   },
   plugins
-};
+} satisfies SanitizedBetterAuthOptions;
 
 const baseSchema = getSchema({ ...betterAuthConfig, plugins: [] });
 

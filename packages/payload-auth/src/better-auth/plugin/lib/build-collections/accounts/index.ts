@@ -16,7 +16,7 @@ import {
   isAdminWithRoles
 } from "../utils/payload-access";
 import { getCollectionFields } from "../utils/transform-schema-fields-to-payload";
-import { getSyncPasswordToUserHook } from "./hooks/sync-password-to-user";
+
 
 export function buildAccountsCollection({
   incomingCollections,
@@ -36,7 +36,8 @@ export function buildAccountsCollection({
 
   const accountFieldRules: FieldRule[] = [
     {
-      condition: (field) => field.type === "date",
+      condition: (field) =>
+        field.fieldName === "createdAt" || field.fieldName === "updatedAt",
       transform: (field) => ({
         ...field,
         saveToJWT: false,
@@ -45,7 +46,10 @@ export function buildAccountsCollection({
           hidden: true
         },
         index: true,
-        label: "general:updatedAt"
+        label: ({ t }: any) =>
+          field.fieldName === "createdAt"
+            ? t("general:createdAt")
+            : t("general:updatedAt")
       })
     }
   ];
@@ -126,6 +130,7 @@ export function buildAccountsCollection({
   });
 
   let accountCollection: CollectionConfig = {
+    ...existingAccountCollection,
     slug: accountSlug,
     admin: {
       useAsTitle: "accountId",
@@ -146,8 +151,7 @@ export function buildAccountsCollection({
           "userId"
         )
       }),
-      update: isAdminWithRoles({ adminRoles }),
-      ...(existingAccountCollection?.access ?? {})
+      update: isAdminWithRoles({ adminRoles })
     },
     custom: {
       ...(existingAccountCollection?.custom ?? {}),
@@ -155,17 +159,13 @@ export function buildAccountsCollection({
     },
     hooks: {
       afterChange: [
-        ...(existingAccountCollection?.hooks?.afterChange ?? []),
-        ...(pluginOptions.disableDefaultPayloadAuth
-          ? []
-          : [getSyncPasswordToUserHook(resolvedSchemas)])
+        ...(existingAccountCollection?.hooks?.afterChange ?? [])
       ]
     },
     fields: [
       ...(existingAccountCollection?.fields ?? []),
       ...(collectionFields ?? [])
-    ],
-    ...existingAccountCollection
+    ]
   };
 
   if (typeof pluginOptions.accounts?.collectionOverrides === "function") {

@@ -2,6 +2,7 @@ import React from "react";
 import { PasskeysClient } from "./client";
 import "./index.scss";
 import type { PasskeysServerComponentProps, PasskeyWithId } from "./types";
+import { resolveBaseURL } from "../../utils/resolve-base-url";
 
 export async function Passkeys({ ...props }: PasskeysServerComponentProps) {
   const {
@@ -37,7 +38,10 @@ export async function Passkeys({ ...props }: PasskeysServerComponentProps) {
         currentUserId={user?.id}
         passkeySlug={passkeySlug}
         passkeyUserIdFieldName={passkeyUserIdFieldName}
-        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        baseURL={resolveBaseURL(
+          pluginOptions.betterAuthOptions?.baseURL,
+          req.headers
+        )}
         basePath={pluginOptions.betterAuthOptions?.basePath}
       />
     </div>
