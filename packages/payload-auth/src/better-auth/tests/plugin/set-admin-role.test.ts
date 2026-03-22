@@ -61,16 +61,16 @@ describe("Admin Invite Role Assignment (P0-3 / P0-4 Regression)", async () => {
       }
     });
 
-    // Sign up with the invite token
+    // Sign up with the invite token passed via header
     await payload.betterAuth.api.signUpEmail({
       body: {
         email: testEmail,
         password: testPassword,
         name: testName
       },
-      query: {
-        adminInviteToken: token
-      }
+      headers: new Headers({
+        "x-admin-invite-token": token
+      })
     });
 
     // Verify user was created with admin role
@@ -109,9 +109,9 @@ describe("Admin Invite Role Assignment (P0-3 / P0-4 Regression)", async () => {
         password: testPassword,
         name: testName
       },
-      query: {
-        adminInviteToken: crypto.randomUUID() // nonexistent token
-      }
+      headers: new Headers({
+        "x-admin-invite-token": crypto.randomUUID()
+      })
     });
 
     const users = await payload.find({
@@ -140,9 +140,9 @@ describe("Admin Invite Role Assignment (P0-3 / P0-4 Regression)", async () => {
         password: testPassword,
         name: testName
       },
-      query: {
-        adminInviteToken: token
-      }
+      headers: new Headers({
+        "x-admin-invite-token": token
+      })
     });
 
     // Verify the invitation was consumed (deleted from DB)
@@ -174,9 +174,9 @@ describe("Admin Invite Role Assignment (P0-3 / P0-4 Regression)", async () => {
         password: testPassword,
         name: testName
       },
-      query: {
-        adminInviteToken: token
-      }
+      headers: new Headers({
+        "x-admin-invite-token": token
+      })
     });
 
     // Token should be consumed regardless

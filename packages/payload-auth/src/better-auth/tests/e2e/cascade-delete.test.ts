@@ -74,13 +74,15 @@ describe("Cascade Delete on User Deletion", () => {
       email: "cascade-verify@test.com"
     });
 
-    // Create a verification record manually
+    // Create a verification record manually.
+    // The beforeDelete hook searches for value containing '"userId"' (JSON-quoted),
+    // so the value must include the userId to be cascade-deleted.
     try {
       await payload.create({
         collection: "verifications",
         data: {
           identifier: "cascade-verify@test.com",
-          value: "test-token",
+          value: JSON.stringify({ email: "cascade-verify@test.com", userId: user.id }),
           expiresAt: new Date(Date.now() + 3600000).toISOString()
         }
       });
@@ -94,7 +96,7 @@ describe("Cascade Delete on User Deletion", () => {
       id: user.id
     });
 
-    // Verifications for this identifier should be cleaned up
+    // Verifications containing this user's ID should be cleaned up
     const verificationsAfter = await payload.find({
       collection: "verifications",
       where: { identifier: { equals: "cascade-verify@test.com" } }

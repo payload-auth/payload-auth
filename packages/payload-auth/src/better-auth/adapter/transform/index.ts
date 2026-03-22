@@ -60,6 +60,39 @@ export const createTransform = (
   }
 
   /**
+   * Resolves a model identifier to its BA schema model key.
+   *
+   * Accepts either a BA model key ("user") or a Payload collection slug ("users"/"members")
+   * and returns the canonical BA model key used to index the schema.
+   *
+   * This enables adapter functions (transformInput, transformOutput, convertWhereClause)
+   * to work correctly regardless of whether callers pass a BA model key or a Payload slug.
+   */
+  const modelKeyCache = new Map<string, ModelKey>();
+
+  function resolveModelKey(model: string): ModelKey {
+    const cached = modelKeyCache.get(model);
+    if (cached) return cached;
+
+    // Direct match — already a BA model key
+    if (schema?.[model]) {
+      modelKeyCache.set(model, model as ModelKey);
+      return model as ModelKey;
+    }
+
+    // Reverse lookup — find the BA model key whose modelName matches this Payload slug
+    for (const [key, value] of Object.entries(schema)) {
+      if (value.modelName === model) {
+        modelKeyCache.set(model, key as ModelKey);
+        return key as ModelKey;
+      }
+    }
+
+    // No match found — return as-is (custom collections not in the BA schema)
+    return model as ModelKey;
+  }
+
+  /**
    * Checks if a field in the Payload collection is a relationship or upload field.
    *
    * @param payload - The Payload client instance
@@ -347,7 +380,7 @@ export const createTransform = (
    */
   function transformInput({
     data,
-    model,
+    model: rawModel,
     idType,
     payload
   }: {
@@ -356,6 +389,7 @@ export const createTransform = (
     idType: "number" | "text";
     payload: BasePayload;
   }): Record<string, any> {
+    const model = resolveModelKey(rawModel);
     const transformedData: Record<string, any> = {};
     const schemaFields = schema?.[model]?.fields ?? {};
 
@@ -457,7 +491,7 @@ export const createTransform = (
    */
   function transformOutput<T extends Record<string, any> | null>({
     doc,
-    model,
+    model: rawModel,
     payload
   }: {
     doc: T;
@@ -466,6 +500,7 @@ export const createTransform = (
   }): T {
     if (!doc || typeof doc !== "object") return doc;
 
+    const model = resolveModelKey(rawModel);
     const result = { ...doc };
     const schemaFields = schema?.[model]?.fields ?? {};
 
@@ -549,13 +584,28 @@ export const createTransform = (
       }
     });
 
-    // Strip Payload-internal fields that aren't part of the Better Auth schema.
-    // Payload injects fields like `collection` (on select queries) and internal
-    // metadata that Better Auth doesn't expect.
-    const allowedKeys = new Set(["id", "_id", ...Object.keys(schemaFields)]);
-    for (const key of Object.keys(result)) {
-      if (!allowedKeys.has(key)) {
-        delete result[key];
+    // Strip Payload-internal fields that aren't part of the schema.
+    // Payload injects fields like `collection` and internal metadata
+    // that callers don't expect. We allow both BA schema fields AND
+    // Payload collection fields — this ensures plugin-added fields
+    // (e.g. role/token/url on admin-invitations) survive even when
+    // the BA schema doesn't declare them.
+    if (Object.keys(schemaFields).length > 0) {
+      const collectionSlug = getCollectionSlug(model);
+      let payloadFieldNames = flattenedFieldsCache.get(collectionSlug);
+      if (!payloadFieldNames) {
+        const collection = payload.collections[collectionSlug];
+        if (collection) {
+          payloadFieldNames = flattenAllFields({ fields: collection.config.fields });
+          flattenedFieldsCache.set(collectionSlug, payloadFieldNames);
+        }
+      }
+      const payloadNames = new Set(payloadFieldNames?.map((f) => f.name) ?? []);
+      const allowedKeys = new Set(["id", "_id", ...Object.keys(schemaFields), ...payloadNames]);
+      for (const key of Object.keys(result)) {
+        if (!allowedKeys.has(key)) {
+          delete result[key];
+        }
       }
     }
 
@@ -703,21 +753,37 @@ export const createTransform = (
   function convertWhereValue({
     value,
     fieldName,
+    originalFieldKey,
     model,
     idType
   }: {
     value: any;
     fieldName: string;
+    originalFieldKey?: string;
     model: ModelKey;
     idType: "number" | "text";
-  }) {
+  }): any {
     const schemaFields = schema?.[model]?.fields ?? {};
+    const lookupKey = originalFieldKey ?? fieldName;
     const needsIdConversion =
       ["id", "_id"].includes(fieldName) ||
-      isRelationshipField(fieldName, schemaFields);
+      isRelationshipField(lookupKey, schemaFields);
 
     if (!needsIdConversion) {
       return value;
+    }
+
+    // Case 0: Value is an array (e.g. for the `in` operator) — convert each element
+    if (Array.isArray(value)) {
+      return value.map((v) =>
+        convertWhereValue({
+          value: v,
+          fieldName,
+          originalFieldKey,
+          model,
+          idType
+        })
+      );
     }
 
     // Case 1: Value is an object containing an ID property
@@ -766,7 +832,7 @@ export const createTransform = (
    */
   function convertWhereClause({
     idType,
-    model,
+    model: rawModel,
     where,
     payload
   }: {
@@ -775,6 +841,7 @@ export const createTransform = (
     where?: Where[];
     payload: BasePayload;
   }): PayloadWhere {
+    const model = resolveModelKey(rawModel);
     // Handle empty where clause
     if (!where) return {};
 
@@ -797,6 +864,7 @@ export const createTransform = (
       const value = convertWhereValue({
         value: w.value,
         fieldName,
+        originalFieldKey: w.field,
         model,
         idType
       });
@@ -823,6 +891,7 @@ export const createTransform = (
       const value = convertWhereValue({
         value: w.value,
         fieldName,
+        originalFieldKey: w.field,
         model,
         idType
       });
@@ -840,6 +909,7 @@ export const createTransform = (
       const value = convertWhereValue({
         value: w.value,
         fieldName,
+        originalFieldKey: w.field,
         model,
         idType
       });
@@ -877,10 +947,11 @@ export const createTransform = (
    * // Output: { email: true, name: true }
    */
   function convertSelect(
-    model: ModelKey,
+    rawModel: ModelKey,
     select?: string[],
     payload?: BasePayload
   ) {
+    const model = resolveModelKey(rawModel);
     // Return undefined if select is empty or not provided
     if (!select || select.length === 0) return undefined;
 
@@ -917,10 +988,11 @@ export const createTransform = (
    * // Output: 'createdAt'
    */
   function convertSort(
-    model: ModelKey,
+    rawModel: ModelKey,
     sortBy?: { field: string; direction: "asc" | "desc" },
     payload?: BasePayload
   ): string | undefined {
+    const model = resolveModelKey(rawModel);
     if (!sortBy) return undefined;
     const schemaFieldName = getFieldName(model, sortBy.field);
     // Apply collection-level field name mapping if payload is available

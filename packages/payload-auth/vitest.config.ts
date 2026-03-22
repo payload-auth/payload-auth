@@ -15,6 +15,7 @@ export default defineConfig({
     testTimeout: 30000,
     hookTimeout: 60000,
     pool: "forks",
+    fileParallelism: false,
     include: ["src/**/*.test.ts"],
     exclude: ["node_modules", "dist"]
   }
