@@ -1,7 +1,11 @@
 import { DBAdapter } from "@better-auth/core/db/adapter";
 import type { BetterAuthOptions, Where } from "better-auth";
 import { BetterAuthError } from "better-auth";
-import type { BasePayload } from "payload";
+import {
+  type BasePayload,
+  type CollectionSlug,
+  flattenAllFields
+} from "payload";
 import { ModelKey } from "../generated-types";
 import { generateSchema } from "./generate-schema";
 import { createTransform } from "./transform";
@@ -46,7 +50,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
    * @param message - The error message to log
    */
   function errorLog(message: any[]) {
-    console.error(`[payload-db-adapter]`, ...message);
+    console.error("[payload-db-adapter]", ...message);
   }
 
   /**
@@ -103,7 +107,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         : await payloadClient;
     if (!payload.config?.custom?.hasBetterAuthPlugin) {
       throw new BetterAuthError(
-        `Payload is not configured with the better-auth plugin. Please add the plugin to your payload config.`
+        "Payload is not configured with the better-auth plugin. Please add the plugin to your payload config."
       );
     }
     cachedPayload = payload;
@@ -168,6 +172,74 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
       });
 
       return Object.keys(joins).length ? joins : undefined;
+    }
+
+    /**
+     * Populates forward (many-to-one) relationship joins that Payload's native
+     * join fields can't handle. Payload join fields only support reverse
+     * (one-to-many) relationships. When Better Auth requests a forward join
+     * (e.g. `join: { user: true }` on an account query), we need to make a
+     * separate query to populate the related document.
+     */
+    async function populateForwardJoins(
+      doc: Record<string, any>,
+      model: string,
+      join: JoinOption,
+      payload: BasePayload,
+      collectionSlug: string
+    ) {
+      const joinFieldNames = getJoinFieldNames(payload, collectionSlug);
+      const collection = payload.collections[collectionSlug];
+      if (!collection) return;
+
+      const allFields = flattenAllFields({ fields: collection.config.fields });
+
+      for (const [joinModelKey, joinConfig] of Object.entries(join)) {
+        if (joinConfig === false) continue;
+
+        const joinSlug = getCollectionSlug(joinModelKey as ModelKey);
+
+        // Skip if already handled by a Payload join field (reverse relationship)
+        if (joinFieldNames.has(joinSlug)) continue;
+
+        // Find the forward relationship field pointing to the join collection
+        const relField = allFields.find((f) => {
+          if (f.type !== "relationship" && f.type !== "upload") return false;
+          if (!("relationTo" in f)) return false;
+          if (Array.isArray(f.relationTo))
+            return f.relationTo.includes(joinSlug);
+          return f.relationTo === joinSlug;
+        });
+        if (!relField) continue;
+
+        const relId = doc[relField.name];
+        if (!relId) continue;
+        // Already populated
+        if (typeof relId === "object" && relId !== null && "id" in relId)
+          continue;
+        // Only populate primitive IDs
+        if (typeof relId !== "string" && typeof relId !== "number") continue;
+
+        try {
+          const relDoc = await payload.findByID({
+            collection: joinSlug as CollectionSlug,
+            id: relId,
+            depth: 0,
+            context: createAdapterContext({
+              model: joinModelKey,
+              operation: "forwardJoin"
+            })
+          });
+          if (relDoc) {
+            doc[relField.name] = relDoc;
+          }
+        } catch (error) {
+          debugLog([
+            `forward join lookup failed for '${joinModelKey}' on ${collectionSlug}:`,
+            error
+          ]);
+        }
+      }
     }
 
     return {
@@ -313,6 +385,18 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             result = docs.docs[0];
           }
 
+          // Populate forward (many-to-one) relationship joins that Payload's
+          // native join fields can't handle (e.g. account → user).
+          if (result && join) {
+            await populateForwardJoins(
+              result,
+              model,
+              join,
+              payload,
+              collectionSlug
+            );
+          }
+
           const transformedResult = transformOutput<typeof result | null>({
             doc: result,
             model: model as ModelKey,
@@ -426,6 +510,20 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               docs: res.docs.slice(offset, offset + limit),
               totalDocs: res.totalDocs
             };
+          }
+
+          // Populate forward (many-to-one) relationship joins that Payload's
+          // native join fields can't handle (e.g. session → user).
+          if (join && result?.docs) {
+            for (const doc of result.docs) {
+              await populateForwardJoins(
+                doc,
+                model,
+                join,
+                payload,
+                collectionSlug
+              );
+            }
           }
 
           const transformedResult =
