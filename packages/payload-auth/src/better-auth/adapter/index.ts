@@ -130,14 +130,40 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
       singleIdQuery
     } = createTransform(options, adapterConfig.enableDebugLogs ?? false);
 
-    function getJoinFieldNames(payload: any, collectionSlug: string) {
+    /**
+     * Returns all join fields from a collection's flattenedFields.
+     * Each entry maps the join field's name to the collection it targets.
+     */
+    function getJoinFields(
+      payload: any,
+      collectionSlug: string
+    ): { name: string; collection: string }[] {
       const collection = payload.collections?.[collectionSlug]?.config;
-      if (!collection?.flattenedFields) return new Set<string>();
-      return new Set(
-        collection.flattenedFields
-          .filter((f: any) => f.type === "join")
-          .map((f: any) => f.name)
-      );
+      if (!collection?.flattenedFields) return [];
+      return collection.flattenedFields
+        .filter((f: any) => f.type === "join")
+        .map((f: any) => ({ name: f.name as string, collection: f.collection as string }));
+    }
+
+    /**
+     * Resolves a Better Auth model key to the corresponding Payload join field
+     * name on the given collection. Matches by the join field's target
+     * `collection` property rather than by name, avoiding singular/plural
+     * naming mismatches (e.g. model key "account" → join field "account"
+     * targeting collection "accounts").
+     *
+     * Returns the join field name if found, or null if there is no reverse
+     * join field for this model on the collection (indicating a forward join).
+     */
+    function resolveJoinFieldName(
+      payload: any,
+      collectionSlug: string,
+      modelKey: string
+    ): string | null {
+      const targetCollectionSlug = getCollectionSlug(modelKey as ModelKey);
+      const joinFields = getJoinFields(payload, collectionSlug);
+      const match = joinFields.find((f) => f.collection === targetCollectionSlug);
+      return match?.name ?? null;
     }
 
     function buildPayloadJoins(
@@ -146,18 +172,23 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
       collectionSlug: string
     ) {
       if (!join) return undefined;
-      const allowedJoinFields = getJoinFieldNames(payload, collectionSlug);
       const joins: Record<string, any> = {};
 
       Object.entries(join).forEach(([modelKey, config]) => {
         if (config === false) return;
 
-        // Translate Better Auth model key (e.g. 'account') to Payload join field name (e.g. 'accounts')
-        const joinFieldName = getCollectionSlug(modelKey as ModelKey);
+        // Look up the join field by its target collection, not by name.
+        // This correctly handles the singular/plural mismatch where the
+        // model key is "account" but the collection slug is "accounts".
+        const joinFieldName = resolveJoinFieldName(
+          payload,
+          collectionSlug,
+          modelKey
+        );
 
-        if (!allowedJoinFields.has(joinFieldName)) {
+        if (!joinFieldName) {
           debugLog([
-            `join skipped: no join field '${joinFieldName}' (from model '${modelKey}') on ${collectionSlug}`
+            `join skipped (reverse): no join field targeting '${getCollectionSlug(modelKey as ModelKey)}' on ${collectionSlug} — will attempt forward join`
           ]);
           return;
         }
@@ -188,7 +219,6 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
       payload: BasePayload,
       collectionSlug: string
     ) {
-      const joinFieldNames = getJoinFieldNames(payload, collectionSlug);
       const collection = payload.collections[collectionSlug];
       if (!collection) return;
 
@@ -197,10 +227,11 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
       for (const [joinModelKey, joinConfig] of Object.entries(join)) {
         if (joinConfig === false) continue;
 
-        const joinSlug = getCollectionSlug(joinModelKey as ModelKey);
+        // Skip if already handled by a Payload join field (reverse relationship).
+        // Use resolveJoinFieldName which matches by target collection, not name.
+        if (resolveJoinFieldName(payload, collectionSlug, joinModelKey)) continue;
 
-        // Skip if already handled by a Payload join field (reverse relationship)
-        if (joinFieldNames.has(joinSlug)) continue;
+        const joinSlug = getCollectionSlug(joinModelKey as ModelKey);
 
         // Find the forward relationship field pointing to the join collection
         const relField = allFields.find((f) => {
@@ -348,6 +379,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           const singleId = singleIdQuery(payloadWhere);
           let result: Record<string, any> | null = null;
           const payloadJoins = buildPayloadJoins(join, payload, collectionSlug);
+          const hasReverseJoins = payloadJoins && Object.keys(payloadJoins).length > 0;
 
           if (singleId) {
             debugLog(["findOneByID", { collectionSlug, id: singleId }]);
@@ -355,15 +387,13 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               collection: collectionSlug,
               id: singleId,
               select: convertSelect(model as ModelKey, select, payload),
-              ...(payloadJoins &&
-                Object.keys(payloadJoins).length > 0 && {
-                  joins: payloadJoins
-                }),
+              ...(hasReverseJoins && { joins: payloadJoins }),
               context: createAdapterContext({
                 model,
                 operation: "findOneByID"
               }),
-              depth: PAYLOAD_QUERY_DEPTH
+              // Reverse joins require depth >= 1 so Payload resolves them
+              depth: hasReverseJoins ? 1 : PAYLOAD_QUERY_DEPTH
             });
           } else {
             debugLog(["findOneByWhere", { collectionSlug, payloadWhere }]);
@@ -371,15 +401,12 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               collection: collectionSlug,
               where: payloadWhere,
               select: convertSelect(model as ModelKey, select, payload),
-              ...(payloadJoins &&
-                Object.keys(payloadJoins).length > 0 && {
-                  joins: payloadJoins
-                }),
+              ...(hasReverseJoins && { joins: payloadJoins }),
               context: createAdapterContext({
                 model,
                 operation: "findOneByWhere"
               }),
-              depth: PAYLOAD_QUERY_DEPTH,
+              depth: hasReverseJoins ? 1 : PAYLOAD_QUERY_DEPTH,
               limit: 1
             });
             result = docs.docs[0];
@@ -467,16 +494,14 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
 
           const singleId = singleIdQuery(payloadWhere);
           const payloadJoins = buildPayloadJoins(join, payload, collectionSlug);
+          const hasReverseJoins = payloadJoins && Object.keys(payloadJoins).length > 0;
           if (singleId) {
             debugLog(["findManyBySingleID", { collectionSlug, id: singleId }]);
             const doc = await payload.findByID({
               collection: collectionSlug,
               id: singleId,
-              ...(payloadJoins &&
-                Object.keys(payloadJoins).length > 0 && {
-                  joins: payloadJoins
-                }),
-              depth: PAYLOAD_QUERY_DEPTH,
+              ...(hasReverseJoins && { joins: payloadJoins }),
+              depth: hasReverseJoins ? 1 : PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({
                 model,
                 operation: "findManyBySingleID"
@@ -496,11 +521,8 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               limit: fetchLimit,
               page: 1,
               sort: convertSort(model as ModelKey, sortBy, payload),
-              ...(payloadJoins &&
-                Object.keys(payloadJoins).length > 0 && {
-                  joins: payloadJoins
-                }),
-              depth: PAYLOAD_QUERY_DEPTH,
+              ...(hasReverseJoins && { joins: payloadJoins }),
+              depth: hasReverseJoins ? 1 : PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({
                 model,
                 operation: "findManyByWhere"
