@@ -550,13 +550,34 @@ export const createTransform = (
 				result[targetFieldKey] = value.join(",")
 			}
       
-      // Flatten join results from { docs: [...] } to plain arrays
+      // Flatten join results from { docs: [...] } to plain arrays,
+      // then transform each nested document so relationship fields
+      // (e.g. member.userId) are normalized to string IDs for BetterAuth.
       if (isJoinResult(value)) {
         debugLog([
           "transformOutput: flattening join result",
           { key, targetFieldKey, isArray: Array.isArray(value.docs) }
         ]);
-        result[targetFieldKey] = flattenJoinResult(value);
+        const flatDocs = flattenJoinResult(value);
+
+        // Determine the BA model key for the joined collection.
+        // The join field on the parent collection points to a target collection;
+        // resolve that slug back to a BA model key so we can transform nested docs.
+        const parentCollectionSlug = getCollectionSlug(model);
+        const parentCollection = payload.collections[parentCollectionSlug];
+        if (parentCollection) {
+          const joinField = flattenAllFields({ fields: parentCollection.config.fields })
+            .find((f: any) => f.type === "join" && f.name === key);
+          if (joinField && "collection" in joinField) {
+            const joinedModelKey = resolveModelKey(joinField.collection as string);
+            result[targetFieldKey] = flatDocs.map((d: any) =>
+              transformOutput({ doc: d, model: joinedModelKey, payload })
+            );
+            return;
+          }
+        }
+
+        result[targetFieldKey] = flatDocs;
         return;
       }
 
