@@ -375,6 +375,31 @@ export const Icons: Record<string, ProviderIcon> = {
         />
       </svg>
     ),
+  vercel: ({ className, variant, ...props }) =>
+    variant === "color" ? (
+      <svg
+        className={className}
+        viewBox="0 0 1155 1000"
+        xmlns="http://www.w3.org/2000/svg"
+        {...props}
+      >
+        <title>{"Vercel"}</title>
+        <path d="M577.344 0L1154.69 1000H0L577.344 0Z" fill="#000" />
+      </svg>
+    ) : (
+      <svg
+        className={className}
+        viewBox="0 0 1155 1000"
+        xmlns="http://www.w3.org/2000/svg"
+        {...props}
+      >
+        <title>{"Vercel"}</title>
+        <path
+          d="M577.344 0L1154.69 1000H0L577.344 0Z"
+          fill="#fff"
+        />
+      </svg>
+    ),
   roblox: ({ className, ...props }) => (
     <svg
       className={className}
