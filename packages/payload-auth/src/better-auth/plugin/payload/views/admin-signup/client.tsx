@@ -120,6 +120,11 @@ function SignupForm({
         toast.error(error.message);
         return;
       }
+
+      if (data?.token) {
+        toast.success(t("general:success"));
+        window.location.href = redirectUrl;
+      }
     },
     validators: {
       onSubmit: signupSchema
