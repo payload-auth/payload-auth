@@ -28,7 +28,7 @@ export function betterAuthStrategy(userSlug?: string): AuthStrategy {
         const user = await payloadAuth.findByID({
           collection: userSlug ?? baseSlugs.users,
           id: userId,
-          depth: 0
+          depth: 1
         });
         if (!user) {
           return { user: null };
