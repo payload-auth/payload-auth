@@ -57,7 +57,7 @@ export function CredentialsForm() {
 
       const { login, password } = value;
       const isEmail = isValidEmail(login);
-      console.log(value);
+
       try {
         const { data, error } = await (loginType === "email" ||
         (loginType === "emailOrUsername" && isEmail)
