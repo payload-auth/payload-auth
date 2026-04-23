@@ -28,6 +28,21 @@ describe("setLoginMethods", () => {
     expect(result.admin?.loginMethods).toContain("google");
   });
 
+  it("detects vercel social provider", () => {
+    const pluginOptions: PayloadAuthOptions = {
+      betterAuthOptions: {
+        socialProviders: {
+          vercel: {
+            clientId: "test-id",
+            clientSecret: "test-secret"
+          }
+        }
+      }
+    };
+    const result = setLoginMethods({ pluginOptions });
+    expect(result.admin?.loginMethods).toContain("vercel");
+  });
+
   it("detects multiple social providers", () => {
     const pluginOptions: PayloadAuthOptions = {
       betterAuthOptions: {
