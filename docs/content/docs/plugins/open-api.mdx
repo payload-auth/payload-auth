@@ -1,0 +1,98 @@
+---
+title: Open API
+description: Generate an OpenAPI schema for your auth endpoints.
+---
+
+The Open API plugin adds a Scalar-powered API reference for your auth endpoints and exposes the generated OpenAPI schema.
+This is useful when you want to inspect available auth endpoints, test requests, generate clients, or combine auth documentation with the rest of your API docs.
+
+<Callout type="warn">
+  The plugin is still evolving, and the reference can expose details about your authentication surface. Review who can access it before enabling it in production.
+</Callout>
+
+## Installation
+
+<Steps>
+  <Step>
+    ### Add the plugin to your **auth** config
+
+    ```ts title="auth.ts"
+    import { betterAuth } from "better-auth"
+    import { openAPI } from "better-auth/plugins"
+
+    export const auth = betterAuth({
+      plugins: [
+        openAPI(),
+      ],
+    })
+    ```
+  </Step>
+</Steps>
+
+## Usage
+
+After adding the plugin, visit the reference page from your auth route:
+
+```txt
+/api/auth/reference
+```
+
+Each plugin's endpoints are grouped by plugin name. Core auth endpoints are grouped under `Default`, and generated model schemas are grouped under `Models`.
+
+To fetch the generated schema as JSON, use the schema endpoint:
+
+```txt
+/api/auth/open-api/generate-schema
+```
+
+You can also generate the schema from your server code:
+
+```ts title="open-api.ts"
+import { auth } from "@/lib/auth"
+
+const openAPISchema = await auth.api.generateOpenAPISchema()
+console.log(openAPISchema)
+```
+
+## Using Scalar with Multiple Sources
+
+If you already use Scalar for your application API, add the Better Auth schema as another source:
+
+```ts title="docs.ts"
+app.get("/docs", Scalar({
+  pageTitle: "API Documentation",
+  sources: [
+    { url: "/api/open-api", title: "API" },
+    { url: "/api/auth/open-api/generate-schema", title: "Auth" },
+  ],
+}))
+```
+
+## Production Access
+
+If your application exposes documentation publicly, consider protecting the schema endpoint behind your own routing or deployment rules. A common pattern is to enable the plugin in development and internal environments, then restrict or disable access in production.
+
+```ts title="auth.ts"
+import { betterAuth } from "better-auth"
+import { openAPI } from "better-auth/plugins"
+
+export const auth = betterAuth({
+  plugins: [
+    process.env.NODE_ENV !== "production" ? openAPI() : undefined,
+  ].filter(Boolean),
+})
+```
+
+## Options
+
+- `path`: Customize the path where the reference UI is served. The default is `/api/auth/reference`.
+- `disableDefaultReference`: Disable the built-in Scalar reference UI when you only want to serve the schema.
+- `theme`: Customize the Scalar reference theme.
+- `nonce`: Pass a CSP nonce for inline scripts used by the reference page.
+
+```ts title="auth.ts"
+openAPI({
+  path: "/reference",
+  theme: "default",
+})
+```
