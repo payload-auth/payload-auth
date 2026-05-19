@@ -105,7 +105,7 @@ export default function Features({ stars }: { stars: string | null }) {
                 </div>
                 <p className="mt-2 text-sm text-left text-muted-foreground">
                   {feature.description}
-                  <a className="ml-2 underline" href="/docs" target="_blank">
+                  <a className="ml-2 underline" href="/docs/introduction" target="_blank">
                     Learn more
                   </a>
                 </p>
