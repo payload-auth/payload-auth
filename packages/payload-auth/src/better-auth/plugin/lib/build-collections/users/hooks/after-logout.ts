@@ -70,6 +70,7 @@ async function deleteSessionFromDb(
     collection: slug,
     where: { token: { equals: token } },
     limit: 1,
+    pagination: false,
     req
   });
   const session = docs.at(0);
