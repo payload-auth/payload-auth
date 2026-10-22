@@ -53,6 +53,25 @@ describe("Admin Invite Token Expiry (NEW-2)", async () => {
   afterAll(cleanup);
   beforeEach(cleanup);
 
+  it("defaults expiresAt to 7 days out when it is omitted", async () => {
+    // The admin UI create view and the fresh-database admin-login view both
+    // create invitations without an expiresAt (the field is read-only).
+    const before = Date.now();
+    const invitation = await payload.create({
+      collection: "admin-invitations",
+      data: {
+        token: crypto.randomUUID(),
+        role: "admin"
+      }
+    });
+    const after = Date.now();
+
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    const expiresAt = new Date(invitation.expiresAt as string).getTime();
+    expect(expiresAt).toBeGreaterThanOrEqual(before + sevenDays);
+    expect(expiresAt).toBeLessThanOrEqual(after + sevenDays);
+  });
+
   it("does not assign the invited role when the token is expired", async () => {
     const token = crypto.randomUUID();
     await payload.create({

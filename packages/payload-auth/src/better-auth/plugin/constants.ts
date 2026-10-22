@@ -260,5 +260,6 @@ export const adminEndpoints = {
 
 export const defaults = {
   adminRole: "admin",
-  userRole: "user"
+  userRole: "user",
+  adminInviteExpiresInMs: 7 * 24 * 60 * 60 * 1000
 } as const;

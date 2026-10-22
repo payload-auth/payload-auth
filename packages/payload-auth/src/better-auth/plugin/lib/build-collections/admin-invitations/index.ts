@@ -82,6 +82,11 @@ export function buildAdminInvitationsCollection({
         label: "Expires At",
         type: "date",
         required: true,
+        // The field is read-only in the admin UI, so without a default an
+        // invitation created from the collection's create view (or any
+        // payload.create that omits it) can never pass validation.
+        defaultValue: () =>
+          new Date(Date.now() + defaults.adminInviteExpiresInMs).toISOString(),
         admin: {
           readOnly: true,
           description: "The invitation is invalid after this time."
