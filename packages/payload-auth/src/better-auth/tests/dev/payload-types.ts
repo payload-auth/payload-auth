@@ -473,6 +473,7 @@ export interface Team {
    * The name of the team.
    */
   name: string;
+  memberCount: number;
   /**
    * The organization that the team belongs to.
    */
@@ -519,6 +520,7 @@ export interface TeamMember {
    * The user that is a member of the team.
    */
   user: number | User;
+  membershipKey?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -916,6 +918,7 @@ export interface OrganizationRoleSelect<T extends boolean = true> {
  */
 export interface TeamsSelect<T extends boolean = true> {
   name?: T;
+  memberCount?: T;
   organization?: T;
   createdAt?: T;
   updatedAt?: T;
@@ -927,6 +930,7 @@ export interface TeamsSelect<T extends boolean = true> {
 export interface TeamMembersSelect<T extends boolean = true> {
   team?: T;
   user?: T;
+  membershipKey?: T;
   createdAt?: T;
   updatedAt?: T;
 }

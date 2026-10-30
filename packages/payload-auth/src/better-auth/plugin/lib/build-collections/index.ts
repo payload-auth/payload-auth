@@ -9,18 +9,18 @@ import type {
 import { buildAccountsCollection } from "./accounts/index";
 import { buildAdminInvitationsCollection } from "./admin-invitations";
 import { buildApiKeysCollection } from "./api-keys";
+import { buildDefaultCollection } from "./default";
 import { buildDeviceCodeCollection } from "./device-code";
 import { buildInvitationsCollection } from "./invitations";
 import { buildJwksCollection } from "./jwks";
 import { buildMembersCollection } from "./members";
 import { buildOauthAccessTokensCollection } from "./oauth-access-tokens";
-import { buildOauthApplicationsCollection } from "./oauth-applications";
+import { buildOauthClientsCollection } from "./oauth-clients";
 import { buildOauthConsentsCollection } from "./oauth-consents";
 import { buildOrganizationRolesCollection } from "./organization-roles";
 import { buildOrganizationsCollection } from "./organizations";
 import { buildPasskeysCollection } from "./passkeys";
 import { buildRateLimitCollection } from "./rate-limit";
-import { buildScimProviderCollection } from "./scim-provider";
 import { buildSessionsCollection } from "./sessions";
 import { buildSsoProvidersCollection } from "./sso-providers";
 import { buildSubscriptionsCollection } from "./subscriptions";
@@ -43,9 +43,8 @@ export function buildCollections({
   pluginOptions: PayloadAuthOptions;
   resolvedSchemas: BetterAuthSchemas;
 }): Record<string, CollectionConfig> {
-  const collectionBuilders: Record<
-    ModelKey,
-    (props: BuildCollectionProps) => CollectionConfig
+  const collectionBuilders: Partial<
+    Record<ModelKey, (props: BuildCollectionProps) => CollectionConfig>
   > = {
     [baModelKey.user]: (props: BuildCollectionProps) =>
       buildUsersCollection(props),
@@ -73,8 +72,8 @@ export function buildCollections({
       buildTwoFactorsCollection(props),
     [baModelKey.oauthAccessToken]: (props: BuildCollectionProps) =>
       buildOauthAccessTokensCollection(props),
-    [baModelKey.oauthApplication]: (props: BuildCollectionProps) =>
-      buildOauthApplicationsCollection(props),
+    [baModelKey.oauthClient]: (props: BuildCollectionProps) =>
+      buildOauthClientsCollection(props),
     [baModelKey.oauthConsent]: (props: BuildCollectionProps) =>
       buildOauthConsentsCollection(props),
     [baModelKey.passkey]: (props: BuildCollectionProps) =>
@@ -87,8 +86,6 @@ export function buildCollections({
       buildDeviceCodeCollection(props),
     [baModelKey.rateLimit]: (props: BuildCollectionProps) =>
       buildRateLimitCollection(props),
-    [baModelKey.scimProvider]: (props: BuildCollectionProps) =>
-      buildScimProviderCollection(props),
     [baModelKey.organizationRole]: (props: BuildCollectionProps) =>
       buildOrganizationRolesCollection(props)
   };
@@ -96,8 +93,10 @@ export function buildCollections({
   const collectionMap: Record<string, CollectionConfig> = {};
   for (const modelKey of Object.keys(resolvedSchemas) as ModelKey[]) {
     const collectionSlug = getSchemaCollectionSlug(resolvedSchemas, modelKey);
-    const builder = collectionBuilders[modelKey];
-    if (!builder) continue;
+    const builder =
+      collectionBuilders[modelKey] ??
+      ((props: BuildCollectionProps) =>
+        buildDefaultCollection({ ...props, modelKey }));
     collectionMap[collectionSlug] = builder({
       incomingCollections,
       pluginOptions,

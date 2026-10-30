@@ -2,6 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { apiKey } from "@better-auth/api-key";
+import { mcp } from "@better-auth/mcp";
+import { oauthProvider } from "@better-auth/oauth-provider";
 import { passkey } from "@better-auth/passkey";
 import { scim } from "@better-auth/scim";
 import { sso } from "@better-auth/sso";
@@ -21,9 +23,7 @@ import {
   jwt,
   lastLoginMethod,
   magicLink,
-  mcp,
   multiSession,
-  oidcProvider,
   oneTap,
   oneTimeToken,
   openAPI,
@@ -60,7 +60,7 @@ const plugins = [
   anonymous(),
   multiSession(),
   oneTimeToken(),
-  oidcProvider({ loginPage: "" }),
+  oauthProvider({ loginPage: "", consentPage: "" }),
   sso(),
   genericOAuth({
     config: [
@@ -84,8 +84,15 @@ const plugins = [
   phoneNumber(),
   nextCookies(),
   customSession(async () => ({})),
-  scim(),
-  mcp({ loginPage: "" }),
+  scim({
+    connections: [
+      {
+        id: "typescript",
+        credentials: [{ type: "bearer", id: "typescript", token: "typescript" }]
+      }
+    ]
+  }),
+  mcp({ loginPage: "", consentPage: "", resource: "https://example.com/mcp" }),
   deviceAuthorization(),
   lastLoginMethod({ storeInDatabase: true }),
   stripe({

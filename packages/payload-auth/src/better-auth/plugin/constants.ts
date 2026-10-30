@@ -57,6 +57,7 @@ export const supportedBAPluginIds = {
   nextCookies: "next-cookies",
   sso: "sso",
   oidc: "oidc",
+  oauthProvider: "oauth-provider",
   expo: "expo",
   polar: "polar",
   stripe: "stripe",
@@ -82,9 +83,13 @@ export const baPluginSlugs = {
   jwks: "jwks",
   twoFactors: "twoFactors",
   passkeys: "passkeys",
-  oauthApplications: "oauthApplications",
+  oauthClients: "oauthClients",
   oauthAccessTokens: "oauthAccessTokens",
   oauthConsents: "oauthConsents",
+  oauthResources: "oauthResources",
+  oauthClientResources: "oauthClientResources",
+  oauthRefreshTokens: "oauthRefreshTokens",
+  oauthClientAssertions: "oauthClientAssertions",
   ssoProviders: "ssoProviders",
   organizations: "organizations",
   organizationRoles: "organizationRoles",
@@ -92,7 +97,13 @@ export const baPluginSlugs = {
   members: "members",
   teams: "teams",
   teamMembers: "teamMembers",
-  scim: "scimProvider",
+  scimConnectionBindings: "scimConnectionBindings",
+  scimIdentityTombstones: "scimIdentityTombstones",
+  scimSubjects: "scimSubjects",
+  scimUsers: "scimUsers",
+  scimProjectionGrants: "scimProjectionGrants",
+  scimGroups: "scimGroups",
+  scimGroupMembers: "scimGroupMembers",
   rateLimit: "rateLimit",
   deviceCode: "deviceCode"
 } as const;
@@ -104,9 +115,13 @@ export const baModelKey = {
   verification: "verification",
   twoFactor: "twoFactor",
   passkey: "passkey",
-  oauthApplication: "oauthApplication",
+  oauthClient: "oauthClient",
   oauthAccessToken: "oauthAccessToken",
   oauthConsent: "oauthConsent",
+  oauthResource: "oauthResource",
+  oauthClientResource: "oauthClientResource",
+  oauthRefreshToken: "oauthRefreshToken",
+  oauthClientAssertion: "oauthClientAssertion",
   ssoProvider: "ssoProvider",
   organization: "organization",
   organizationRole: "organizationRole",
@@ -119,7 +134,13 @@ export const baModelKey = {
   jwks: "jwks",
   deviceCode: "deviceCode",
   rateLimit: "rateLimit",
-  scimProvider: "scimProvider"
+  scimConnectionBinding: "scimConnectionBinding",
+  scimIdentityTombstone: "scimIdentityTombstone",
+  scimSubject: "scimSubject",
+  scimUser: "scimUser",
+  scimProjectionGrant: "scimProjectionGrant",
+  scimGroup: "scimGroup",
+  scimGroupMember: "scimGroupMember"
 } as const;
 
 export const baModelFieldKeysToFieldNames = {
@@ -155,7 +176,7 @@ export const baModelFieldKeysToFieldNames = {
   ssoProvider: {
     userId: "user"
   },
-  oauthApplication: {
+  oauthClient: {
     userId: "user"
   },
   oauthAccessToken: {
@@ -165,6 +186,14 @@ export const baModelFieldKeysToFieldNames = {
   oauthConsent: {
     userId: "user",
     clientId: "client"
+  },
+  oauthRefreshToken: {
+    userId: "user",
+    clientId: "client"
+  },
+  oauthClientResource: {
+    clientId: "client",
+    resourceId: "resource"
   }
 } as const;
 
@@ -208,7 +237,7 @@ export const baModelFieldKeys = {
   ssoProvider: {
     userId: "userId"
   },
-  oauthApplication: {
+  oauthClient: {
     userId: "userId"
   },
   oauthAccessToken: {
@@ -218,6 +247,14 @@ export const baModelFieldKeys = {
   oauthConsent: {
     userId: "userId",
     clientId: "clientId"
+  },
+  oauthRefreshToken: {
+    userId: "userId",
+    clientId: "clientId"
+  },
+  oauthClientResource: {
+    clientId: "clientId",
+    resourceId: "resourceId"
   }
 } as const;
 
@@ -228,9 +265,13 @@ export const baModelKeyToSlug = {
   verification: baseSlugs.verifications,
   twoFactor: baPluginSlugs.twoFactors,
   passkey: baPluginSlugs.passkeys,
-  oauthApplication: baPluginSlugs.oauthApplications,
+  oauthClient: baPluginSlugs.oauthClients,
   oauthAccessToken: baPluginSlugs.oauthAccessTokens,
   oauthConsent: baPluginSlugs.oauthConsents,
+  oauthResource: baPluginSlugs.oauthResources,
+  oauthClientResource: baPluginSlugs.oauthClientResources,
+  oauthRefreshToken: baPluginSlugs.oauthRefreshTokens,
+  oauthClientAssertion: baPluginSlugs.oauthClientAssertions,
   ssoProvider: baPluginSlugs.ssoProviders,
   organization: baPluginSlugs.organizations,
   invitation: baPluginSlugs.invitations,
@@ -239,7 +280,14 @@ export const baModelKeyToSlug = {
   teamMember: baPluginSlugs.teamMembers,
   subscription: baPluginSlugs.subscriptions,
   apikey: baPluginSlugs.apiKeys,
-  jwks: baPluginSlugs.jwks
+  jwks: baPluginSlugs.jwks,
+  scimConnectionBinding: baPluginSlugs.scimConnectionBindings,
+  scimIdentityTombstone: baPluginSlugs.scimIdentityTombstones,
+  scimSubject: baPluginSlugs.scimSubjects,
+  scimUser: baPluginSlugs.scimUsers,
+  scimProjectionGrant: baPluginSlugs.scimProjectionGrants,
+  scimGroup: baPluginSlugs.scimGroups,
+  scimGroupMember: baPluginSlugs.scimGroupMembers
 } as const;
 
 export const adminRoutes = {

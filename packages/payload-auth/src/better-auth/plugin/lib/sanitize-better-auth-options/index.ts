@@ -148,6 +148,8 @@ export function sanitizeBetterAuthOptions({
           configureSsoPlugin(p, resolvedSchemas),
         [supportedBAPluginIds.oidc]: (p: any) =>
           configureOidcPlugin(p, resolvedSchemas),
+        [supportedBAPluginIds.oauthProvider]: (p: any) =>
+          configureOidcPlugin(p, resolvedSchemas),
         [supportedBAPluginIds.twoFactor]: (p: any) =>
           configureTwoFactorPlugin(p, resolvedSchemas),
         [supportedBAPluginIds.deviceAuthorization]: (p: any) =>

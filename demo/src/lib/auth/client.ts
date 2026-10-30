@@ -5,8 +5,6 @@ import {
   adminClient,
   multiSessionClient,
   oneTapClient,
-  oidcClient,
-  genericOAuthClient,
   usernameClient,
   anonymousClient,
   phoneNumberClient,

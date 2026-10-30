@@ -1,4 +1,4 @@
-import { baModelFieldKeys, baModelKey } from "@/better-auth/plugin/constants";
+import { baModelKey } from "@/better-auth/plugin/constants";
 import type { BetterAuthSchemas } from "@/better-auth/types";
 import { set } from "../../utils/set";
 import {
@@ -6,14 +6,46 @@ import {
   getSchemaFieldName
 } from "../build-collections/utils/collection-schema";
 
+/**
+ * Maps a Better Auth OAuth provider reference onto the Payload collection and
+ * field names this plugin builds, so queries issued by the plugin target the
+ * configured collections instead of Better Auth's default model names.
+ */
+function configureReference(
+  plugin: any,
+  resolvedSchemas: BetterAuthSchemas,
+  model: keyof typeof baModelKey,
+  fieldKey: string,
+  targetModel: keyof typeof baModelKey
+): void {
+  set(
+    plugin,
+    `schema.${baModelKey[model]}.fields.${fieldKey}.fieldName`,
+    getSchemaFieldName(
+      resolvedSchemas,
+      baModelKey[model] as any,
+      fieldKey as any
+    )
+  );
+  set(
+    plugin,
+    `schema.${baModelKey[model]}.fields.${fieldKey}.references.model`,
+    getSchemaCollectionSlug(resolvedSchemas, baModelKey[targetModel] as any)
+  );
+}
+
 export function configureOidcPlugin(
   plugin: any,
   resolvedSchemas: BetterAuthSchemas
 ): void {
   const models = [
-    baModelKey.oauthApplication,
+    baModelKey.oauthClient,
+    baModelKey.oauthResource,
+    baModelKey.oauthClientResource,
+    baModelKey.oauthRefreshToken,
     baModelKey.oauthAccessToken,
-    baModelKey.oauthConsent
+    baModelKey.oauthConsent,
+    baModelKey.oauthClientAssertion
   ] as const;
 
   models.forEach((model) =>
@@ -24,76 +56,86 @@ export function configureOidcPlugin(
     )
   );
 
-  set(
+  configureReference(plugin, resolvedSchemas, "oauthClient", "userId", "user");
+
+  configureReference(
     plugin,
-    `schema.${baModelKey.oauthApplication}.fields.userId.fieldName`,
-    getSchemaFieldName(
-      resolvedSchemas,
-      baModelKey.oauthApplication,
-      baModelFieldKeys.oauthApplication.userId
-    )
+    resolvedSchemas,
+    "oauthAccessToken",
+    "userId",
+    "user"
   );
-  set(
+  configureReference(
     plugin,
-    `schema.${baModelKey.oauthApplication}.fields.userId.references.model`,
-    getSchemaCollectionSlug(resolvedSchemas, baModelKey.user)
+    resolvedSchemas,
+    "oauthAccessToken",
+    "clientId",
+    "oauthClient"
+  );
+  configureReference(
+    plugin,
+    resolvedSchemas,
+    "oauthAccessToken",
+    "sessionId",
+    "session"
+  );
+  configureReference(
+    plugin,
+    resolvedSchemas,
+    "oauthAccessToken",
+    "refreshId",
+    "oauthRefreshToken"
   );
 
-  set(
+  configureReference(
     plugin,
-    `schema.${baModelKey.oauthAccessToken}.fields.userId.fieldName`,
-    getSchemaFieldName(
-      resolvedSchemas,
-      baModelKey.oauthAccessToken,
-      baModelFieldKeys.oauthAccessToken.userId
-    )
+    resolvedSchemas,
+    "oauthConsent",
+    "userId",
+    "user"
   );
-  set(
+  configureReference(
     plugin,
-    `schema.${baModelKey.oauthAccessToken}.fields.userId.references.model`,
-    getSchemaCollectionSlug(resolvedSchemas, baModelKey.user)
-  );
-  set(
-    plugin,
-    `schema.${baModelKey.oauthAccessToken}.fields.clientId.fieldName`,
-    getSchemaFieldName(
-      resolvedSchemas,
-      baModelKey.oauthAccessToken,
-      baModelFieldKeys.oauthAccessToken.clientId
-    )
-  );
-  set(
-    plugin,
-    `schema.${baModelKey.oauthAccessToken}.fields.clientId.references.model`,
-    getSchemaCollectionSlug(resolvedSchemas, baModelKey.oauthApplication)
+    resolvedSchemas,
+    "oauthConsent",
+    "clientId",
+    "oauthClient"
   );
 
-  set(
+  configureReference(
     plugin,
-    `schema.${baModelKey.oauthConsent}.fields.userId.fieldName`,
-    getSchemaFieldName(
-      resolvedSchemas,
-      baModelKey.oauthConsent,
-      baModelFieldKeys.oauthConsent.userId
-    )
+    resolvedSchemas,
+    "oauthRefreshToken",
+    "userId",
+    "user"
   );
-  set(
+  configureReference(
     plugin,
-    `schema.${baModelKey.oauthConsent}.fields.userId.references.model`,
-    getSchemaCollectionSlug(resolvedSchemas, baModelKey.user)
+    resolvedSchemas,
+    "oauthRefreshToken",
+    "clientId",
+    "oauthClient"
   );
-  set(
+  configureReference(
     plugin,
-    `schema.${baModelKey.oauthConsent}.fields.clientId.fieldName`,
-    getSchemaFieldName(
-      resolvedSchemas,
-      baModelKey.oauthConsent,
-      baModelFieldKeys.oauthConsent.clientId
-    )
+    resolvedSchemas,
+    "oauthRefreshToken",
+    "sessionId",
+    "session"
   );
-  set(
+
+  configureReference(
     plugin,
-    `schema.${baModelKey.oauthConsent}.fields.clientId.references.model`,
-    getSchemaCollectionSlug(resolvedSchemas, baModelKey.oauthApplication)
+    resolvedSchemas,
+    "oauthClientResource",
+    "clientId",
+    "oauthClient"
+  );
+  configureReference(
+    plugin,
+    resolvedSchemas,
+    "oauthClientResource",
+    "resourceId",
+    "oauthResource"
   );
 }

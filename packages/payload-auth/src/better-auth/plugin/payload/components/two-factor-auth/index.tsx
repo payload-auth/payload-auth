@@ -87,7 +87,9 @@ export function TwoFactorAuth({
           toast.error(error.message);
           return;
         }
-        setTotpURI(data.totpURI);
+        if (data && "totpURI" in data && data.totpURI) {
+          setTotpURI(data.totpURI);
+        }
         if (data && "backupCodes" in data && data.backupCodes) {
           setBackupCodes(
             Array.isArray(data.backupCodes)
