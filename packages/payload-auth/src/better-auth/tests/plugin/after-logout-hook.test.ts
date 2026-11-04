@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
  * Unit tests for the after-logout hook.
  * Tests cookie cleanup, session deletion, and error handling.
  *
- * Mocks next/headers since the hook depends on the Next.js cookie store.
+ * Mocks next/headers.js since the hook depends on the Next.js cookie store.
  */
 
 // Use vi.hoisted to declare mocks before vi.mock hoisting
@@ -30,7 +30,7 @@ const { mockCookieStore, mockPayloadAuth } = vi.hoisted(() => {
   return { mockCookieStore, mockPayloadAuth };
 });
 
-vi.mock("next/headers", () => ({
+vi.mock("next/headers.js", () => ({
   cookies: vi.fn().mockResolvedValue(mockCookieStore)
 }));
 

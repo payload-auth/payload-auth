@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies } from "next/headers.js";
 import type { CollectionAfterLogoutHook, PayloadRequest } from "payload";
 import { baModelKey } from "@/better-auth/plugin/constants";
 import { getCollectionByModelKey } from "@/better-auth/plugin/helpers/get-collection";
