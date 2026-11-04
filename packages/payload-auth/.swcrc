@@ -25,7 +25,9 @@
     }
   },
   "module": {
-    "type": "es6"
+    "type": "es6",
+    "resolveFully": true,
+    "outFileExtension": "js"
   },
   "exclude": [
     "src/better-auth/adapter/tests/**/*",
