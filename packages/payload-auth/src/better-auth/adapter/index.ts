@@ -248,7 +248,8 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         // would be luck of field order).
         const schemaFieldNames = getForwardRelationFieldNames(
           model as ModelKey,
-          joinSlug
+          joinSlug,
+          joinModelKey
         );
         let relField: (typeof allFields)[number] | undefined;
 
