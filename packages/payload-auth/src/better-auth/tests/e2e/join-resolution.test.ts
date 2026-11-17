@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { cleanupAll, getTestPayload, signIn, signUp } from "../helpers";
 import { payloadAdapter } from "../../adapter/index";
 import type { DBAdapter } from "@better-auth/core/db/adapter";
@@ -167,11 +167,28 @@ describe("Join Resolution", () => {
         } as any
       });
 
-      const found = await adapter.findOne({
-        model: "session",
-        where: [{ field: "id", value: session.id }],
-        join: { user: true }
-      }) as any;
+      const consoleError = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+      let found: any;
+      let errorCalls: unknown[][];
+      try {
+        found = await adapter.findOne({
+          model: "session",
+          where: [{ field: "id", value: session.id }],
+          join: { user: true }
+        });
+      } finally {
+        errorCalls = [...consoleError.mock.calls];
+        consoleError.mockRestore();
+      }
+
+      // session.userId is the BA foreign key for a user join, so this is not
+      // ambiguous and must not be reported as such on every session lookup.
+      const ambiguityLogs = errorCalls.filter((args) =>
+        args.some((arg) => String(arg).includes("ambiguous"))
+      );
+      expect(ambiguityLogs).toHaveLength(0);
 
       expect(found).not.toBeNull();
       // The `user` field must be resolved and populated as an object.

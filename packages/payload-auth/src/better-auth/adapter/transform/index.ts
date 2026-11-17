@@ -250,19 +250,35 @@ export const createTransform = (
    * processes it, and BetterAuth's own base fields resolve it the same way
    * via `options.<model>.modelName`.
    *
-   * Returns all matches (usually one) so the caller can detect and log
-   * ambiguity rather than silently picking one.
+   * When several fields match, the one following BetterAuth's foreign-key
+   * naming for the requested join (`${joinModelKey}Id`, e.g. session.userId
+   * for `join: { user: true }`) is the join target. The other matches are
+   * plugin-added relations such as the admin plugin's session.impersonatedBy,
+   * which configureAdminPlugin points at the users collection.
+   *
+   * Returns all remaining matches (usually one) so the caller can detect and
+   * log genuine ambiguity rather than silently picking one.
    */
   function getForwardRelationFieldNames(
     model: ModelKey,
-    joinCollectionSlug: string
+    joinCollectionSlug: string,
+    joinModelKey?: string
   ): string[] {
     const modelFields = schema[model]?.fields;
     if (!modelFields) return [];
 
-    return Object.entries(modelFields)
-      .filter(([, field]) => field.references?.model === joinCollectionSlug)
-      .map(([fieldKey]) => getFieldName(model, fieldKey));
+    let matches = Object.entries(modelFields).filter(
+      ([, field]) => field.references?.model === joinCollectionSlug
+    );
+
+    if (matches.length > 1 && joinModelKey) {
+      const conventional = matches.filter(
+        ([fieldKey]) => fieldKey === `${joinModelKey}Id`
+      );
+      if (conventional.length === 1) matches = conventional;
+    }
+
+    return matches.map(([fieldKey]) => getFieldName(model, fieldKey));
   }
 
   /**
