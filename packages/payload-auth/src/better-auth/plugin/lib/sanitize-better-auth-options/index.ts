@@ -1,3 +1,4 @@
+import type { CollectionConfig } from "payload";
 import {
   baModelFieldKeys,
   baModelKey,
@@ -9,7 +10,6 @@ import type {
   PayloadAuthOptions,
   SanitizedBetterAuthOptions
 } from "@/better-auth/plugin/types";
-import type { CollectionConfig } from "payload";
 import { checkPluginExists } from "../../helpers/check-plugin-exists";
 import { set } from "../../utils/set";
 import {
@@ -19,6 +19,7 @@ import {
 import { configureAdminPlugin } from "./admin-plugin";
 import { configureApiKeyPlugin } from "./api-key-plugin";
 import { configureDeviceAuthorizationPlugin } from "./device-authorization-plugin";
+import { configureOauthProviderPlugin } from "./oauth-provider-plugin";
 import { configureOidcPlugin } from "./oidc-plugin";
 import { configureOrganizationPlugin } from "./organizations-plugin";
 import { configurePasskeyPlugin } from "./passkey-plugin";
@@ -26,9 +27,9 @@ import { configureSsoPlugin } from "./sso-plugin";
 import { configureTwoFactorPlugin } from "./two-factor-plugin";
 import { adminAfterRoleMiddleware } from "./utils/admin-after-role-middleware";
 import { adminBeforeRoleMiddleware } from "./utils/admin-before-role-middleware";
+import { useAdminInviteAfterSignUpMiddleware } from "./utils/admin-invite-after-signup-middleware";
 import { applySaveToJwtReturned } from "./utils/apply-save-to-jwt-returned";
 import { requireAdminInviteForSignUpMiddleware } from "./utils/require-admin-invite-for-sign-up-middleware";
-import { useAdminInviteAfterSignUpMiddleware } from "./utils/admin-invite-after-signup-middleware";
 
 /**
  * Sanitizes the BetterAuth options
@@ -148,6 +149,8 @@ export function sanitizeBetterAuthOptions({
           configureSsoPlugin(p, resolvedSchemas),
         [supportedBAPluginIds.oidc]: (p: any) =>
           configureOidcPlugin(p, resolvedSchemas),
+        [supportedBAPluginIds.oauthProvider]: (p: any) =>
+          configureOauthProviderPlugin(p, resolvedSchemas),
         [supportedBAPluginIds.twoFactor]: (p: any) =>
           configureTwoFactorPlugin(p, resolvedSchemas),
         [supportedBAPluginIds.deviceAuthorization]: (p: any) =>

@@ -57,6 +57,7 @@ export const supportedBAPluginIds = {
   nextCookies: "next-cookies",
   sso: "sso",
   oidc: "oidc",
+  oauthProvider: "oauth-provider",
   expo: "expo",
   polar: "polar",
   stripe: "stripe",
@@ -85,6 +86,8 @@ export const baPluginSlugs = {
   oauthApplications: "oauthApplications",
   oauthAccessTokens: "oauthAccessTokens",
   oauthConsents: "oauthConsents",
+  oauthClients: "oauthClients",
+  oauthRefreshTokens: "oauthRefreshTokens",
   ssoProviders: "ssoProviders",
   organizations: "organizations",
   organizationRoles: "organizationRoles",
@@ -107,6 +110,8 @@ export const baModelKey = {
   oauthApplication: "oauthApplication",
   oauthAccessToken: "oauthAccessToken",
   oauthConsent: "oauthConsent",
+  oauthClient: "oauthClient",
+  oauthRefreshToken: "oauthRefreshToken",
   ssoProvider: "ssoProvider",
   organization: "organization",
   organizationRole: "organizationRole",
@@ -160,11 +165,24 @@ export const baModelFieldKeysToFieldNames = {
   },
   oauthAccessToken: {
     userId: "user",
-    clientId: "client"
+    clientId: "client",
+    // oauth-provider only (absent from the oidc-provider / mcp schema)
+    sessionId: "session",
+    refreshId: "refresh"
   },
   oauthConsent: {
     userId: "user",
     clientId: "client"
+  },
+  // oauth-provider only. `clientId` is intentionally absent: it holds the
+  // public OAuth client_id string (not a Payload document id), so it stays a
+  // plain text field. See get-better-auth-schema.ts.
+  oauthClient: {
+    userId: "user"
+  },
+  oauthRefreshToken: {
+    userId: "user",
+    sessionId: "session"
   }
 } as const;
 
@@ -213,11 +231,21 @@ export const baModelFieldKeys = {
   },
   oauthAccessToken: {
     userId: "userId",
-    clientId: "clientId"
+    clientId: "clientId",
+    sessionId: "sessionId",
+    refreshId: "refreshId"
   },
   oauthConsent: {
     userId: "userId",
     clientId: "clientId"
+  },
+  oauthClient: {
+    userId: "userId"
+  },
+  oauthRefreshToken: {
+    userId: "userId",
+    clientId: "clientId",
+    sessionId: "sessionId"
   }
 } as const;
 
@@ -231,6 +259,8 @@ export const baModelKeyToSlug = {
   oauthApplication: baPluginSlugs.oauthApplications,
   oauthAccessToken: baPluginSlugs.oauthAccessTokens,
   oauthConsent: baPluginSlugs.oauthConsents,
+  oauthClient: baPluginSlugs.oauthClients,
+  oauthRefreshToken: baPluginSlugs.oauthRefreshTokens,
   ssoProvider: baPluginSlugs.ssoProviders,
   organization: baPluginSlugs.organizations,
   invitation: baPluginSlugs.invitations,

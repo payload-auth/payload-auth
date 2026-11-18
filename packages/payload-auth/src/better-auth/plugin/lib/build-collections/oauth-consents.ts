@@ -29,7 +29,10 @@ export function buildOauthConsentsCollection({
   ) as CollectionConfig | undefined;
 
   const fieldOverrides: FieldOverrides<keyof OauthConsent> = {
-    clientId: () => ({
+    clientId: (field) => ({
+      // oauth-provider stores the public client_id string as plain text
+      // (no relationship), so index it for lookups.
+      ...(!field.references && { index: true }),
       admin: {
         readOnly: true,
         description: "OAuth client associated with the consent"
@@ -38,10 +41,22 @@ export function buildOauthConsentsCollection({
     userId: () => ({
       admin: { readOnly: true, description: "User associated with the consent" }
     }),
-    scopes: () => ({
+    scopes: (field) => ({
       admin: {
         readOnly: true,
-        description: "Comma-separated list of scopes consented to"
+        description:
+          field.type === "string[]"
+            ? "Scopes consented to"
+            : "Comma-separated list of scopes consented to"
+      }
+    }),
+    // ---- oauth-provider (@better-auth/oauth-provider) field ----
+    referenceId: () => ({
+      index: true,
+      admin: {
+        readOnly: true,
+        description:
+          "Opaque reference to the owning entity (e.g. organization id)"
       }
     }),
     consentGiven: () => ({

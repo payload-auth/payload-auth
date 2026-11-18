@@ -30,10 +30,7 @@ export function getBeforeDeleteHook(): CollectionBeforeDeleteHook {
       const shouldCommit = await initTransaction(req);
 
       // Core collections (always exist)
-      const coreModels = [
-        baModelKey.account,
-        baModelKey.session
-      ] as const;
+      const coreModels = [baModelKey.account, baModelKey.session] as const;
 
       for (const modelKey of coreModels) {
         const slug = getSlugSafe(modelKey);
@@ -64,7 +61,10 @@ export function getBeforeDeleteHook(): CollectionBeforeDeleteHook {
         baModelKey.ssoProvider,
         baModelKey.oauthApplication,
         baModelKey.oauthAccessToken,
-        baModelKey.oauthConsent
+        baModelKey.oauthConsent,
+        // @better-auth/oauth-provider models (absent unless that plugin is used)
+        baModelKey.oauthRefreshToken,
+        baModelKey.oauthClient
       ] as const;
 
       for (const modelKey of optionalUserModels) {

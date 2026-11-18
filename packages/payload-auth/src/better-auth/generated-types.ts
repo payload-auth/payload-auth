@@ -195,9 +195,20 @@ export type OauthAccessTokenPluginFields = {
     createdAt?: Date
     updatedAt?: Date
   }
+  "oauth-provider": {
+    token?: string
+    clientId: string
+    sessionId?: string
+    userId?: string
+    referenceId?: string
+    refreshId?: string
+    expiresAt?: Date
+    createdAt?: Date
+    scopes: string[]
+  }
 }
 
-export type OauthAccessToken = OauthAccessTokenPluginFields["oidc-provider"] & OauthAccessTokenPluginFields["mcp"]
+export type OauthAccessToken = OauthAccessTokenPluginFields["oidc-provider"] & OauthAccessTokenPluginFields["mcp"] & OauthAccessTokenPluginFields["oauth-provider"]
 
 export type OauthConsentPluginFields = {
   "oidc-provider": {
@@ -216,9 +227,17 @@ export type OauthConsentPluginFields = {
     updatedAt?: Date
     consentGiven?: boolean
   }
+  "oauth-provider": {
+    clientId: string
+    userId?: string
+    referenceId?: string
+    scopes: string[]
+    createdAt?: Date
+    updatedAt?: Date
+  }
 }
 
-export type OauthConsent = OauthConsentPluginFields["oidc-provider"] & OauthConsentPluginFields["mcp"]
+export type OauthConsent = OauthConsentPluginFields["oidc-provider"] & OauthConsentPluginFields["mcp"] & OauthConsentPluginFields["oauth-provider"]
 
 export type SsoProviderFields = {
   issuer: string
@@ -333,6 +352,55 @@ export type DeviceCodeFields = {
 
 export type DeviceCode = DeviceCodeFields
 
+export type OauthClientFields = {
+  clientId: string
+  clientSecret?: string
+  disabled?: boolean
+  skipConsent?: boolean
+  enableEndSession?: boolean
+  subjectType?: string
+  scopes?: string[]
+  userId?: string
+  createdAt?: Date
+  updatedAt?: Date
+  name?: string
+  uri?: string
+  icon?: string
+  contacts?: string[]
+  tos?: string
+  policy?: string
+  softwareId?: string
+  softwareVersion?: string
+  softwareStatement?: string
+  redirectUris: string[]
+  postLogoutRedirectUris?: string[]
+  tokenEndpointAuthMethod?: string
+  grantTypes?: string[]
+  responseTypes?: string[]
+  public?: boolean
+  type?: string
+  requirePKCE?: boolean
+  referenceId?: string
+  metadata?: unknown
+}
+
+export type OauthClient = OauthClientFields
+
+export type OauthRefreshTokenFields = {
+  token: string
+  clientId: string
+  sessionId?: string
+  userId: string
+  referenceId?: string
+  expiresAt?: Date
+  createdAt?: Date
+  revoked?: Date
+  authTime?: Date
+  scopes: string[]
+}
+
+export type OauthRefreshToken = OauthRefreshTokenFields
+
 export type SubscriptionFields = {
   plan: string
   referenceId: string
@@ -354,7 +422,7 @@ export type SubscriptionFields = {
 
 export type Subscription = SubscriptionFields
 
-export type PluginId = "username" | "admin" | "api-key" | "passkey" | "harmony-email" | "harmony-phone-number" | "bearer" | "email-otp" | "magic-link" | "phone-number" | "one-tap" | "anonymous" | "multi-session" | "one-time-token" | "oidc-provider" | "sso" | "generic-oauth" | "open-api" | "organization" | "jwt" | "two-factor" | "next-cookies" | "custom-session" | "scim" | "mcp" | "device-authorization" | "last-login-method" | "stripe"
+export type PluginId = "username" | "admin" | "api-key" | "passkey" | "harmony-email" | "harmony-phone-number" | "bearer" | "email-otp" | "magic-link" | "phone-number" | "one-tap" | "anonymous" | "multi-session" | "one-time-token" | "oidc-provider" | "sso" | "generic-oauth" | "open-api" | "organization" | "jwt" | "two-factor" | "next-cookies" | "custom-session" | "scim" | "mcp" | "device-authorization" | "oauth-provider" | "last-login-method" | "stripe"
 
 export type BetterAuthFullSchema = {
   "user": User
@@ -378,6 +446,8 @@ export type BetterAuthFullSchema = {
   "twoFactor": TwoFactor
   "scimProvider": ScimProvider
   "deviceCode": DeviceCode
+  "oauthClient": OauthClient
+  "oauthRefreshToken": OauthRefreshToken
   "subscription": Subscription
 }
 

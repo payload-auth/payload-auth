@@ -92,6 +92,7 @@
   },
   "devDependencies": {
     "@better-auth/api-key": "1.6.25",
+    "@better-auth/oauth-provider": "1.6.25",
     "@better-auth/passkey": "1.6.25",
     "@better-auth/core": "1.6.25",
     "@better-auth/sso": "1.6.25",

@@ -1,6 +1,6 @@
 import type { DBFieldAttribute } from "better-auth/db";
-import type { ModelKey } from "@/better-auth/generated-types";
 import { getAuthTables } from "better-auth/db";
+import type { ModelKey } from "@/better-auth/generated-types";
 import {
   baModelFieldKeysToFieldNames,
   baModelKey,
@@ -9,6 +9,37 @@ import {
 import { BetterAuthSchemas, PayloadAuthOptions } from "../types";
 import { set } from "../utils/set";
 import { getDefaultCollectionSlug } from "./get-collection-slug";
+
+/**
+ * Whether a schema field is a "natural key" reference to the oauth-provider
+ * plugin's `oauthClient` model, i.e. its `references.field` is the public
+ * `clientId` (an opaque OAuth client_id string chosen by the plugin or the
+ * registering client) rather than the document `id`.
+ *
+ * Payload relationships are always keyed by document id, so these fields cannot
+ * be mapped to relationships: Better Auth reads and writes the public
+ * `client_id` string, which would never match a Payload document id. They are
+ * stored as plain indexed text instead, under their own `clientId` field name.
+ *
+ * The older oidc-provider / mcp plugins reference `oauthApplication.clientId`;
+ * those fields are deliberately left untouched.
+ */
+export function isOauthClientNaturalKeyReference(
+  references: DBFieldAttribute["references"],
+  pluginOptions: PayloadAuthOptions
+): boolean {
+  if (!references || !references.field || references.field === "id") {
+    return false;
+  }
+  const oauthClientSlug = getDefaultCollectionSlug({
+    modelKey: baModelKey.oauthClient,
+    pluginOptions
+  });
+  return (
+    references.model === baModelKey.oauthClient ||
+    references.model === oauthClientSlug
+  );
+}
 
 /**
  * A consistent BetterAuth schema generator.
@@ -59,6 +90,16 @@ export function getDefaultBetterAuthSchema(
     const actualFields: Record<string, DBFieldAttribute> = {};
 
     Object.entries(table.fields).forEach(([fieldKey, fieldValue]) => {
+      // oauth-provider `clientId` fields reference `oauthClient.clientId`, not
+      // the document id, so they stay plain text (see helper above).
+      if (
+        isOauthClientNaturalKeyReference(fieldValue.references, pluginOptions)
+      ) {
+        const { references: _references, ...rest } = fieldValue;
+        actualFields[fieldKey] = { ...rest, fieldName: fieldKey };
+        return;
+      }
+
       // Build the field ensuring a fieldName exists
       const newField: DBFieldAttribute = {
         ...fieldValue,
