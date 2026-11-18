@@ -108,6 +108,8 @@ export function getPayloadFieldProperties({
       return { type: "text" };
     case "number":
       return { type: "number" };
+    case "json":
+      return { type: "json" };
     default:
       return { type: "text" };
   }

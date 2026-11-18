@@ -55,10 +55,15 @@ export function buildOauthAccessTokensCollection({
         description: "Expiration date of the refresh token"
       }
     }),
-    clientId: () => ({
+    clientId: (field) => ({
+      // oauth-provider stores the public client_id string as plain text
+      // (no relationship), so index it for lookups.
+      ...(!field.references && { index: true }),
       admin: {
         readOnly: true,
-        description: "OAuth application associated with the access token"
+        description: field.references
+          ? "OAuth application associated with the access token"
+          : "client_id of the OAuth client the token was issued to"
       }
     }),
     userId: () => ({
@@ -67,8 +72,47 @@ export function buildOauthAccessTokensCollection({
         description: "User associated with the access token"
       }
     }),
-    scopes: () => ({
-      admin: { description: "Comma-separated list of scopes granted" }
+    scopes: (field) => ({
+      admin: {
+        description:
+          field.type === "string[]"
+            ? "Scopes granted"
+            : "Comma-separated list of scopes granted"
+      }
+    }),
+    // ---- oauth-provider (@better-auth/oauth-provider) fields ----
+    token: () => ({
+      index: true,
+      admin: {
+        readOnly: true,
+        description: "Opaque access token (stored hashed by default)"
+      }
+    }),
+    sessionId: () => ({
+      admin: {
+        readOnly: true,
+        description: "Session the access token is linked to"
+      }
+    }),
+    referenceId: () => ({
+      index: true,
+      admin: {
+        readOnly: true,
+        description:
+          "Opaque reference to the owning entity (e.g. organization id)"
+      }
+    }),
+    refreshId: () => ({
+      admin: {
+        readOnly: true,
+        description: "Refresh token this access token was issued with"
+      }
+    }),
+    expiresAt: () => ({
+      admin: {
+        readOnly: true,
+        description: "Expiration date of the access token"
+      }
     })
   };
 
@@ -103,11 +147,18 @@ export function buildOauthAccessTokensCollection({
     slug: oauthAccessTokenSlug,
     admin: {
       hidden: pluginOptions.hidePluginCollections ?? false,
-      useAsTitle: getSchemaFieldName(
-        resolvedSchemas,
-        baModelKey.oauthAccessToken,
-        "accessToken"
-      ),
+      // oidc-provider / mcp store `accessToken`; oauth-provider stores `token`
+      useAsTitle: oauthAccessTokenSchema?.fields?.accessToken
+        ? getSchemaFieldName(
+            resolvedSchemas,
+            baModelKey.oauthAccessToken,
+            "accessToken"
+          )
+        : getSchemaFieldName(
+            resolvedSchemas,
+            baModelKey.oauthAccessToken,
+            "token"
+          ),
       description: "OAuth access tokens for custom OAuth clients",
       group: pluginOptions?.collectionAdminGroup ?? "Auth",
       ...existingOauthAccessTokenCollection?.admin

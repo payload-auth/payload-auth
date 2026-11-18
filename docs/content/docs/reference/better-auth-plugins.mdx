@@ -25,6 +25,7 @@ reaches Better Auth.
 | `organization` (`teams.enabled`) | `teams`, `teamMembers` |
 | `sso` | `ssoProviders` |
 | `oidc` | `oauthApplications`, `oauthAccessTokens`, `oauthConsents` |
+| `oauthProvider` (`@better-auth/oauth-provider`) | `oauthClients`, `oauthRefreshTokens`, `oauthAccessTokens`, `oauthConsents` |
 | `deviceAuthorization` | `deviceCode` |
 
 These get a configurator that sets their model names and field mappings. The `admin`
@@ -100,12 +101,42 @@ The reference lands at `/api/auth/reference` and the schema at
 `/api/auth/open-api/generate-schema`. See [OpenAPI reference](/docs/guides/openapi) for
 options and for restricting access in production.
 
+### `oauthProvider`
+
+Turns your Payload install into an OAuth 2.1 / OpenID Connect provider (for example for MCP
+clients): authorization code with PKCE, client credentials, refresh tokens, dynamic client
+registration and JWT access tokens verified through your JWKS.
+
+```ts
+import { oauthProvider } from '@better-auth/oauth-provider'
+import { jwt } from 'better-auth/plugins'
+
+plugins: [
+  jwt(),
+  oauthProvider({ loginPage: '/login', consentPage: '/consent' }),
+]
+```
+
+It adds four collections: `oauthClients`, `oauthRefreshTokens`, `oauthAccessTokens` and
+`oauthConsents` (the `jwt` plugin adds `jwks`). `oauthClients` replaces the old
+`oauthApplications`; `oauthAccessTokens` and `oauthConsents` are shared model names with the
+`oidc` / `mcp` plugins, which declare a different shape for them (for example `scopes` is a
+comma-separated string there and a list here). Use **either** `oauthProvider` **or** `oidc` /
+`mcp` on one install, not both. Sites on the older plugins are unaffected.
+
+- `user`, `session` and `refresh` are real Payload relationships.
+- `clientId` on tokens and consents is the public OAuth `client_id` string, not a Payload
+  document id, so it is stored as indexed text rather than a relationship.
+- List fields (`redirectUris`, `scopes`, `grantTypes`, ...) are Payload `hasMany` text
+  fields, and client `metadata` is a `json` field.
+- Deleting a user also deletes their clients, refresh tokens, access tokens and consents.
+
 ### Separately published plugins
 
 Some plugins ship as their own packages and are peer or optional dependencies:
 
 ```package-install
-@better-auth/passkey @better-auth/api-key @better-auth/sso @better-auth/stripe @better-auth/scim
+@better-auth/passkey @better-auth/api-key @better-auth/sso @better-auth/stripe @better-auth/scim @better-auth/oauth-provider
 ```
 
 ```ts

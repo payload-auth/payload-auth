@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { apiKey } from "@better-auth/api-key";
+import { oauthProvider } from "@better-auth/oauth-provider";
 import { passkey } from "@better-auth/passkey";
 import { scim } from "@better-auth/scim";
 import { sso } from "@better-auth/sso";
@@ -87,6 +88,7 @@ const plugins = [
   scim(),
   mcp({ loginPage: "" }),
   deviceAuthorization(),
+  oauthProvider({ loginPage: "", consentPage: "" }),
   lastLoginMethod({ storeInDatabase: true }),
   stripe({
     stripeClient: new Stripe("typescript"),

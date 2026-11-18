@@ -15,7 +15,9 @@ import { buildJwksCollection } from "./jwks";
 import { buildMembersCollection } from "./members";
 import { buildOauthAccessTokensCollection } from "./oauth-access-tokens";
 import { buildOauthApplicationsCollection } from "./oauth-applications";
+import { buildOauthClientsCollection } from "./oauth-clients";
 import { buildOauthConsentsCollection } from "./oauth-consents";
+import { buildOauthRefreshTokensCollection } from "./oauth-refresh-tokens";
 import { buildOrganizationRolesCollection } from "./organization-roles";
 import { buildOrganizationsCollection } from "./organizations";
 import { buildPasskeysCollection } from "./passkeys";
@@ -77,6 +79,10 @@ export function buildCollections({
       buildOauthApplicationsCollection(props),
     [baModelKey.oauthConsent]: (props: BuildCollectionProps) =>
       buildOauthConsentsCollection(props),
+    [baModelKey.oauthClient]: (props: BuildCollectionProps) =>
+      buildOauthClientsCollection(props),
+    [baModelKey.oauthRefreshToken]: (props: BuildCollectionProps) =>
+      buildOauthRefreshTokensCollection(props),
     [baModelKey.passkey]: (props: BuildCollectionProps) =>
       buildPasskeysCollection(props),
     [baModelKey.ssoProvider]: (props: BuildCollectionProps) =>
