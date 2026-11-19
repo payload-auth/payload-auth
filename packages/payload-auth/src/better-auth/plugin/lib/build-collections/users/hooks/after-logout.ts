@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import type { cookies } from "next/headers";
 import type { CollectionAfterLogoutHook, PayloadRequest } from "payload";
 import { baModelKey } from "@/better-auth/plugin/constants";
 import { getCollectionByModelKey } from "@/better-auth/plugin/helpers/get-collection";
@@ -6,6 +6,9 @@ import { getPayloadAuth } from "@/better-auth/plugin/lib/get-payload-auth";
 
 export function getAfterLogoutHook() {
   const hook: CollectionAfterLogoutHook = async ({ req }) => {
+    // Loaded on call, not at module load, so the plugin can be imported
+    // outside Next.js (e.g. a plain Node server sharing the Payload config).
+    const { cookies } = await import("next/headers.js");
     const store = await cookies();
     const payload = await getPayloadAuth(req.payload.config);
 
